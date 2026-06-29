@@ -1,0 +1,56 @@
+//@version=5
+strategy("XAUUSD Intraday Trend Strategy (5m-15m)", overlay=true,
+     default_qty_type=strategy.percent_of_equity, default_qty_value=10,
+     initial_capital=10000, currency=currency.USD)
+
+// ---- Inputs ----
+emaFastLen  = input.int(9, "EMA Fast", minval=1)
+emaMedLen   = input.int(21, "EMA Medium", minval=1)
+emaTrendLen = input.int(200, "EMA Trend Filter", minval=1)
+
+rsiLen      = input.int(14, "RSI Length", minval=1)
+rsiOverbought = input.int(70, "RSI Overbought")
+rsiOversold   = input.int(30, "RSI Oversold")
+
+atrLen      = input.int(14, "ATR Length", minval=1)
+atrSlMult   = input.float(1.5, "ATR Stop Loss Multiplier", minval=0.1, step=0.1)
+atrTpMult   = input.float(3.0, "ATR Take Profit Multiplier", minval=0.1, step=0.1)
+
+// ---- Indicators ----
+emaFast  = ta.ema(close, emaFastLen)
+emaMed   = ta.ema(close, emaMedLen)
+emaTrend = ta.ema(close, emaTrendLen)
+rsiVal   = ta.rsi(close, rsiLen)
+atrVal   = ta.atr(atrLen)
+
+// ---- Entry conditions ----
+longTrend  = close > emaTrend
+shortTrend = close < emaTrend
+
+longCross  = ta.crossover(emaFast, emaMed)
+shortCross = ta.crossunder(emaFast, emaMed)
+
+longSignal  = longTrend  and longCross  and rsiVal < rsiOverbought
+shortSignal = shortTrend and shortCross and rsiVal > rsiOversold
+
+// ---- Orders ----
+if longSignal
+    strategy.entry("Long", strategy.long)
+
+if shortSignal
+    strategy.entry("Short", strategy.short)
+
+// ATR-based stop loss / take profit (adapts to XAUUSD volatility instead of fixed pips)
+if strategy.position_size > 0
+    strategy.exit("Exit Long", "Long", stop=close - atrVal * atrSlMult, limit=close + atrVal * atrTpMult)
+
+if strategy.position_size < 0
+    strategy.exit("Exit Short", "Short", stop=close + atrVal * atrSlMult, limit=close - atrVal * atrTpMult)
+
+// ---- Plots ----
+plot(emaFast, "EMA Fast", color=color.yellow)
+plot(emaMed, "EMA Medium", color=color.orange)
+plot(emaTrend, "EMA Trend", color=color.blue, linewidth=2)
+
+plotshape(longSignal, title="Long Entry", style=shape.triangleup, location=location.belowbar, color=color.green, size=size.small)
+plotshape(shortSignal, title="Short Entry", style=shape.triangledown, location=location.abovebar, color=color.red, size=size.small)
