@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fronte Vostok</title>
+  <meta name="description" content="Sparatutto open world in prima persona con veicoli guidabili, realizzato in HTML, CSS e JavaScript (Three.js)." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Oswald:wght@500;700&display=swap" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <canvas id="game"></canvas>
+
+  <!-- ============================ HUD ============================ -->
+  <div id="hud">
+    <div id="blood"></div>
+    <div id="vignette"></div>
+    <div id="dmgDirs"></div>
+    <div id="scope"><div class="reticle"></div></div>
+    <div id="breath">[SHIFT] Trattieni il respiro</div>
+
+    <div id="topBar">
+      <canvas id="compass" width="560" height="46"></canvas>
+      <div id="heading">000</div>
+    </div>
+
+    <div id="topLeft">
+      <div id="objective"></div>
+      <div id="spotted">⚠ SEI STATO INDIVIDUATO</div>
+    </div>
+    <div id="topRight">
+      <div id="scoreBox"><span>PUNTI</span><b id="score">0</b></div>
+      <div id="killfeed"></div>
+    </div>
+
+    <div id="crosshair"><i class="t"></i><i class="b"></i><i class="l"></i><i class="r"></i><i class="d"></i></div>
+    <div id="hitmarker"><i></i><i></i><i></i><i></i></div>
+    <div id="ptsWrap"></div>
+    <div id="prompt"></div>
+    <div id="reloadHint"></div>
+    <div id="notify"></div>
+    <div id="bigmsg"></div>
+    <div id="zoneName"></div>
+
+    <div id="objMarker" class="marker"><div class="diamond"></div><span id="objDist"></span></div>
+    <div id="wpMarker" class="marker wp"><div class="drop"></div><span id="wpDist"></span></div>
+
+    <div id="bottomLeft">
+      <div id="miniWrap">
+        <canvas id="minimap" width="210" height="210"></canvas>
+        <div id="clock">12:00</div>
+      </div>
+      <div id="vitals">
+        <div class="bar hp"><div id="healthFill"></div><span id="healthTxt">100</span></div>
+        <div class="bar st"><div id="staminaFill"></div></div>
+      </div>
+    </div>
+
+    <div id="weaponPanel">
+      <div id="wname">M4A1</div>
+      <div class="ammoRow"><b id="ammo">30</b><span>/</span><em id="reserve">180</em></div>
+      <div class="wInfo">
+        <span id="fmode">AUTO</span>
+        <span class="gren">◉ <b id="grenades">4</b></span>
+        <span id="flashIcon" title="Torcia [F]">TORCIA</span>
+      </div>
+    </div>
+
+    <div id="vehHud">
+      <div id="vname">Jeep</div>
+      <div class="spd"><b id="vspeed">0</b><span>km/h</span></div>
+      <div class="gearRow"><span>MARCIA</span><b id="vgear">1</b><span id="vlights">◐ FARI</span></div>
+      <div class="bar vhp"><div id="vhpFill"></div></div>
+      <div class="vKeys">W/S accelera · A/D sterza · SPAZIO freno a mano · SHIFT turbo · C visuale</div>
+    </div>
+
+    <div id="fps">60 FPS</div>
+
+    <div id="mapScreen">
+      <div class="mapHead"><h2>MAPPA TATTICA</h2><span>Clic sinistro: punto di riferimento · Clic destro: rimuovi · [M] chiudi</span></div>
+      <canvas id="mapCanvas"></canvas>
+      <div class="legend">
+        <span><i style="background:#fff"></i>Tu</span><span><i class="dia"></i>Obiettivo</span><span><i style="background:#5fd3ff;border-radius:50%"></i>Riferimento</span>
+        <span><i style="background:#5fa8ff;border-radius:50%"></i>Veicolo</span><span><i style="background:#e8c547"></i>Munizioni</span>
+      </div>
+    </div>
+
+    <div id="tabScreen">
+      <div class="tabCol">
+        <h2>STATISTICHE</h2>
+        <div id="tabStats"></div>
+      </div>
+      <div class="tabCol">
+        <h2>OBIETTIVI</h2>
+        <ol id="tabObj"></ol>
+      </div>
+    </div>
+  </div>
+
+  <div id="clickResume" class="overlay-mini">Clicca per riprendere il controllo</div>
+
+  <!-- ============================ SCHERMATE ============================ -->
+  <div id="loading" class="screen">
+    <div class="loadBox">
+      <h1 class="logo">FRONTE <span>VOSTOK</span></h1>
+      <p class="sub">Operazione Tempesta d'Acciaio</p>
+      <div class="loadBar"><div id="loadFill"></div></div>
+      <div id="loadLabel">Inizializzazione...</div>
+      <p class="tipBox"><b>SUGGERIMENTO</b> <span id="tip"></span></p>
+    </div>
+  </div>
+
+  <div id="menu" class="screen">
+    <div class="menuPanel">
+      <h1 class="logo">FRONTE <span>VOSTOK</span></h1>
+      <p class="sub">Operazione Tempesta d'Acciaio · Open World</p>
+      <nav>
+        <button id="btnPlay" class="primary">▶ GIOCA</button>
+        <button id="btnSettings">IMPOSTAZIONI</button>
+        <button id="btnControls">COMANDI</button>
+      </nav>
+      <div class="brief">
+        <h4>BRIEFING</h4>
+        <p>La regione di Vostok è occupata. Parti dall'avamposto alleato a sud, raggiungi la città, neutralizza le forze ostili, sabota il deposito di carburante della base nemica e libera il villaggio di Krasnaya.</p>
+      </div>
+    </div>
+    <div class="version">v1.0 · WebGL · Three.js</div>
+  </div>
+
+  <div id="pause" class="screen dim">
+    <div class="menuPanel">
+      <h1 class="logo small">PAUSA</h1>
+      <nav>
+        <button id="btnResume" class="primary">▶ RIPRENDI</button>
+        <button id="btnPSettings">IMPOSTAZIONI</button>
+        <button id="btnPControls">COMANDI</button>
+        <button id="btnQuit">ESCI AL MENU</button>
+      </nav>
+    </div>
+  </div>
+
+  <div id="death" class="screen dim red">
+    <div class="deathBox">
+      <h1>SEI STATO UCCISO</h1>
+      <p id="deathCause"></p>
+      <p id="deathStats"></p>
+      <button id="btnRespawn" class="primary">RIENTRA IN AZIONE [INVIO]</button>
+    </div>
+  </div>
+
+  <div id="settings" class="screen dim">
+    <div class="panel wide">
+      <h2>IMPOSTAZIONI</h2>
+      <div id="settingsList"></div>
+      <div class="panelBtns">
+        <button id="btnSetReset">RIPRISTINA PREDEFINITI</button>
+        <button id="btnSetBack" class="primary">SALVA E INDIETRO</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="controls" class="screen dim">
+    <div class="panel wide">
+      <h2>COMANDI</h2>
+      <div class="ctrlGrid">
+        <div>
+          <h3>A piedi</h3>
+          <ul>
+            <li><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> Movimento</li>
+            <li><kbd>Mouse</kbd> Visuale</li>
+            <li><kbd>Shift</kbd> Scatto (consuma stamina)</li>
+            <li><kbd>Spazio</kbd> Salto</li>
+            <li><kbd>C</kbd> / <kbd>Ctrl</kbd> Accovacciati · durante lo scatto: <b>scivolata</b></li>
+            <li><kbd>E</kbd> Interagisci / sali sul veicolo / rifornisci munizioni</li>
+            <li><kbd>F</kbd> Torcia</li>
+            <li><kbd>M</kbd> Mappa tattica</li>
+            <li><kbd>Tab</kbd> Statistiche e obiettivi</li>
+            <li><kbd>Esc</kbd> Pausa</li>
+          </ul>
+        </div>
+        <div>
+          <h3>Combattimento</h3>
+          <ul>
+            <li><kbd>Clic sinistro</kbd> Fuoco</li>
+            <li><kbd>Clic destro</kbd> Mira di precisione</li>
+            <li><kbd>R</kbd> Ricarica</li>
+            <li><kbd>1</kbd>–<kbd>4</kbd> / <kbd>Rotella</kbd> Cambia arma</li>
+            <li><kbd>B</kbd> Modalità di fuoco (auto / colpo singolo)</li>
+            <li><kbd>G</kbd> Lancia granata</li>
+            <li><kbd>V</kbd> Attacco corpo a corpo (coltello)</li>
+            <li><kbd>Shift</kbd> (con cannocchiale) Trattieni il respiro</li>
+          </ul>
+          <h3>Veicoli</h3>
+          <ul>
+            <li><kbd>W</kbd>/<kbd>S</kbd> Accelera / frena e retromarcia</li>
+            <li><kbd>A</kbd>/<kbd>D</kbd> Sterza</li>
+            <li><kbd>Spazio</kbd> Freno a mano (derapata)</li>
+            <li><kbd>Shift</kbd> Turbo</li>
+            <li><kbd>H</kbd> Clacson · <kbd>L</kbd> Fari · <kbd>C</kbd> Cambia visuale</li>
+            <li><kbd>Mouse</kbd> Ruota la telecamera · <kbd>E</kbd> Scendi</li>
+          </ul>
+        </div>
+      </div>
+      <div class="panelBtns"><button id="btnCtrlBack" class="primary">INDIETRO</button></div>
+    </div>
+  </div>
+
+  <script src="lib/three.min.js"></script>
+  <script src="js/core.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/textures.js"></script>
+  <script src="js/world.js"></script>
+  <script src="js/fx.js"></script>
+  <script src="js/player.js"></script>
+  <script src="js/weapons.js"></script>
+  <script src="js/vehicles.js"></script>
+  <script src="js/enemies.js"></script>
+  <script src="js/missions.js"></script>
+  <script src="js/hud.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
