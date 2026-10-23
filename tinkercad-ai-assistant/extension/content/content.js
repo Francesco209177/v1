@@ -26,6 +26,8 @@
   let positionTimer = null;
   let mutationTimer = null;
   let tornDown = false;
+  // Preferenze lette prima di creare l'interfaccia, così un assistente nascosto non "lampeggia" al ricaricamento.
+  let prefs = { assistantHidden: false, buttonPosition: null };
 
   // --- Utilità --------------------------------------------------------------
 
@@ -336,13 +338,32 @@
     });
     machine = createStateMachine((state) => ui.setState(state));
     ui.setState(machine.state);
+    if (prefs.buttonPosition) ui.setManualPosition(prefs.buttonPosition);
+    ui.setUserHidden(prefs.assistantHidden === true);
     ui.mount();
-    chrome.storage.local
-      .get('buttonPosition')
-      .then(({ buttonPosition }) => {
-        if (buttonPosition) ui.setManualPosition(buttonPosition);
-      })
-      .catch(() => {});
+
+    if (root.TCAI.hotkeys) {
+      root.TCAI.hotkeys.register({
+        isActive: () => Boolean(ui) && !tornDown && dom.isEditorPage(),
+        isHidden: () => ui.isUserHidden(),
+        hide: () => setHidden(true),
+        show: () => setHidden(false),
+      });
+    }
+  }
+
+  /**
+   * Nasconde o mostra pulsante e pannello (Ctrl+Shift+A / Ctrl+Shift+Z) senza toccare prompt,
+   * risultato, stato o appunti. La scelta è ricordata anche dopo il ricaricamento della pagina.
+   */
+  function setHidden(hidden) {
+    if (!ui) return;
+    ui.setUserHidden(hidden);
+    if (!hidden) {
+      positionKey = '';
+      refresh();
+    }
+    if (extensionAlive()) chrome.storage.local.set({ assistantHidden: hidden }).catch(() => {});
   }
 
   function currentAnchors() {
@@ -379,10 +400,11 @@
     if (observer) observer.disconnect();
     clearInterval(positionTimer);
     clearTimeout(mutationTimer);
+    if (root.TCAI.hotkeys) root.TCAI.hotkeys.register(null);
     if (ui) ui.host.remove();
   }
 
-  function start() {
+  function begin() {
     // MutationObserver solo su childList (non sugli attributi: la simulazione anima l'SVG di continuo)
     // e con throttling, per rilevare l'editor e reinserire il pulsante se Tinkercad ricostruisce la pagina.
     observer = new MutationObserver(() => {
@@ -408,22 +430,45 @@
           sendResponse({ ok: false, reason: 'not-editor' });
           return undefined;
         }
-        if (msg.type === 'tcai:toggle-panel') ui.togglePanel();
-        else ui.openPanel();
+        if (ui.isUserHidden()) {
+          setHidden(false);
+          ui.openPanel();
+        } else if (msg.type === 'tcai:toggle-panel') {
+          ui.togglePanel();
+        } else {
+          ui.openPanel();
+        }
         sendResponse({ ok: true });
       }
       return undefined;
     });
 
     chrome.storage.onChanged.addListener((changes, area) => {
-      if (area === 'local' && changes.buttonPosition && ui) {
+      if (area !== 'local' || !ui) return;
+      if (changes.buttonPosition) {
         ui.setManualPosition(changes.buttonPosition.newValue || null);
+        positionKey = '';
+        refresh();
+      }
+      // Sincronizza le altre schede di Tinkercad aperte.
+      if (changes.assistantHidden && ui.isUserHidden() !== (changes.assistantHidden.newValue === true)) {
+        ui.setUserHidden(changes.assistantHidden.newValue === true);
         positionKey = '';
         refresh();
       }
     });
 
     refresh();
+  }
+
+  function start() {
+    chrome.storage.local
+      .get(['assistantHidden', 'buttonPosition'])
+      .then((stored) => {
+        prefs = { assistantHidden: stored.assistantHidden === true, buttonPosition: stored.buttonPosition || null };
+      })
+      .catch(() => {})
+      .finally(begin);
   }
 
   start();

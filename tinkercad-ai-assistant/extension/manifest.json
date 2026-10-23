@@ -36,6 +36,12 @@
   "content_scripts": [
     {
       "matches": ["https://www.tinkercad.com/*"],
+      "js": ["shared/hotkeys.js", "content/hotkeys.js"],
+      "run_at": "document_start",
+      "all_frames": false
+    },
+    {
+      "matches": ["https://www.tinkercad.com/*"],
       "js": ["content/page-bridge.js"],
       "run_at": "document_idle",
       "all_frames": false,

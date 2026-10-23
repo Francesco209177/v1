@@ -40,6 +40,7 @@ tinkercad-ai-assistant/
 │   ├── background.js          # service worker: screenshot, ritaglio, chiamata al backend
 │   ├── popup.html/.js/.css    # stato backend, impostazioni, permesso facoltativo
 │   ├── content/
+│   │   ├── hotkeys.js         # (document_start) scorciatoie Ctrl+Shift+A / Ctrl+Shift+Z
 │   │   ├── page-bridge.js     # (MAIN world) legge il testo di CodeMirror, nient'altro
 │   │   ├── tinkercad-dom.js   # selettori Tinkercad verificati, rettangolo del circuito, componenti
 │   │   ├── ui.js              # pulsante + pannello in Shadow DOM
@@ -48,6 +49,7 @@ tinkercad-ai-assistant/
 │   ├── shared/                # moduli testabili anche in Node
 │   │   ├── extract-code.js    # estrazione del blocco ```cpp
 │   │   ├── state-machine.js   # IDLE / GENERATING / SUCCESS / ERROR
+│   │   ├── hotkeys.js         # regole delle scorciatoie (quando nascondere/mostrare)
 │   │   └── crop.js            # calcolo del ritaglio dello screenshot
 │   └── icons/
 ├── server/                    # Backend Node.js + Express (custodisce la chiave OpenRouter)
@@ -150,6 +152,24 @@ Dopo aver installato o ricaricato l'estensione, **ricarica le schede di Tinkerca
 Se il modello non restituisce un blocco di codice (ad esempio chiede un chiarimento perché un collegamento non è
 visibile), la risposta viene mostrata come testo, **non** viene copiata e il pulsante non diventa verde.
 
+### Scorciatoie da tastiera
+
+| Tasti | Dove | Effetto |
+|---|---|---|
+| **Ctrl+Shift+A** | pagina di Tinkercad | nasconde pulsante AI e pannello. Prompt, codice generato, messaggi e colore del pulsante restano com'erano; gli appunti non vengono toccati |
+| **Ctrl+Shift+Z** | pagina di Tinkercad, solo con l'assistente nascosto | lo mostra di nuovo esattamente come l'avevi lasciato |
+| **Ctrl+Invio** (⌘+Invio su Mac) | nel prompt | genera il codice |
+| **Esc** | nel pannello | chiude il pannello |
+| **Alt+Shift+A** | ovunque in Chrome | apre/chiude il pannello (e lo rende visibile se era nascosto); autorizza anche lo screenshot |
+
+Note:
+- Lo stato «nascosto» viene ricordato anche dopo il ricaricamento della pagina e vale per tutte le schede di Tinkercad.
+  Se dimentichi la scorciatoia, il pulsante **Mostra l'assistente** nel popup lo fa riapparire.
+- Una generazione in corso continua anche mentre l'assistente è nascosto.
+- Su Tinkercad **Ctrl+Shift+A** sostituisce la «Ricerca schede» di Chrome (che resta disponibile dal pulsante nella barra delle schede).
+- **Ctrl+Shift+Z** viene usato dall'assistente solo quando è nascosto: con l'assistente visibile resta il «Ripeti» di
+  Tinkercad. Per ripetere puoi comunque usare sempre **Ctrl+Y**.
+
 ## Verifica del funzionamento
 
 Checklist manuale (richiede un account Tinkercad):
@@ -177,7 +197,7 @@ OPENROUTER_BASE_URL=http://127.0.0.1:4010/api/v1 OPENROUTER_API_KEY=finta OPENRO
 | `https://www.tinkercad.com/*` | host | inserire pulsante e pannello nelle pagine di Tinkercad |
 | `http://localhost/*`, `http://127.0.0.1/*` | host | contattare il backend locale (qualsiasi porta) |
 | `activeTab` | API, nessun avviso | screenshot della scheda **dopo** un clic sull'icona o la scorciatoia |
-| `storage` | API | salvare URL del backend, token facoltativo e posizione del pulsante |
+| `storage` | API | salvare URL del backend, token facoltativo, posizione del pulsante e stato «nascosto» |
 | `<all_urls>` | **facoltativo**, solo su richiesta | screenshot direttamente dal pulsante AI, senza clic sull'icona |
 | origine del backend remoto | **facoltativo**, solo su richiesta | solo se configuri un backend non locale (https) |
 

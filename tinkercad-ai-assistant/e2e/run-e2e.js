@@ -194,6 +194,54 @@ async function scenarioDefaultPermissions(mock, backend) {
     step('la chiave API non transita nel browser', !JSON.stringify(sent.body).includes('e2e-fake-key') && sent.headers.authorization === 'Bearer e2e-fake-key');
     await page.screenshot({ path: path.join(OUTPUT_DIR, '04-success.png') });
 
+    // Scorciatoie: Ctrl+Shift+A nasconde, Ctrl+Shift+Z mostra di nuovo senza azzerare nulla.
+    const visibility = () => page.evaluate(() => document.getElementById('tcai-root').style.visibility);
+    // Solo i tasti "veri": la pressione dei modificatori da soli (Control, Shift) arriva sempre alla pagina.
+    const pageKeys = async () =>
+      (await page.evaluate(() => window.__tcaiPageKeys.splice(0))).filter((k) => !/(Control|Shift)\|/.test(k));
+    const promptBefore = await page.locator('#tcai-root textarea.prompt').inputValue();
+    const messageBefore = await page.locator('#tcai-root .message__text').textContent();
+    await page.evaluate(() => {
+      window.__tcaiPageKeys = [];
+      window.addEventListener('keydown', (e) => {
+        window.__tcaiPageKeys.push(`${e.ctrlKey ? 'Ctrl+' : ''}${e.shiftKey ? 'Shift+' : ''}${e.key}|${e.defaultPrevented}`);
+      });
+    });
+    await page.keyboard.press('Control+Shift+A');
+    await page.waitForFunction(() => document.getElementById('tcai-root').style.visibility === 'hidden', null, { timeout: 5000 });
+    const keysOnHide = await pageKeys();
+    step('Ctrl+Shift+A nasconde pulsante e pannello', (await visibility()) === 'hidden');
+    step('Ctrl+Shift+A non arriva a Tinkercad né al browser', keysOnHide.length === 0, keysOnHide.join(', '));
+    step('il codice resta negli appunti dopo Ctrl+Shift+A', (await page.evaluate(() => navigator.clipboard.readText())) === shownCode);
+    const stored = await worker.evaluate(() => chrome.storage.local.get('assistantHidden'));
+    step('stato «nascosto» salvato', stored.assistantHidden === true);
+
+    await page.keyboard.type('qq'); // mentre è nascosto i tasti non devono finire nel prompt invisibile
+    await pageKeys();
+    await page.keyboard.press('Control+Shift+Z');
+    await page.waitForFunction(() => document.getElementById('tcai-root').style.visibility === 'visible', null, { timeout: 5000 });
+    const promptAfter = await page.locator('#tcai-root textarea.prompt').inputValue();
+    const codeAfter = await page.locator('#tcai-root textarea.code').inputValue();
+    const messageAfter = await page.locator('#tcai-root .message__text').textContent();
+    const stateAfter = await buttonState(page);
+    const panelAfter = await page.locator('#tcai-root .panel').isVisible();
+    step(
+      'Ctrl+Shift+Z mostra di nuovo tutto senza azzerare la chat',
+      codeAfter === shownCode && messageAfter === messageBefore && stateAfter === 'SUCCESS' && panelAfter,
+      `stato ${stateAfter}, pannello aperto: ${panelAfter}`
+    );
+    step('i tasti premuti mentre era nascosto non finiscono nel prompt', promptAfter === promptBefore, JSON.stringify(promptAfter));
+    step('Ctrl+Shift+Z (mostra) non arriva a Tinkercad', (await pageKeys()).length === 0);
+
+    await page.keyboard.press('Control+Shift+Z');
+    const keysVisible = await pageKeys();
+    step(
+      'con l\'assistente visibile Ctrl+Shift+Z resta il «Ripeti» di Tinkercad',
+      keysVisible.some((k) => /^Ctrl\+Shift\+z\|false$/i.test(k)) && (await visibility()) === 'visible',
+      keysVisible.join(', ')
+    );
+    await page.screenshot({ path: path.join(OUTPUT_DIR, '04b-after-hotkeys.png') });
+
     // Risposta senza blocco di codice: niente copia, niente verde.
     mock.nextReply = 'Non riesco a vedere a quale pin è collegato il LED. Puoi indicarlo?';
     await page.evaluate(() => navigator.clipboard.writeText('sentinella'));
@@ -243,6 +291,34 @@ async function scenarioDefaultPermissions(mock, backend) {
     step('popup: rifiuta http verso server non locali', /https/.test(validation), validation);
     await popup.screenshot({ path: path.join(OUTPUT_DIR, '08-popup.png'), fullPage: true });
     await popup.close();
+
+    // Lo stato «nascosto» sopravvive al ricaricamento, senza far lampeggiare il pulsante.
+    await page.bringToFront();
+    await page.keyboard.press('Control+Shift+A');
+    await page.waitForFunction(() => document.getElementById('tcai-root').style.visibility === 'hidden', null, { timeout: 5000 });
+    await page.reload({ waitUntil: 'load', timeout: 90000 });
+    await page.waitForSelector('#tcai-root', { state: 'attached', timeout: 90000 });
+    let everVisible = false;
+    for (let i = 0; i < 15; i++) {
+      if ((await page.evaluate(() => document.getElementById('tcai-root').style.visibility)) === 'visible') everVisible = true;
+      await page.waitForTimeout(200);
+    }
+    step('dopo il ricaricamento l\'assistente resta nascosto (nessun lampo)', !everVisible);
+    await page.keyboard.press('Control+Shift+Z');
+    await page.waitForFunction(() => document.getElementById('tcai-root').style.visibility === 'visible', null, { timeout: 5000 });
+    step('Ctrl+Shift+Z lo mostra anche dopo il ricaricamento', true);
+
+    // Nascosto + «Apri l'assistente» (popup o Alt+Shift+A): torna visibile con il pannello aperto.
+    await page.keyboard.press('Control+Shift+A');
+    await page.waitForFunction(() => document.getElementById('tcai-root').style.visibility === 'hidden', null, { timeout: 5000 });
+    await worker.evaluate(async () => {
+      const [tab] = await chrome.tabs.query({ url: 'https://www.tinkercad.com/*' });
+      return chrome.tabs.sendMessage(tab.id, { type: 'tcai:open-panel' });
+    });
+    await page.waitForFunction(() => document.getElementById('tcai-root').style.visibility === 'visible', null, { timeout: 5000 });
+    step('«Apri l\'assistente» lo rende di nuovo visibile', await page.locator('#tcai-root .panel').isVisible());
+    const finalStored = await worker.evaluate(() => chrome.storage.local.get('assistantHidden'));
+    step('stato «visibile» salvato', finalStored.assistantHidden === false);
   } finally {
     await context.close();
     fs.rmSync(userDataDir, { recursive: true, force: true });

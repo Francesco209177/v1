@@ -50,10 +50,19 @@ test('tutti i file referenziati dal manifest esistono', () => {
 });
 
 test('le dipendenze dei content script sono caricate prima di content.js', () => {
-  const isolated = manifest.content_scripts.find((cs) => !cs.world);
+  const isolated = manifest.content_scripts.find((cs) => (cs.js || []).includes('content/content.js'));
   const order = isolated.js;
+  assert.equal(isolated.world, undefined);
   assert.equal(order[order.length - 1], 'content/content.js');
   assert.ok(order.indexOf('shared/state-machine.js') < order.indexOf('content/ui.js'));
+});
+
+test('le scorciatoie sono registrate a document_start, prima degli script della pagina', () => {
+  const hotkeys = manifest.content_scripts.find((cs) => (cs.js || []).includes('content/hotkeys.js'));
+  assert.ok(hotkeys, 'manca il content script delle scorciatoie');
+  assert.equal(hotkeys.run_at, 'document_start');
+  assert.equal(hotkeys.world, undefined); // mondo isolato condiviso con content.js
+  assert.deepEqual(hotkeys.js, ['shared/hotkeys.js', 'content/hotkeys.js']);
 });
 
 test('nessuna chiave API o segreto nei file dell\'estensione', () => {

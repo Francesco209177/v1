@@ -60,7 +60,8 @@
       'all: initial; position: fixed; top: 0; left: 0; width: 0; height: 0; z-index: 2147483000; visibility: hidden;';
     const shadow = host.attachShadow({ mode: 'open' });
 
-    const flags = { styled: false, active: false, capturing: false };
+    // userHidden: nascosto dall'utente con Ctrl+Shift+A. Nasconde soltanto: prompt, risultato e stato restano intatti.
+    const flags = { styled: false, active: false, capturing: false, userHidden: false };
     let manualPosition = null;
     let buttonPos = { left: 0, top: 0 };
     let lastAnchors = {};
@@ -102,7 +103,11 @@
       placeholder: 'Es. Fai lampeggiare il LED collegato al pin 13 ogni secondo.',
     });
     const generateButton = h('button', { className: 'btn btn--primary', type: 'button', text: 'Genera codice' });
-    const shortcutHint = h('span', { className: 'hint', text: `${isMac ? '⌘' : 'Ctrl'}+Invio per generare` });
+    const shortcutHint = h('span', {
+      className: 'hint',
+      text: `${isMac ? '⌘' : 'Ctrl'}+Invio genera · Ctrl+Shift+A nasconde`,
+      title: 'Ctrl+Shift+A nasconde l\'assistente, Ctrl+Shift+Z lo mostra di nuovo',
+    });
 
     const statusText = h('span', { className: 'status__text' });
     const status = h('div', { className: 'status', hidden: true, 'aria-live': 'polite' }, h('span', { className: 'loader', 'aria-hidden': 'true' }), statusText);
@@ -170,7 +175,7 @@
 
     // --- Comportamento ----------------------------------------------------
     function applyVisibility() {
-      host.style.visibility = flags.styled && flags.active && !flags.capturing ? 'visible' : 'hidden';
+      host.style.visibility = flags.styled && flags.active && !flags.capturing && !flags.userHidden ? 'visible' : 'hidden';
     }
 
     function isOpen() {
@@ -368,6 +373,16 @@
         flags.capturing = Boolean(capturing);
         applyVisibility();
       },
+      setUserHidden(hidden) {
+        flags.userHidden = Boolean(hidden);
+        if (flags.userHidden) {
+          // Il focus non deve restare in una textarea invisibile: i tasti tornano alla pagina.
+          if (shadow.activeElement && typeof shadow.activeElement.blur === 'function') shadow.activeElement.blur();
+          hideTooltip();
+        }
+        applyVisibility();
+      },
+      isUserHidden: () => flags.userHidden,
       updatePosition,
       setManualPosition(pos) {
         manualPosition =

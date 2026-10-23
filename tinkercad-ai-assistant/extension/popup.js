@@ -129,6 +129,11 @@ async function setupTab() {
     return;
   }
   $('tab-status').textContent = 'Tinkercad rilevato: aprendo questo popup hai autorizzato lo screenshot di questa scheda.';
+  const { assistantHidden } = await chrome.storage.local.get('assistantHidden');
+  if (assistantHidden === true) {
+    $('tab-status').textContent += ' L\'assistente è nascosto: premi Ctrl+Shift+Z nella pagina o il pulsante qui sotto.';
+    openButton.textContent = 'Mostra l\'assistente';
+  }
   openButton.hidden = false;
   openButton.addEventListener('click', async () => {
     try {
