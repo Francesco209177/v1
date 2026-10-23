@@ -79,8 +79,18 @@ function rateLimitMessage(error, rate, wait) {
   const metadata = (error && error.metadata) || {};
   const detail = shorten(error && error.message);
   const when = wait ? `tra ${formatWait(wait)}` : 'tra poco';
+  if (metadata.limit_source === 'upstream_provider_shared_pool') {
+    return (
+      `Il modello gratuito è saturo: la quota del fornitore${metadata.provider_name ? ` (${metadata.provider_name})` : ''} ` +
+      `è condivisa da tutti gli utenti OpenRouter ed è esaurita in questo momento. Riprova ${when}, usa la versione ` +
+      `a pagamento del modello (senza «:free») oppure collega la tua chiave del fornitore su openrouter.ai/settings/integrations.`
+    );
+  }
   const upstream =
-    metadata.provider_code !== undefined || metadata.provider_name !== undefined || /upstream|provider/i.test(detail);
+    metadata.provider_code !== undefined ||
+    metadata.provider_error_code !== undefined ||
+    metadata.provider_name !== undefined ||
+    /upstream|provider/i.test(detail);
   if (upstream) {
     return (
       `Il fornitore del modello è sovraccarico (capita spesso con i modelli gratuiti «:free»). ` +
@@ -124,6 +134,11 @@ function errorDetail(error) {
 
 /** Converte un errore OpenRouter ({code, message, metadata}) in UpstreamError. */
 function mapOpenRouterError(status, error, retryAfter, rate = {}) {
+  const metadata = (error && error.metadata) || {};
+  // Con i modelli di riserva OpenRouter può rispondere 502 anche quando la causa è un limite del fornitore.
+  if (status !== 429 && (metadata.limit_source === 'upstream_provider_shared_pool' || String(metadata.provider_error_code) === '429')) {
+    status = 429;
+  }
   const detail = errorDetail(error);
   const suffix = detail ? ` Dettaglio: ${detail}` : '';
   switch (status) {

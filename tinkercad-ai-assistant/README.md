@@ -109,8 +109,18 @@ I modelli con suffisso `:free` non costano nulla ma hanno limiti stretti
 | meno di 10 | 20 | **50** |
 | almeno 10 | 20 | 1000 |
 
-In più i modelli gratuiti più usati vengono spesso rifiutati dal fornitore perché sovraccarichi. In entrambi i casi
-l'estensione mostra «troppe richieste» con il motivo e l'attesa. Per ridurre il problema imposta dei **modelli di riserva**
+In più i modelli gratuiti più usati vengono spesso rifiutati dal fornitore: la loro quota presso il fornitore
+(es. Google AI Studio per i modelli Gemma) è **condivisa fra tutti gli utenti OpenRouter** e quando si esaurisce compare
+«temporarily rate-limited upstream» (`limit_source: upstream_provider_shared_pool`), anche se le tue 50 richieste
+giornaliere sono intatte. In tutti questi casi l'estensione mostra il motivo e quanto attendere.
+
+Soluzioni quando la quota condivisa è esaurita:
+- **Gratis, con la tua quota**: crea una chiave API su Google AI Studio (<https://aistudio.google.com/apikey>) e
+  aggiungila su OpenRouter in *Settings → Integrations → Google AI Studio* (<https://openrouter.ai/settings/integrations>).
+  OpenRouter userà la tua chiave per quel fornitore, con i limiti del tuo account Google; per i modelli `:free` la
+  commissione BYOK (5% del prezzo OpenRouter) è zero. Nessuna modifica all'estensione o al `.env`.
+- **Affidabile, a pagamento**: usa la versione senza `:free` (es. `OPENROUTER_MODEL=google/gemma-4-31b-it`), servita da
+  molti fornitori; con i prezzi attuali una generazione costa circa un millesimo di dollaro. Per ridurre il problema imposta dei **modelli di riserva**
 gratuiti che accettano immagini; OpenRouter li prova in ordine se il primo non risponde:
 
 ```ini

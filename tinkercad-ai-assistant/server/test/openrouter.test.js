@@ -107,6 +107,29 @@ test('il dettaglio include l\'errore originale del fornitore (metadata.raw)', as
   assert.equal(errorDetail(null), '');
 });
 
+test('quota condivisa del fornitore esaurita (risposta reale di OpenRouter), anche se arriva come 502', async () => {
+  const error = {
+    message: 'Provider returned error',
+    code: 429,
+    metadata: {
+      raw: 'google/gemma-4-31b-it:free is temporarily rate-limited upstream. Please retry shortly, or add your own key',
+      provider_name: 'Google AI Studio',
+      is_byok: false,
+      provider_error_code: '429',
+      limit_source: 'upstream_provider_shared_pool',
+    },
+  };
+  for (const status of [429, 502]) {
+    const client = makeClient(async () => jsonResponse(status, { error }));
+    await expectError(client, 'RATE_LIMITED', (err) => {
+      assert.equal(err.status, 429);
+      assert.match(err.message, /saturo/);
+      assert.match(err.message, /Google AI Studio/);
+      assert.match(err.message, /settings\/integrations/);
+    });
+  }
+});
+
 test('429: fornitore sovraccarico', async () => {
   const client = makeClient(async () =>
     jsonResponse(429, { error: { code: 429, message: 'google/gemma:free is temporarily rate-limited upstream', metadata: { provider_name: 'X' } } })
