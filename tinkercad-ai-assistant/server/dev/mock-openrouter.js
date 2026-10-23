@@ -32,7 +32,56 @@ const DEFAULT_REPLY = [
 ].join('\n');
 
 /**
- * @param {{models?: object[], respond?: (body: object, req: http.IncomingMessage) => {status?: number, headers?: object, json?: object, raw?: string, delayMs?: number}}} [options]
+ * Invia una risposta di successo come SSE, come fa OpenRouter con "stream: true":
+ * commenti di keep-alive, delta di contenuto, chunk finale con usage e "[DONE]".
+ * Opzioni nella risposta: firstTokenDelayMs, chunkDelayMs, sseErrorAfter (n. di chunk prima di un errore a metà).
+ */
+function streamCompletion(res, out, body) {
+  const json = out.json;
+  const servedModel = json.model || body.model || (Array.isArray(body.models) ? body.models[0] : undefined);
+  res.writeHead(200, { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache', ...(out.headers || {}) });
+  const send = (event) => res.write(`data: ${JSON.stringify(event)}\n\n`);
+  res.write(': OPENROUTER PROCESSING\n\n');
+  const keepAlive = setInterval(() => res.write(': OPENROUTER PROCESSING\n\n'), 200);
+
+  const events = [];
+  if (json.error) {
+    events.push({ error: json.error, choices: [{ index: 0, delta: { content: '' }, finish_reason: 'error' }] });
+  } else {
+    const choice = json.choices[0];
+    const content = typeof choice.message.content === 'string' ? choice.message.content : '';
+    for (const piece of content.match(/[\s\S]{1,40}/g) || []) {
+      events.push({ model: servedModel, choices: [{ index: 0, delta: { role: 'assistant', content: piece }, finish_reason: null }] });
+    }
+    const finish = choice.finish_reason || 'stop';
+    events.push({ model: servedModel, choices: [{ index: 0, delta: { content: '' }, finish_reason: finish }] });
+    events.push({ model: servedModel, choices: [{ index: 0, delta: { content: '' }, finish_reason: finish }], usage: json.usage });
+    if (out.sseErrorAfter !== undefined) {
+      events.splice(out.sseErrorAfter, events.length, {
+        error: { code: 502, message: 'Provider disconnected' },
+        choices: [{ index: 0, delta: { content: '' }, finish_reason: 'error' }],
+      });
+    }
+  }
+
+  let i = 0;
+  const next = () => {
+    clearInterval(keepAlive);
+    if (res.destroyed) return;
+    if (i < events.length) {
+      send(events[i]);
+      i += 1;
+      setTimeout(next, out.chunkDelayMs || 0);
+    } else {
+      res.end(json.error || out.sseErrorAfter !== undefined ? '' : 'data: [DONE]\n\n');
+    }
+  };
+  res.on('close', () => clearInterval(keepAlive));
+  setTimeout(next, out.firstTokenDelayMs || 0);
+}
+
+/**
+ * @param {{models?: object[], respond?: (body: object, req: http.IncomingMessage) => {status?: number, headers?: object, json?: object, raw?: string, delayMs?: number, stream?: boolean}}} [options]
  */
 function startMockOpenRouter(options = {}) {
   const requests = [];
@@ -45,7 +94,7 @@ function startMockOpenRouter(options = {}) {
     ((body) => ({
       json: {
         id: 'gen-test',
-        model: body.model,
+        model: body.model || (Array.isArray(body.models) ? body.models[0] : undefined),
         choices: [{ index: 0, finish_reason: 'stop', message: { role: 'assistant', content: DEFAULT_REPLY } }],
         usage: { prompt_tokens: 100, completion_tokens: 80, total_tokens: 180 },
       },
@@ -71,6 +120,12 @@ function startMockOpenRouter(options = {}) {
         }
         requests.push({ headers: req.headers, body });
         const out = respond(body, req) || {};
+        const status = out.status || 200;
+        if (body.stream === true && status === 200 && out.raw === undefined && out.stream !== false && out.json) {
+          if (out.delayMs) setTimeout(() => streamCompletion(res, out, body), out.delayMs);
+          else streamCompletion(res, out, body);
+          return;
+        }
         const send = () => {
           res.writeHead(out.status || 200, { 'Content-Type': 'application/json', ...(out.headers || {}) });
           res.end(out.raw !== undefined ? out.raw : JSON.stringify(out.json || {}));

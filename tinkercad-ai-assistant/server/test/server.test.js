@@ -177,3 +177,72 @@ test('modelli di riserva: richiesta con "models" e /health li elenca', async (t)
   assert.deepEqual(sent.models, ['test/vision-model', 'test/backup-a:free', 'test/backup-b:free']);
   assert.equal('model' in sent, false);
 });
+
+// --- Avanzamento in NDJSON (usato dall'estensione) ------------------------------
+
+function postNdjson(url, body) {
+  return post(url, body, { Accept: 'application/x-ndjson, application/json' });
+}
+
+async function readLines(res) {
+  return (await res.text())
+    .split('\n')
+    .filter(Boolean)
+    .map((line) => JSON.parse(line));
+}
+
+test('NDJSON: righe di avanzamento e risultato finale', async (t) => {
+  const ctx = await startApp();
+  t.after(ctx.close);
+  const res = await postNdjson(`${ctx.url}/api/generate`, { prompt: 'Blink', image: PNG_DATA_URL });
+  assert.equal(res.status, 200);
+  assert.match(res.headers.get('content-type'), /application\/x-ndjson/);
+  const lines = await readLines(res);
+  assert.deepEqual(lines[0], { type: 'progress', chars: 0, elapsed: 0 });
+  const result = lines[lines.length - 1];
+  assert.equal(result.type, 'result');
+  assert.equal(result.ok, true);
+  assert.match(result.content, /void setup/);
+  assert.equal(result.imageSent, true);
+  assert.equal(ctx.mock.requests[0].body.stream, true);
+});
+
+test('NDJSON: errore di OpenRouter consegnato come risultato con ok:false', async (t) => {
+  const ctx = await startApp({}, { respond: () => ({ status: 429, json: { error: { code: 429, message: 'Rate limit exceeded' } } }) });
+  t.after(ctx.close);
+  const res = await postNdjson(`${ctx.url}/api/generate`, { prompt: 'Blink' });
+  assert.equal(res.status, 200);
+  const result = (await readLines(res)).pop();
+  assert.equal(result.type, 'result');
+  assert.equal(result.ok, false);
+  assert.equal(result.error.code, 'RATE_LIMITED');
+});
+
+test('NDJSON: errore a metà dello streaming di OpenRouter', async (t) => {
+  const ctx = await startApp({}, {
+    respond: (body) => ({
+      sseErrorAfter: 2,
+      json: { model: body.model, choices: [{ finish_reason: 'stop', message: { content: '```cpp\nvoid setup(){}\nvoid loop(){}\n```' } }] },
+    }),
+  });
+  t.after(ctx.close);
+  const result = (await readLines(await postNdjson(`${ctx.url}/api/generate`, { prompt: 'Blink' }))).pop();
+  assert.equal(result.ok, false);
+  assert.equal(result.error.code, 'MODEL_UNAVAILABLE');
+});
+
+test('NDJSON: la validazione resta una risposta JSON con stato HTTP', async (t) => {
+  const ctx = await startApp();
+  t.after(ctx.close);
+  const res = await postNdjson(`${ctx.url}/api/generate`, { prompt: '' });
+  assert.equal(res.status, 400);
+  assert.equal((await res.json()).error.code, 'INVALID_REQUEST');
+});
+
+test('timeout di inattività configurabile', () => {
+  const cfg = loadConfig(baseEnv());
+  assert.equal(cfg.timeoutMs, 240000);
+  assert.equal(cfg.idleTimeoutMs, 90000);
+  assert.equal(loadConfig(baseEnv({ OPENROUTER_IDLE_TIMEOUT_MS: '30000' })).idleTimeoutMs, 30000);
+  assert.throws(() => loadConfig(baseEnv({ OPENROUTER_IDLE_TIMEOUT_MS: '10' })), /OPENROUTER_IDLE_TIMEOUT_MS/);
+});

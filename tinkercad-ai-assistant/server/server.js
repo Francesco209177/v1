@@ -18,6 +18,8 @@ const { validateGenerateRequest } = require('./validate');
 const EXTENSION_ORIGIN_RE = /^chrome-extension:\/\/([a-p]{32})$/;
 const MODEL_SLUG_RE = /^~?[a-z0-9][\w.-]*\/[\w.:-]+$/i;
 const MAX_FALLBACK_MODELS = 5;
+const PROGRESS_MIN_INTERVAL_MS = 2000;
+const HEARTBEAT_MS = 10000;
 const LOOPBACK_HOSTS = new Set(['127.0.0.1', 'localhost', '::1']);
 
 function intFromEnv(env, name, fallback, { min, max }) {
@@ -52,7 +54,9 @@ function loadConfig(env = process.env) {
     model,
     host: (env.HOST || '127.0.0.1').trim(),
     port: read('PORT', 3000, { min: 1, max: 65535 }),
-    timeoutMs: read('OPENROUTER_TIMEOUT_MS', 90000, { min: 5000, max: 600000 }),
+    // Tempo massimo totale e tempo massimo senza ricevere token (la risposta arriva in streaming).
+    timeoutMs: read('OPENROUTER_TIMEOUT_MS', 240000, { min: 5000, max: 600000 }),
+    idleTimeoutMs: read('OPENROUTER_IDLE_TIMEOUT_MS', 90000, { min: 5000, max: 600000 }),
     maxTokens: read('OPENROUTER_MAX_TOKENS', 8000, { min: 256, max: 200000 }),
     maxBodyMb: read('MAX_BODY_MB', 8, { min: 1, max: 32 }),
     rateLimitPerMin: read('RATE_LIMIT_PER_MIN', 10, { min: 1, max: 1000 }),
@@ -139,6 +143,7 @@ function createApp(config, deps = {}) {
       model: config.model,
       baseUrl: config.baseUrl,
       timeoutMs: config.timeoutMs,
+      idleTimeoutMs: config.idleTimeoutMs,
       maxTokens: config.maxTokens,
       temperature: config.temperature,
       appUrl: config.appUrl,
@@ -230,6 +235,39 @@ function createApp(config, deps = {}) {
       res.on('close', () => {
         if (!res.writableFinished) abort.abort();
       });
+
+      // Con "Accept: application/x-ndjson" (estensione) si risponde subito e si inviano righe di avanzamento,
+      // poi una riga finale "result" con lo stesso oggetto della risposta JSON. Senza, risposta JSON classica.
+      const ndjson = /application\/x-ndjson/.test(req.get('accept') || '');
+      const started = Date.now();
+      let receivedChars = 0;
+      let lastProgressAt = 0;
+      let heartbeat = null;
+      const writeLine = (line) => {
+        if (!res.writableEnded) res.write(JSON.stringify(line) + '\n');
+      };
+      const sendProgress = (force) => {
+        const now = Date.now();
+        if (!force && now - lastProgressAt < PROGRESS_MIN_INTERVAL_MS) return;
+        lastProgressAt = now;
+        writeLine({ type: 'progress', chars: receivedChars, elapsed: Math.round((now - started) / 1000) });
+      };
+      const deliver = (status, payload) => {
+        if (!ndjson) {
+          if (payload.ok) return res.json(payload);
+          const { code, message, ...extra } = payload.error;
+          return sendError(res, status, code, message, extra);
+        }
+        writeLine({ type: 'result', ...payload });
+        return res.end();
+      };
+      if (ndjson) {
+        res.status(200).set({ 'Content-Type': 'application/x-ndjson; charset=utf-8', 'Cache-Control': 'no-store' });
+        res.flushHeaders();
+        sendProgress(true);
+        heartbeat = setInterval(() => sendProgress(true), HEARTBEAT_MS);
+      }
+
       try {
         const warnings = [];
         let image = input.image;
@@ -250,8 +288,14 @@ function createApp(config, deps = {}) {
         }
 
         const messages = buildMessages({ ...input, image });
-        const result = await client.generate(messages, { signal: abort.signal });
-        return res.json({
+        const result = await client.generate(messages, {
+          signal: abort.signal,
+          onProgress: ({ chars }) => {
+            receivedChars = chars;
+            if (ndjson) sendProgress(false);
+          },
+        });
+        return deliver(200, {
           ok: true,
           content: result.content,
           finishReason: result.finishReason,
@@ -265,11 +309,14 @@ function createApp(config, deps = {}) {
           if (err.code === 'CLIENT_CLOSED') return undefined;
           // Il messaggio non contiene né la chiave né il prompt: aiuta a capire la causa dal terminale.
           logger.warn(`OpenRouter: ${err.code} (HTTP ${err.status}) — ${err.message}`);
-          return sendError(res, err.status, err.code, err.message, err.retryAfter ? { retryAfter: err.retryAfter } : {});
+          const error = { code: err.code, message: err.message };
+          if (err.retryAfter) error.retryAfter = err.retryAfter;
+          return deliver(err.status, { ok: false, error });
         }
         logger.error(`Errore interno: ${err && err.name}`);
-        return sendError(res, 500, 'INTERNAL', 'Errore interno del server.');
+        return deliver(500, { ok: false, error: { code: 'INTERNAL', message: 'Errore interno del server.' } });
       } finally {
+        clearInterval(heartbeat);
         inFlight -= 1;
       }
     }

@@ -274,3 +274,107 @@ test('parseRetryAfter', () => {
   const future = new Date(Date.now() + 10000).toUTCString();
   assert.ok(parseRetryAfter(future) >= 9);
 });
+
+// --- Streaming (SSE) -----------------------------------------------------------
+
+/** fetch finto che risponde in SSE seguendo uno script di passi { data } / { wait }; close:false = resta appeso. */
+function sseFetch(steps, { close = true, onRequest } = {}) {
+  return async (url, init) => {
+    if (onRequest) onRequest(JSON.parse(init.body));
+    const encoder = new TextEncoder();
+    const stream = new ReadableStream({
+      async start(controller) {
+        init.signal.addEventListener('abort', () => {
+          try {
+            controller.error(init.signal.reason);
+          } catch {
+            // già chiuso
+          }
+        });
+        for (const step of steps) {
+          if (init.signal.aborted) return;
+          if (step.wait) await new Promise((r) => setTimeout(r, step.wait));
+          else {
+            try {
+              controller.enqueue(encoder.encode(step.data));
+            } catch {
+              return;
+            }
+          }
+        }
+        if (close && !init.signal.aborted) controller.close();
+      },
+    });
+    return new Response(stream, { status: 200, headers: { 'Content-Type': 'text/event-stream' } });
+  };
+}
+
+const event = (obj) => `data: ${JSON.stringify(obj)}\n\n`;
+const delta = (content, extra = {}) => event({ model: 'served/model', choices: [{ index: 0, delta: { content }, finish_reason: null, ...extra }] });
+
+test('streaming: commenti, chunk spezzati, chunk usage duplicato e [DONE]', async () => {
+  let sentBody;
+  const full =
+    ': OPENROUTER PROCESSING\n\n' +
+    delta('```cpp\nvoid setup() {}\n') +
+    delta('void loop() {}\n```') +
+    event({ model: 'served/model', choices: [{ index: 0, delta: { content: '' }, finish_reason: 'stop' }] }) +
+    event({ model: 'served/model', choices: [{ index: 0, delta: { content: '' }, finish_reason: 'stop' }], usage: { prompt_tokens: 5, completion_tokens: 7, total_tokens: 12 } }) +
+    'data: [DONE]\n\n';
+  // spezza in pezzi da 7 byte per verificare il buffer tra una lettura e l'altra
+  const steps = (full.match(/[\s\S]{1,7}/g) || []).map((data) => ({ data }));
+  const progress = [];
+  const client = makeClient(sseFetch(steps, { onRequest: (b) => (sentBody = b) }));
+  const out = await client.generate([], { onProgress: (p) => progress.push(p.chars) });
+  assert.equal(sentBody.stream, true);
+  assert.equal(out.content, '```cpp\nvoid setup() {}\nvoid loop() {}\n```');
+  assert.equal(out.finishReason, 'stop');
+  assert.equal(out.model, 'served/model');
+  assert.deepEqual(out.usage, { prompt_tokens: 5, completion_tokens: 7, total_tokens: 12 });
+  assert.ok(progress.length >= 2 && progress[progress.length - 1] === out.content.length);
+});
+
+test('streaming: errore a metà generazione', async () => {
+  const steps = [
+    { data: delta('```cpp\nvoid setup') },
+    { data: event({ error: { code: 502, message: 'Provider disconnected' }, choices: [{ index: 0, delta: { content: '' }, finish_reason: 'error' }] }) },
+  ];
+  await expectError(makeClient(sseFetch(steps)), 'MODEL_UNAVAILABLE', (err) => assert.match(err.message, /Provider disconnected/));
+});
+
+test('streaming: finish_reason "length" senza contenuto -> EMPTY_RESPONSE', async () => {
+  const steps = [{ data: event({ choices: [{ index: 0, delta: { content: '' }, finish_reason: 'length' }] }) }, { data: 'data: [DONE]\n\n' }];
+  await expectError(makeClient(sseFetch(steps)), 'EMPTY_RESPONSE');
+});
+
+test('timeout: nessun token entro il limite di inattività, anche con commenti di keep-alive', async () => {
+  const steps = Array.from({ length: 20 }, () => [{ data: ': OPENROUTER PROCESSING\n\n' }, { wait: 15 }]).flat();
+  const client = makeClient(sseFetch(steps, { close: false }), { idleTimeoutMs: 60, timeoutMs: 5000 });
+  await expectError(client, 'UPSTREAM_TIMEOUT', (err) => {
+    assert.match(err.message, /non ha iniziato a rispondere/);
+    assert.equal(err.status, 504);
+  });
+});
+
+test('timeout: il modello si ferma dopo aver iniziato', async () => {
+  const client = makeClient(sseFetch([{ data: delta('void setup') }], { close: false }), { idleTimeoutMs: 60, timeoutMs: 5000 });
+  await expectError(client, 'UPSTREAM_TIMEOUT', (err) => assert.match(err.message, /si è fermato/));
+});
+
+test('timeout totale anche se i token continuano ad arrivare', async () => {
+  const steps = Array.from({ length: 50 }, () => [{ data: delta('x') }, { wait: 10 }]).flat();
+  const client = makeClient(sseFetch(steps, { close: false }), { idleTimeoutMs: 1000, timeoutMs: 120 });
+  await expectError(client, 'UPSTREAM_TIMEOUT', (err) => assert.match(err.message, /tempo massimo/));
+});
+
+test('il ragionamento del modello conta come avanzamento', async () => {
+  const reasoning = (text) => event({ choices: [{ index: 0, delta: { content: '', reasoning: text }, finish_reason: null }] });
+  const steps = [
+    ...Array.from({ length: 6 }, () => [{ data: reasoning('penso...') }, { wait: 25 }]).flat(),
+    { data: delta('```cpp\nvoid setup(){}\nvoid loop(){}\n```', { finish_reason: 'stop' }) },
+    { data: 'data: [DONE]\n\n' },
+  ];
+  const client = makeClient(sseFetch(steps), { idleTimeoutMs: 80, timeoutMs: 5000 });
+  const out = await client.generate([]);
+  assert.match(out.content, /void loop/);
+});

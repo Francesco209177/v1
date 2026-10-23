@@ -11,7 +11,9 @@ importScripts('shared/crop.js');
 const { computeCrop, fitWithin } = self.TCAI;
 
 const DEFAULT_SETTINGS = Object.freeze({ backendUrl: 'http://localhost:3000', accessToken: '' });
-const REQUEST_TIMEOUT_MS = 120000;
+// Sotto i 5 minuti oltre i quali Chrome può interrompere un evento del service worker; il server si ferma a 240 s.
+const REQUEST_TIMEOUT_MS = 280000;
+const BACKEND_IDLE_MS = 60000;
 const KEEPALIVE_MS = 20000;
 const MAX_IMAGE_SIDE = 1600;
 const JPEG_QUALITY = 0.9;
@@ -160,7 +162,59 @@ function sanitizeSuccess(json) {
   };
 }
 
-async function callBackend(payload, signal) {
+/** Converte la risposta del backend (JSON o riga finale "result" NDJSON) nel risultato per il content script. */
+function interpretBackendResult(json, status) {
+  if (!json || typeof json !== 'object') {
+    return failure('BAD_BACKEND_RESPONSE', `Il backend ha risposto in modo non valido (HTTP ${status}).`);
+  }
+  if (json.ok !== true) {
+    const err = json.error && typeof json.error === 'object' ? json.error : {};
+    const retryAfter = Number(err.retryAfter) > 0 ? Number(err.retryAfter) : undefined;
+    return failure(
+      typeof err.code === 'string' ? err.code : 'BACKEND_ERROR',
+      shorten(err.message || `Errore del backend (HTTP ${status}).`, 500),
+      retryAfter ? { retryAfter } : undefined
+    );
+  }
+  return sanitizeSuccess(json) || failure('BAD_BACKEND_RESPONSE', 'La risposta del backend non contiene testo.');
+}
+
+/** Legge le righe NDJSON del backend: inoltra l'avanzamento e restituisce la riga "result" (o null). */
+async function readNdjson(res, onProgress, onActivity) {
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+  let result = null;
+  const handle = (line) => {
+    if (!line.trim()) return;
+    let obj;
+    try {
+      obj = JSON.parse(line);
+    } catch {
+      return;
+    }
+    if (obj && obj.type === 'progress') {
+      onProgress({ chars: Math.max(0, Number(obj.chars) || 0), elapsed: Math.max(0, Number(obj.elapsed) || 0) });
+    } else if (obj && obj.type === 'result') {
+      result = obj;
+    }
+  };
+  for (;;) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    onActivity();
+    buffer += decoder.decode(value, { stream: true });
+    let newline;
+    while ((newline = buffer.indexOf('\n')) >= 0) {
+      handle(buffer.slice(0, newline));
+      buffer = buffer.slice(newline + 1);
+    }
+  }
+  handle(buffer + decoder.decode());
+  return result;
+}
+
+async function callBackend(payload, signal, onProgress = () => {}) {
   const { backendUrl, accessToken } = await getSettings();
   let url;
   try {
@@ -173,46 +227,68 @@ async function callBackend(payload, signal) {
     return failure('BACKEND_PERMISSION', `Autorizza l'URL del backend (${url.origin}) salvandolo di nuovo dal popup dell'estensione.`);
   }
 
-  const timeout = AbortSignal.timeout(REQUEST_TIMEOUT_MS);
-  const headers = { 'Content-Type': 'application/json' };
+  // Tetto totale e inattività: il backend invia una riga di avanzamento almeno ogni 10 s.
+  const total = AbortSignal.timeout(REQUEST_TIMEOUT_MS);
+  const idle = new AbortController();
+  let idleTimer = null;
+  const armIdle = () => {
+    clearTimeout(idleTimer);
+    idleTimer = setTimeout(() => idle.abort(), BACKEND_IDLE_MS);
+  };
+  const abortedResult = () => {
+    if (signal.aborted) return failure('CANCELLED', 'Richiesta annullata.');
+    if (idle.signal.aborted) {
+      return failure('BACKEND_STALLED', `Il backend non invia dati da ${BACKEND_IDLE_MS / 1000} s: controlla il terminale del server e riprova.`);
+    }
+    if (total.aborted) {
+      return failure('TIMEOUT', `Nessun risultato dopo ${REQUEST_TIMEOUT_MS / 1000} s: riprova o scegli un modello più veloce.`);
+    }
+    return null;
+  };
+
+  const headers = { 'Content-Type': 'application/json', Accept: 'application/x-ndjson, application/json' };
   if (accessToken) headers['X-Access-Token'] = accessToken;
 
-  let res;
   try {
-    res = await fetch(url, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify(payload),
-      signal: AbortSignal.any([signal, timeout]),
-    });
-  } catch {
-    if (timeout.aborted) return failure('TIMEOUT', `Il backend non ha risposto entro ${REQUEST_TIMEOUT_MS / 1000} s.`);
-    if (signal.aborted) return failure('CANCELLED', 'Richiesta annullata.');
-    return failure(
-      'BACKEND_UNREACHABLE',
-      `Impossibile contattare il backend su ${url.origin}. Avvia il server (npm start nella cartella server) e verifica l'URL nel popup.`
-    );
-  }
+    let res;
+    try {
+      res = await fetch(url, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(payload),
+        signal: AbortSignal.any([signal, total, idle.signal]),
+      });
+    } catch {
+      return (
+        abortedResult() ||
+        failure(
+          'BACKEND_UNREACHABLE',
+          `Impossibile contattare il backend su ${url.origin}. Avvia il server (npm start nella cartella server) e verifica l'URL nel popup.`
+        )
+      );
+    }
 
-  let json;
-  try {
-    json = await res.json();
-  } catch {
-    return failure('BAD_BACKEND_RESPONSE', `Il backend ha risposto in modo non valido (HTTP ${res.status}).`);
+    if (res.ok && (res.headers.get('content-type') || '').includes('application/x-ndjson')) {
+      armIdle();
+      let line;
+      try {
+        line = await readNdjson(res, onProgress, armIdle);
+      } catch {
+        return abortedResult() || failure('CONNECTION_LOST', 'Connessione con il backend interrotta durante la generazione. Riprova.');
+      }
+      return line ? interpretBackendResult(line, res.status) : failure('BAD_BACKEND_RESPONSE', 'La risposta del backend si è interrotta prima del risultato.');
+    }
+
+    let json;
+    try {
+      json = await res.json();
+    } catch {
+      return abortedResult() || failure('BAD_BACKEND_RESPONSE', `Il backend ha risposto in modo non valido (HTTP ${res.status}).`);
+    }
+    return interpretBackendResult(json, res.status);
+  } finally {
+    clearTimeout(idleTimer);
   }
-  if (!json || typeof json !== 'object') {
-    return failure('BAD_BACKEND_RESPONSE', `Il backend ha risposto in modo non valido (HTTP ${res.status}).`);
-  }
-  if (json.ok !== true) {
-    const err = json.error && typeof json.error === 'object' ? json.error : {};
-    const retryAfter = Number(err.retryAfter) > 0 ? Number(err.retryAfter) : undefined;
-    return failure(
-      typeof err.code === 'string' ? err.code : 'BACKEND_ERROR',
-      shorten(err.message || `Errore del backend (HTTP ${res.status}).`, 500),
-      retryAfter ? { retryAfter } : undefined
-    );
-  }
-  return sanitizeSuccess(json) || failure('BAD_BACKEND_RESPONSE', 'La risposta del backend non contiene testo.');
 }
 
 // --- Messaggi -----------------------------------------------------------------
@@ -248,7 +324,13 @@ chrome.runtime.onConnect.addListener((port) => {
     keepAlive = setInterval(() => chrome.runtime.getPlatformInfo().catch(() => {}), KEEPALIVE_MS);
     let result;
     try {
-      result = await callBackend(message.payload, controller.signal);
+      result = await callBackend(message.payload, controller.signal, (progress) => {
+        try {
+          port.postMessage({ type: 'progress', ...progress });
+        } catch {
+          // Port già chiusa: la richiesta viene annullata da onDisconnect
+        }
+      });
     } catch (err) {
       result = failure('BACKEND_ERROR', `Errore imprevisto: ${shorten(err && err.message)}`);
     } finally {

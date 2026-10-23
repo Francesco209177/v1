@@ -23,6 +23,7 @@ const browser = {
   fetch: 'readonly',
   crypto: 'readonly',
   chrome: 'readonly',
+  TextDecoder: 'readonly',
 };
 
 const serviceWorker = {
@@ -49,6 +50,9 @@ const node = {
   AbortController: 'readonly',
   fetch: 'readonly',
   Response: 'readonly',
+  ReadableStream: 'readonly',
+  TextDecoder: 'readonly',
+  TextEncoder: 'readonly',
   globalThis: 'readonly',
 };
 

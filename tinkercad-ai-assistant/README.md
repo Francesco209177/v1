@@ -124,8 +124,11 @@ Soluzioni quando la quota condivisa è esaurita:
 gratuiti che accettano immagini; OpenRouter li prova in ordine se il primo non risponde:
 
 ```ini
-OPENROUTER_FALLBACK_MODELS=google/gemma-4-26b-a4b-it:free,nvidia/nemotron-3.5-super-vl:free
+OPENROUTER_FALLBACK_MODELS=google/gemma-4-26b-a4b-it:free
 ```
+
+Scegli modelli di riserva con buona disponibilità (colonna *Uptime* della pagina del modello su openrouter.ai): un
+fornitore degradato non dà errore subito ma allunga l'attesa.
 
 Non mettere modelli a pagamento nella lista se vuoi restare gratis: se OpenRouter ripiega su di essi, la richiesta viene
 addebitata. Per controllare quante richieste gratuite ti restano oggi (il comando non mostra la chiave):
@@ -178,7 +181,7 @@ Dopo aver installato o ricaricato l'estensione, **ricarica le schede di Tinkerca
    | Stato | Aspetto | Significato |
    |---|---|---|
    | IDLE | neutro | pronto |
-   | GENERATING | spinner blu | screenshot e generazione in corso |
+   | GENERATING | spinner blu | screenshot e generazione in corso; il pannello mostra «In attesa del modello… N s» e poi i caratteri ricevuti |
    | SUCCESS | **verde** | codice ricevuto, estratto **e** copiato negli appunti |
    | ERROR | **rosso** | errore di screenshot, backend, OpenRouter o copia (dettagli nel pannello) |
 
@@ -293,7 +296,8 @@ istruito a concentrarsi sul circuito.
 | `RATE_LIMITED` | limite dei modelli gratuiti (20/minuto, 50/giorno senza crediti acquistati) o fornitore sovraccarico: il messaggio dice quale e quanto attendere. Vedi [Modelli gratuiti](#modelli-gratuiti-free-e-limiti) |
 | `LOCAL_RATE_LIMITED` | limite locale del server (`RATE_LIMIT_PER_MIN`): riprova dopo i secondi indicati |
 | `MODEL_NOT_AVAILABLE`, `NO_PROVIDER`, `MODEL_UNAVAILABLE` | slug del modello errato o modello/provider non disponibile (anche per input immagine) |
-| `UPSTREAM_TIMEOUT` | il modello ha impiegato più di `OPENROUTER_TIMEOUT_MS` |
+| `UPSTREAM_TIMEOUT` | il modello non ha iniziato a rispondere o si è fermato per `OPENROUTER_IDLE_TIMEOUT_MS` (default 90 s), oppure ha superato `OPENROUTER_TIMEOUT_MS` (default 240 s). Con i modelli gratuiti succede quando il fornitore mette la richiesta in coda: riprova o scegli un modello a pagamento |
+| `BACKEND_STALLED` | il backend non invia più aggiornamenti da 60 s: controlla il terminale del server |
 | `EMPTY_RESPONSE` | il modello ha esaurito i token: aumenta `OPENROUTER_MAX_TOKENS` |
 | `ORIGIN_NOT_ALLOWED` | l'ID dell'estensione non è in `ALLOWED_EXTENSION_IDS` |
 | `UNAUTHORIZED` | `ACCESS_TOKEN` del server diverso da quello inserito nel popup |
@@ -376,7 +380,8 @@ come dopo l'opt-in — cattura reale ritagliata sull'area del circuito. Usa la v
 | `OPENROUTER_FALLBACK_MODELS` | (nessuno) | modelli di riserva separati da virgola (max 5), provati in ordine da OpenRouter |
 | `HOST` | `127.0.0.1` | interfaccia di ascolto (altri valori espongono il server: usa `ACCESS_TOKEN`) |
 | `PORT` | `3000` | porta |
-| `OPENROUTER_TIMEOUT_MS` | `90000` | timeout della chiamata a OpenRouter |
+| `OPENROUTER_IDLE_TIMEOUT_MS` | `90000` | tempo massimo senza ricevere testo dal modello (la risposta arriva in streaming) |
+| `OPENROUTER_TIMEOUT_MS` | `240000` | tempo massimo totale della generazione (l'estensione attende al massimo 280 s) |
 | `OPENROUTER_MAX_TOKENS` | `8000` | token massimi generati |
 | `OPENROUTER_TEMPERATURE` | (modello) | temperatura 0–2 |
 | `MAX_BODY_MB` | `8` | dimensione massima della richiesta |

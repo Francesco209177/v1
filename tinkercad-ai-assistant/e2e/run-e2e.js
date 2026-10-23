@@ -335,7 +335,25 @@ async function scenarioAllUrls(mock) {
     await page.locator('#tcai-root .ai-btn').click();
     await page.locator('#tcai-root textarea.prompt').fill('Fai suonare il buzzer quando premo un pulsante');
     const before = mock.requests.length;
+    // Modello lento: 3 s prima del primo token, poi un pezzo ogni 0,5 s.
+    mock.firstTokenDelayMs = 3000;
+    mock.chunkDelayMs = 500;
     await page.locator('#tcai-root .btn--primary').click();
+    const statusShows = (pattern) =>
+      page
+        .waitForFunction(
+          (source) => new RegExp(source).test(document.getElementById('tcai-root').shadowRoot.querySelector('.status__text').textContent),
+          pattern,
+          { timeout: 15000 }
+        )
+        .then(() => true)
+        .catch(() => false);
+    const waiting = await statusShows('In attesa del modello');
+    step('durante l\'attesa il pannello mostra «In attesa del modello…»', waiting);
+    const streaming = await statusShows('caratteri ricevuti');
+    step('mentre arriva la risposta mostra i caratteri ricevuti', streaming);
+    mock.firstTokenDelayMs = 0;
+    mock.chunkDelayMs = 0;
     await page.waitForFunction(() => {
       const s = document.getElementById('tcai-root').shadowRoot.querySelector('.ai-btn').dataset.state;
       return s === 'SUCCESS' || s === 'ERROR';
@@ -367,6 +385,9 @@ async function scenarioAllUrls(mock) {
   fs.mkdirSync(OUTPUT_DIR, { recursive: true });
   const mock = await startMockOpenRouter({
     respond: (body) => ({
+      // Ritardi facoltativi per simulare un modello lento (streaming SSE del finto OpenRouter).
+      firstTokenDelayMs: mock.firstTokenDelayMs || 0,
+      chunkDelayMs: mock.chunkDelayMs || 0,
       json: {
         model: body.model,
         choices: [

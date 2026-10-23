@@ -133,8 +133,11 @@
     }
   }
 
-  /** Richiesta al backend tramite una Port: tiene attivo il service worker durante l'attesa. */
-  function requestGeneration(payload) {
+  /**
+   * Richiesta al backend tramite una Port: tiene attivo il service worker durante l'attesa
+   * e riceve gli aggiornamenti di avanzamento ({chars, elapsed}).
+   */
+  function requestGeneration(payload, onProgress) {
     return new Promise((resolve) => {
       let port;
       try {
@@ -164,6 +167,7 @@
       };
       port.onMessage.addListener((msg) => {
         if (msg && msg.type === 'result') finish(msg.result);
+        else if (msg && msg.type === 'progress' && !done && onProgress) onProgress(msg);
       });
       port.onDisconnect.addListener(() => {
         finish(failure('CONNECTION_LOST', "Connessione con l'estensione interrotta durante la generazione. Riprova."));
@@ -273,7 +277,14 @@
         device: context.device,
         components: context.components,
       };
-      const response = await requestGeneration(payload);
+      const response = await requestGeneration(payload, ({ chars, elapsed }) => {
+        const seconds = Math.round(Number(elapsed) || 0);
+        ui.setStatus(
+          chars > 0
+            ? `Generazione del codice… ${Number(chars).toLocaleString('it-IT')} caratteri ricevuti (${seconds} s)`
+            : `In attesa del modello… ${seconds} s`
+        );
+      });
       ui.setStatus(null);
 
       if (!response || !response.ok) {

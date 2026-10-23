@@ -203,7 +203,8 @@ function isAbortError(err) {
  * @param {string} options.apiKey
  * @param {string} options.model
  * @param {string} [options.baseUrl]
- * @param {number} options.timeoutMs
+ * @param {number} options.timeoutMs tempo massimo totale della generazione
+ * @param {number} [options.idleTimeoutMs] tempo massimo senza ricevere token (default: timeoutMs)
  * @param {number} options.maxTokens
  * @param {number} [options.temperature]
  * @param {string} [options.appUrl]
@@ -217,6 +218,7 @@ function createOpenRouterClient(options) {
     model,
     baseUrl = DEFAULT_BASE_URL,
     timeoutMs,
+    idleTimeoutMs,
     maxTokens,
     temperature,
     appUrl,
@@ -225,6 +227,7 @@ function createOpenRouterClient(options) {
     fetchImpl = globalThis.fetch,
   } = options;
   const root = baseUrl.replace(/\/+$/, '');
+  const idleMs = idleTimeoutMs || timeoutMs;
   let modalityCache = null; // { value: 'yes'|'no'|'unknown', expires: number }
 
   function headers() {
@@ -262,56 +265,8 @@ function createOpenRouterClient(options) {
     return value;
   }
 
-  /**
-   * @param {Array<object>} messages
-   * @param {{signal?: AbortSignal}} [opts]
-   * @returns {Promise<{content: string, finishReason: string|null, model: string, usage: object|null}>}
-   */
-  async function generate(messages, opts = {}) {
-    // Con modelli di riserva si usa il parametro "models" di OpenRouter (fallback automatico, in ordine).
-    const body = fallbackModels.length
-      ? { models: [model, ...fallbackModels], messages, max_tokens: maxTokens }
-      : { model, messages, max_tokens: maxTokens };
-    if (typeof temperature === 'number') body.temperature = temperature;
-
-    const timeoutSignal = AbortSignal.timeout(timeoutMs);
-    const signal = opts.signal ? AbortSignal.any([timeoutSignal, opts.signal]) : timeoutSignal;
-
-    let res;
-    let text;
-    try {
-      res = await fetchImpl(`${root}/chat/completions`, {
-        method: 'POST',
-        headers: headers(),
-        body: JSON.stringify(body),
-        signal,
-      });
-      text = await res.text();
-    } catch (err) {
-      if (opts.signal && opts.signal.aborted) {
-        throw new UpstreamError('CLIENT_CLOSED', 'Richiesta annullata dal client.', { status: 499 });
-      }
-      if (isAbortError(err)) {
-        throw new UpstreamError(
-          'UPSTREAM_TIMEOUT',
-          `OpenRouter non ha risposto entro ${Math.round(timeoutMs / 1000)} s. Riprova o scegli un modello più veloce.`,
-          { status: 504 }
-        );
-      }
-      throw new UpstreamError('UPSTREAM_UNREACHABLE', 'Impossibile contattare OpenRouter: verifica la connessione del server.');
-    }
-
-    let json;
-    try {
-      json = text ? JSON.parse(text) : null;
-    } catch {
-      json = null;
-    }
-
-    if (!res.ok) {
-      const retryAfter = parseRetryAfter(res.headers.get('retry-after'));
-      throw mapOpenRouterError(res.status, json && json.error, retryAfter, readRateLimit(res.headers));
-    }
+  /** Risposta non in streaming (JSON): stessa validazione di prima. */
+  function parseCompletionJson(json, res) {
     if (!json || typeof json !== 'object') {
       throw new UpstreamError('INVALID_RESPONSE', 'OpenRouter ha restituito una risposta non valida.');
     }
@@ -320,7 +275,6 @@ function createOpenRouterClient(options) {
       const status = Number(json.error.code) || 502;
       throw mapOpenRouterError(status, json.error, parseRetryAfter(res.headers.get('retry-after')), readRateLimit(res.headers));
     }
-
     const choice = Array.isArray(json.choices) ? json.choices[0] : null;
     if (!choice || !choice.message) {
       throw new UpstreamError('INVALID_RESPONSE', 'La risposta di OpenRouter non contiene alcun messaggio.');
@@ -328,11 +282,18 @@ function createOpenRouterClient(options) {
     if (choice.error) {
       throw new UpstreamError('UPSTREAM_ERROR', `Errore durante la generazione: ${shorten(choice.error.message) || 'sconosciuto'}.`);
     }
-    const finishReason = choice.finish_reason || choice.native_finish_reason || null;
+    return finalize({
+      content: contentToText(choice.message.content),
+      finishReason: choice.finish_reason || choice.native_finish_reason || null,
+      model: json.model,
+      usage: json.usage,
+    });
+  }
+
+  function finalize({ content, finishReason, model: servedModel, usage }) {
     if (finishReason === 'error') {
       throw new UpstreamError('UPSTREAM_ERROR', 'Il modello ha interrotto la generazione con un errore. Riprova.');
     }
-    const content = contentToText(choice.message.content);
     if (content === null || !content.trim()) {
       throw new UpstreamError(
         'EMPTY_RESPONSE',
@@ -341,16 +302,175 @@ function createOpenRouterClient(options) {
           : 'Il modello ha restituito una risposta vuota. Riprova.'
       );
     }
+    return {
+      content,
+      finishReason,
+      model: typeof servedModel === 'string' ? servedModel : model,
+      usage: usage
+        ? { prompt_tokens: usage.prompt_tokens, completion_tokens: usage.completion_tokens, total_tokens: usage.total_tokens }
+        : null,
+    };
+  }
 
-    const usage = json.usage
-      ? {
-          prompt_tokens: json.usage.prompt_tokens,
-          completion_tokens: json.usage.completion_tokens,
-          total_tokens: json.usage.total_tokens,
+  /**
+   * Legge la risposta SSE di OpenRouter (stream: true). Ignora i commenti di keep-alive
+   * (": OPENROUTER PROCESSING"), accumula delta.content e segnala l'avanzamento.
+   */
+  async function readEventStream(res, onDelta) {
+    const state = { content: '', finishReason: null, model: null, usage: null };
+    const decoder = new TextDecoder();
+    let buffer = '';
+    let data = [];
+    let done = false;
+
+    const dispatch = () => {
+      if (!data.length) return;
+      const payload = data.join('\n');
+      data = [];
+      if (payload === '[DONE]') {
+        done = true;
+        return;
+      }
+      let chunk;
+      try {
+        chunk = JSON.parse(payload);
+      } catch {
+        return; // evento non JSON: ignorato
+      }
+      if (chunk.error) {
+        throw mapOpenRouterError(Number(chunk.error.code) || 502, chunk.error, undefined, {});
+      }
+      if (typeof chunk.model === 'string') state.model = chunk.model;
+      if (chunk.usage) state.usage = chunk.usage;
+      const choice = Array.isArray(chunk.choices) ? chunk.choices[0] : null;
+      if (!choice) return;
+      if (choice.error) {
+        throw new UpstreamError('UPSTREAM_ERROR', `Errore durante la generazione: ${shorten(choice.error.message) || 'sconosciuto'}.`);
+      }
+      const delta = choice.delta || {};
+      const text = contentToText(delta.content) || '';
+      const reasoning = typeof delta.reasoning === 'string' ? delta.reasoning.length : 0;
+      if (text) state.content += text;
+      if (text || reasoning) onDelta(text.length + reasoning);
+      const finish = choice.finish_reason || choice.native_finish_reason;
+      if (finish) state.finishReason = finish;
+    };
+
+    const handleLine = (line) => {
+      if (line === '') return dispatch();
+      if (line.startsWith(':')) return undefined; // commento SSE
+      if (line.startsWith('data:')) data.push(line.slice(line.startsWith('data: ') ? 6 : 5));
+      return undefined;
+    };
+
+    const reader = res.body.getReader();
+    try {
+      while (!done) {
+        const { value, done: ended } = await reader.read();
+        if (ended) break;
+        buffer += decoder.decode(value, { stream: true });
+        let newline;
+        while (!done && (newline = buffer.indexOf('\n')) >= 0) {
+          handleLine(buffer.slice(0, newline).replace(/\r$/, ''));
+          buffer = buffer.slice(newline + 1);
         }
-      : null;
+      }
+      if (!done) {
+        buffer += decoder.decode();
+        if (buffer) handleLine(buffer.replace(/\r$/, ''));
+        dispatch();
+      }
+    } finally {
+      reader.cancel().catch(() => {});
+    }
+    return finalize(state);
+  }
 
-    return { content, finishReason, model: typeof json.model === 'string' ? json.model : model, usage };
+  /**
+   * @param {Array<object>} messages
+   * @param {{signal?: AbortSignal, onProgress?: (p: {chars: number}) => void}} [opts]
+   * @returns {Promise<{content: string, finishReason: string|null, model: string, usage: object|null}>}
+   */
+  async function generate(messages, opts = {}) {
+    // Con modelli di riserva si usa il parametro "models" di OpenRouter (fallback automatico, in ordine).
+    const body = fallbackModels.length
+      ? { models: [model, ...fallbackModels], messages, max_tokens: maxTokens, stream: true }
+      : { model, messages, max_tokens: maxTokens, stream: true };
+    if (typeof temperature === 'number') body.temperature = temperature;
+
+    // Due limiti: tempo totale e inattività (nessun token per idleMs). I commenti di keep-alive non contano.
+    const controller = new AbortController();
+    let timeoutKind = null;
+    let receivedChars = 0;
+    let idleTimer = null;
+    const totalTimer = setTimeout(() => {
+      timeoutKind = 'total';
+      controller.abort();
+    }, timeoutMs);
+    const armIdle = () => {
+      clearTimeout(idleTimer);
+      idleTimer = setTimeout(() => {
+        timeoutKind = receivedChars ? 'idle' : 'start';
+        controller.abort();
+      }, idleMs);
+    };
+    const onClientAbort = () => controller.abort();
+    if (opts.signal) {
+      if (opts.signal.aborted) controller.abort();
+      else opts.signal.addEventListener('abort', onClientAbort, { once: true });
+    }
+    armIdle();
+
+    try {
+      const res = await fetchImpl(`${root}/chat/completions`, {
+        method: 'POST',
+        headers: headers(),
+        body: JSON.stringify(body),
+        signal: controller.signal,
+      });
+      const type = res.headers.get('content-type') || '';
+      if (res.ok && type.includes('text/event-stream')) {
+        return await readEventStream(res, (chars) => {
+          receivedChars += chars;
+          armIdle();
+          if (typeof opts.onProgress === 'function') opts.onProgress({ chars: receivedChars });
+        });
+      }
+      const text = await res.text();
+      let json;
+      try {
+        json = text ? JSON.parse(text) : null;
+      } catch {
+        json = null;
+      }
+      if (!res.ok) {
+        const retryAfter = parseRetryAfter(res.headers.get('retry-after'));
+        throw mapOpenRouterError(res.status, json && json.error, retryAfter, readRateLimit(res.headers));
+      }
+      return parseCompletionJson(json, res);
+    } catch (err) {
+      if (err instanceof UpstreamError) throw err;
+      if (opts.signal && opts.signal.aborted) {
+        throw new UpstreamError('CLIENT_CLOSED', 'Richiesta annullata dal client.', { status: 499 });
+      }
+      if (timeoutKind || isAbortError(err)) throw timeoutError(timeoutKind);
+      throw new UpstreamError('UPSTREAM_UNREACHABLE', 'Impossibile contattare OpenRouter: verifica la connessione del server.');
+    } finally {
+      clearTimeout(totalTimer);
+      clearTimeout(idleTimer);
+      if (opts.signal) opts.signal.removeEventListener('abort', onClientAbort);
+    }
+  }
+
+  function timeoutError(kind) {
+    const idleS = Math.round(idleMs / 1000);
+    const totalS = Math.round(timeoutMs / 1000);
+    const messages = {
+      start: `Il modello non ha iniziato a rispondere entro ${idleS} s (fornitore in coda o lento). Riprova o scegli un modello più veloce.`,
+      idle: `Il modello si è fermato per ${idleS} s durante la risposta. Riprova.`,
+      total: `La risposta ha superato il tempo massimo di ${totalS} s. Riprova o scegli un modello più veloce.`,
+    };
+    return new UpstreamError('UPSTREAM_TIMEOUT', messages[kind] || messages.total, { status: 504 });
   }
 
   return { getImageSupport, generate, model };
