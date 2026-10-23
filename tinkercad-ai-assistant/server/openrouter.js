@@ -97,9 +97,34 @@ function rateLimitMessage(error, rate, wait) {
   return `Troppe richieste a OpenRouter: riprova ${when}.${detail ? ` Dettaglio: ${detail}` : ''}`;
 }
 
+/**
+ * Dettaglio leggibile di un errore: messaggio di OpenRouter più, se presente, l'errore originale del
+ * fornitore (metadata.raw) e il suo nome. "Provider returned error" da solo non spiega nulla.
+ */
+function errorDetail(error) {
+  if (!error) return '';
+  const parts = [];
+  if (typeof error.message === 'string') parts.push(error.message);
+  const metadata = error.metadata || {};
+  let raw = metadata.raw;
+  if (typeof raw === 'string') {
+    try {
+      const parsed = JSON.parse(raw);
+      raw = (parsed && parsed.error && parsed.error.message) || (parsed && parsed.message) || raw;
+    } catch {
+      // raw non è JSON: si usa così com'è
+    }
+  } else if (raw && typeof raw === 'object') {
+    raw = (raw.error && raw.error.message) || raw.message || JSON.stringify(raw);
+  }
+  if (typeof raw === 'string' && raw.trim() && !parts.includes(raw)) parts.push(raw);
+  if (typeof metadata.provider_name === 'string') parts.push(`fornitore: ${metadata.provider_name}`);
+  return shorten(parts.join(' — '));
+}
+
 /** Converte un errore OpenRouter ({code, message, metadata}) in UpstreamError. */
 function mapOpenRouterError(status, error, retryAfter, rate = {}) {
-  const detail = shorten(error && error.message);
+  const detail = errorDetail(error);
   const suffix = detail ? ` Dettaglio: ${detail}` : '';
   switch (status) {
     case 400:
@@ -320,6 +345,7 @@ module.exports = {
   createOpenRouterClient,
   UpstreamError,
   mapOpenRouterError,
+  errorDetail,
   parseRetryAfter,
   parseRateLimitReset,
   DEFAULT_BASE_URL,

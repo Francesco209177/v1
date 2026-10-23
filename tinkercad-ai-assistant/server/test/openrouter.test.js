@@ -2,7 +2,7 @@
 
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { createOpenRouterClient, UpstreamError, parseRetryAfter, parseRateLimitReset } = require('../openrouter');
+const { createOpenRouterClient, UpstreamError, parseRetryAfter, parseRateLimitReset, errorDetail } = require('../openrouter');
 
 function jsonResponse(status, body, headers = {}) {
   return new Response(typeof body === 'string' ? body : JSON.stringify(body), {
@@ -91,6 +91,20 @@ test('429 propaga Retry-After', async () => {
     assert.equal(err.status, 429);
     assert.equal(err.retryAfter, 17);
   });
+});
+
+test('il dettaglio include l\'errore originale del fornitore (metadata.raw)', async () => {
+  const raw = JSON.stringify({ error: { code: 400, message: 'Developer instruction is not enabled for models/gemma', status: 'INVALID_ARGUMENT' } });
+  const client = makeClient(async () =>
+    jsonResponse(502, { error: { code: 502, message: 'Provider returned error', metadata: { raw, provider_name: 'Google AI Studio' } } })
+  );
+  await expectError(client, 'MODEL_UNAVAILABLE', (err) => {
+    assert.match(err.message, /Provider returned error — Developer instruction is not enabled/);
+    assert.match(err.message, /fornitore: Google AI Studio/);
+  });
+  assert.equal(errorDetail({ message: 'x', metadata: { raw: 'testo semplice' } }), 'x — testo semplice');
+  assert.equal(errorDetail({ message: 'x', metadata: { raw: { message: 'oggetto' } } }), 'x — oggetto');
+  assert.equal(errorDetail(null), '');
 });
 
 test('429: fornitore sovraccarico', async () => {
