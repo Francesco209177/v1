@@ -37,6 +37,12 @@ test('loadConfig richiede chiave e modello e non stampa la chiave', () => {
   assert.throws(() => loadConfig(baseEnv({ PORT: 'abc' })), /PORT/);
   assert.throws(() => loadConfig(baseEnv({ ALLOWED_EXTENSION_IDS: 'xyz' })), /ALLOWED_EXTENSION_IDS/);
   assert.throws(() => loadConfig(baseEnv({ OPENROUTER_BASE_URL: 'http://evil.example/api' })), /https/);
+  assert.throws(() => loadConfig(baseEnv({ OPENROUTER_FALLBACK_MODELS: 'non valido' })), /OPENROUTER_FALLBACK_MODELS/);
+  assert.throws(() => loadConfig(baseEnv({ OPENROUTER_FALLBACK_MODELS: 'a/1,a/2,a/3,a/4,a/5,a/6' })), /al massimo/);
+  assert.deepEqual(
+    loadConfig(baseEnv({ OPENROUTER_FALLBACK_MODELS: ' google/gemma-4-26b-a4b-it:free , ~vendor/model-latest ' })).fallbackModels,
+    ['google/gemma-4-26b-a4b-it:free', '~vendor/model-latest']
+  );
   try {
     loadConfig(baseEnv({ PORT: 'abc' }));
   } catch (err) {
@@ -81,7 +87,7 @@ test('GET /health non espone segreti', async (t) => {
   t.after(ctx.close);
   const res = await fetch(`${ctx.url}/health`, { headers: { Origin: EXTENSION_ORIGIN } });
   const json = await res.json();
-  assert.deepEqual(json, { ok: true, model: 'test/vision-model', imageSupport: 'yes', auth: 'none' });
+  assert.deepEqual(json, { ok: true, model: 'test/vision-model', fallbackModels: [], imageSupport: 'yes', auth: 'none' });
 });
 
 test('CORS: origini web rifiutate, preflight estensione accettato', async (t) => {
@@ -158,4 +164,16 @@ test('createRateLimiter libera la finestra', () => {
   assert.equal(second.retryAfter, 1);
   now = 1001;
   assert.equal(take().ok, true);
+});
+
+test('modelli di riserva: richiesta con "models" e /health li elenca', async (t) => {
+  const ctx = await startApp({ OPENROUTER_FALLBACK_MODELS: 'test/backup-a:free,test/backup-b:free' });
+  t.after(ctx.close);
+  const health = await (await fetch(`${ctx.url}/health`)).json();
+  assert.deepEqual(health.fallbackModels, ['test/backup-a:free', 'test/backup-b:free']);
+  const res = await post(`${ctx.url}/api/generate`, { prompt: 'Blink' });
+  assert.equal(res.status, 200);
+  const sent = ctx.mock.requests[0].body;
+  assert.deepEqual(sent.models, ['test/vision-model', 'test/backup-a:free', 'test/backup-b:free']);
+  assert.equal('model' in sent, false);
 });

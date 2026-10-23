@@ -2,7 +2,7 @@
 
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { createOpenRouterClient, UpstreamError, parseRetryAfter } = require('../openrouter');
+const { createOpenRouterClient, UpstreamError, parseRetryAfter, parseRateLimitReset } = require('../openrouter');
 
 function jsonResponse(status, body, headers = {}) {
   return new Response(typeof body === 'string' ? body : JSON.stringify(body), {
@@ -91,6 +91,60 @@ test('429 propaga Retry-After', async () => {
     assert.equal(err.status, 429);
     assert.equal(err.retryAfter, 17);
   });
+});
+
+test('429: fornitore sovraccarico', async () => {
+  const client = makeClient(async () =>
+    jsonResponse(429, { error: { code: 429, message: 'google/gemma:free is temporarily rate-limited upstream', metadata: { provider_name: 'X' } } })
+  );
+  await expectError(client, 'RATE_LIMITED', (err) => assert.match(err.message, /sovraccarico/));
+});
+
+test('429: limite giornaliero dei modelli gratuiti con X-RateLimit-Reset in millisecondi', async () => {
+  const reset = String(Date.now() + 5 * 3600 * 1000);
+  const client = makeClient(async () =>
+    jsonResponse(429, { error: { code: 429, message: 'Rate limit exceeded: free-models-per-day' } }, { 'X-RateLimit-Limit': '50', 'X-RateLimit-Reset': reset })
+  );
+  await expectError(client, 'RATE_LIMITED', (err) => {
+    assert.match(err.message, /giornaliere/);
+    assert.match(err.message, /50 al giorno/);
+    assert.match(err.message, /tra 5 h/);
+    assert.ok(err.retryAfter > 17000);
+  });
+});
+
+test('429: limite al minuto', async () => {
+  const reset = String(Date.now() + 30 * 1000);
+  const client = makeClient(async () =>
+    jsonResponse(429, { error: { code: 429, message: 'Rate limit exceeded' } }, { 'X-RateLimit-Limit': '20', 'X-RateLimit-Reset': reset })
+  );
+  await expectError(client, 'RATE_LIMITED', (err) => {
+    assert.match(err.message, /\(20\)/);
+    assert.match(err.message, /tra 30 s/);
+  });
+});
+
+test('modelli di riserva inviati con il parametro models', async () => {
+  let body;
+  const client = makeClient(
+    async (url, init) => {
+      body = JSON.parse(init.body);
+      return jsonResponse(200, okBody);
+    },
+    { fallbackModels: ['b/one:free', 'c/two:free'] }
+  );
+  await client.generate([]);
+  assert.deepEqual(body.models, ['test/vision-model', 'b/one:free', 'c/two:free']);
+  assert.equal('model' in body, false);
+});
+
+test('parseRateLimitReset: millisecondi, secondi epoch, intervallo', () => {
+  const now = 1_800_000_000_000;
+  assert.equal(parseRateLimitReset(String(now + 60000), now), 60);
+  assert.equal(parseRateLimitReset(String(now / 1000 + 120), now), 120);
+  assert.equal(parseRateLimitReset('45', now), 45);
+  assert.equal(parseRateLimitReset(String(now - 1000), now), undefined);
+  assert.equal(parseRateLimitReset(null, now), undefined);
 });
 
 test('errore restituito con HTTP 200', async () => {

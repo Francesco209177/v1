@@ -99,6 +99,33 @@ Il modello non è fissato nel codice: scegli tu lo slug su <https://openrouter.a
 
 Per i modelli con "ragionamento" lungo può servire aumentare `OPENROUTER_MAX_TOKENS` (default 8000).
 
+### Modelli gratuiti (`:free`) e limiti
+
+I modelli con suffisso `:free` non costano nulla ma hanno limiti stretti
+([documentazione OpenRouter](https://openrouter.ai/docs/api_reference/limits)):
+
+| Crediti acquistati (in totale) | Richieste al minuto | Richieste al giorno |
+|---|---|---|
+| meno di 10 | 20 | **50** |
+| almeno 10 | 20 | 1000 |
+
+In più i modelli gratuiti più usati vengono spesso rifiutati dal fornitore perché sovraccarichi. In entrambi i casi
+l'estensione mostra «troppe richieste» con il motivo e l'attesa. Per ridurre il problema imposta dei **modelli di riserva**
+gratuiti che accettano immagini; OpenRouter li prova in ordine se il primo non risponde:
+
+```ini
+OPENROUTER_FALLBACK_MODELS=google/gemma-4-26b-a4b-it:free,nvidia/nemotron-3.5-super-vl:free
+```
+
+Non mettere modelli a pagamento nella lista se vuoi restare gratis: se OpenRouter ripiega su di essi, la richiesta viene
+addebitata. Per controllare quante richieste gratuite ti restano oggi (il comando non mostra la chiave):
+
+```bash
+cd tinkercad-ai-assistant/server
+KEY=$(grep '^OPENROUTER_API_KEY=' .env | cut -d= -f2-)
+curl -s https://openrouter.ai/api/v1/key -H "Authorization: Bearer $KEY" | grep -o '"free_model_daily_requests":{[^}]*}'
+```
+
 ### Avviare il server
 
 ```bash
@@ -253,7 +280,8 @@ istruito a concentrarsi sul circuito.
 | «Impossibile contattare il backend…» | server non avviato, porta o URL diversi da quelli nel popup |
 | `UPSTREAM_AUTH` | `OPENROUTER_API_KEY` errata o disattivata |
 | `INSUFFICIENT_CREDITS` | credito OpenRouter esaurito |
-| `RATE_LIMITED` / `LOCAL_RATE_LIMITED` | troppe richieste (OpenRouter o limite locale `RATE_LIMIT_PER_MIN`): riprova dopo i secondi indicati |
+| `RATE_LIMITED` | limite dei modelli gratuiti (20/minuto, 50/giorno senza crediti acquistati) o fornitore sovraccarico: il messaggio dice quale e quanto attendere. Vedi [Modelli gratuiti](#modelli-gratuiti-free-e-limiti) |
+| `LOCAL_RATE_LIMITED` | limite locale del server (`RATE_LIMIT_PER_MIN`): riprova dopo i secondi indicati |
 | `MODEL_NOT_AVAILABLE`, `NO_PROVIDER`, `MODEL_UNAVAILABLE` | slug del modello errato o modello/provider non disponibile (anche per input immagine) |
 | `UPSTREAM_TIMEOUT` | il modello ha impiegato più di `OPENROUTER_TIMEOUT_MS` |
 | `EMPTY_RESPONSE` | il modello ha esaurito i token: aumenta `OPENROUTER_MAX_TOKENS` |
@@ -335,6 +363,7 @@ come dopo l'opt-in — cattura reale ritagliata sull'area del circuito. Usa la v
 |---|---|---|
 | `OPENROUTER_API_KEY` | — | **obbligatoria**, chiave OpenRouter |
 | `OPENROUTER_MODEL` | — | **obbligatoria**, slug del modello |
+| `OPENROUTER_FALLBACK_MODELS` | (nessuno) | modelli di riserva separati da virgola (max 5), provati in ordine da OpenRouter |
 | `HOST` | `127.0.0.1` | interfaccia di ascolto (altri valori espongono il server: usa `ACCESS_TOKEN`) |
 | `PORT` | `3000` | porta |
 | `OPENROUTER_TIMEOUT_MS` | `90000` | timeout della chiamata a OpenRouter |

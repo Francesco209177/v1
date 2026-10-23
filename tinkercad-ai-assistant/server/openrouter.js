@@ -38,14 +38,67 @@ function parseRetryAfter(value) {
   return undefined;
 }
 
+/**
+ * Secondi mancanti al reset indicato da X-RateLimit-Reset.
+ * Accetta un timestamp in millisecondi o in secondi, oppure un intervallo già in secondi.
+ */
+function parseRateLimitReset(value, now = Date.now()) {
+  const n = Number(value);
+  if (!value || !Number.isFinite(n) || n <= 0) return undefined;
+  if (n < 1e9) return Math.ceil(n);
+  const resetMs = n > 1e12 ? n : n * 1000;
+  const diff = Math.ceil((resetMs - now) / 1000);
+  return diff > 0 ? diff : undefined;
+}
+
+function readRateLimit(headers) {
+  const limit = Number(headers.get('x-ratelimit-limit'));
+  return {
+    limit: Number.isFinite(limit) && limit > 0 ? limit : undefined,
+    resetIn: parseRateLimitReset(headers.get('x-ratelimit-reset')),
+  };
+}
+
+function formatWait(seconds) {
+  if (seconds < 90) return `${seconds} s`;
+  if (seconds < 5400) return `${Math.round(seconds / 60)} min`;
+  return `${Math.round(seconds / 3600)} h`;
+}
+
 function shorten(text, max = 300) {
   if (typeof text !== 'string') return '';
   const clean = text.replace(/\s+/g, ' ').trim();
   return clean.length > max ? clean.slice(0, max) + '…' : clean;
 }
 
+/**
+ * Messaggio per i 429: OpenRouter distingue il limite dei modelli gratuiti (al minuto o al giorno,
+ * con header X-RateLimit-*) dal fornitore del modello sovraccarico (metadata.provider_*).
+ */
+function rateLimitMessage(error, rate, wait) {
+  const metadata = (error && error.metadata) || {};
+  const detail = shorten(error && error.message);
+  const when = wait ? `tra ${formatWait(wait)}` : 'tra poco';
+  const upstream =
+    metadata.provider_code !== undefined || metadata.provider_name !== undefined || /upstream|provider/i.test(detail);
+  if (upstream) {
+    return (
+      `Il fornitore del modello è sovraccarico (capita spesso con i modelli gratuiti «:free»). ` +
+      `Riprova ${when}, scegli un altro modello oppure imposta OPENROUTER_FALLBACK_MODELS nel file .env.`
+    );
+  }
+  if (rate.limit && rate.resetIn > 120) {
+    return (
+      `Hai esaurito le richieste giornaliere ai modelli gratuiti di OpenRouter (${rate.limit} al giorno). ` +
+      `Riprova ${when}, usa un modello a pagamento oppure acquista almeno 10 crediti (limite 1000 al giorno).`
+    );
+  }
+  if (rate.limit) return `Limite di richieste dei modelli gratuiti raggiunto (${rate.limit}): riprova ${when}.`;
+  return `Troppe richieste a OpenRouter: riprova ${when}.${detail ? ` Dettaglio: ${detail}` : ''}`;
+}
+
 /** Converte un errore OpenRouter ({code, message, metadata}) in UpstreamError. */
-function mapOpenRouterError(status, error, retryAfter) {
+function mapOpenRouterError(status, error, retryAfter, rate = {}) {
   const detail = shorten(error && error.message);
   const suffix = detail ? ` Dettaglio: ${detail}` : '';
   switch (status) {
@@ -75,12 +128,10 @@ function mapOpenRouterError(status, error, retryAfter) {
       );
     case 408:
       return new UpstreamError('UPSTREAM_TIMEOUT', 'OpenRouter ha segnalato un timeout. Riprova.', { status: 504 });
-    case 429:
-      return new UpstreamError(
-        'RATE_LIMITED',
-        `Troppe richieste a OpenRouter${retryAfter ? `: riprova tra ${retryAfter} s` : ': riprova tra poco'}.`,
-        { status: 429, retryAfter }
-      );
+    case 429: {
+      const wait = retryAfter || rate.resetIn;
+      return new UpstreamError('RATE_LIMITED', rateLimitMessage(error, rate, wait), { status: 429, retryAfter: wait });
+    }
     case 502:
       return new UpstreamError('MODEL_UNAVAILABLE', `Il modello scelto non è disponibile o ha risposto in modo non valido.${suffix}`);
     case 503:
@@ -117,6 +168,7 @@ function isAbortError(err) {
  * @param {number} [options.temperature]
  * @param {string} [options.appUrl]
  * @param {string} [options.appTitle]
+ * @param {string[]} [options.fallbackModels] modelli provati in ordine se il principale fallisce
  * @param {typeof fetch} [options.fetchImpl]
  */
 function createOpenRouterClient(options) {
@@ -129,6 +181,7 @@ function createOpenRouterClient(options) {
     temperature,
     appUrl,
     appTitle,
+    fallbackModels = [],
     fetchImpl = globalThis.fetch,
   } = options;
   const root = baseUrl.replace(/\/+$/, '');
@@ -175,7 +228,10 @@ function createOpenRouterClient(options) {
    * @returns {Promise<{content: string, finishReason: string|null, model: string, usage: object|null}>}
    */
   async function generate(messages, opts = {}) {
-    const body = { model, messages, max_tokens: maxTokens };
+    // Con modelli di riserva si usa il parametro "models" di OpenRouter (fallback automatico, in ordine).
+    const body = fallbackModels.length
+      ? { models: [model, ...fallbackModels], messages, max_tokens: maxTokens }
+      : { model, messages, max_tokens: maxTokens };
     if (typeof temperature === 'number') body.temperature = temperature;
 
     const timeoutSignal = AbortSignal.timeout(timeoutMs);
@@ -214,7 +270,7 @@ function createOpenRouterClient(options) {
 
     if (!res.ok) {
       const retryAfter = parseRetryAfter(res.headers.get('retry-after'));
-      throw mapOpenRouterError(res.status, json && json.error, retryAfter);
+      throw mapOpenRouterError(res.status, json && json.error, retryAfter, readRateLimit(res.headers));
     }
     if (!json || typeof json !== 'object') {
       throw new UpstreamError('INVALID_RESPONSE', 'OpenRouter ha restituito una risposta non valida.');
@@ -222,7 +278,7 @@ function createOpenRouterClient(options) {
     // Errori emessi durante la generazione possono arrivare con HTTP 200.
     if (json.error) {
       const status = Number(json.error.code) || 502;
-      throw mapOpenRouterError(status, json.error, parseRetryAfter(res.headers.get('retry-after')));
+      throw mapOpenRouterError(status, json.error, parseRetryAfter(res.headers.get('retry-after')), readRateLimit(res.headers));
     }
 
     const choice = Array.isArray(json.choices) ? json.choices[0] : null;
@@ -260,4 +316,11 @@ function createOpenRouterClient(options) {
   return { getImageSupport, generate, model };
 }
 
-module.exports = { createOpenRouterClient, UpstreamError, mapOpenRouterError, parseRetryAfter, DEFAULT_BASE_URL };
+module.exports = {
+  createOpenRouterClient,
+  UpstreamError,
+  mapOpenRouterError,
+  parseRetryAfter,
+  parseRateLimitReset,
+  DEFAULT_BASE_URL,
+};

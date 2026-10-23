@@ -75,7 +75,8 @@ async function checkBackend() {
     const json = await res.json();
     if (!res.ok || !json.ok) throw new Error((json.error && json.error.message) || `HTTP ${res.status}`);
     const images = { yes: 'accetta immagini', no: 'NON accetta immagini', unknown: 'supporto immagini non verificato' }[json.imageSupport] || '';
-    setStatus(json.imageSupport === 'no' ? 'warning' : 'ok', `Connesso · modello ${json.model} (${images})`);
+    const fallbacks = Array.isArray(json.fallbackModels) && json.fallbackModels.length ? ` · ${json.fallbackModels.length} di riserva` : '';
+    setStatus(json.imageSupport === 'no' ? 'warning' : 'ok', `Connesso · modello ${json.model} (${images})${fallbacks}`);
   } catch (err) {
     const reason = err && err.name === 'TimeoutError' ? 'nessuna risposta' : 'non raggiungibile';
     setStatus('error', `Backend ${reason} su ${url.origin}. Avvia il server con «npm start» nella cartella server.`);

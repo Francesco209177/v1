@@ -16,6 +16,8 @@ const { buildMessages } = require('./prompt');
 const { validateGenerateRequest } = require('./validate');
 
 const EXTENSION_ORIGIN_RE = /^chrome-extension:\/\/([a-p]{32})$/;
+const MODEL_SLUG_RE = /^~?[a-z0-9][\w.-]*\/[\w.:-]+$/i;
+const MAX_FALLBACK_MODELS = 5;
 const LOOPBACK_HOSTS = new Set(['127.0.0.1', 'localhost', '::1']);
 
 function intFromEnv(env, name, fallback, { min, max }) {
@@ -61,6 +63,10 @@ function loadConfig(env = process.env) {
       .map((s) => s.trim())
       .filter(Boolean),
     accessToken: (env.ACCESS_TOKEN || '').trim(),
+    fallbackModels: (env.OPENROUTER_FALLBACK_MODELS || '')
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean),
     appUrl: (env.APP_URL || '').trim(),
     appTitle: (env.APP_TITLE || 'Tinkercad AI Code Assistant').trim(),
   };
@@ -69,6 +75,12 @@ function loadConfig(env = process.env) {
     const t = Number(env.OPENROUTER_TEMPERATURE);
     if (!Number.isFinite(t) || t < 0 || t > 2) problems.push('OPENROUTER_TEMPERATURE deve essere un numero tra 0 e 2.');
     else config.temperature = t;
+  }
+  for (const slug of config.fallbackModels) {
+    if (!MODEL_SLUG_RE.test(slug)) problems.push(`OPENROUTER_FALLBACK_MODELS contiene un modello non valido: "${slug}".`);
+  }
+  if (config.fallbackModels.length > MAX_FALLBACK_MODELS) {
+    problems.push(`OPENROUTER_FALLBACK_MODELS: al massimo ${MAX_FALLBACK_MODELS} modelli di riserva.`);
   }
   for (const id of config.allowedExtensionIds) {
     if (!/^[a-p]{32}$/.test(id)) problems.push(`ALLOWED_EXTENSION_IDS contiene un ID non valido: "${id}".`);
@@ -131,6 +143,7 @@ function createApp(config, deps = {}) {
       temperature: config.temperature,
       appUrl: config.appUrl,
       appTitle: config.appTitle,
+      fallbackModels: config.fallbackModels,
     });
   const takeRateLimit = createRateLimiter(config.rateLimitPerMin, 60000, deps.now);
   const maxBodyBytes = config.maxBodyMb * 1024 * 1024;
@@ -174,6 +187,7 @@ function createApp(config, deps = {}) {
     res.json({
       ok: true,
       model: config.model,
+      fallbackModels: config.fallbackModels,
       imageSupport,
       auth: config.accessToken ? 'token' : 'none',
     });
@@ -249,7 +263,8 @@ function createApp(config, deps = {}) {
       } catch (err) {
         if (err instanceof UpstreamError) {
           if (err.code === 'CLIENT_CLOSED') return undefined;
-          logger.warn(`OpenRouter: ${err.code} (HTTP ${err.status})`);
+          // Il messaggio non contiene né la chiave né il prompt: aiuta a capire la causa dal terminale.
+          logger.warn(`OpenRouter: ${err.code} (HTTP ${err.status}) — ${err.message}`);
           return sendError(res, err.status, err.code, err.message, err.retryAfter ? { retryAfter: err.retryAfter } : {});
         }
         logger.error(`Errore interno: ${err && err.name}`);
@@ -300,7 +315,8 @@ if (require.main === module) {
   }
   const app = createApp(config);
   app.listen(config.port, config.host, () => {
-    console.log(`Tinkercad AI backend in ascolto su http://${config.host}:${config.port} (modello: ${config.model})`);
+    const fallbacks = config.fallbackModels.length ? `, riserva: ${config.fallbackModels.join(', ')}` : '';
+    console.log(`Tinkercad AI backend in ascolto su http://${config.host}:${config.port} (modello: ${config.model}${fallbacks})`);
   });
 }
 
