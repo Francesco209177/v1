@@ -1,0 +1,19 @@
+# Segreti e configurazione locale
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Dipendenze e build
+node_modules/
+*.zip
+*.crx
+
+# Log e file temporanei
+*.log
+npm-debug.log*
+.DS_Store
+Thumbs.db
+e2e/.profile/
+e2e/output/

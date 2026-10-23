@@ -1,0 +1,430 @@
+/* Stili dell'interfaccia nello Shadow DOM: non influenzano la pagina di Tinkercad. */
+:host {
+  --tcai-font: "Artifakt Element", "Open Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --tcai-mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, "Liberation Mono", monospace;
+  --tcai-text: #2b2f33;
+  --tcai-muted: #6a737d;
+  --tcai-border: #d5dbe1;
+  --tcai-surface: #ffffff;
+  --tcai-subtle: #f4f6f8;
+  --tcai-blue: #1477d1;
+  --tcai-blue-dark: #0f5fa8;
+  --tcai-green: #2e9e5b;
+  --tcai-green-dark: #237a46;
+  --tcai-red: #d64545;
+  --tcai-red-dark: #b33636;
+  --tcai-amber-bg: #fff7e0;
+  --tcai-amber-border: #f0c75e;
+  --tcai-shadow: 0 10px 30px rgba(20, 30, 40, 0.18), 0 2px 6px rgba(20, 30, 40, 0.08);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* --- Pulsante AI ------------------------------------------------------- */
+.ai-btn {
+  position: fixed;
+  width: 44px;
+  height: 30px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--tcai-border);
+  border-radius: 9px;
+  background: var(--tcai-surface);
+  color: var(--tcai-text);
+  font: 700 13px/1 var(--tcai-font);
+  letter-spacing: 0.04em;
+  box-shadow: 0 1px 3px rgba(20, 30, 40, 0.15);
+  cursor: pointer;
+  user-select: none;
+  touch-action: none;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.ai-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(20, 30, 40, 0.2);
+  border-color: var(--tcai-blue);
+  color: var(--tcai-blue);
+}
+
+.ai-btn:active {
+  transform: translateY(0);
+}
+
+.ai-btn:focus-visible {
+  outline: 2px solid var(--tcai-blue);
+  outline-offset: 2px;
+}
+
+.ai-btn--dragging {
+  cursor: grabbing;
+  transform: scale(1.05);
+}
+
+.ai-btn__spinner {
+  display: none;
+  width: 14px;
+  height: 14px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: tcai-spin 0.8s linear infinite;
+}
+
+.ai-btn[data-state="GENERATING"] {
+  border-color: var(--tcai-blue);
+  color: var(--tcai-blue);
+  cursor: progress;
+}
+
+.ai-btn[data-state="GENERATING"] .ai-btn__label {
+  display: none;
+}
+
+.ai-btn[data-state="GENERATING"] .ai-btn__spinner {
+  display: block;
+}
+
+.ai-btn[data-state="SUCCESS"] {
+  background: var(--tcai-green);
+  border-color: var(--tcai-green-dark);
+  color: #fff;
+}
+
+.ai-btn[data-state="ERROR"] {
+  background: var(--tcai-red);
+  border-color: var(--tcai-red-dark);
+  color: #fff;
+}
+
+.ai-btn[data-state="SUCCESS"]:hover,
+.ai-btn[data-state="ERROR"]:hover {
+  color: #fff;
+  filter: brightness(1.05);
+}
+
+.tooltip {
+  position: fixed;
+  max-width: 240px;
+  padding: 6px 9px;
+  border-radius: 6px;
+  background: #2b2f33;
+  color: #fff;
+  font: 12px/1.35 var(--tcai-font);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.12s ease;
+  visibility: hidden;
+}
+
+.tooltip--visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* --- Pannello ---------------------------------------------------------- */
+.panel {
+  position: fixed;
+  display: flex;
+  flex-direction: column;
+  width: 380px;
+  max-height: calc(100vh - 32px);
+  border: 1px solid var(--tcai-border);
+  border-radius: 12px;
+  background: var(--tcai-surface);
+  color: var(--tcai-text);
+  font: 13px/1.45 var(--tcai-font);
+  box-shadow: var(--tcai-shadow);
+  overflow: hidden;
+  animation: tcai-pop 0.14s ease-out;
+}
+
+.panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 10px 10px 14px;
+  border-bottom: 1px solid var(--tcai-border);
+  background: var(--tcai-subtle);
+}
+
+.panel__title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font: 600 14px/1.2 var(--tcai-font);
+}
+
+.panel__badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 20px;
+  border-radius: 6px;
+  background: var(--tcai-blue);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.panel__body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 14px 14px;
+  overflow-y: auto;
+}
+
+.icon-btn {
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--tcai-muted);
+  font: 20px/1 var(--tcai-font);
+  cursor: pointer;
+}
+
+.icon-btn:hover {
+  background: #e6eaee;
+  color: var(--tcai-text);
+}
+
+.prompt {
+  width: 100%;
+  min-height: 72px;
+  max-height: 200px;
+  padding: 8px 10px;
+  border: 1px solid var(--tcai-border);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--tcai-text);
+  font: 13px/1.45 var(--tcai-font);
+  resize: vertical;
+}
+
+.prompt:focus,
+.code:focus {
+  outline: none;
+  border-color: var(--tcai-blue);
+  box-shadow: 0 0 0 3px rgba(20, 119, 209, 0.15);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.hint,
+.result__meta {
+  color: var(--tcai-muted);
+  font-size: 11.5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.btn {
+  flex: none;
+  padding: 7px 12px;
+  border: 1px solid var(--tcai-border);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--tcai-text);
+  font: 600 12.5px/1.2 var(--tcai-font);
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.btn:hover {
+  border-color: var(--tcai-blue);
+  color: var(--tcai-blue);
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--tcai-blue);
+  outline-offset: 2px;
+}
+
+.btn--primary {
+  border-color: var(--tcai-blue);
+  background: var(--tcai-blue);
+  color: #fff;
+}
+
+.btn--primary:hover {
+  background: var(--tcai-blue-dark);
+  color: #fff;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+.btn--small {
+  padding: 5px 10px;
+  font-size: 12px;
+}
+
+.status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--tcai-muted);
+  font-size: 12.5px;
+}
+
+.loader {
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--tcai-blue);
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: tcai-spin 0.8s linear infinite;
+}
+
+.message {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 9px 11px;
+  border: 1px solid var(--tcai-border);
+  border-radius: 8px;
+  background: var(--tcai-subtle);
+}
+
+.message__text {
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.message[data-kind="error"] {
+  border-color: #f1b5b5;
+  background: #fdf0f0;
+  color: #8a2525;
+}
+
+.message[data-kind="warning"] {
+  border-color: var(--tcai-amber-border);
+  background: var(--tcai-amber-bg);
+  color: #6b4d00;
+}
+
+.message[data-kind="success"] {
+  border-color: #a8dcbc;
+  background: #eefaf2;
+  color: #1d6a3c;
+}
+
+.result,
+.response {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.result__explanation,
+.response__label {
+  margin: 0;
+  color: var(--tcai-text);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  max-height: 96px;
+  overflow-y: auto;
+}
+
+.response__label {
+  color: var(--tcai-muted);
+  font-size: 12px;
+}
+
+.result__warnings {
+  margin: 0;
+  padding: 0 0 0 18px;
+  color: #6b4d00;
+  font-size: 12px;
+}
+
+.code,
+.response__text {
+  width: 100%;
+  margin: 0;
+  padding: 9px 10px;
+  border: 1px solid var(--tcai-border);
+  border-radius: 8px;
+  background: #f7f8fa;
+  color: #1f2328;
+  font: 12px/1.5 var(--tcai-mono);
+  tab-size: 2;
+  resize: vertical;
+  min-height: 80px;
+  max-height: 40vh;
+  overflow: auto;
+}
+
+.response__text {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  resize: none;
+}
+
+@keyframes tcai-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes tcai-pop {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ai-btn,
+  .tooltip,
+  .panel {
+    transition: none;
+    animation: none;
+  }
+  .ai-btn:hover {
+    transform: none;
+  }
+  .ai-btn__spinner,
+  .loader {
+    animation-duration: 2.4s;
+  }
+}
