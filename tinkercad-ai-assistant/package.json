@@ -1,0 +1,22 @@
+{
+  "name": "tinkercad-ai-assistant",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Estensione Chrome/Edge (Manifest V3) che integra un assistente AI in Tinkercad Circuits, con backend OpenRouter locale.",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "test": "node --test \"test/*.test.js\" && npm --prefix server test",
+    "test:extension": "node --test \"test/*.test.js\"",
+    "lint": "eslint .",
+    "check": "npm run lint && npm test",
+    "icons": "node scripts/make-icons.js",
+    "e2e": "node e2e/run-e2e.js"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.1.0"
+  }
+}

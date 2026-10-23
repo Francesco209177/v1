@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Tinkercad AI Code Assistant</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <header class="header">
+      <img src="icons/icon32.png" alt="" width="24" height="24" />
+      <h1>Tinkercad AI Code Assistant</h1>
+    </header>
+
+    <section class="card" aria-labelledby="tab-title">
+      <h2 id="tab-title">Questa scheda</h2>
+      <p id="tab-status" class="muted">Verifica della scheda in corso…</p>
+      <button id="open-assistant" class="btn btn--primary" type="button" hidden>Apri l'assistente</button>
+      <p class="muted small">
+        Nella pagina: <kbd>Ctrl+Shift+A</kbd> nasconde l'assistente (codice e chat restano), <kbd>Ctrl+Shift+Z</kbd> lo mostra di nuovo.
+      </p>
+    </section>
+
+    <section class="card" aria-labelledby="backend-title">
+      <h2 id="backend-title">Backend</h2>
+      <p id="backend-status" class="status" data-kind="pending">Verifica del backend in corso…</p>
+      <form id="settings-form" novalidate>
+        <label for="backend-url">URL del backend</label>
+        <input id="backend-url" type="url" placeholder="http://localhost:3000" autocomplete="off" spellcheck="false" required />
+        <label for="access-token">Token di accesso <span class="muted">(facoltativo, ACCESS_TOKEN del server)</span></label>
+        <input id="access-token" type="password" autocomplete="off" spellcheck="false" />
+        <div class="row">
+          <button id="check-backend" class="btn" type="button">Verifica</button>
+          <button class="btn btn--primary" type="submit">Salva</button>
+        </div>
+        <p id="settings-message" class="message" role="status" hidden></p>
+      </form>
+      <p class="muted small">La chiave OpenRouter resta nel file <code>.env</code> del server: non inserirla qui.</p>
+    </section>
+
+    <section class="card" aria-labelledby="capture-title">
+      <h2 id="capture-title">Screenshot</h2>
+      <label class="toggle">
+        <input id="all-urls-toggle" type="checkbox" />
+        <span>Screenshot senza clic aggiuntivi</span>
+      </label>
+      <p class="muted small">
+        Di base Chrome consente lo screenshot solo dopo un clic sull'icona dell'estensione
+        (<span id="shortcut-hint">o la scorciatoia <kbd id="shortcut">Alt+Shift+A</kbd></span>) nella scheda di Tinkercad. Attivando questa opzione concedi il permesso
+        «accesso a tutti i siti», richiesto da Chrome per acquisire la scheda direttamente dal pulsante AI. Puoi disattivarlo in qualsiasi momento.
+      </p>
+    </section>
+
+    <footer class="footer">
+      <button id="reset-position" class="link" type="button">Ripristina la posizione del pulsante AI</button>
+    </footer>
+
+    <script src="popup.js"></script>
+  </body>
+</html>

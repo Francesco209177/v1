@@ -1,0 +1,21 @@
+{
+  "name": "tinkercad-ai-assistant-server",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Backend locale che inoltra le richieste dell'estensione Tinkercad AI Code Assistant a OpenRouter senza esporre la chiave API.",
+  "main": "server.js",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "test": "node --test \"test/*.test.js\"",
+    "check": "node --check server.js && node --check openrouter.js && node --check prompt.js && node --check validate.js && node --check dev/mock-openrouter.js",
+    "mock": "node dev/mock-openrouter.js 4010"
+  },
+  "dependencies": {
+    "express": "^5.2.1"
+  }
+}

@@ -1,0 +1,248 @@
+'use strict';
+
+const test = require('node:test');
+const assert = require('node:assert/strict');
+const { createApp, loadConfig, createRateLimiter } = require('../server');
+const { startMockOpenRouter } = require('../dev/mock-openrouter');
+const { PNG_DATA_URL, EXTENSION_ORIGIN, baseEnv, silentLogger } = require('./helpers');
+
+async function startApp(envOverrides = {}, mockOptions = {}) {
+  const mock = await startMockOpenRouter(mockOptions);
+  const config = loadConfig(baseEnv({ OPENROUTER_BASE_URL: mock.baseUrl, ...envOverrides }));
+  const app = createApp(config, { logger: silentLogger });
+  const server = await new Promise((resolve) => {
+    const s = app.listen(0, '127.0.0.1', () => resolve(s));
+  });
+  const url = `http://127.0.0.1:${server.address().port}`;
+  return {
+    url,
+    mock,
+    close: async () => {
+      await new Promise((r) => server.close(r));
+      await mock.close();
+    },
+  };
+}
+
+function post(url, body, headers = {}) {
+  return fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Origin: EXTENSION_ORIGIN, ...headers },
+    body: typeof body === 'string' ? body : JSON.stringify(body),
+  });
+}
+
+test('loadConfig richiede chiave e modello e non stampa la chiave', () => {
+  assert.throws(() => loadConfig({}), (err) => /OPENROUTER_API_KEY/.test(err.message) && /OPENROUTER_MODEL/.test(err.message));
+  assert.throws(() => loadConfig(baseEnv({ PORT: 'abc' })), /PORT/);
+  assert.throws(() => loadConfig(baseEnv({ ALLOWED_EXTENSION_IDS: 'xyz' })), /ALLOWED_EXTENSION_IDS/);
+  assert.throws(() => loadConfig(baseEnv({ OPENROUTER_BASE_URL: 'http://evil.example/api' })), /https/);
+  assert.throws(() => loadConfig(baseEnv({ OPENROUTER_FALLBACK_MODELS: 'non valido' })), /OPENROUTER_FALLBACK_MODELS/);
+  assert.throws(() => loadConfig(baseEnv({ OPENROUTER_FALLBACK_MODELS: 'a/1,a/2,a/3,a/4,a/5,a/6' })), /al massimo/);
+  assert.deepEqual(
+    loadConfig(baseEnv({ OPENROUTER_FALLBACK_MODELS: ' google/gemma-4-26b-a4b-it:free , ~vendor/model-latest ' })).fallbackModels,
+    ['google/gemma-4-26b-a4b-it:free', '~vendor/model-latest']
+  );
+  try {
+    loadConfig(baseEnv({ PORT: 'abc' }));
+  } catch (err) {
+    assert.doesNotMatch(err.message, /test-key-not-real/);
+  }
+  const cfg = loadConfig(baseEnv());
+  assert.equal(cfg.host, '127.0.0.1');
+  assert.equal(cfg.port, 3000);
+});
+
+test('POST /api/generate restituisce un risultato strutturato', async (t) => {
+  const ctx = await startApp();
+  t.after(ctx.close);
+  const res = await post(`${ctx.url}/api/generate`, { prompt: 'Blink pin 13', image: PNG_DATA_URL, cropped: true });
+  assert.equal(res.status, 200);
+  assert.equal(res.headers.get('access-control-allow-origin'), EXTENSION_ORIGIN);
+  const json = await res.json();
+  assert.equal(json.ok, true);
+  assert.equal(json.imageSent, true);
+  assert.match(json.content, /```cpp/);
+  assert.equal(json.finishReason, 'stop');
+  assert.deepEqual(json.warnings, []);
+  // La richiesta a OpenRouter contiene testo e immagine, e la chiave solo nell'header.
+  const sent = ctx.mock.requests[0];
+  assert.equal(sent.headers.authorization, 'Bearer test-key-not-real');
+  assert.equal(sent.body.messages[1].content[1].type, 'image_url');
+  assert.equal(JSON.stringify(json).includes('test-key-not-real'), false);
+});
+
+test('modello solo testo: lo screenshot non viene inviato', async (t) => {
+  const ctx = await startApp({ OPENROUTER_MODEL: 'test/text-model' });
+  t.after(ctx.close);
+  const json = await (await post(`${ctx.url}/api/generate`, { prompt: 'Blink', image: PNG_DATA_URL })).json();
+  assert.equal(json.ok, true);
+  assert.equal(json.imageSent, false);
+  assert.equal(json.warnings[0].code, 'MODEL_NO_IMAGE');
+  assert.equal(ctx.mock.requests[0].body.messages[1].content.length, 1);
+});
+
+test('GET /health non espone segreti', async (t) => {
+  const ctx = await startApp();
+  t.after(ctx.close);
+  const res = await fetch(`${ctx.url}/health`, { headers: { Origin: EXTENSION_ORIGIN } });
+  const json = await res.json();
+  assert.deepEqual(json, { ok: true, model: 'test/vision-model', fallbackModels: [], imageSupport: 'yes', auth: 'none' });
+});
+
+test('CORS: origini web rifiutate, preflight estensione accettato', async (t) => {
+  const ctx = await startApp({ ALLOWED_EXTENSION_IDS: 'abcdefghijklmnopabcdefghijklmnop' });
+  t.after(ctx.close);
+  const web = await post(`${ctx.url}/api/generate`, { prompt: 'x' }, { Origin: 'https://www.tinkercad.com' });
+  assert.equal(web.status, 403);
+  assert.equal(web.headers.get('access-control-allow-origin'), null);
+  const otherExt = await post(`${ctx.url}/api/generate`, { prompt: 'x' }, { Origin: 'chrome-extension://pppppppppppppppppppppppppppppppp' });
+  assert.equal(otherExt.status, 403);
+  const preflight = await fetch(`${ctx.url}/api/generate`, {
+    method: 'OPTIONS',
+    headers: { Origin: EXTENSION_ORIGIN, 'Access-Control-Request-Method': 'POST' },
+  });
+  assert.equal(preflight.status, 204);
+  assert.match(preflight.headers.get('access-control-allow-headers'), /X-Access-Token/);
+  assert.equal(ctx.mock.requests.length, 0);
+});
+
+test('ACCESS_TOKEN obbligatorio se configurato', async (t) => {
+  const ctx = await startApp({ ACCESS_TOKEN: 'tok-123' });
+  t.after(ctx.close);
+  assert.equal((await post(`${ctx.url}/api/generate`, { prompt: 'x' })).status, 401);
+  assert.equal((await post(`${ctx.url}/api/generate`, { prompt: 'x' }, { 'X-Access-Token': 'wrong' })).status, 401);
+  assert.equal((await post(`${ctx.url}/api/generate`, { prompt: 'x' }, { 'X-Access-Token': 'tok-123' })).status, 200);
+});
+
+test('validazione, JSON malformato, content-type e dimensione', async (t) => {
+  const ctx = await startApp({ MAX_BODY_MB: '1' });
+  t.after(ctx.close);
+  const invalid = await post(`${ctx.url}/api/generate`, { prompt: '' });
+  assert.equal(invalid.status, 400);
+  assert.equal((await invalid.json()).error.code, 'INVALID_REQUEST');
+  const malformed = await post(`${ctx.url}/api/generate`, '{"prompt":');
+  assert.equal((await malformed.json()).error.code, 'INVALID_JSON');
+  const text = await fetch(`${ctx.url}/api/generate`, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: 'x' });
+  assert.equal(text.status, 415);
+  const big = await post(`${ctx.url}/api/generate`, { prompt: 'x', currentCode: 'a'.repeat(1.2 * 1024 * 1024) });
+  assert.equal(big.status, 413);
+  assert.equal(ctx.mock.requests.length, 0);
+});
+
+test('errori upstream strutturati con Retry-After', async (t) => {
+  const ctx = await startApp(
+    {},
+    { respond: () => ({ status: 429, headers: { 'Retry-After': '12' }, json: { error: { code: 429, message: 'rate' } } }) }
+  );
+  t.after(ctx.close);
+  const res = await post(`${ctx.url}/api/generate`, { prompt: 'x' });
+  assert.equal(res.status, 429);
+  assert.equal(res.headers.get('retry-after'), '12');
+  const json = await res.json();
+  assert.equal(json.ok, false);
+  assert.equal(json.error.code, 'RATE_LIMITED');
+  assert.equal(json.error.retryAfter, 12);
+});
+
+test('rate limit locale', async (t) => {
+  const ctx = await startApp({ RATE_LIMIT_PER_MIN: '2' });
+  t.after(ctx.close);
+  assert.equal((await post(`${ctx.url}/api/generate`, { prompt: 'x' })).status, 200);
+  assert.equal((await post(`${ctx.url}/api/generate`, { prompt: 'x' })).status, 200);
+  const limited = await post(`${ctx.url}/api/generate`, { prompt: 'x' });
+  assert.equal(limited.status, 429);
+  assert.equal((await limited.json()).error.code, 'LOCAL_RATE_LIMITED');
+});
+
+test('createRateLimiter libera la finestra', () => {
+  let now = 0;
+  const take = createRateLimiter(1, 1000, () => now);
+  assert.equal(take().ok, true);
+  const second = take();
+  assert.equal(second.ok, false);
+  assert.equal(second.retryAfter, 1);
+  now = 1001;
+  assert.equal(take().ok, true);
+});
+
+test('modelli di riserva: richiesta con "models" e /health li elenca', async (t) => {
+  const ctx = await startApp({ OPENROUTER_FALLBACK_MODELS: 'test/backup-a:free,test/backup-b:free' });
+  t.after(ctx.close);
+  const health = await (await fetch(`${ctx.url}/health`)).json();
+  assert.deepEqual(health.fallbackModels, ['test/backup-a:free', 'test/backup-b:free']);
+  const res = await post(`${ctx.url}/api/generate`, { prompt: 'Blink' });
+  assert.equal(res.status, 200);
+  const sent = ctx.mock.requests[0].body;
+  assert.deepEqual(sent.models, ['test/vision-model', 'test/backup-a:free', 'test/backup-b:free']);
+  assert.equal('model' in sent, false);
+});
+
+// --- Avanzamento in NDJSON (usato dall'estensione) ------------------------------
+
+function postNdjson(url, body) {
+  return post(url, body, { Accept: 'application/x-ndjson, application/json' });
+}
+
+async function readLines(res) {
+  return (await res.text())
+    .split('\n')
+    .filter(Boolean)
+    .map((line) => JSON.parse(line));
+}
+
+test('NDJSON: righe di avanzamento e risultato finale', async (t) => {
+  const ctx = await startApp();
+  t.after(ctx.close);
+  const res = await postNdjson(`${ctx.url}/api/generate`, { prompt: 'Blink', image: PNG_DATA_URL });
+  assert.equal(res.status, 200);
+  assert.match(res.headers.get('content-type'), /application\/x-ndjson/);
+  const lines = await readLines(res);
+  assert.deepEqual(lines[0], { type: 'progress', chars: 0, elapsed: 0 });
+  const result = lines[lines.length - 1];
+  assert.equal(result.type, 'result');
+  assert.equal(result.ok, true);
+  assert.match(result.content, /void setup/);
+  assert.equal(result.imageSent, true);
+  assert.equal(ctx.mock.requests[0].body.stream, true);
+});
+
+test('NDJSON: errore di OpenRouter consegnato come risultato con ok:false', async (t) => {
+  const ctx = await startApp({}, { respond: () => ({ status: 429, json: { error: { code: 429, message: 'Rate limit exceeded' } } }) });
+  t.after(ctx.close);
+  const res = await postNdjson(`${ctx.url}/api/generate`, { prompt: 'Blink' });
+  assert.equal(res.status, 200);
+  const result = (await readLines(res)).pop();
+  assert.equal(result.type, 'result');
+  assert.equal(result.ok, false);
+  assert.equal(result.error.code, 'RATE_LIMITED');
+});
+
+test('NDJSON: errore a metà dello streaming di OpenRouter', async (t) => {
+  const ctx = await startApp({}, {
+    respond: (body) => ({
+      sseErrorAfter: 2,
+      json: { model: body.model, choices: [{ finish_reason: 'stop', message: { content: '```cpp\nvoid setup(){}\nvoid loop(){}\n```' } }] },
+    }),
+  });
+  t.after(ctx.close);
+  const result = (await readLines(await postNdjson(`${ctx.url}/api/generate`, { prompt: 'Blink' }))).pop();
+  assert.equal(result.ok, false);
+  assert.equal(result.error.code, 'MODEL_UNAVAILABLE');
+});
+
+test('NDJSON: la validazione resta una risposta JSON con stato HTTP', async (t) => {
+  const ctx = await startApp();
+  t.after(ctx.close);
+  const res = await postNdjson(`${ctx.url}/api/generate`, { prompt: '' });
+  assert.equal(res.status, 400);
+  assert.equal((await res.json()).error.code, 'INVALID_REQUEST');
+});
+
+test('timeout di inattività configurabile', () => {
+  const cfg = loadConfig(baseEnv());
+  assert.equal(cfg.timeoutMs, 240000);
+  assert.equal(cfg.idleTimeoutMs, 90000);
+  assert.equal(loadConfig(baseEnv({ OPENROUTER_IDLE_TIMEOUT_MS: '30000' })).idleTimeoutMs, 30000);
+  assert.throws(() => loadConfig(baseEnv({ OPENROUTER_IDLE_TIMEOUT_MS: '10' })), /OPENROUTER_IDLE_TIMEOUT_MS/);
+});
