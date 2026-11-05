@@ -1,438 +1,816 @@
-# 📚 Appunti di Storia – Verifica (domande aperte)
+# 📚 Appunti di Storia – Verifica
 
-> ⚠️ **Bozza provvisoria.** Le foto del libro non sono arrivate, quindi questi appunti sono scritti
-> sugli argomenti che mi hai indicato, basandomi su quello che c'è di solito nei manuali di scuola.
-> Quando mi mandi le foto (cap 17 n 1, n 2… poi cap 19 n 1, n 2…), li riscrivo seguendo
-> **esattamente** il tuo libro, saltando le parti annerite.
+**Capitolo 17 – L'Europa tra crisi e innovazione** · **Capitolo 19 – Rivoluzioni e assolutismi**
+(riscritti dalle pagine del libro, saltando le parti annerite)
 
-⭐ = argomento su cui il prof insisterà di più
+⭐ = argomento su cui il prof insisterà di più · 🎯 = domanda che il libro stesso propone
 
 ---
 
-## 🗺️ Il quadro generale in 30 secondi
+# 🟥 CAPITOLO 17 – L'Europa tra crisi e innovazione
 
-Nel **Seicento** ci sono **due modelli opposti** di Stato:
+## 2. Produzione e mercati: l'Europa che declina e quella che cresce
 
-| 🇬🇧 **Inghilterra** | 🇫🇷 **Francia** |
+> **L'idea del paragrafo in una riga:** il Seicento è un secolo di crisi, ma **non per tutti**.
+> Il **Sud** (Spagna, Italia) **declina**, il **Nord** (Olanda, Inghilterra, Francia) **cresce**.
+
+### 🌾 L'agricoltura si apre a nuovi prodotti
+- Il '600 non è solo crisi: ci sono anche **cambiamenti positivi**, soprattutto in **agricoltura**.
+- I **cereali** sono la base dell'alimentazione della maggior parte della popolazione.
+- In alcune zone la produzione cresce molto. Esempio: in **Inghilterra** le rese del grano
+  **triplicano** tra fine '500 e inizio '600, e crescono ancora del **25%** tra il 1650 e il 1750.
+- Dalla **seconda metà del '600** la produzione cresce in **tutta Europa** grazie alle **nuove
+  colture** al posto del grano:
+  - 🥔 **patata** → Europa centro-settentrionale
+  - 🌽 **mais** e 🍚 **riso** → Europa meridionale e Italia del centro-nord
+- Risultato: **più cibo per abitante** → le **carestie** fanno meno danni.
+
+### 💰 L'alta finanza e i suoi clienti
+- Dalla fine del '400 crescono l'**alta finanza** e il **prestito a interesse**.
+- All'inizio dominano **tedeschi e italiani**, che poi entrano in crisi per le **bancarotte della
+  corona spagnola**.
+- Nel '600 li sostituiscono i **mercanti e banchieri francesi, olandesi e inglesi** (favoriti dalle
+  **rotte atlantiche**) → **Nantes, Amsterdam e Londra** diventano i principali porti e centri
+  finanziari d'Europa.
+- I loro clienti speciali sono i **sovrani** e i **grandi nobili**, che si indebitano per fare una
+  politica di **prestigio** o per competere con la **borghesia** in ascesa.
+- **La catena delle conseguenze:**
+  ```
+  re pieni di debiti  →  NUOVE TASSE  →  nobili e alto clero NON pagano
+                                      →  pagano mercanti, artigiani e soprattutto i CONTADINI
+  ```
+- Questi ceti sono la **maggioranza** della popolazione: **sudditi senza diritti**, esclusi dalle
+  decisioni politiche. Da questo punto di vista **un ricco mercante e un povero contadino sono
+  uguali**.
+
+### 📉 Il declino del primato italiano
+- **Spagna e Italia** nel '600 vivono un forte **declino economico**.
+- Nel '500 l'Italia era **prima** in settori come **tessuti di lusso, carta, armi, vetro** → nel
+  '600 perde la **concorrenza**.
+- **Le cause** (trucco: **S‑A‑N‑C** → la crisi è "**SANC**ita"):
+  - **S**pagna → il **malgoverno spagnolo** (spiegazione tradizionale). È vero soprattutto per il
+    **Regno di Napoli**: tasse altissime, strapotere dei **baroni** e **"rifeudalizzazione"** impediscono
+    la nascita di una borghesia intraprendente e dei commerci.
+  - **A**tlantico → l'Italia **non ha reti commerciali nell'Atlantico**, dove ormai si fanno gli
+    affari e gli investimenti più ricchi.
+  - **N**ord → la **concorrenza degli Stati del Nord Europa**, fortissima proprio nei settori in cui
+    l'Italia era forte: **manifatture** e **tessile**.
+  - **C**orporazioni → nelle città italiane le **corporazioni** sono potenti e impediscono di
+    **abbassare il costo del lavoro**.
+- Risultato: economia **debole** e **ai margini** → investire in commerci e manifatture è troppo
+  rischioso → si torna alla **terra**, vista come la fonte di guadagno più **sicura**.
+
+### 📈 L'ascesa di nuove potenze economiche
+- Al contrario dell'Italia, **Province Unite (Olanda)**, **Inghilterra** e anche **Francia**,
+  favorite dalle **rotte atlantiche** e da una **borghesia intraprendente**, vivono una grande
+  **prosperità**.
+- **Cosa fanno i governi:**
+  - politiche **mercantilistiche**
+  - grandi investimenti nella **marina commerciale**
+  - **costi di produzione bassi** (qui le corporazioni non sono un ostacolo)
+  - → vendono **prodotti economici ma fatti bene** (es. i **panni di lana inglesi**)
+
+🇳🇱 **Province Unite – nessuna crisi, grazie a:**
+- **specializzazione delle colture** + **commercializzazione** dei prodotti
+- i proprietari (spesso **borghesi**) riducono i cereali e coltivano piante **più redditizie**:
+  - **lino** e **canapa** → per i tessuti
+  - **luppolo** → per la birra
+  - **guado** → per colorare
+  - 🧠 *immagina un olandese con una camicia di lino tinta col guado che beve una birra al luppolo*
+- il grano che manca lo **importano dai paesi del Baltico**
+- progressi nell'**allevamento** → che dà anche il **concime** per i campi
+
+🇬🇧 **Inghilterra:**
+- **enclosures** (recinzioni dei campi) + **rotazione quadriennale** (*Norfolk system*, dalla regione
+  dove fu provata) → rese più alte e produzione **più varia**: una parte per le **persone**, una parte
+  **solo per gli animali**.
+
+🛣️ **Strade e vie d'acqua:** nel Nord le crisi di sussistenza sono limitate anche grazie a **strade
+e canali efficienti** (obiettivo del mercantilismo).
+Più veloci viaggiano persone e merci → più veloce **circola la moneta** → più **ricchezza**.
+
+🌍 **Il colpo finale all'Italia:** Olanda, Inghilterra e Francia controllano le **rotte oceaniche**,
+fondano **colonie** in Asia e Americhe ed entrano anche nel **Mediterraneo** → **escludono gli Stati
+italiani** dai commerci con Nord Africa e Medio Oriente.
+
+| 📉 **Sud** (Italia, Spagna) | 📈 **Nord** (Olanda, Inghilterra, Francia) |
 |---|---|
-| Il **Parlamento** limita il re | Il **re** ha tutto il potere |
-| ➜ **monarchia costituzionale/parlamentare** | ➜ **monarchia assoluta** |
-| Il filosofo di riferimento è **Locke** | Il teorico di riferimento è **Bossuet** (e, in modo diverso, **Hobbes**) |
-
-E sotto tutto c'è una domanda: **da dove viene il potere e quali limiti ha?**
-Il **giusnaturalismo** e il **contrattualismo** provano a rispondere.
+| Malgoverno spagnolo, baroni, rifeudalizzazione | Borghesia intraprendente |
+| Corporazioni → costi alti | Niente corporazioni → costi bassi |
+| Fuori dalle rotte atlantiche | Rotte atlantiche, colonie, marina |
+| Si torna alla terra | Mercantilismo, specializzazione, commercio |
 
 ---
 
-## 1. ⭐ Il giusnaturalismo
+## 4. La rivoluzione scientifica 🔭
 
-### Che cos'è
-- Dal latino *ius naturale* = **diritto naturale**.
-- È l'idea che esistano **diritti e regole che derivano dalla natura dell'uomo**, e che si possono
-  conoscere con la **ragione**.
-- Questi diritti sono:
-  - **universali** → valgono per tutti gli uomini
-  - **immutabili** → non cambiano col tempo o col luogo
-  - **precedenti e superiori allo Stato** → lo Stato non li crea, li deve **rispettare**
+> 🎯 **Domande guida del libro:** In che cosa consiste il **metodo sperimentale**? · Qual è il
+> pensiero di **Galileo** sul rapporto tra **scienza e fede**?
 
-| Diritto **naturale** | Diritto **positivo** |
-|---|---|
-| Viene dalla natura/ragione | Viene dallo Stato (leggi scritte) |
-| Uguale ovunque | Cambia da Stato a Stato |
-| È il "metro" per giudicare le leggi | Se va contro il diritto naturale è **ingiusto** |
+### I caratteri della nuova scienza
+- Tra '500 e '600 cambia **completamente** il modo di studiare la natura: nasce uno **spirito nuovo**.
+- Le teorie accettate per secoli vengono sostituite da una **ricerca libera e autonoma**;
+  la conoscenza diventa il **motore del progresso**.
+- **Punto di partenza:** la **teoria eliocentrica di Copernico** (il Sole al centro) → crolla la
+  visione **aristotelico-tolemaica** (la Terra al centro), che durava da **2000 anni**.
+- **Due cose cadono:**
+  1. la natura non si spiega più con i **4 elementi** (terra, acqua, aria, fuoco)
+  2. ⭐ cade il **principio di autorità** = credere vero qualcosa **solo perché lo dice qualcuno di
+     importante** (es. **Aristotele**), senza verificarlo
+- Ora la natura si studia con **analisi qualitative e quantitative** e con **strumenti** di
+  osservazione e misura sempre più precisi.
 
-### Perché nasce
-- Dopo le **guerre di religione** l'Europa è divisa tra cattolici e protestanti.
-- Serve un fondamento della convivenza **che vada bene per tutti** → non la religione (che divide), ma
-  la **ragione** (che tutti hanno).
+### Scienza + tecnica = squadra 🔧
+- Nel '600 crescono gli investimenti nelle **"arti meccaniche"**: **teoria** e **pratica** vanno insieme.
+- Lo scienziato deve saper fare **sia il lavoro intellettuale sia quello pratico**; tecnici,
+  ingegneri e costruttori di strumenti diventano **figure importanti**.
+- Nascono nuovi strumenti: **termometro, barometro, orologio di precisione, cannocchiale,
+  microscopio**.
 
-### Ugo Grozio (olandese, 1583‑1645)
-- Opera: ***De iure belli ac pacis*** ("Il diritto della guerra e della pace", **1625**).
-- Frase famosa: il diritto naturale varrebbe **anche se Dio non esistesse** → il diritto diventa
-  **laico**, basato sulla ragione.
-- È considerato il **padre del diritto internazionale** (regole anche tra Stati e in guerra).
+### ⭐ Galileo Galilei (1564‑1642) e il metodo sperimentale
+- Nasce a **Pisa** nel 1564, studia medicina; dal **1592** è a **Padova** per **18 anni**: insegna
+  matematica e studia fisica e astronomia.
+- Nel **1609** costruisce il **cannocchiale** (perfezionando strumenti olandesi) e lo punta verso il
+  cielo.
+- **1610 – le scoperte:**
+  - 🪐 i **satelliti di Giove** → li chiama **"medicei"** per ottenere un lavoro dai **Medici** (e
+    lo ottiene, in Toscana)
+  - 🌙 i **monti della Luna**
+  - ☀️ le **macchie solari**
+  - le **fasi di Venere** attorno al Sole
+- Frase chiave: **il "libro" della natura è scritto in lingua matematica** → i fenomeni si spiegano
+  con **formule matematiche**.
 
-### Il contrattualismo (= teoria del contratto sociale) ⭐
-È lo schema usato da Hobbes e Locke. Sono sempre **3 passaggi**:
+⭐ **Il metodo sperimentale** (= il metodo della scienza moderna, usato ancora oggi) ha **2 fasi**:
 
 ```
-1) STATO DI NATURA   →   2) PATTO (contratto)   →   3) STATO (società civile)
- uomini senza leggi        si accordano tra loro       nasce il potere politico
- e senza governo           e cedono qualcosa
+1) FASE IPOTETICA                         2) FASE DEDUTTIVA
+osservo la natura → faccio un'IPOTESI  →  analizzo i risultati degli esperimenti
+→ la metto alla prova con ESPERIMENTI     → se confermano l'ipotesi → CONCLUSIONI
 ```
 
-👉 Idea rivoluzionaria: il potere **non viene da Dio**, ma da un **accordo tra uomini**.
-La differenza tra i filosofi sta in **com'è lo stato di natura** e **quanto si cede col patto**.
+### ⭐ Galileo, l'eliocentrismo e la Chiesa
+- Con le sue scoperte Galileo **dimostra indirettamente** che Copernico ha ragione. Ma la teoria di
+  Copernico era stata dichiarata **eretica nel 1616**.
+- ⭐ **Scienza e fede:** Galileo è un **uomo di fede**. Vuole convincere la Chiesa a superare la
+  vecchia visione e a **separare le verità di fede da quelle della ragione** (la Bibbia insegna la
+  fede, la scienza spiega la natura).
+- **1632** → scrive il ***Dialogo sopra i due massimi sistemi del mondo*** (sistema tolemaico vs
+  sistema copernicano) e mostra i **punti deboli di Tolomeo**, difeso dalla Chiesa perché in accordo
+  con la Bibbia.
+- **La reazione della Chiesa:**
+  1. prima l'**Inquisizione** lo **ammonisce a voce**
+  2. **1633** → **processo**, con minaccia di **tortura**
+  3. Galileo, quasi **70enne**, si inginocchia e **abiura** (dichiara di non credere più alle sue idee)
+  4. non basta: è **confinato a vita** nella sua villa di **Arcetri** (Firenze)
+
+### La scienza e l'Inquisizione ⛪🔥
+- La Chiesa si oppone alla nuova scienza soprattutto nei **paesi cattolici**, dove l'**Inquisizione**
+  è più forte → processi che mettono a rischio la vita.
+- **Giordano Bruno** (1548‑1600), filosofo: sostiene che il cosmo è **infinito**, che esistono **tanti
+  mondi** e che **Dio = Natura** (il divino è anche nella materia) → idee anticristiane →
+  **bruciato sul rogo** a **Campo de' Fiori** (Roma), **17 febbraio 1600**.
+- **Tommaso Campanella** (1568‑1639), frate domenicano: vuole una società basata sull'**armonia
+  cristiana tra le classi**. Nel **1599** è arrestato per una **congiura antispagnola** → si **finge
+  pazzo** e si salva, ma è torturato e resta in carcere **quasi 30 anni** (1602‑1629).
+- Vita più facile nei paesi **tolleranti**: **Inghilterra e Olanda**, interessati ai **vantaggi
+  economici** della scienza → infatti Galileo pubblica gli ultimi scritti **in Olanda**.
+
+### La comunità scientifica e le accademie 🏛️
+Da metà '600 la scienza segue **2 principi** (validi ancora oggi):
+
+| 🤝 **Collaborazione** | 🏁 **Competizione** |
+|---|---|
+| Nasce una **comunità scientifica internazionale** | **Gara** tra scienziati |
+| Lingua comune: il **latino** | Per **ambizione personale** |
+| Metodo comune: quello **sperimentale** | Per la spinta di chi **finanzia** le ricerche |
+| Scoperte riconosciute: i **brevetti** | Conta anche il **guadagno** |
+
+Le **accademie** = luoghi dove gli scienziati si scambiano informazioni e si fanno concorrenza:
+
+| Accademia | Dove | Quando | Come nasce |
+|---|---|---|---|
+| **dei Lincei** | Roma | **1603** | Privata, iniziativa dei soci |
+| **Royal Society** | Londra | **1660** | Da scienziati liberi (es. **Boyle**), poi protetta dalla corona |
+| **Reale delle Scienze** | Parigi | **1666** | Voluta dal re **Luigi XIV** |
+
+🧠 *Roma → Londra → Parigi: 03 → 60 → 66*
+
+- La scienza diventa **"di moda"**: ogni capitale vuole un'accademia, ogni re vuole apparire
+  **protettore delle scienze**.
+
+### Cartesio e Newton
+- **Cartesio** (René Descartes, francese, 1596‑1650):
+  - inventa la **geometria analitica**
+  - ***Discorso sul metodo*** (**1637**) → fonda il **razionalismo** (la **ragione** è la base di
+    ogni conoscenza)
+  - ***Cogito, ergo sum*** = "**penso, dunque esisto**"
+  - alla base della conoscenza c'è il **dubbio**: tutto va prima considerato falso e poi verificato
+    con un metodo **deduttivo** → questo **rafforza** il metodo di Galileo
+- **Isaac Newton** (inglese, 1642‑1727):
+  - ***Principia mathematica*** (**1687**) → **legge di gravitazione universale** (la forza che
+    attrae i corpi celesti e li fa muovere in orbite fisse)
+  - inventa il **calcolo infinitesimale**
+  - dal **1703** presidente della **Royal Society**
+
+### 🗺️ Schema del libro: la nuova scienza del Seicento
+```
+                       RIVOLUZIONE SCIENTIFICA
+          ┌────────────────────┼─────────────────────┐
+  Superamento del       Affermazione del       Collaborazione e
+  modello aristotelico- metodo sperimentale    competizione tra scienziati
+  tolemaico                │        │                 │
+          │       Contestazione   Uso e costruzione   Fondazione di
+          │       del principio   di nuovi strumenti  accademie statali
+          │       di autorità                         e private
+          └──────────┬─┘
+            CONTRASTO CON LA CHIESA
+```
 
 ---
 
-## 2. ⭐ Thomas Hobbes (1588‑1679)
+## 5. ⭐⭐ Un nuovo pensiero politico
 
-### Chi è
-- Inglese, vive gli anni della **guerra civile** → ha il terrore del caos e dell'anarchia.
-- Opera principale: ***Leviatano*** (**1651**).
+> 🎯 **Domanda guida del libro:** Quali furono le principali **teorie sullo Stato** elaborate nel
+> Seicento?
 
-### L'uomo e lo stato di natura
-- **Pessimismo**: l'uomo è egoista e cerca solo il proprio interesse.
-- Frase simbolo: ***homo homini lupus*** = "l'uomo è un lupo per l'altro uomo".
-- Nello stato di natura **tutti hanno diritto a tutto** → tutti si scontrano →
-  ***bellum omnium contra omnes*** = **guerra di tutti contro tutti**.
-- La vita è "solitaria, misera, brutale e breve". Domina la **paura della morte violenta**.
+### ⭐ Contrattualismo e giusnaturalismo
 
-### Il patto
-- La **paura** + l'**istinto di sopravvivenza** spingono la ragione a cercare la pace.
-- Gli uomini fanno un patto: **cedono TUTTI i loro diritti** (tranne quello alla vita) a un
-  **sovrano** (un uomo o un'assemblea).
-- Il sovrano **non fa parte del patto** → non ha obblighi verso i sudditi.
+**Perché nascono:** le **guerre di religione** e le **rivolte contro l'assolutismo** spingono gli
+intellettuali a chiedersi:
+- qual è il **ruolo dello Stato** e da dove viene il **diritto**?
+- che rapporto c'è tra **potere** e **cittadini**, tra **potere** e **libertà dell'individuo**?
 
-### Lo Stato che nasce: il Leviatano
-- Il **Leviatano** è un mostro biblico → simbolo di uno Stato **potentissimo**.
-- Il potere del sovrano è:
-  - **assoluto** (nessuno lo controlla)
-  - **indivisibile** (non si spezza tra più poteri)
-  - **irrevocabile** (i sudditi **non possono ribellarsi**)
-- Il sovrano controlla anche la **religione** (nell'immagine del libro ha la spada 🗡️ = potere civile
-  e il pastorale = potere religioso; il suo corpo è fatto di tanti piccoli uomini = i sudditi).
+**La grande novità:** queste teorie sono **laiche e razionali** → si **supera** l'idea che il potere
+venga **da Dio**.
 
-### Il punto chiave da dire in verifica
-> Hobbes giustifica l'**assolutismo**, ma in modo **laico e razionale**: il potere assoluto non
-> viene da Dio, ma da un **patto fatto per paura**, per avere **sicurezza e pace**.
+📜 **CONTRATTUALISMO**
+- Lo Stato nasce da un **contratto sociale** = un **patto tra gli uomini** per regolare la
+  convivenza civile. Da questo patto nasce la **società**.
 
----
+⚖️ **GIUSNATURALISMO** (dal latino ***ius*** = diritto + ***natura***)
+- Tutti gli uomini hanno, **fin dalla nascita**, dei **diritti inalienabili** (che nessuno può
+  togliere): **la libertà, la vita e la proprietà**.
+- Studia il rapporto tra due tipi di diritto:
 
-## 3. ⭐ John Locke (1632‑1704)
+| **Diritto naturale** | **Diritto positivo** |
+|---|---|
+| Principi e diritti che l'uomo ha **per natura** | Principi e leggi **fatti dall'uomo** |
+| Nell'animo umano c'è una **legge naturale** che fa distinguere **per istinto il bene dal male** | Le leggi umane **devono adeguarsi** alla legge naturale |
 
-### Chi è
-- Inglese, filosofo e medico, vicino ai **whig** (partito del Parlamento). Va in esilio in Olanda e
-  torna nel **1689** con Guglielmo d'Orange.
-- Opere: ***Due trattati sul governo*** (**1690**), *Lettera sulla tolleranza* (1689).
-- Nel Primo trattato attacca **Filmer**, che difendeva il **diritto divino** dei re.
+### Ugo Grozio (olandese, 1583‑1645) – l'iniziatore
+- È l'**iniziatore** del giusnaturalismo.
+- È il **primo** a dire che i principi della convivenza **non vengono da Dio**, ma dalla **ragione
+  umana**.
+- Siccome sono **razionali** → possono essere **condivisi da tutti** → servono a creare regole per
+  vivere in **ordine e pace**, **dentro gli Stati** ma anche **tra gli Stati**.
+- Opera: ***De iure belli ac pacis*** (**1625**) → prima teoria del **diritto internazionale**.
 
-### L'uomo e lo stato di natura
-- **Ottimismo** (rispetto a Hobbes): lo stato di natura **non è guerra**.
-- Gli uomini sono **liberi e uguali** e seguono la **legge naturale** (la ragione).
-- Ognuno ha **3 diritti naturali**: **VITA, LIBERTÀ, PROPRIETÀ** (i beni ottenuti col lavoro).
-- **Il problema**: manca un **giudice imparziale** → se qualcuno viola i tuoi diritti, ti fai
-  giustizia da solo → disordine e insicurezza.
+### ⭐ Thomas Hobbes (inglese, 1588‑1679) 😨
+- **Visione pessimistica**: per natura l'uomo è **malvagio** e vive in una **lotta continua** con
+  gli altri.
+- ***Homo homini lupus*** = "**l'uomo è lupo per l'uomo**": nello stato di natura gli uomini si
+  aggrediscono per **competizione, diffidenza e ricerca della gloria**.
+- L'uomo vuole soprattutto **pace e sicurezza** → la forma di governo che le garantisce è la
+  **monarchia assoluta**.
+- **Il prezzo da pagare:** la comunità deve **rinunciare alla sua libertà** e **sottomettersi** al
+  sovrano, che in cambio **garantisce la sua conservazione** (cioè la sopravvivenza).
+- La delega del potere al monarca è **irrevocabile** (non si torna indietro).
+- Opere: ***De cive*** (**1642**) e ***Leviatano*** (**1651**).
+- È **assolutamente contrario alla divisione dei poteri** → la vede come un **pericolo** per la forza
+  e la stabilità dello Stato.
+- Lo Stato è un'**entità autonoma** che Hobbes chiama:
+  - 🐉 **"Leviatano"** → il mostro biblico del **libro di Giobbe**
+  - oppure **"Dio mortale"**
+- (Il famoso frontespizio del *Leviatano* è dell'illustratore **Abraham Bosse**.)
 
-### Il patto
-- Gli uomini **NON cedono i diritti naturali**: cedono **solo il diritto di farsi giustizia da sé**.
-- Lo Stato nasce **per proteggere** vita, libertà e proprietà. Il governo è un
-  **incarico di fiducia** dato dal popolo.
+### ⭐ John Locke (inglese, 1632‑1704) 🔒
+- Al centro del suo pensiero c'è la **libertà degli individui**.
+- **Visione positiva**: per natura l'uomo **NON è malvagio** e non vuole sopraffare gli altri
+  (**contro Hobbes**) → natura **buona**.
+- Il compito del sovrano è **proteggere i diritti naturali** di tutti gli uomini: **la ragione,
+  l'uguaglianza e la libertà**.
+- La società **delega** il potere allo Stato per avere un **vantaggio**, ma **può revocarlo** se lo
+  Stato non protegge i diritti fondamentali → delega **temporanea**.
+- È **favorevole alla separazione dei poteri** → garantisce un **controllo reciproco** e la
+  **giustizia**.
+- I cittadini **non devono rinunciare ai loro diritti** e possono **ribellarsi, anche con la
+  forza**, se lo Stato non fa il suo dovere.
+- Opere: ***Due trattati sul governo*** (**1690**); il libro cita anche il suo scritto sulla
+  ***tolleranza***.
 
-### Lo Stato che nasce
-- **Potere limitato** e **diviso**:
-  - **legislativo** → fa le leggi, è il più importante → spetta al **Parlamento**
-  - **esecutivo** → fa applicare le leggi → spetta al **re**
-  - **federativo** → rapporti con gli altri Stati (guerra, pace, alleanze)
-- ⭐ **Diritto di resistenza**: se il governo viola i diritti naturali, **tradisce la fiducia** →
-  il popolo può **ribellarsi e sostituirlo**.
-- **Tolleranza religiosa**: lo Stato non deve imporre una fede (però Locke la esclude per **atei** e
-  **cattolici**, visti come fedeli a un potere straniero, il papa).
+### ⭐⭐ Il contratto sociale in Hobbes e in Locke (lo schema del libro, potenziato)
 
-### Il punto chiave da dire in verifica
-> Locke è il **padre del liberalismo**: il potere nasce dal consenso, è **limitato** dai diritti
-> naturali, e se diventa tiranno **si può rovesciare**. Le sue idee **giustificano la Gloriosa
-> Rivoluzione** e sono alla base del **Bill of Rights**.
-
----
-
-## 4. ⭐ Hobbes vs Locke – tabella da imparare
-
-| | **Hobbes** 😨 | **Locke** 🔒 |
+| | **HOBBES** 😨 | **LOCKE** 🔒 |
 |---|---|---|
-| Opera | *Leviatano* (1651) | *Due trattati sul governo* (1690) |
-| Visione dell'uomo | Pessimista: *homo homini lupus* | Più ottimista: l'uomo è razionale |
-| Stato di natura | Guerra di tutti contro tutti | Libertà e uguaglianza, ma senza giudice |
-| Cosa si cede col patto | **Tutti** i diritti (tranne la vita) | **Solo** il diritto di farsi giustizia da sé |
-| Scopo dello Stato | **Sicurezza** e pace | **Proteggere** vita, libertà, proprietà |
-| Tipo di potere | **Assoluto**, indivisibile | **Limitato**, diviso |
-| Ribellione | **No** | **Sì**, se il governo diventa tiranno |
-| Modello politico | Assolutismo (laico) | Monarchia costituzionale / liberalismo |
+| Natura dell'uomo | **Malvagia** (*homo homini lupus*) | **Buona** |
+| Cosa vuole ottenere | **Pace e sicurezza** | Rispetto delle **libertà fondamentali** |
+| Come | **Delega IRREVOCABILE** del potere al **monarca assoluto** | **Delega TEMPORANEA** del potere al monarca |
+| Libertà degli individui | **Rinunciano** alla libertà | **Conservano** i loro diritti |
+| Divisione dei poteri | **Contrario** (indebolisce lo Stato) | **Favorevole** (controllo reciproco) |
+| Ribellione | **No** | **Sì**, anche con la forza |
+| Controllo sul re | Nessuno | Si può **controllare** e **revocare** il potere del re |
+| Opere | *De cive* (1642), *Leviatano* (1651) | *Due trattati sul governo* (1690) |
+
+🧠 **Trucchi:**
+- **Hobbes = Horror** 😨 → paura degli altri uomini → cedo tutto → **re assoluto**.
+- **Locke = *lock*** (in inglese "lucchetto") 🔒 → chiude a chiave i **diritti** e chiude il re
+  dentro dei **limiti**.
+- **Leviatano = Dio mortale** → uno Stato gigante e potentissimo.
 
 ---
 
-## 5. ⭐ L'Inghilterra nel Seicento: dal re assoluto al re limitato
+# 🟦 CAPITOLO 19 – Rivoluzioni e assolutismi
 
-### ⏱️ Linea del tempo (da sapere a memoria)
+> 🎯 **Domande guida del libro:**
+> - Perché in Inghilterra **fallì** il progetto assolutistico degli **Stuart**?
+> - Chi era **Cromwell** e che ruolo ebbe nella prima rivoluzione inglese?
+> - Quale **principio** sta alla base della **monarchia costituzionale** inglese?
+> - Quali furono i **passaggi** con cui **Luigi XIV** rese assoluta la Francia?
 
-| Anno | Cosa succede |
-|---|---|
-| **1603** | Muore Elisabetta I → sale **Giacomo I Stuart** |
-| **1625** | Sale **Carlo I** |
-| **1628** | **Petition of Right** |
-| **1629‑1640** | Carlo governa **senza Parlamento** (11 anni) |
-| **1640** | Carlo riconvoca il Parlamento (Corto, poi **Lungo Parlamento**) |
-| **1642‑1649** | **Guerra civile** |
-| **1649** | **Carlo I decapitato** → Repubblica (Commonwealth) |
-| **1653‑1658** | **Cromwell** Lord Protettore |
-| **1660** | **Restaurazione**: Carlo II Stuart |
-| **1679** | **Habeas Corpus Act** |
-| **1685** | Sale **Giacomo II** (cattolico) |
-| **1688** | **Gloriosa Rivoluzione** |
-| **1689** | **Bill of Rights** |
+> **L'idea del capitolo in una riga:** nel '600 l'**Inghilterra ferma l'assolutismo** (vince il
+> Parlamento), mentre la **Francia di Luigi XIV lo porta al massimo**.
 
-### 5.1 Il punto di partenza
-- Il **Parlamento** inglese ha due camere:
-  - **Camera dei Lord** → nobili ed ecclesiastici
-  - **Camera dei Comuni** → *gentry* (piccola nobiltà di campagna) e **borghesia**
-- Regola antica (dalla **Magna Charta**, 1215): il re **non può mettere tasse senza il consenso**
-  del Parlamento.
+### ⏱️ Le date chiave (dal libro)
 
-### 5.2 Giacomo I (1603‑1625)
-- Primo re **Stuart** (era già re di Scozia).
-- **Assolutista**: crede nel **diritto divino** dei re → litiga col Parlamento sulle tasse.
-- Perseguita i **puritani** (protestanti calvinisti rigorosi) → molti emigrano in America
-  (**Padri Pellegrini**, nave *Mayflower*, 1620).
-
-### 5.3 Carlo I e lo scontro col Parlamento (1625‑1642)
-- Ancora più assolutista del padre. Ha bisogno di soldi per le guerre.
-- **1628 – Petition of Right**: il Parlamento gli chiede di rispettare alcuni principi:
-  - niente tasse senza il Parlamento
-  - niente arresti arbitrari
-  - Carlo accetta… ma nel **1629 scioglie il Parlamento** e governa da solo per **11 anni**.
-- Vuole imporre la Chiesa anglicana alla **Scozia** (presbiteriana) → **rivolta scozzese** →
-  servono soldi per l'esercito → **1640** deve riconvocare il Parlamento.
-- Il **Lungo Parlamento** invece di dargli soldi limita i suoi poteri. Nel **1642** Carlo cerca di
-  far arrestare alcuni deputati → scoppia la **guerra civile**.
-
-### 5.4 La guerra civile (1642‑1649)
-
-| ⚔️ **Cavalieri** (realisti) | 🪖 **Teste Rotonde** (parlamentari) |
-|---|---|
-| Stanno col **re** | Stanno col **Parlamento** |
-| Nobiltà, anglicani, cattolici | Borghesia, gentry, **puritani**, Londra |
-| Capelli lunghi, eleganti | Capelli corti → "teste rotonde" |
-
-- Il capo dei parlamentari è **Oliver Cromwell**, puritano, che crea il **New Model Army**:
-  un esercito nuovo, disciplinato, dove si fa carriera per **merito** e non per nascita.
-- Vittoria decisiva a **Naseby (1645)**.
-- **30 gennaio 1649**: Carlo I viene processato e **decapitato** → evento shock: per la prima volta
-  un re viene giustiziato **dal suo popolo** con un processo.
-- Gruppi radicali (repressi da Cromwell):
-  - **Livellatori** → volevano uguaglianza politica e voto quasi per tutti i maschi
-  - **Zappatori** (*Diggers*) → volevano le terre in comune
-
-### 5.5 Cromwell: Repubblica e dittatura (1649‑1658)
-- **1649**: monarchia e Camera dei Lord abolite → **Repubblica** (*Commonwealth*).
-- Reprime duramente **Irlanda** (cattolica) e **Scozia**.
-- **1651 – Atto di Navigazione**: le merci possono arrivare in Inghilterra **solo su navi inglesi**
-  (o del paese che le produce) → colpisce gli olandesi → guerra con l'**Olanda**; l'Inghilterra
-  diventa una **potenza navale e commerciale**.
-- **1653**: scioglie il Parlamento e diventa **Lord Protettore** → di fatto una **dittatura
-  militare e puritana** (regole morali rigide).
-- Muore nel **1658** → il figlio non riesce a governare.
-
-### 5.6 La Restaurazione (1660‑1688)
-- **1660**: torna la monarchia con **Carlo II Stuart**.
-- Nascono i primi **partiti**:
-  - **Whig** → difendono il **Parlamento**, vogliono escludere dal trono il cattolico Giacomo
-  - **Tory** → difendono il **re** e la tradizione
-- ⭐ **1679 – Habeas Corpus Act**: nessuno può essere tenuto in prigione **senza che un giudice
-  controlli** se l'arresto è legittimo → protezione contro gli **arresti arbitrari**.
-- **1685**: sale **Giacomo II**, **cattolico** e assolutista → paura di un ritorno al cattolicesimo.
-
-### 5.7 ⭐ La Gloriosa Rivoluzione (1688‑1689)
-- **1688**: a Giacomo II nasce un **figlio maschio** cattolico → si teme una dinastia cattolica
-  per sempre.
-- Whig e Tory, **insieme**, chiamano **Guglielmo III d'Orange** (olandese, protestante, marito di
-  **Maria**, figlia protestante di Giacomo).
-- Guglielmo sbarca, Giacomo **fugge in Francia senza combattere**.
-- Si chiama **"Gloriosa"** perché è una rivoluzione **senza sangue** (in Inghilterra) e perché
-  **non distrugge** la monarchia, ma la **limita**.
-
-### 5.8 ⭐⭐ Il Bill of Rights (1689)
-È la **"Dichiarazione dei diritti"** che Guglielmo e Maria **devono accettare per salire al trono**.
-
-**Il re, SENZA il Parlamento, NON può:**
-- ❌ fare, sospendere o annullare le **leggi**
-- ❌ imporre **tasse**
-- ❌ tenere un **esercito** permanente in tempo di pace
-
-**Inoltre:**
-- ✅ le **elezioni** del Parlamento devono essere **libere**
-- ✅ in Parlamento c'è **libertà di parola** (i deputati non possono essere puniti per ciò che dicono)
-- ✅ il Parlamento va **convocato spesso**
-- ✅ i sudditi possono mandare **petizioni** al re
-- ✅ niente **pene crudeli** né cauzioni/multe eccessive
-- ✅ il re **deve essere protestante** (i cattolici sono esclusi dal trono)
-
-**Perché è importante:**
-- Nasce la **monarchia costituzionale (parlamentare)**: il re c'è ancora, ma il potere vero è del
-  **Parlamento**.
-- È la **fine dell'assolutismo** in Inghilterra.
-- È il **contratto sociale messo in pratica**: il re governa solo **a certe condizioni**, come diceva
-  **Locke** (i *Due trattati* escono proprio nel 1690 e giustificano quello che è appena successo).
-- Sempre nel 1689: **Atto di tolleranza** → libertà di culto per i protestanti non anglicani
-  (non per i cattolici).
+| Anno | 🇬🇧 Inghilterra | 🇫🇷 Francia |
+|---|---|---|
+| **1603‑1625** | Regno di **Giacomo I Stuart** | |
+| **1625‑1649** | Regno di **Carlo I** | |
+| **1628** | **Petition of Rights** | |
+| **1629** | Carlo I **scioglie il Parlamento** | |
+| **1640** | Rivolta della Scozia → convocato il **Lungo Parlamento** | |
+| **1641** | **Grande rimostranza** | |
+| **1642** | Inizia la **guerra civile** | |
+| **1643** | | **Luigi XIV** re a 5 anni (regna fino al 1715) |
+| **1645** | Vittoria delle "teste rotonde" a **Naseby** | |
+| **1648‑1652** | | **Fronde** |
+| **1649** | **Carlo I decapitato** → dittatura di **Cromwell** | |
+| **1658** | Muore Cromwell | |
+| **1660** | **Restaurazione**: Carlo II Stuart | |
+| **1661** | | Muore Mazzarino → Luigi XIV governa **da solo** |
+| **1679** | **Habeas Corpus Act** | |
+| **1682** | | La corte a **Versailles** |
+| **1685** | | **Revoca dell'Editto di Nantes** |
+| **1688** | **Gloriosa rivoluzione**: Guglielmo III d'Orange | |
+| **1689** | **Bill of Rights** + Atto di tolleranza | |
 
 ---
 
-## 6. ⭐ La Francia nel Seicento: l'assolutismo
+## 1. ⭐ La rivoluzione inglese
 
-### ⏱️ Linea del tempo
+### 👑 Dai Tudor agli Stuart: Giacomo I (1603‑1625)
+- **1603**: muore **Elisabetta I** → finisce la dinastia **Tudor**.
+- I Tudor, alleati con le **classi produttive**, avevano trasformato un regno **feudale** (con
+  un'aristocrazia potente e ribelle) in una **monarchia moderna**, tra le più potenti d'Europa.
+- Elisabetta non ha eredi → sale **Giacomo VI di Scozia** (figlio di Maria Stuart, cugina di
+  Elisabetta) col nome di **Giacomo I Stuart**.
+- Per la **prima volta** sono unite le corone di **Inghilterra, Scozia, Galles e Irlanda**.
+- **I problemi di Giacomo I:**
+  - non è abile come Elisabetta
+  - eredita **casse vuote** (per la lunga guerra contro la **Spagna di Filippo II**) → mette **nuove
+    tasse**
+  - è un **convinto assolutista** → regala **titoli e privilegi** alla **grande aristocrazia** per
+    avere una **corte** fedele
+  - il suo favorito è **George Villiers, duca di Buckingham**, ricchissimo e molto influente nelle
+    decisioni di governo
 
-| Anno | Cosa succede |
+### 🌾 Una società e un'economia dinamiche
+- Le tasse impoveriscono le **campagne** (in città arrivano mendicanti, vagabondi e criminali), ma
+  l'economia **continua ad andare bene** (fase favorevole iniziata con Elisabetta): più
+  **popolazione**, migliore produzione **agricola e manifatturiera** (👉 collegamento col cap. 17!).
+- La società è **viva e variegata**: si può **salire di status**. Chi c'è:
+  - 🎩 **aristocrazia** antica → presa dalla vita di **corte**
+  - 🌳 **gentry** (i *gentlemen*) = **piccola nobiltà di campagna**, molto intraprendente: compra
+    terre grazie alle leggi sulle **enclosures**
+  - 💼 **borghesi**: ricchi **mercanti e finanzieri** delle città, che vogliono salire socialmente
+  - 🔨 **ceti umili** che sfruttano i mercati in crescita: piccoli commercianti, artigiani,
+    proprietari e affittuari agricoli (i più ricchi sono gli **yeomen**, i piccoli gli
+    **husbandmen**)
+
+### 🏛️ Com'è fatto il Parlamento
+Tutti questi ceti formano il **"partito parlamentare"**: affidano i loro interessi al Parlamento,
+soprattutto alla **Camera dei Comuni**.
+
+| **Camera dei Lords** | **Camera dei Comuni** |
 |---|---|
-| **1610** | Assassinio di Enrico IV → Luigi XIII (bambino) |
-| **1624‑1642** | **Richelieu** primo ministro |
-| **1643** | **Luigi XIV** re a 5 anni → governa **Mazzarino** |
-| **1648‑1653** | **Fronda** (rivolte contro il re) |
-| **1661** | Muore Mazzarino → **Luigi XIV governa da solo** |
-| **1682** | La corte si trasferisce a **Versailles** |
-| **1685** | **Revoca dell'Editto di Nantes** |
-| **1715** | Muore Luigi XIV |
+| Membri **nominati dal re** | Membri **eletti** dai sudditi più ricchi e operosi |
+| Scelti nella **grande aristocrazia** | Soprattutto **gentry**, che controlla anche la politica locale (tribunali, magistrature di **contea**) |
+| | = l'organo che **rappresenta i sudditi** davanti al re |
 
-### 6.1 Richelieu: costruire il potere del re
-Cardinale e primo ministro di Luigi XIII. Obiettivo: **rafforzare il re** contro tutti.
-- **Contro i nobili** → vieta i duelli e fa abbattere i castelli fortificati.
-- **Contro gli ugonotti** (protestanti francesi) → assedio di **La Rochelle (1628)**: perdono le
-  loro fortezze e il potere politico, ma **conservano la libertà di culto**.
-- **Intendenti** → funzionari mandati dal re nelle province per controllarle.
-- **Contro gli Asburgo** → entra nella guerra dei Trent'anni **a fianco dei protestanti**: conta la
-  **ragion di Stato** (l'interesse della Francia) più della religione.
+- Con **Elisabetta** il Parlamento diventa più importante **senza scontrarsi** col re.
+- Con **Giacomo I** iniziano i **primi attriti**: il re vuole limitare il Parlamento e mettere **tasse
+  senza il suo consenso** → i Comuni chiedono una **riforma** dello Stato (dal modo di imporre le
+  tasse alla rappresentanza politica).
 
-### 6.2 Mazzarino e la Fronda (1648‑1653)
-- Luigi XIV è bambino → governa il cardinale **Mazzarino**.
-- **Fronda** = rivolte contro il governo:
-  - **Fronda parlamentare** → i giudici del Parlamento di Parigi contro le nuove tasse
-  - **Fronda dei principi** → i grandi nobili
-- Il piccolo Luigi deve **fuggire da Parigi** → si convince che i nobili vanno **controllati** e che
-  il re deve avere **tutto il potere**.
+### ⚔️ Carlo I contro il Parlamento (1625‑1649)
+- Il figlio **Carlo I** vuole rafforzare l'**assolutismo** con ogni mezzo → si apre un **solco
+  sempre più profondo** con la società, che ormai ha i **mezzi materiali e politici** per opporsi.
+- **1626**: fa chiudere nella **Torre di Londra** due ***commoners*** (membri dei Comuni) "colpevoli"
+  di aver messo sotto accusa il suo favorito **Buckingham**, e **scioglie il Parlamento**.
+- **1628**: gli servono soldi per aiutare gli ugonotti di **La Rochelle** → deve riconvocare il
+  Parlamento, che in cambio gli presenta la ⭐ **Petition of Rights** (Petizione dei diritti):
+  - ❌ **niente tasse** senza il consenso del Parlamento
+  - ✅ rispetto dell'***habeas corpus*** = **divieto di arresti arbitrari** e abusi sui sudditi (come
+    quello contro i due *commoners*)
+- Carlo la accetta **solo per poco** (il tempo di avere i soldi per la guerra dei Trent'anni), poi
+  la **revoca**, fa **arrestare** i rappresentanti dei Comuni e **scioglie il Parlamento (1629)** →
+  reagisce da re assoluto: con **forza e arbitrio**.
+- **11 anni senza Parlamento** (fino al **1640**) → mette nuove tasse, come la ***Ship Money***
+  (1634, per la marina).
+- Si appoggia al **conte di Strafford** (consigliere) e a **William Laud** (arcivescovo di
+  Canterbury), che **perseguita i puritani** e i **presbiteriani scozzesi**.
 
-### 6.3 Luigi XIV, il "Re Sole" ☀️ (governo personale dal 1661)
-- Dopo Mazzarino **non nomina più un primo ministro**: decide tutto lui.
-- Frase attribuita: ***"Lo Stato sono io"*** (*L'État c'est moi*).
-- È il simbolo della **monarchia assoluta**: il re è ***legibus solutus*** = **sciolto dalle leggi**,
-  ha **tutti i poteri** (fa le leggi, le applica, giudica).
-- Gli **Stati Generali** (assemblea dei tre ordini) **non vengono mai convocati** (l'ultima volta nel
-  1614, la prossima sarà nel 1789!).
+### 🔥 Le cause della rivoluzione inglese (schema del libro)
+```
+                       ASSOLUTISMO DEGLI STUART
+            ┌─────────────────────┴─────────────────────┐
+  Appoggio alla grande aristocrazia         Rafforzamento della Chiesa anglicana
+  + tasse senza il Parlamento               + politica filo-cattolica
+            ↓                                            ↓
+  CONFLITTO POLITICO                        CONFLITTO RELIGIOSO
+  con la Camera dei Comuni                  con cattolici e protestanti
+            ↓                                            ↓
+  Petition of Rights (1628)                 Rivolta in Scozia (1640)
+  Grande rimostranza (1641)                 Rivolta in Irlanda (1641)
+            └─────────────────────┬─────────────────────┘
+                       GUERRA CIVILE (1642‑1649)
+```
+🧠 *Due motori della rivoluzione: **soldi** (tasse → conflitto politico) e **fede** (religione →
+conflitto religioso).*
 
-### 6.4 Bossuet e il diritto divino
-- **Bossuet**, vescovo, teorizza che il potere del re **viene direttamente da Dio**.
-- Il re risponde **solo a Dio**, non ai sudditi → i sudditi devono **obbedire sempre**.
-- ⚠️ Differenza con Hobbes: entrambi difendono il potere assoluto, ma **Bossuet** lo fonda su
-  **Dio**, **Hobbes** su un **patto tra uomini** (ragione).
+### ⚔️ La guerra civile (1642‑1649)
+- **Scintilla**: una nuova **rivolta in Irlanda (1641)**. Carlo chiede un esercito per fermarla, ma
+  i parlamentari sospettano che l'abbia **fomentata lui** per avere un esercito da usare **contro di
+  loro**.
+- **1642**: Carlo entra **di persona** in Parlamento per far arrestare i suoi oppositori → sospetti
+  confermati → **primi scontri armati**.
 
-### 6.5 Gli strumenti del potere
-- 🏰 **Versailles**: reggia enorme, la corte ci si trasferisce nel **1682**. I nobili sono "invitati" a
-  vivere lì tra feste, etichetta e privilegi → così il re li **tiene sotto controllo** e non
-  complottano nelle loro terre. Diventano **cortigiani** invece che rivali.
-- 👔 **Burocrazia**: intendenti e funzionari spesso **borghesi**, fedeli al re perché gli devono tutto.
-- 🪖 **Esercito permanente** grande e moderno.
+| 🪖 **Parlamentari** ("teste rotonde") | 👑 **Fazione del re** |
+|---|---|
+| Piccoli aristocratici di campagna, grandi mercanti e produttori, artigiani, operai, contadini | Soprattutto la **grande aristocrazia fondiaria** |
+| Grande peso dei **puritani**: credono che il re, pur dicendosi anglicano, faccia una politica **filo-cattolica** | Più una parte della **gentry** e dell'**alta borghesia**, spaventate dalle idee sempre più radicali dei parlamentari |
 
-### 6.6 Colbert e il mercantilismo (colbertismo) 💰
-**Colbert** = ministro delle finanze. Idea del **mercantilismo**: la ricchezza di uno Stato è
-l'**oro e l'argento** che possiede → bisogna **esportare più di quanto si importa**.
-- **Dazi alti** sulle merci straniere (protezionismo)
-- **Manifatture reali** (prodotti di lusso: arazzi, vetri, specchi…)
-- **Compagnie commerciali** (es. Compagnia delle Indie Orientali) e **colonie** (Canada, Louisiana)
-- **Strade, canali e flotta** per far circolare le merci
+- ⭐ **Oliver Cromwell** (1599‑1658), **puritano**, organizza l'esercito parlamentare: il ***New Model
+  Army*** ("Esercito di Nuovo Modello") → **disciplina rigidissima** + **forte fervore religioso**.
+- Si chiamano **"teste rotonde"** perché portano i **capelli corti**.
+- **1645 – battaglia di Naseby** → vittoria **decisiva** dei parlamentari.
+- Carlo cerca un accordo con gli **scozzesi**, ma loro lo **arrestano** e lo consegnano ai nemici.
 
-### 6.7 Religione: "un re, una legge, una fede"
-- **Gallicanesimo** → la Chiesa francese dipende più dal **re** che dal papa.
-- **1685 – Revoca dell'Editto di Nantes** (l'editto del 1598 dava libertà di culto agli ugonotti) →
-  i protestanti sono perseguitati → circa **200.000 ugonotti fuggono** (in Olanda, Prussia,
-  Inghilterra). Erano spesso **artigiani e mercanti** → **danno enorme all'economia** francese.
+### 🪓 La condanna a morte del re (1649)
+Dopo la vittoria, nel Parlamento si discute su come organizzare **Stato** e **religione**:
+- **anglicani** → tenere la monarchia e una Chiesa che dipende dal re
+- **presbiteriani** → una Chiesa **autonoma**
+- **puritani di Cromwell** → **abolire la monarchia**
+- nell'esercito (piccoli artigiani e lavoratori di bottega) nascono idee ancora **più radicali**:
+  - **Livellatori** (*Levellers*) → contro la monarchia; vogliono **più diritto di voto** e **piena
+    libertà religiosa**
+  - **Zappatori** (*Diggers*) → vogliono addirittura **abolire la proprietà privata**
 
-### 6.8 Le guerre e il bilancio finale
-- Luigi XIV fa molte guerre per la **supremazia in Europa** (l'ultima e più grande: la guerra di
-  **successione spagnola**, 1701‑1714 → un Borbone diventa re di Spagna, ma Francia e Spagna devono
-  restare separate).
-- Risultato: Francia **potentissima** ma **piena di debiti**, tasse pesanti sui **contadini**,
-  malcontento.
+Carlo, prigioniero, spera di approfittare di queste divisioni. Ma Cromwell **caccia dal Parlamento i
+fedeli al re** (→ ***Rump Parliament***, "parlamento ridotto") e lo fa processare per **alto
+tradimento**.
+
+⭐ **30 gennaio 1649**: Carlo I è **condannato a morte e giustiziato** davanti alla folla.
+- È il **momento culminante** della rivoluzione, un fatto **mai visto** che sconvolge l'Europa.
+- **Stronca ogni tentativo** di creare uno Stato assoluto in un paese con una forte **tradizione
+  parlamentare**.
+
+### 🎖️ La dittatura di Cromwell (1649‑1658)
+- **Maggio 1649**: nasce la **Repubblica unita di Inghilterra, Irlanda e Scozia** = il
+  ***Commonwealth*** ("ricchezza comune", versione inglese del latino *res publica*). Cromwell la
+  guida **fino alla morte (1658)**.
+
+| 🏠 **Politica interna e religiosa** | 🌍 **Politica estera ed economica** |
+|---|---|
+| Reprime i radicali **Livellatori e Zappatori** (per rassicurare i conservatori) | **Trattati commerciali** con i paesi **baltici** → nuovi mercati |
+| Schiaccia l'**Irlanda** (cattolica, si ribella per paura del puritanesimo) e la **Scozia** (aveva offerto la corona a **Carlo II Stuart**, figlio del re ucciso, per riavere l'indipendenza) | **1651 – Atto di navigazione**: tutte le merci in entrata e in uscita dall'Inghilterra solo su **navi inglesi** → **mercantilismo radicale** contro il dominio commerciale **olandese** |
+| Con sempre più potere, epura ancora il Parlamento → ***Barebone Parliament*** ("parlamento scheletro") | **Guerra contro le Province Unite (1652‑1654)** → vince l'Inghilterra |
+| **1653**: la Repubblica diventa un **Protettorato**, lui è **Lord Protettore** e **scioglie le Camere** | |
+| ➜ **prima dittatura personale in senso moderno** | ➜ si rafforza il **primato inglese sui mari** |
+
+- **1658**: muore Cromwell → il titolo passa al figlio **Richard** (come in una monarchia
+  ereditaria!), che però non è capace → dopo 2 anni si riconvoca il Parlamento → i **moderati**
+  offrono la corona a **Carlo II Stuart (1660‑1685)**.
+
+🧠 *L'ironia della storia: Cromwell combatte un re assoluto e finisce per **fare come lui** (scioglie
+il Parlamento e lascia il potere al figlio).*
 
 ---
 
-## 7. ⭐ Inghilterra vs Francia – tabella finale
+## 2. ⭐⭐ La "gloriosa rivoluzione"
+
+### 👑 La restaurazione della monarchia (1660)
+- **Carlo II** è **conciliante**: i suoi poteri sono stati **molto ridotti** dal Parlamento.
+- ⭐ **Il principio ormai consolidato** (= la base della monarchia costituzionale):
+  > il re **non può mettere tasse** né esercitare **poteri legislativi e giudiziari** **senza il
+  > confronto e l'appoggio del Parlamento**.
+- Primo atto: **Editto di indennità e perdono** → **amnistia** ai repubblicani (lo Stato **cancella
+  condanne e pene** per riportare la pace).
+- **1662 – Atto di uniformità** → l'**anglicanesimo** torna religione di Stato; per fare politica
+  bisogna dichiararsi anglicani (***Test Act***, **1673**) → discrimina **cattolici** e altre sette
+  protestanti (i presbiteriani, forti in Parlamento, riescono comunque a mantenere il loro culto).
+- Nascono due gruppi in Parlamento:
+
+| **Tories** | **Whigs** |
+|---|---|
+| **Filomonarchici** | Per la **libertà religiosa** e il **parlamentarismo** |
+| Alta **nobiltà terriera** | **Nuovi ceti**: commercio, agricoltura, manifatture |
+| Sostengono Carlo II nel ripristino dell'anglicanesimo | Si oppongono ai tories |
+
+- ⭐ **1679 – Habeas Corpus Act** → legge **antiassolutistica** che tutela diritti fondamentali come
+  il **giusto processo** e la **libertà provvisoria** in attesa del verdetto.
+
+### 🔄 Una nuova rivoluzione (1688)
+- **1685**: muore Carlo II senza eredi → sale il fratello **Giacomo II (1685‑1701)**, che tenta una
+  **doppia restaurazione**: **cattolicesimo + assolutismo**:
+  - **1687 – Dichiarazione di indulgenza** → cancella le regole del Test Act: anche i **cattolici**
+    possono avere cariche pubbliche
+  - stringe buoni rapporti con il **Papa** e con **Luigi XIV**
+- Anche la Chiesa anglicana si mette contro di lui, soprattutto quando nel **1688** gli nasce un
+  **figlio maschio** dalla seconda moglie (principessa **cattolica** italiana) → toglierebbe il trono
+  a **Maria Stuart**, la figlia di primo letto, **protestante**.
+- Paura di un ritorno cattolico → **whigs e tories si uniscono** e chiamano **Guglielmo III
+  d'Orange** (statolder **protestante** d'Olanda e **marito di Maria**).
+- **5 novembre 1688**: Guglielmo sbarca in Inghilterra → **nessun combattimento** → Giacomo II
+  **fugge in Francia** da Luigi XIV (morirà lì nel 1701).
+
+### ⭐⭐ Il Bill of Rights (1689)
+- La Camera dei Comuni chiede a Guglielmo III di firmare il ***Bill of Rights*** = una **nuova
+  dichiarazione dei diritti del Parlamento** che fissa **limiti precisi al potere del re**.
+- Non è una Costituzione come quelle di oggi, ma una **legge dello Stato** molto **innovativa**.
+- Il nuovo re (d'Inghilterra e di Scozia; **non** d'Irlanda, che si era ribellata per difendere
+  Giacomo II) si impegna a:
+
+🧠 **Il re deve rispettare la regola "T.E.L.":**
+- **T**asse → ❌ nessuna tassa **senza l'autorizzazione** del Parlamento
+- **E**lezioni → ✅ **libere elezioni** tenute con regolarità
+- **L**eggi → ✅ riconoscere come valide le **leggi approvate dal Parlamento**
+
+**Risultato:** la monarchia britannica diventa, **prima in Europa**, una **monarchia
+costituzionale**: il potere è esercitato **in sostanza dal Parlamento**.
+
+- **1689 – Atto di tolleranza** → libertà di culto a **tutte le confessioni cristiane, tranne quella
+  cattolica**.
+- Perché **"gloriosa"**? Perché avvenne **senza spargimento di sangue**.
+
+> 💡 **Collegamento col cap. 17 (da usare nelle risposte!):** la gloriosa rivoluzione e il Bill of
+> Rights sono il **contratto sociale di Locke messo in pratica**: il potere del re è **limitato**, è
+> **controllato** dal Parlamento e il popolo può **revocarlo** se il re non rispetta i diritti
+> (com'è successo a Giacomo II). I *Due trattati sul governo* di Locke escono proprio nel **1690**.
+
+### 🔑 Un processo fondamentale
+- La rivoluzione inglese **sconvolge** l'ordine politico e sociale: è uno **spartiacque** per la
+  storia inglese ed europea.
+- Si intrecciano **fermento religioso** e **mobilitazione socio-economica** → si risolvono (anche
+  con le armi) tensioni accumulate **dal Cinquecento**.
+- Dopo, l'Inghilterra si trasforma in politica, economia e società → sarà la **prima potenza nel
+  '700 e nell'800**, diversa da tutti gli altri paesi europei.
+
+---
+
+## 3. ⭐ L'età di Luigi XIV
+
+### 🌍 Il quadro
+- Mentre in Inghilterra il Parlamento frena gli Stuart, gli **altri grandi Stati** europei sono
+  **monarchie assolute** (unica eccezione: le **Province Unite**).
+- Da metà '600 a metà '700 = **trionfo dell'assolutismo** → detto anche "**secolo di Luigi XIV**".
+
+### 👶 Luigi XIV re bambino e Mazzarino
+- **Luigi XIV (1643‑1715)**: nato nel 1638 da **Luigi XIII** e **Anna d'Austria**, diventa re a
+  **5 anni** (1643).
+- All'inizio governano la **madre** e soprattutto il Primo ministro **Giulio Mazzarino** (1602‑1661),
+  cardinale **abruzzese** scelto da **Richelieu** come successore.
+- Mazzarino continua la linea **rigidamente assolutista** di Richelieu.
+- In politica estera ha **successi**: chiude vittoriosamente la guerra con la Spagna (fronte della
+  guerra dei Trent'anni) con la **pace dei Pirenei (1659)** → la Francia è tra le **massime potenze**
+  d'Europa.
+
+### 🪃 Le Fronde (1648‑1652)
+- "**Fronda**" = la **fionda** dei ragazzi di strada → un'opposizione **nascosta** ma **molto
+  pericolosa**.
+- **Cause**: nelle campagne **carestia e povertà** + **tasse altissime** per pagare la guerra dei
+  Trent'anni → la **nobiltà** approfitta della reggenza e cavalca il malcontento per **riprendersi
+  l'autonomia** tolta da Richelieu.
+
+| **Fronda parlamentare (1648‑1649)** | **Fronda dei Principi (1650‑1652)** |
+|---|---|
+| Guidata dalla **nobiltà di toga** | Guidata da **Luigi II, principe di Condé** (il vincitore di Rocroi) |
+| Parte dal **Parlamento di Parigi** dopo l'arresto di parlamentari che rifiutavano **nuove tasse** | Si estende a buona parte del regno |
+| Diventa così violenta che a inizio 1649 Mazzarino e la corte **fuggono da Parigi** | La corte deve di nuovo **lasciare la capitale** |
+| Mazzarino la chiude con alcune **concessioni** | Finisce perché l'alleanza nobili‑mercanti‑contadini è **troppo fragile** |
+
+- **Perché finisce:** i nobili, **spaventati da quello che succede in Inghilterra** (il re
+  decapitato!), capiscono che la caduta della monarchia sarebbe **peggio** dell'assolutismo → fanno
+  marcia indietro → **1652**: Luigi XIV rientra a Parigi da sovrano.
+- 🧠 *Paradosso: la rivoluzione inglese finisce per **salvare** l'assolutismo francese!*
+
+### ☀️ "Lo Stato sono io": il trionfo dell'assolutismo
+- Mazzarino combina le nozze di Luigi con **Maria Teresa**, figlia di **Filippo IV di Spagna**: Luigi
+  **rinuncia al trono spagnolo** in cambio di una **grande dote** (ultimo successo di Mazzarino).
+- **1661**: muore Mazzarino → Luigi XIV prende **pieni poteri**:
+  - **non nomina più un Primo ministro**
+  - toglie potere anche alla **madre** (la fa chiudere in **convento**)
+  - concentra **tutti i poteri** su di sé e controlla **tutta la società**: nobili, contadini, Chiesa,
+    istituzioni
+- Frase attribuita: ***"L'État c'est moi"*** = **"Lo Stato sono io"**.
+- Il progetto di rafforzare la monarchia, iniziato da **Enrico IV**, arriva al massimo: **trionfo
+  definitivo dell'assolutismo**.
+
+### 🏰 Versailles: la gabbia d'oro dei nobili
+- Prima mossa: **togliere potere alla nobiltà**.
+- In cambio le dà **onori e pensioni**, ma la **obbliga a vivere a Versailles** (residenza reale dal
+  **1682**) → i nobili sono **lontani dalle loro terre** e perdono la loro influenza.
+- A corte c'è un'**etichetta rigidissima**: rituali per ogni momento della giornata, anche per il
+  **risveglio** e la **toeletta** del re.
+- Lo splendore di Versailles = segno della **grandezza del re** (idea presa dalle **corti italiane**).
+
+### 📣 La propaganda del Re Sole
+- Cura la sua **immagine** come nessun re prima.
+- Sceglie il simbolo del **Sole** ☀️ → superiorità, sfarzo e soprattutto l'**origine divina** del suo
+  potere.
+- I sudditi gli attribuiscono poteri **miracolosi** → riprende la tradizione del **"re
+  taumaturgo"** (guarire la scrofola **toccando** i malati).
+
+### 🏛️ Politica ed economia di Stato
+
+| **Intendenti** | **Officiers** | **Consiglio del Re** |
+|---|---|---|
+| Magistrati locali, quasi sempre **non nobili**, **fedelissimi** al re | Membri dei **parlamenti locali**, titolo **ereditario** | **Organo supremo** di governo |
+| **Uno per provincia** | Devono **registrare senza discutere** le leggi del re | Il **re + 3 ministri**: finanze, guerra, esteri |
+| Gestiscono **fisco, giustizia, amministrazione** | | Nessuno è prelato, grande feudatario o parente del re |
+
+💰 **Colbert e il colbertismo** (alle finanze dal **1665**):
+- modello **mercantilista** → sviluppa e **protegge industria e commercio** nazionali; lo Stato
+  **interviene** molto nell'economia (= **"colbertismo"**)
+- **manifatture reali** di beni di lusso: ceramiche, **specchi** (Saint‑Gobain), **arazzi** (Gobelins)
+- **infrastrutture**: strade e **canali navigabili**
+- grande **flotta mercantile** + **compagnie monopolistiche** (come quelle inglesi e olandesi) →
+  colonie e basi commerciali in **Canada, Louisiana, India**
+- 👉 *collegamento col cap. 17: le "politiche mercantilistiche" delle nuove potenze economiche*
+
+### ⛪ La repressione delle minoranze religiose
+- Ogni minoranza = **pericolo per l'unità** del regno.
+- Protegge la **Chiesa cattolica**, ma la mette **sotto il suo controllo**: **nomina lui i vescovi**.
+- **1685 – Editto di Fontainebleau** → **revoca l'Editto di Nantes** (che dava libertà di culto ai
+  protestanti) → circa **200.000 ugonotti** fuggono, soprattutto in **Prussia**. Luigi prova invano a
+  fermarli: perde una parte **produttiva** della società → **grave danno all'economia**.
+- **Giansenisti**: movimento cattolico fondato dall'olandese **Giansenio** (Cornelis Jansen,
+  1585‑1638), con idee **vicine al luteranesimo** (la Grazia, la fede interiore, niente formalismi)
+  → perseguitati con l'aiuto dei **gesuiti** → **1712**: distrutto il monastero di **Port‑Royal**.
+
+### 🔬 Scienza e cultura
+- La scienza aumenta **ricchezza e potere dello Stato** → **1666: Accademia Reale delle Scienze** a
+  Parigi (👉 collegamento col cap. 17!) → **finanziamenti** generosi, **concorsi a premi**,
+  **brevetti**.
+- **Mecenatismo** verso artisti e letterati → una **"cultura di Stato"** che dà prestigio al regno:
+  **Racine** (tragedie) e **Molière** (commedie). Chi dissente → **censura**.
+
+### ⚔️ Le guerre di Luigi XIV
+- Politica estera **aggressiva**: decine di **fortezze** ai confini, esercito **decuplicato**
+  (**400.000** soldati), una forte marina da guerra → per 50 anni **tasse altissime** (su contadini e
+  commercianti) e **leve militari**.
+
+| Guerra | Perché / contro chi | Come finisce |
+|---|---|---|
+| **Devoluzione** (1667‑1668) | Vuole le **Fiandre spagnole** perché la dote di Maria Teresa non è mai stata pagata | Pace di **Aquisgrana**: ottiene solo **Lilla** |
+| **Olanda** (1672‑1678) | Contro Impero, Spagna, Province Unite, Prussia (gli olandesi **allagano** le loro terre per difendersi) | Pace di **Nimega**: ottiene la **Franca Contea** |
+| **Lega di Augusta** o "dei Nove anni" (1688‑1697) | Contro una **grande coalizione** | **Sconfitta**: perde molti territori, ma ottiene **Strasburgo** |
+| **Successione spagnola** (1701‑1714) | Chi deve avere il trono di Spagna: Asburgo o Borbone? | Vince **Filippo V di Borbone** (nipote di Luigi), ma **Francia e Spagna non si possono unire** |
+
+- **Bilancio**: casse dello Stato **vuote**, ma alla sua morte (**1715**) la Francia ha il **primato
+  politico** in Europa.
+
+---
+
+## ⚖️ Inghilterra vs Francia – la tabella finale
 
 | | 🇬🇧 **Inghilterra** | 🇫🇷 **Francia** |
 |---|---|---|
-| Forma di Stato a fine '600 | Monarchia **costituzionale/parlamentare** | Monarchia **assoluta** |
-| Chi comanda davvero | Il **Parlamento** (col re) | Il **re** da solo |
-| Assemblee | Il Parlamento è forte e convocato spesso | Stati Generali **mai convocati** |
-| Nobiltà | Gentry attiva in politica ed economia | "Addomesticata" a **Versailles** |
-| Religione | Protestante, **tolleranza** (per i protestanti) | **Una sola fede**, ugonotti cacciati (1685) |
-| Teoria politica | **Locke** (potere limitato) | **Bossuet** (diritto divino) |
-| Diritti dei sudditi | Habeas Corpus, **Bill of Rights** | Nessuna garanzia contro il re |
-| Evento chiave | **Gloriosa Rivoluzione 1688‑89** | **Governo personale di Luigi XIV 1661** |
+| Chi frena il re | Il **Parlamento** (Camera dei Comuni) | Nessuno: le **Fronde falliscono** |
+| Nobiltà | **Gentry** dinamica, alleata del Parlamento | **"Addomesticata"** a Versailles |
+| Tasse | Solo **col consenso del Parlamento** (1628, 1689) | Decise dal re, pesano su **contadini e commercianti** |
+| Diritti dei sudditi | **Habeas Corpus** (1679), **Bill of Rights** (1689) | Gli *officiers* registrano le leggi **senza discutere** |
+| Religione | **Atto di tolleranza** (1689), tranne i cattolici | **Revoca dell'Editto di Nantes** (1685), giansenisti perseguitati |
+| Risultato | **Monarchia costituzionale**, prima in Europa | **Trionfo dell'assolutismo** |
+| Pensatore da collegare (cap. 17) | **Locke** (potere limitato e revocabile) | **Hobbes** (potere assoluto; ma Luigi XIV lo fonda su **Dio**, Hobbes su un **patto**) |
 
 ---
 
-## 8. 🧠 Trucchi per ricordare
-
-- **Hobbes = Horror** 😨 → paura → cedo **tutto** pur di sopravvivere → re **assoluto**.
-- **Locke = Lock (lucchetto in inglese)** 🔒 → chiude a chiave i **diritti** (vita, libertà,
-  proprietà) e chiude il re dentro dei **limiti**.
-- **Leviatano = mostro** 🐉 → lo Stato è un mostro gigante che ti fa paura, ma ti protegge.
-- **Bill of Rights = niente "T.E.L." senza Parlamento** → **T**asse, **E**sercito, **L**eggi.
-- **88 → 89**: nel 16**88** arriva Guglielmo, nel 16**89** firma il Bill of Rights.
-- **"Gloriosa" = senza sangue**: Giacomo II scappa e nessuno combatte.
-- **Teste Rotonde** = capelli corti dei puritani → stanno col Parlamento.
-- **Francia R‑M‑L** = **R**ichelieu, **M**azzarino, **L**uigi: i tre "muratori" dell'assolutismo.
-- **Habeas Corpus** = "che tu abbia il corpo" → il giudice deve **vedere** l'arrestato e decidere
-  se l'arresto è giusto.
-
----
-
-## 9. ✍️ Possibili domande aperte (con scaletta della risposta)
+# ✍️ Domande aperte probabili (con scaletta)
 
 > **Formula per ogni risposta:** 1) **Definisci** → 2) **Contesto** (chi, quando, dove) →
-> 3) **Spiega** (cause / contenuti) → 4) **Conseguenze** → 5) **Collegamento** con un altro argomento.
+> 3) **Spiega** (cause / contenuti) → 4) **Conseguenze** → 5) **Collegamento**
 
-**1. Che cos'è il giusnaturalismo e perché nasce?**
-Diritto naturale (universale, immutabile, conosciuto con la ragione, superiore alle leggi dello
-Stato) → nasce dopo le guerre di religione per trovare una base comune non religiosa → Grozio,
-*De iure belli ac pacis* 1625 (vale "anche se Dio non esistesse") → porta al contrattualismo.
+## Capitolo 17
 
-**2. Descrivi lo stato di natura e il patto secondo Hobbes.**
-Pessimismo, *homo homini lupus* → guerra di tutti contro tutti, paura della morte → patto: si cedono
-tutti i diritti (tranne la vita) a un sovrano esterno al patto → Leviatano, potere assoluto,
-nessun diritto di ribellione → assolutismo laico (non diritto divino).
+**1. 🎯 Quali furono le principali teorie sullo Stato elaborate nel Seicento?** ⭐⭐
+Guerre di religione e rivolte contro l'assolutismo → teorie **laiche e razionali**, si supera il
+potere divino → **contrattualismo** (Stato nato da un patto tra uomini) + **giusnaturalismo**
+(diritti inalienabili: libertà, vita, proprietà; diritto naturale vs positivo) → **Grozio**
+(ragione, diritto internazionale) → **Hobbes** (monarchia assoluta) vs **Locke** (potere limitato,
+diritto di ribellione).
 
-**3. Descrivi lo stato di natura e il patto secondo Locke.**
-Stato di natura pacifico, libertà e uguaglianza, diritti naturali (vita, libertà, proprietà) →
-manca un giudice imparziale → patto: si cede solo il diritto di farsi giustizia da sé → Stato per
-proteggere i diritti → poteri divisi (legislativo al Parlamento) → diritto di resistenza →
-liberalismo, giustifica la Gloriosa Rivoluzione.
+**2. Che cosa sono il contrattualismo e il giusnaturalismo?** ⭐
+Definizione di contratto sociale → *ius* + *natura*, diritti dalla nascita → diritto naturale e
+diritto positivo, legge naturale che distingue bene e male → le leggi umane devono adeguarsi →
+Grozio iniziatore.
 
-**4. Confronta Hobbes e Locke.**
-Usa la **tabella del punto 4**: visione dell'uomo, stato di natura, cosa si cede, tipo di potere,
-ribellione. Concludi: entrambi contrattualisti, ma Hobbes → assolutismo, Locke → potere limitato.
+**3. Confronta il contratto sociale in Hobbes e in Locke.** ⭐⭐
+Usa la **tabella**: natura dell'uomo (malvagia/buona) → scopo (sicurezza/libertà) → delega
+(irrevocabile/temporanea) → divisione dei poteri (contro/a favore) → ribellione (no/sì) → opere.
+Collegamento: Locke ↔ gloriosa rivoluzione e Bill of Rights.
 
-**5. Quali furono le cause della guerra civile inglese?**
-Assolutismo degli Stuart (diritto divino) vs Parlamento → tasse senza consenso, Petition of Right
-1628 non rispettata, 11 anni senza Parlamento → problemi religiosi (puritani, rivolta scozzese) →
-Lungo Parlamento 1640 limita il re → tentato arresto dei deputati 1642 → guerra.
+**4. Chi era Ugo Grozio e perché è importante?**
+Olandese, iniziatore del giusnaturalismo → principi dalla **ragione** e non da Dio → universali →
+pace dentro e tra gli Stati → *De iure belli ac pacis* 1625 → diritto internazionale.
 
-**6. Chi era Cromwell e cosa fece?**
-Puritano, capo delle Teste Rotonde, New Model Army (merito) → vittoria, esecuzione di Carlo I (1649)
-→ Repubblica, repressione Irlanda/Scozia, Atto di Navigazione 1651 → Lord Protettore 1653 =
-dittatura militare → morte 1658 → Restaurazione 1660.
+**5. 🎯 In che cosa consiste il metodo sperimentale?**
+Galileo, natura scritta in lingua matematica → fase **ipotetica** (osservazione, ipotesi,
+esperimenti) → fase **deduttiva** (analisi dei risultati, conclusioni) → contro il principio di
+autorità → rafforzato dal dubbio di Cartesio → usato ancora oggi.
 
-**7. Che cos'è la Gloriosa Rivoluzione e perché si chiama così?**
-Giacomo II cattolico e assolutista + nascita dell'erede cattolico 1688 → whig e tory chiamano
-Guglielmo d'Orange → Giacomo fugge → senza sangue, non abbatte la monarchia ma la limita →
-Bill of Rights 1689 → monarchia costituzionale.
+**6. 🎯 Qual è il pensiero di Galileo sul rapporto tra scienza e fede?**
+Galileo uomo di fede → vuole **separare verità di fede e verità della ragione** → eliocentrismo
+eretico dal 1616 → *Dialogo* 1632 → processo 1633, abiura, confino ad Arcetri → la Chiesa si oppone
+alla nuova scienza (Bruno, Campanella).
 
-**8. Che cos'è il Bill of Rights e cosa stabilisce?** ⭐
-Dichiarazione dei diritti accettata da Guglielmo e Maria nel 1689 come condizione per regnare →
-senza Parlamento il re non può: leggi, tasse, esercito → elezioni libere, libertà di parola in
-Parlamento, convocazione frequente, petizioni, no pene crudeli, re protestante → fine
-dell'assolutismo, monarchia costituzionale → applicazione pratica delle idee di Locke (contratto
-sociale: il re governa a condizioni precise).
+**7. Che cos'è la rivoluzione scientifica e quali sono i suoi caratteri?**
+'500‑'600, spirito nuovo, ricerca libera → Copernico, fine del modello aristotelico‑tolemaico → fine
+del principio di autorità → strumenti (termometro, barometro, cannocchiale…) → metodo sperimentale
+→ collaborazione e competizione, accademie → contrasto con la Chiesa.
 
-**9. Come Luigi XIV rafforzò il potere assoluto?**
-Fronda → paura dei nobili → dal 1661 governo personale, niente primo ministro, Stati Generali mai
-convocati → diritto divino (Bossuet) → Versailles per controllare la nobiltà → intendenti e
-burocrazia borghese → esercito permanente → Colbert e mercantilismo → unità religiosa (revoca
-Editto di Nantes 1685).
+**8. Perché l'Italia perse il primato economico nel Seicento?**
+Trucco **SANC**: **S**pagna (malgoverno; a Napoli tasse, baroni, rifeudalizzazione) → **A**tlantico
+(niente reti commerciali) → **N**ord (concorrenza in manifatture e tessile) → **C**orporazioni (costo
+del lavoro) → ritorno alla terra; esclusa anche dai traffici nel Mediterraneo.
 
-**10. Che cos'è il mercantilismo di Colbert?**
-Ricchezza = oro e argento → esportare più che importare → dazi, manifatture reali, compagnie
-commerciali, colonie, infrastrutture → lo Stato guida l'economia per finanziare il potere del re.
+**9. Come crebbero Olanda e Inghilterra nel Seicento?**
+Rotte atlantiche, borghesia, mercantilismo, marina, costi bassi → Olanda: specializzazione (lino,
+canapa, luppolo, guado), grano dal Baltico, allevamento → Inghilterra: enclosures, rotazione
+quadriennale → strade e canali → colonie e controllo dei traffici.
 
-**11. Confronta il modello inglese e quello francese del Seicento.**
-Usa la **tabella del punto 7**. Concludi: Inghilterra → Parlamento e diritti (Locke, Bill of
-Rights); Francia → re assoluto (Bossuet, Luigi XIV). Due strade opposte che peseranno sul futuro
-(la Francia arriverà alla Rivoluzione del 1789).
+**10. Che ruolo ebbero le accademie scientifiche?**
+Collaborazione (latino, metodo, brevetti) e competizione → luoghi di scambio e concorrenza →
+Lincei 1603, Royal Society 1660, Parigi 1666 (Luigi XIV) → scienza "di moda".
+
+## Capitolo 19
+
+**11. 🎯 Perché in Inghilterra fallì il progetto assolutistico degli Stuart?** ⭐⭐
+Società **dinamica** (gentry, borghesia) con i **mezzi materiali e politici** per opporsi → forte
+**tradizione parlamentare** (Camera dei Comuni) → Giacomo I e Carlo I mettono **tasse senza
+consenso** e ignorano il Parlamento (Petition of Rights 1628 revocata, 11 anni senza Parlamento) →
+**conflitto religioso** (anglicanesimo imposto, politica filo‑cattolica, rivolte di Scozia e
+Irlanda) → **guerra civile** → **esecuzione di Carlo I (1649)** che stronca ogni tentativo di Stato
+assoluto → Restaurazione con re **limitato** → Giacomo II cacciato nel 1688 → **Bill of Rights**.
+
+**12. 🎯 Chi era Cromwell e quale fu il suo ruolo nella rivoluzione inglese?** ⭐
+Puritano, crea il **New Model Army** (disciplina + fervore religioso) → vince a **Naseby (1645)** →
+epura il Parlamento (Rump) e fa giustiziare **Carlo I (1649)** → guida il **Commonwealth** →
+interno: reprime Livellatori e Zappatori, schiaccia Irlanda e Scozia → esterno: **Atto di
+navigazione (1651)**, guerra vinta contro l'Olanda, primato sui mari → **1653 Lord Protettore**,
+scioglie le Camere = **prima dittatura personale moderna** → muore nel 1658 → Restaurazione nel 1660.
+
+**13. 🎯 Quale principio è alla base della monarchia costituzionale inglese?** ⭐⭐
+Il re **non può mettere tasse né esercitare poteri legislativi e giudiziari senza il confronto e
+l'appoggio del Parlamento** → nasce con la Petition of Rights (1628), si consolida dopo la guerra
+civile → Habeas Corpus (1679) → **Bill of Rights (1689)**: leggi del Parlamento, niente tasse senza
+Parlamento, libere elezioni (**T.E.L.**) → prima monarchia costituzionale d'Europa → collegamento con
+**Locke**.
+
+**14. Che cosa furono la gloriosa rivoluzione e il Bill of Rights?** ⭐⭐
+Giacomo II: doppia restaurazione (cattolicesimo + assolutismo), Dichiarazione di indulgenza 1687 →
+nasce l'erede cattolico (1688) → whigs + tories chiamano **Guglielmo III d'Orange** → sbarco 5
+novembre 1688, Giacomo fugge **senza combattere** → **Bill of Rights 1689** (T.E.L.) → monarchia
+costituzionale → Atto di tolleranza → "gloriosa" perché **senza sangue** → contratto sociale di
+Locke in pratica.
+
+**15. Che cosa furono la Petition of Rights e l'Habeas Corpus?**
+Petition 1628: imposta a Carlo I in cambio dei soldi per La Rochelle → niente tasse senza
+Parlamento + habeas corpus (no arresti arbitrari) → accettata per poco, poi revocata (1629) →
+Habeas Corpus Act 1679 (Carlo II): legge antiassolutistica, giusto processo e libertà provvisoria.
+
+**16. 🎯 Quali furono i passaggi con cui Luigi XIV rese assoluta la Francia?** ⭐⭐
+Re a 5 anni, governa **Mazzarino** (linea di Richelieu, pace dei Pirenei) → **Fronde** (1648‑1652)
+fallite: i nobili hanno paura dopo la fine di Carlo I → **1661**: governo personale, niente Primo
+ministro, **"Lo Stato sono io"** → nobili a **Versailles** (onori, pensioni, etichetta) →
+**propaganda** del Re Sole (origine divina, re taumaturgo) → **intendenti, officiers, Consiglio del
+Re** → **Colbert** e colbertismo → controllo religioso (vescovi, **revoca Editto di Nantes 1685**,
+giansenisti) → **cultura di Stato** (Accademia delle Scienze, Racine, Molière) → **guerre** → Francia
+prima potenza alla sua morte (1715), ma casse vuote.
+
+**17. Che cosa furono le Fronde?**
+Fronda = fionda, opposizione nascosta e pericolosa → cause: carestia, povertà, tasse per la guerra
+dei Trent'anni, nobili che vogliono l'autonomia → Fronda parlamentare (1648‑49, nobiltà di toga) e
+Fronda dei Principi (1650‑52, Condé) → la corte fugge da Parigi → falliscono: alleanza fragile e
+paura dell'esempio inglese → 1652 Luigi XIV rientra a Parigi.
+
+**18. Che cos'è il colbertismo?**
+Colbert alle finanze dal 1665 → mercantilismo, lo Stato interviene nell'economia → manifatture reali
+(specchi, arazzi), strade e canali, flotta mercantile, compagnie monopolistiche, colonie (Canada,
+Louisiana, India) → collegamento con le politiche mercantilistiche del cap. 17.
+
+**19. Confronta Inghilterra e Francia nel Seicento.** ⭐
+Usa la **tabella finale**: Parlamento vs re → gentry vs nobiltà a Versailles → tasse col consenso
+vs tasse imposte → diritti (Habeas Corpus, Bill of Rights) vs nessuna garanzia → tolleranza vs
+revoca dell'Editto di Nantes → monarchia costituzionale vs assolutismo → **Locke** vs **Hobbes**.
