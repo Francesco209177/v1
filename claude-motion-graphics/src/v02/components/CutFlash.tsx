@@ -4,17 +4,18 @@ import {useAbsFrame} from '../../lib/frame';
 import {clamp} from '../../lib/math';
 
 /** Colpo di luce sui tagli principali del video 02 (sul beat): bagliore caldo + flare orizzontale. */
-const CUTS: {at: number; power: number; y: number}[] = [
+export type Cut = {at: number; power: number; y: number};
+const CUTS: Cut[] = [
 	{at: 270, power: 0.8, y: 800},
 	{at: 510, power: 0.9, y: 760},
 	{at: 720, power: 0.8, y: 700},
 ];
 
-export const CutFlash: React.FC = () => {
+export const CutFlash: React.FC<{cuts?: Cut[]}> = ({cuts = CUTS}) => {
 	const f = useAbsFrame();
 	let k = 0;
 	let y = 800;
-	for (const c of CUTS) {
+	for (const c of cuts) {
 		const d = f - c.at;
 		const v = (d < 0 ? clamp(1 + d / 3) ** 2 : Math.exp(-d / 4.2)) * c.power;
 		if (v > k) {

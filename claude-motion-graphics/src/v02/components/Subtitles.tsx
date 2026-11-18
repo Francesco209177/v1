@@ -10,11 +10,17 @@ import {V2_SUB_Y, V2_VO} from '../timeline';
  * la frase entra con un fade, le parole si accendono man mano che vengono pronunciate
  * (tempo stimato proporzionale alla lunghezza delle parole). Montati una sola volta nel Main.
  */
-export const Subtitles: React.FC<{hidden?: (absFrame: number) => boolean}> = ({hidden}) => {
+export type VoLine = {readonly start: number; readonly end: number; readonly text: string};
+
+export const Subtitles: React.FC<{hidden?: (absFrame: number) => boolean; lines?: readonly VoLine[]; y?: number}> = ({
+	hidden,
+	lines = V2_VO,
+	y = V2_SUB_Y,
+}) => {
 	const f = useAbsFrame();
 	if (hidden?.(f)) return null;
 	const t = f / 30;
-	const line = V2_VO.find((l) => t >= l.start - 0.12 && t <= l.end + 0.25);
+	const line = lines.find((l) => t >= l.start - 0.12 && t <= l.end + 0.25);
 	if (!line) return null;
 	const inP = prog(f, line.start * 30 - 4, 6, ease.outCubic);
 	const outP = prog(f, line.end * 30 + 2, 6, ease.inCubic);
@@ -28,7 +34,7 @@ export const Subtitles: React.FC<{hidden?: (absFrame: number) => boolean}> = ({h
 				position: 'absolute',
 				left: 90,
 				width: WIDTH - 180,
-				top: V2_SUB_Y,
+				top: y,
 				transform: `translateY(-50%) translateY(${(1 - inP) * 14}px)`,
 				opacity: inP * (1 - outP),
 				display: 'flex',

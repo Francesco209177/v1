@@ -1,0 +1,64 @@
+{
+  "_doc": [
+    "Video 01: voce narrante provvisoria (Piper, it_IT 'paola') sulla musica di public/v01/music.wav.",
+    "Voce definitiva (es. ElevenLabs): stessi nomi file in public/v01/vo/, poi python3 audio/mix_final.py --plan audio/v01_plan.json --dir public/v01/vo"
+  ],
+  "voice": {
+    "language": "it",
+    "gain_db": 0.0,
+    "lines": [
+      {
+        "file": "vo_01.wav",
+        "text": "ChatGPT non pensa come un essere umano.",
+        "start": 0.3,
+        "end_by": 2.5
+      },
+      {
+        "file": "vo_02.wav",
+        "text": "Ma allora, come risponde?",
+        "start": 2.55,
+        "end_by": 4.4
+      },
+      {
+        "file": "vo_03.wav",
+        "text": "Prima, trasforma la tua domanda in token: piccoli pezzi di testo.",
+        "start": 4.45,
+        "end_by": 8.8
+      },
+      {
+        "file": "vo_04.wav",
+        "text": "Ogni token diventa una lista di numeri, e la rete calcola quali parole contano di più nel contesto.",
+        "start": 9.3,
+        "end_by": 15.6
+      },
+      {
+        "file": "vo_05.wav",
+        "text": "Poi prevede il token più probabile, uno alla volta, fino a comporre la risposta.",
+        "start": 16.3,
+        "end_by": 22.5
+      },
+      {
+        "file": "vo_06.wav",
+        "text": "Ha imparato da enormi quantità di testo.",
+        "start": 23.3,
+        "end_by": 25.65
+      },
+      {
+        "file": "vo_07.wav",
+        "text": "Non pensa: prevede. E per questo, a volte, può sbagliare.",
+        "start": 25.75,
+        "end_by": 29.8
+      }
+    ]
+  },
+  "sfx": [],
+  "mix": {
+    "bed": "public/v01/music.wav",
+    "out": "public/v01/audio_final.wav",
+    "duck_db": 8.0,
+    "duck_attack_ms": 50,
+    "duck_release_ms": 260,
+    "target_lufs": -14.0,
+    "true_peak_db": -1.5
+  }
+}
