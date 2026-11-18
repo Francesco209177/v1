@@ -1,0 +1,30 @@
+{
+  "_doc": [
+    "Video 02: voce narrante provvisoria (Piper, voce it_IT 'paola') sulla musica di public/v02/music.wav.",
+    "Per la voce definitiva (es. ElevenLabs): stessi nomi file in public/v02/vo/, poi python3 audio/mix_final.py --plan audio/v02_plan.json --dir public/v02/vo"
+  ],
+  "voice": {
+    "language": "it",
+    "gain_db": 0.0,
+    "lines": [
+      {"file": "vo_01.wav", "text": "E se ti dicessi che puoi usare l'intelligenza artificiale senza Internet?", "start": 0.10, "end_by": 3.55},
+      {"file": "vo_02.wav", "text": "Il segreto è installare il modello direttamente sul tuo computer.", "start": 3.90, "end_by": 8.80},
+      {"file": "vo_03.wav", "text": "Il tuo hardware esegue il modello localmente, elaborando richieste e generando risposte.", "start": 9.40, "end_by": 16.50},
+      {"file": "vo_04.wav", "text": "I tuoi dati possono restare sul dispositivo.", "start": 17.05, "end_by": 19.55},
+      {"file": "vo_05.wav", "text": "Niente connessione necessaria,", "start": 19.65, "end_by": 21.90},
+      {"file": "vo_06.wav", "text": "più controllo.", "start": 22.15, "end_by": 23.80},
+      {"file": "vo_07.wav", "text": "Il futuro dell'intelligenza artificiale potrebbe essere proprio sulla tua scrivania.", "start": 24.35, "end_by": 28.50},
+      {"file": "vo_08.wav", "text": "Tu la useresti?", "start": 28.55, "end_by": 29.85}
+    ]
+  },
+  "sfx": [],
+  "mix": {
+    "bed": "public/v02/music.wav",
+    "out": "public/v02/audio_final.wav",
+    "duck_db": 8.0,
+    "duck_attack_ms": 50,
+    "duck_release_ms": 260,
+    "target_lufs": -14.0,
+    "true_peak_db": -1.5
+  }
+}

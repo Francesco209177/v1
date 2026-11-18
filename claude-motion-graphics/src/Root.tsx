@@ -10,6 +10,8 @@ import {Scene3Creation} from './scenes/Scene3Creation';
 import {Scene4Result} from './scenes/Scene4Result';
 import {Scene5Outro} from './scenes/Scene5Outro';
 import {DURATION, FPS, HEIGHT, SCENES, WIDTH} from './timeline';
+import {V2Main, V2_SCENE_COMPONENTS} from './v02/Main';
+import {V2_DURATION, V2_SCENES} from './v02/timeline';
 
 loadFonts();
 
@@ -30,6 +32,11 @@ export const Root: React.FC = () => {
 			<Composition id="Scene3" component={S3} durationInFrames={SCENES.creation.length} {...common} />
 			<Composition id="Scene4" component={S4} durationInFrames={SCENES.result.length} {...common} />
 			<Composition id="Scene5" component={S5} durationInFrames={SCENES.outro.length} {...common} />
+			{/* VIDEO 02 — Un'intelligenza artificiale senza Internet? */}
+			<Composition id="V02" component={V2Main} durationInFrames={V2_DURATION} {...common} />
+			{(Object.keys(V2_SCENES) as (keyof typeof V2_SCENES)[]).map((k, i) => (
+				<Composition key={k} id={`V02S${i + 1}`} component={isolated(V2_SCENE_COMPONENTS[k], V2_SCENES[k].start)} durationInFrames={V2_SCENES[k].length} {...common} />
+			))}
 		</>
 	);
 };
