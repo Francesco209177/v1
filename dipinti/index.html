@@ -500,6 +500,41 @@ body.has-guide main{padding-bottom:120px}
 .guide.g-bad{animation:gBad .45s}
 @keyframes gBad{20%,60%{transform:translateX(-10px) rotate(-2deg);box-shadow:0 0 0 4px var(--bad)}40%,80%{transform:translateX(10px) rotate(2deg);box-shadow:0 0 0 4px var(--bad)}}
 
+/* ===== classifica e risultato ===== */
+.rank{background:var(--panel);border:1px solid var(--line);padding:18px 20px;display:flex;flex-direction:column;gap:10px}
+.rank-h{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.rank-h h2{font-size:1.05rem;font-stretch:112%;text-transform:uppercase;letter-spacing:.06em}
+.rank-h span{font-size:.8rem;color:var(--muted)}
+.rank-rule{font-size:.86rem;color:var(--muted);max-width:60ch}
+.rank-rule b{color:var(--ink)}
+.rank-t{border-collapse:collapse;width:100%;min-width:430px;font-size:.92rem}
+.rank-t th{font-size:.64rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);text-align:left;padding:6px 10px 6px 0;border-bottom:2px solid var(--ink)}
+.rank-t td{padding:8px 10px 8px 0;border-bottom:1px dashed var(--line);font-variant-numeric:tabular-nums;vertical-align:middle}
+.rank-t .r{text-align:right}
+.rank-t td.rk{font:900 1.15rem var(--display);font-stretch:125%;width:2.2em}
+.rank-t td.nm{font-family:var(--hand);font-size:1.45rem;line-height:1.05;overflow-wrap:anywhere}
+.rank-t td.fin{font-family:var(--lcd-f);font-size:1.45rem;color:var(--ink);padding-right:2px}
+.rank-t tr.top1 td.rk{color:var(--gold)} .rank-t tr.top2 td.rk{color:var(--silver)} .rank-t tr.top3 td.rk{color:#B0703A}
+.rank-t tr.top1 td:first-child{box-shadow:inset 4px 0 0 var(--gold)} .rank-t tr.top2 td:first-child{box-shadow:inset 4px 0 0 var(--silver)} .rank-t tr.top3 td:first-child{box-shadow:inset 4px 0 0 #B0703A}
+.rank-t tr.top1 td.rk,.rank-t tr.top2 td.rk,.rank-t tr.top3 td.rk{padding-left:10px}
+.rank-t tr.me td{background:var(--sel)}
+.rank-add,.res-code{display:flex;flex-direction:column;gap:6px}
+.rank-add{border-top:1px dashed var(--line);padding-top:10px}
+.rank-add label,.res-code label{font-size:.82rem;color:var(--muted)}
+.rank-add input,.res-code input{flex:1 1 220px;min-width:0;font:400 1.1rem var(--lcd-f);padding:8px 10px;border:1px solid var(--line);background:var(--wall);color:var(--ink);border-radius:2px}
+.result{background:var(--panel);border:2px solid var(--ink);padding:18px 20px;display:flex;flex-direction:column;gap:12px}
+.res-sum{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px}
+.res-sum span{display:flex;flex-direction:column;gap:2px}
+.res-sum small{font-size:.7rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.res-sum b{font:400 2rem/1 var(--lcd-f)}
+.res-sum i{font-style:normal;font-size:1.4rem;color:var(--muted)}
+.res-sum .fin b{color:var(--klein);font-size:2.4rem}
+.res-pos{font-size:1.05rem}.res-pos b{font:900 1.6rem var(--display);font-stretch:125%;color:var(--klein)}
+.end-rank{margin-top:32px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:18px;align-items:start}
+@media (max-width:860px){ .end-rank{grid-template-columns:minmax(0,1fr)} }
+
+.recap .frm{white-space:normal;overflow-wrap:anywhere}
+
 .clock .pin{fill:var(--sign)}
 </style>
 <header class="sign"><div class="wrap">
@@ -611,19 +646,47 @@ function penalty(sec, label){
 }
 function restartAnim(el, cls){ if(!el) return; el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls) }
 
-/* libro delle firme */
-function guestbook(){ try{ const l=JSON.parse(localStorage.getItem(GKEY)); if(Array.isArray(l)) return l.sort((a,b)=>a.sec-b.sec || (a.errors+a.hints)-(b.errors+b.hints)) }catch(e){} return [] }
-function saveGuestbook(l){ try{ localStorage.setItem(GKEY, JSON.stringify(l)) }catch(e){} }
+/* classifica: tempo finale = tempo impiegato + penalità per errori e schede */
+function mmss(sec){ sec=Math.max(0,Math.round(sec)); return String(Math.floor(sec/60)).padStart(2,'0')+':'+String(sec%60).padStart(2,'0') }
+function realOf(r){ return r.real!=null ? r.real : Math.max(0, r.sec - r.errors*ERR_COST - r.hints*HINT_COST) }
+function board(){ try{ const l=JSON.parse(localStorage.getItem(GKEY)); if(Array.isArray(l)) return l.filter(r=>r && typeof r.team==='string' && r.sec>=0).sort((a,b)=>a.sec-b.sec || a.errors-b.errors || a.hints-b.hints) }catch(e){} return [] }
+function saveBoard(l){ try{ localStorage.setItem(GKEY, JSON.stringify(l)) }catch(e){} }
+/* codice risultato: per portare in classifica una squadra che ha giocato su un altro computer */
+const SALT='galleria-specchi|classifica';
+function b64e(t){ return btoa(unescape(encodeURIComponent(t))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'') }
+function b64d(t){ t=t.replace(/-/g,'+').replace(/_/g,'/'); while(t.length%4) t+='='; return decodeURIComponent(escape(atob(t))) }
+function resultCode(r){ const p=b64e(JSON.stringify([r.team,r.sec,realOf(r),r.errors,r.hints,r.at])); return 'GS-'+p+'-'+fnv(SALT+p).toString(36) }
+function readCode(c){
+  try{ const m=String(c).replace(/\s+/g,'').match(/^GS-([A-Za-z0-9_-]+)-([0-9a-z]+)$/); if(!m || fnv(SALT+m[1]).toString(36)!==m[2]) return null;
+    const a=JSON.parse(b64d(m[1])); if(!Array.isArray(a) || typeof a[0]!=='string' || !(a[1]>=0)) return null;
+    return {team:a[0].slice(0,32), sec:Math.round(+a[1]), real:Math.round(+a[2]), errors:Math.max(0,a[3]|0), hints:Math.max(0,a[4]|0), at:+a[5]||0} }catch(e){ return null }
+}
 function recordResult(){
   if(S.recorded) return; S.recorded=true;
-  if(!S.noClock){ const l=guestbook(); S.recId=Date.now(); l.push({team:S.team||'Visitatori senza nome', sec:elapsed(), errors:S.errors, hints:S.hintCount, at:S.recId}); saveGuestbook(l) }
+  if(!S.noClock){ const l=board(), sec=elapsed(); S.recId=Date.now(); l.push({team:S.team||'Visitatori senza nome', sec, real:sec-S.penalty, errors:S.errors, hints:S.hintCount, at:S.recId}); saveBoard(l) }
   save();
 }
-function guestbookHtml(me, clear){
-  const l=guestbook(); if(!l.length) return '';
-  const items=l.slice(0,12).map((r,k)=>`<li class="${r.at===me?'me':''}"><span class="gb-n">${k+1}.</span><span class="gb-name">${esc(r.team)}</span><span class="gb-meta"><b>${clockText(r.sec)}</b>${r.errors} err. · ${r.hints} sch.</span></li>`).join('');
-  return `<section class="guestbook" aria-label="Libro delle firme"><p class="cap">Libro delle firme · uscite più rapide</p><ol class="gb-list">${items}</ol>
-  ${clear ? (confirmClear ? '<p class="sc-bar"><span>Cancellare tutte le firme?</span><button type="button" class="chip" id="gb-yes">Sì, cancella</button><button type="button" class="chip" id="gb-no">Annulla</button></p>' : '<p><button type="button" class="chip" id="gb-clear">Cancella il libro</button></p>') : ''}</section>`;
+let rankMsg='';
+function rankHtml(me, opts){
+  opts=opts||{}; const l=board(), shown=l.slice(0,15);
+  const rows=shown.map((r,k)=>`<tr class="${r.at===me?'me':''}${k<3?' top'+(k+1):''}"><td class="rk">${k+1}</td><td class="nm">${esc(r.team)}</td><td class="r">${mmss(realOf(r))}</td><td class="r">${r.errors}</td><td class="r">${r.hints}</td><td class="r fin">${mmss(r.sec)}</td></tr>`).join('');
+  return `<section class="rank" aria-label="Classifica"><div class="rank-h"><h2>Classifica</h2><span>${l.length} ${l.length===1?'squadra':'squadre'}</span></div>
+  <p class="rank-rule">Tempo finale = tempo impiegato + <b>1 minuto per ogni errore</b> + <b>3 minuti per ogni scheda</b> del catalogo. Vince il tempo finale più basso.</p>
+  ${l.length ? `<div class="table-wrap"><table class="rank-t"><thead><tr><th>#</th><th>Squadra</th><th class="r">Tempo</th><th class="r">Errori</th><th class="r">Schede</th><th class="r">Finale</th></tr></thead><tbody>${rows}</tbody></table></div>${l.length>15?'<p class="small">Sono mostrate le prime 15 squadre.</p>':''}`
+    : '<p class="empty">Ancora nessuna squadra: la prima che esce dal museo apre la classifica.</p>'}
+  ${opts.add ? `<div class="rank-add"><label for="rcode">Una squadra ha giocato su un altro computer? Incolla qui il suo codice risultato.</label>
+    <div class="sc-bar"><input id="rcode" placeholder="GS-…" autocomplete="off" spellcheck="false"><button type="button" class="chip" id="rcode-add">Aggiungi alla classifica</button></div>
+    <p class="small" id="rcode-msg" aria-live="polite">${esc(rankMsg)}</p></div>` : ''}
+  ${opts.clear && l.length ? (confirmClear ? '<p class="sc-bar"><span>Cancellare tutta la classifica?</span><button type="button" class="chip" id="gb-yes">Sì, cancella</button><button type="button" class="chip" id="gb-no">Annulla</button></p>' : '<p><button type="button" class="chip" id="gb-clear">Cancella classifica</button></p>') : ''}</section>`;
+}
+function resultHtml(){
+  if(S.noClock) return `<section class="result"><p class="cap">Il vostro risultato</p><p>La partita è finita dopo l'allarme delle 01:00: non entra in classifica.</p></section>`;
+  const l=board(), pos=l.findIndex(r=>r.at===S.recId)+1, me=l.find(r=>r.at===S.recId); if(!me) return '';
+  return `<section class="result"><p class="cap">Il vostro risultato</p>
+  <div class="res-sum"><span><small>Tempo impiegato</small><b>${mmss(realOf(me))}</b></span><i>+</i><span><small>${me.errors} ${me.errors===1?'errore':'errori'} × 1 min</small><b>${mmss(me.errors*ERR_COST)}</b></span><i>+</i><span><small>${me.hints} ${me.hints===1?'scheda':'schede'} × 3 min</small><b>${mmss(me.hints*HINT_COST)}</b></span><i>=</i><span class="fin"><small>Tempo finale</small><b>${mmss(me.sec)}</b></span></div>
+  <p class="res-pos"><b>${pos}°</b> posto su ${l.length} in questa classifica</p>
+  <div class="res-code"><label for="mycode">Codice risultato: mandatelo a chi organizza, così entrate nella classifica comune.</label>
+    <div class="sc-bar"><input id="mycode" readonly value="${resultCode(me)}"><button type="button" class="chip" id="copy-code">Copia</button></div><p class="small" id="copy-msg" aria-live="polite"></p></div></section>`;
 }
 
 /* sequenze della porta: tutte le file di 2 rosse, 2 blu, 2 gialle */
@@ -890,23 +953,25 @@ function renderSolutions(){
   ${sec('m-fine','Fine della partita',`<ul class="m-list">
     <li><b>Vernissage.</b> La porta si apre, un lampo bianco, e la squadra «inaugura» la sua opera: un quadro astratto con le tele della sequenza, generato dal nome della squadra e dal tempo (ogni squadra ne ottiene uno diverso), svelato da un telo tra i flash dei fotografi.</li>
     <li><b>La didascalia</b> accanto al quadro riporta il nome della squadra come autore, l'ora di uscita, le risposte sbagliate e le schede del catalogo usate.</li>
+    <li><b>Il vostro risultato</b> mostra il conto: tempo impiegato + 1 minuto per ogni errore + 3 minuti per ogni scheda = tempo finale, e la posizione in classifica.</li>
     <li><b>Le sale, in breve:</b> un riepilogo di tutte le formule, utile da proiettare per la correzione.</li>
-    <li><b>Il libro delle firme</b> ordina le squadre per ora di uscita (le penalità sono comprese) e evidenzia l'ultima arrivata. È salvato solo sul computer dove si gioca.</li>
-    <li><b>«Nuovi visitatori»</b> riporta all'ingresso per la squadra successiva, tenendo il libro delle firme.</li></ul>`)}
+    <li><b>La classifica</b> ordina le squadre per tempo finale (a parità, conta chi ha fatto meno errori) e mostra tempo impiegato, errori, schede e tempo finale; i primi tre sono in oro, argento e bronzo. È salvata sul computer dove si gioca.</li>
+    <li><b>Il codice risultato</b> serve per le squadre che giocano su computer diversi: ognuna lo copia con «Copia» e lo manda a chi organizza, che lo incolla in «Aggiungi alla classifica» (all'ingresso o alla fine). Il codice contiene un controllo: se viene modificato a mano, non viene accettato.</li>
+    <li><b>«Nuovi visitatori»</b> riporta all'ingresso per la squadra successiva, tenendo la classifica.</li></ul>`)}
 
   ${sec('m-comandi','Comandi e impostazioni',`<table class="m-table"><tbody>
     <tr><td><b>Suono: sì / no</b></td><td>In alto a destra. Passi, interruttori, audioguida, allarme e flash sono tutti generati dal browser: servono le casse.</td></tr>
     <tr><td><b>Animazioni: sì / no</b></td><td>In alto a destra. Spegne camminata, zoom, luci e svelamento, se il computer è lento o qualcuno ne è infastidito.</td></tr>
     <tr><td><b>Tastiera</b></td><td>Nel corridoio: ← → per camminare, Invio per entrare. Nelle sale: numeri, Backspace e Invio per l'audioguida.</td></tr>
     <tr><td><b>Salvataggio</b></td><td>I progressi restano sul computer: si può chiudere la pagina e riaprirla senza perdere niente.</td></tr>
-    <tr><td><b>Ricomincia da capo</b></td><td>In fondo al corridoio, con conferma. Cancella la partita in corso ma non il libro delle firme.</td></tr>
-    <tr><td><b>Cancella il libro</b></td><td>All'ingresso, sotto il libro delle firme, con conferma.</td></tr>
+    <tr><td><b>Ricomincia da capo</b></td><td>In fondo al corridoio, con conferma. Cancella la partita in corso ma non la classifica.</td></tr>
+    <tr><td><b>Classifica</b></td><td>All'ingresso: «Aggiungi alla classifica» per i codici delle altre squadre, «Cancella classifica» (con conferma) per azzerarla.</td></tr>
     <tr><td><b>Da telefono</b></td><td>L'audioguida si aggancia in basso e si chiude con «Chiudi tastiera».</td></tr></tbody></table>`)}
 
   ${sec('m-classe','Consigli per la classe',`<ul class="m-list">
     <li>Provate il gioco sul computer della classe il giorno prima, con proiettore e casse.</li>
     <li>Schermo intero con F11. Squadre da 3–4 persone, con carta, penna e calcolatrice.</li>
-    <li>Se le squadre giocano una dopo l'altra sullo stesso computer, il libro delle firme diventa la classifica della classe.</li>
+    <li>Se le squadre giocano una dopo l'altra sullo stesso computer, la classifica si riempie da sola. Se giocano su computer o telefoni diversi, fatevi mandare i codici risultato e incollateli tutti sul vostro computer: avrete la classifica di tutta la classe da proiettare.</li>
     <li>Se una squadra è bloccata, prima di dare la risposta indicate l'installazione: «Prova a distinguere le copie», «Prova a incollare le dorate».</li>
     <li>Alla fine proiettate «Le sale, in breve» per correggere insieme.</li>
     <li>Questo file contiene tutte le risposte: tenetelo per voi.</li></ul>`)}
@@ -933,11 +998,11 @@ function viewIntro(){
         <li><span>Dal corridoio del museo entri nelle sale <b>nell'ordine che vuoi</b>.</span></li>
         <li><span>In ogni sala c'è un'installazione da toccare e una domanda. La risposta è un numero: <b>digitalo sull'audioguida</b>.</span></li>
         <li><span>Ogni risposta giusta ti dà un <b>biglietto del curatore</b> con un indizio sulla sequenza della porta.</span></li>
-        <li><span>Una risposta sbagliata fa avanzare l'orologio di <b>1 minuto</b>, una scheda del catalogo di <b>3 minuti</b>.</span></li>
+        <li><span>Vince chi esce con il <b>tempo finale più basso</b>: ogni risposta sbagliata aggiunge <b>1 minuto</b>, ogni scheda del catalogo <b>3 minuti</b>.</span></li>
       </ol>
       <div class="ticket"><label for="team">Nome dei visitatori</label><input id="team" maxlength="32" placeholder="Es. I Multinomiali" autocomplete="off">
         <div><button type="button" class="btn" id="go">Entra in galleria <span class="arr">→</span></button></div></div>
-      ${guestbookHtml(null, true)}
+      ${rankHtml(null, {clear:true, add:true})}
     </div>
   </div>`;
 }
@@ -1062,7 +1127,7 @@ function viewEnd(){
   <div class="stats">${S.noClock?'':`<div class="stat"><b>${clockText(sec)}</b><span>Ora di uscita</span></div>`}<div class="stat"><b>${S.errors}</b><span>Risposte sbagliate</span></div><div class="stat"><b>${S.hintCount}</b><span>Schede del catalogo</span></div></div></div></div>
   <h2 class="section-t">La sequenza del curatore</h2><div class="seq">${[...(S.seq||'')].map(c=>`<i class="cv ${c}"></i>`).join('')}</div>
   <h2 class="section-t">Le sale, in breve</h2><div class="recap">${recap}<div><span class="rn">✕</span><span>Porta di sicurezza</span><span class="frm">6! / (2!·2!·2!) = 720 / 8</span><span class="ans">90</span></div></div>
-  <div style="margin-top:32px;display:grid;gap:18px;max-width:640px">${guestbookHtml(S.recId, false)}</div>
+  <div class="end-rank">${resultHtml()}${rankHtml(S.recId, {add:true})}</div>
   <div class="sc-bar" style="margin-top:24px"><button type="button" class="btn" id="again">Nuovi visitatori <span class="arr">→</span></button></div>`;
 }
 
@@ -1250,7 +1315,14 @@ function bind(){
   on('again',()=>{ for(const k in SC) delete SC[k]; paintBars(()=>{ S=fresh(); save(); render() }) });
   on('noclock',()=>{ S.noClock=true; S.view='plan'; save(); render() });
   const keepTeam=fn=>()=>{ const t=$('team'), val=t?t.value:''; fn(); render({stay:true}); const t2=$('team'); if(t2) t2.value=val };
-  on('gb-clear',keepTeam(()=>{ confirmClear=true })); on('gb-no',keepTeam(()=>{ confirmClear=false })); on('gb-yes',keepTeam(()=>{ confirmClear=false; saveGuestbook([]) }));
+  on('gb-clear',keepTeam(()=>{ confirmClear=true })); on('gb-no',keepTeam(()=>{ confirmClear=false })); on('gb-yes',keepTeam(()=>{ confirmClear=false; saveBoard([]); rankMsg='' }));
+  on('rcode-add',keepTeam(()=>{ const r=readCode(($('rcode')||{}).value||''), l=board();
+    if(!r) rankMsg='Codice non valido: controlla di averlo copiato tutto, da GS- fino in fondo.';
+    else if(l.some(x=>x.at===r.at && x.team===r.team)) rankMsg=`${r.team} è già in classifica.`;
+    else { l.push(r); saveBoard(l); const pos=board().findIndex(x=>x.at===r.at && x.team===r.team)+1; rankMsg=`Aggiunta: ${r.team}, tempo finale ${mmss(r.sec)}, ${pos}° posto.`; sfx('hang') } }));
+  on('copy-code',()=>{ const inp=$('mycode'), msg=$('copy-msg'); if(!inp) return;
+    const fallback=()=>{ inp.focus(); inp.select(); msg.textContent='Codice selezionato: copialo con Ctrl+C.' };
+    try{ navigator.clipboard.writeText(inp.value).then(()=>{ msg.textContent='Copiato. Incollalo in un messaggio per chi organizza.' }, fallback) }catch(e){ fallback() } });
 }
 applySettings();
 if(window.SOLUZIONI) renderSolutions(); else render({stay:true});
