@@ -26,17 +26,19 @@ export const converge = (L: number): number => ease.inOutCubic(invLerp(CONVERGE,
  */
 export const secretNet = (L: number, abs: number) => {
 	const c = converge(L);
-	const fly = ease.outQuart(invLerp(0, 100, L));
+	const fly = ease.outQuart(invLerp(0, 96, L));
 	const mid = {
 		cx: 540,
 		cy: 620,
 		scale: 0.8,
 		pitch: lerp(-0.62, -0.3, ease.outCubic(invLerp(0, 120, L))),
-		dist: lerp(4300, 1500, fly),
+		dist: lerp(3300, 1500, fly),
 	};
 	const N = V2_NET_AT_270;
 	const spin = Math.pow(1 - clamp(L / 158), 3); // pendenza nulla prima della fine
-	const flash = L >= LOADED ? Math.exp(-(L - LOADED) / 6) : 0;
+	// accensione: la rete "nasce" dal nucleo di luce del tuffo, poi il lampo dell'installazione a LOADED
+	const ignite = 0.75 * clamp(L / 8) * Math.exp(-Math.max(0, L - 8) / 12);
+	const flash = Math.max(ignite, L >= LOADED ? Math.exp(-(L - LOADED) / 6) : 0);
 	const spike = L >= LOADED ? Math.exp(-(L - LOADED) / 14) : 0;
 	const activity = lerp(0.08, 0.38, ease.inOutSine(invLerp(10, 95, L))) + 0.5 * spike;
 	return {
@@ -48,7 +50,7 @@ export const secretNet = (L: number, abs: number) => {
 			dist: lerp(mid.dist, N.dist, c),
 			yaw: v2NetYaw(abs) - 1.7 * spin,
 		},
-		reveal: L >= CONVERGE ? lerp(ease.outCubic(invLerp(2, 64, L)), N.reveal, c) : ease.outCubic(invLerp(2, 64, L)),
+		reveal: lerp(ease.outCubic(invLerp(0, 56, L)), N.reveal, c),
 		activity: lerp(activity, N.activity, c),
 		flash: flash * (1 - c),
 	};

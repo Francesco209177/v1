@@ -6,8 +6,8 @@ import {LAYOUT, R} from './timing';
 
 type Line = {words: string[]; accent: string; size: number; y: number; at: number};
 const LINES: Line[] = [
-	{words: ['LA', 'TUA', 'AI.'], accent: 'TUA', size: 158, y: LAYOUT.titleY1, at: R.title},
-	{words: ['SUL', 'TUO', 'COMPUTER.'], accent: 'TUO', size: 79, y: LAYOUT.titleY2, at: R.title + 4},
+	{words: ['LA', 'TUA', 'AI.'], accent: 'TUA', size: 158, y: LAYOUT.titleY1, at: R.title - 3},
+	{words: ['SUL', 'TUO', 'COMPUTER.'], accent: 'TUO', size: 79, y: LAYOUT.titleY2, at: R.title + 1},
 ];
 const CENTER = (LAYOUT.titleY1 + LAYOUT.titleY2) / 2;
 
@@ -19,7 +19,7 @@ const TitleLine: React.FC<{f: number; line: Line}> = ({f, line}) => {
 	const d = f - line.at;
 	if (d < -1) return null;
 	const track = lerp(-0.045, 0.02, ease.outCubic(clamp(d / 105)));
-	const sweep = prog(f, line.at + 9, 17, ease.inOutCubic);
+	const sweep = prog(f, line.at + 8, 22, ease.inOutSine);
 	const H = line.size * 1.32;
 	let ci = 0;
 	const masked = d < 16;
@@ -37,8 +37,8 @@ const TitleLine: React.FC<{f: number; line: Line}> = ({f, line}) => {
 								style={{
 									display: 'inline-block',
 									transform: overlay ? undefined : `translateY(${(1 - p) * H * 0.95}px) rotate(${(1 - p) * 6}deg)`,
-									color: overlay ? COLORS.orangeHot : isAccent ? COLORS.orange : COLORS.white,
-									textShadow: overlay ? `0 0 6px ${COLORS.white}, ${textGlow(COLORS.orangeBright, 1.6)}` : isAccent ? textGlow(COLORS.orange, 0.8) : '0 4px 30px rgba(0,0,0,0.6)',
+									color: overlay ? COLORS.white : isAccent ? COLORS.orange : COLORS.white,
+									textShadow: overlay ? `0 0 8px ${COLORS.white}, 0 0 22px ${COLORS.orangeHot}, 0 0 60px ${COLORS.orange}, 0 0 110px ${alpha(COLORS.orange, 0.6)}` : isAccent ? textGlow(COLORS.orange, 0.8) : '0 4px 30px rgba(0,0,0,0.6)',
 								}}
 							>
 								{ch}
@@ -73,8 +73,8 @@ const TitleLine: React.FC<{f: number; line: Line}> = ({f, line}) => {
 					style={{
 						...base,
 						mixBlendMode: 'screen',
-						WebkitMaskImage: `linear-gradient(105deg, transparent ${sweep * 150 - 40}%, #000 ${sweep * 150 - 25}%, transparent ${sweep * 150 - 10}%)`,
-						maskImage: `linear-gradient(105deg, transparent ${sweep * 150 - 40}%, #000 ${sweep * 150 - 25}%, transparent ${sweep * 150 - 10}%)`,
+						WebkitMaskImage: `linear-gradient(105deg, transparent ${sweep * 160 - 48}%, #000 ${sweep * 160 - 30}%, transparent ${sweep * 160 - 12}%)`,
+						maskImage: `linear-gradient(105deg, transparent ${sweep * 160 - 48}%, #000 ${sweep * 160 - 30}%, transparent ${sweep * 160 - 12}%)`,
 					}}
 				>
 					{(() => {
@@ -89,7 +89,7 @@ const TitleLine: React.FC<{f: number; line: Line}> = ({f, line}) => {
 
 /** "LA TUA AI. / SUL TUO COMPUTER." — entra sul cue (assoluto 750) con un colpo di luce anamorfico. */
 export const Title: React.FC<{f: number}> = ({f}) => {
-	if (f < R.title - 1) return null;
+	if (f < R.title - 4) return null;
 	const q = takeover(f);
 	const flash = hit(f, R.title, 14);
 	const scale = lerp(1, 0.5, q);

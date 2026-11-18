@@ -52,7 +52,7 @@ export const Drive: React.FC<{L: number}> = ({L}) => {
 	const down = ease.inOutCubic(invLerp(T.chipDown, T.insert, L));
 	const click = done ? ease.outCubic(clamp((L - LOADED) / 3)) : 0;
 	const settle = done ? Math.sin(clamp((L - LOADED) / 6) * Math.PI) * 4 : 0;
-	const chipBottom = lerp(SSD.top - 120, SSD.top + 30, down) + 26 * click - settle + (1 - chipIn) * -40 + exit * 90;
+	const chipBottom = lerp(SSD.top - 120, SSD.top + 18, down) + 20 * click - settle + (1 - chipIn) * -40 + exit * 90;
 	const chipOp = clamp((L - T.chipIn) / 6) * (1 - exit);
 	const pinLit = (i: number) => (L > T.insert ? 0.35 + 0.65 * Math.max(0, Math.sin((L - T.insert) * 0.5 - i * 0.7)) : 0.2);
 

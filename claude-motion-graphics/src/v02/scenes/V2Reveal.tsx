@@ -5,6 +5,7 @@ import {beatPulse, clamp, ease} from '../../lib/math';
 import {alpha, COLORS} from '../../theme';
 import {Laptop} from '../components/Laptop';
 import {LaptopNear} from './reveal/LaptopNear';
+import {CableGlint} from './reveal/CableGlint';
 import {Embers} from './reveal/Embers';
 import {Question} from './reveal/Question';
 import {ScreenChat} from './reveal/ScreenChat';
@@ -56,6 +57,7 @@ export const V2Reveal: React.FC = () => {
 						<ScreenChat f={f} />
 					</Laptop>
 				)}
+				<CableGlint pose={pose} plugOut={PLUG_OUT} />
 			</div>
 			<Embers f={f} layer="front" push={pull * 0.8} />
 			<Title f={f} />
