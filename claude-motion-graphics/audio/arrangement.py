@@ -33,6 +33,9 @@ CHORD_COLOURS = {"Am": ("B", "G", "D"), "F": ("G", "E", "D"), "C": ("D", "A", "B
 CUES_S = {"sparkFormed": 2.5, "ideaStart": 4.0, "promptToCode": 7.0, "creationStart": 9.0, "drop/shot1": 16.0,
           "shot2": 17.5, "shot3": 19.0, "shot4": 20.5, "shot5": 22.0, "outroStart": 24.0, "lockup": 26.0}
 SHOT_BEATS = (32, 35, 38, 41, 44)
+# the same cues in beats (frame / 15); synth.py places every sound-design event from these
+CUE_BEATS = {"sparkFormed": 5, "ideaStart": 8, "typingStart": 9, "typingEnd": 13, "promptToCode": 14,
+             "creationStart": 18, "buildStart": 28, "drop": 32, "outroStart": 48, "lockup": 52, "fadeStart": 58}
 
 # (start beat, end beat, chord, bass note)   i - VI - III - VII in A minor
 HARMONY = [
@@ -112,7 +115,8 @@ def build(seed: int = 2026):
         return float(v * (1.0 + rng.uniform(-amt, amt)))
 
     ev = {k: [] for k in ("kick", "clap", "hat_c", "hat_o", "shaker", "snare", "crash", "pad", "chords", "stab",
-                          "arp", "bass", "sub", "lead", "bell", "logo", "echo", "stream", "typing", "sparkle")}
+                          "arp", "bass", "sub", "lead", "bell", "logo", "echo", "stream", "typing", "sparkle",
+                          "drone")}
 
     # ------------------------------------------------------------------ drums
     for b in range(8, 18):                                   # scene 2: soft pulse
@@ -172,7 +176,7 @@ def build(seed: int = 2026):
     for b0, b1, ch, bass in HARMONY:
         if 8 <= b0 < 32:
             end = 31.5 if b1 == 32 else b1
-            ev["pad"].append((b0, end, [n2m(x) for x in PAD_VOICINGS[ch]], 1.0))
+            ev["pad"].append((b0, end, [n2m(x) for x in PAD_VOICINGS[ch]], 1.0, 0.35 if b0 > 8 else 0.9))
             ev["sub"].append((b0, min(end, 17.9) if b0 == 16 else end, n2m(bass), 0.55 if b0 < 18 else 1.0))
         elif 32 <= b0 < 48:
             ev["sub"].append((b0, b1, n2m(bass), 1.0))
@@ -180,11 +184,13 @@ def build(seed: int = 2026):
         v = [n2m(x) for x in DROP_VOICINGS[ch]]
         ev["chords"].append((b0, b1, v, 1.0))
         ev["stab"].append((b0, v, 1.0))
-    # impact chord (2.5 s), breakdown and final chord
-    ev["pad"].append((5, 8.2, [n2m(x) for x in ("A2", "E3", "A3", "C4", "E4", "B4")], 1.0))
-    ev["pad"].append((48, 50, [n2m(x) for x in ("F3", "C4", "E4", "A4")], 1.0))
-    ev["pad"].append((50, 51.95, [n2m(x) for x in ("G3", "D4", "G4", "B4")], 1.0))
-    ev["pad"].append((52, 59.7, [n2m(x) for x in ("A2", "A3", "E4", "B4", "C5", "E5")], 1.0))
+    # intro drone: open fifth (no third yet, dark and ambiguous) fading in from silence
+    ev["drone"].append((0, 10, [n2m(x) for x in ("A1", "A2", "E3", "A3")], 1.0))
+    # impact chord (2.5 s, the third arrives: A minor add9), breakdown and final chord
+    ev["pad"].append((5, 8.2, [n2m(x) for x in ("A2", "E3", "A3", "C4", "E4", "B4")], 1.0, 0.012))
+    ev["pad"].append((48, 50, [n2m(x) for x in ("F3", "C4", "E4", "A4")], 1.0, 0.25))
+    ev["pad"].append((50, 51.95, [n2m(x) for x in ("G3", "D4", "G4", "B4")], 1.0, 0.12))
+    ev["pad"].append((52, 59.7, [n2m(x) for x in ("A2", "A3", "E4", "B4", "C5", "E5")], 1.0, 0.008))
 
     # ----------------------------------------------------------------- arp
     def arp_run(b0, b1, level, bright, octave=0, restart=True, doubles=False):
@@ -365,7 +371,7 @@ def report(ev=None) -> bool:
             if name in ("lead", "logo", "bell"):
                 strong_total += 1
                 strong_ct += m % 12 in tones
-    for name in ("pad", "chords"):
+    for name in ("drone", "pad", "chords"):
         for e in ev[name]:
             ch = chord_at(e[0])
             allowed = {n2m(x + "4") % 12 for x in CHORD_TONES[ch] + CHORD_COLOURS[ch]}

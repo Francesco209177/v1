@@ -408,3 +408,124 @@ def thud(seed: int, fc: float = 700.0, tau: float = 0.035):
     t = tarr(n)
     y = lp(rng.standard_normal(n), fc, 2) * np.exp(-t / tau)
     return apply_fades(y, 0.0, 60.0)
+
+
+# ----------------------------------------------------------------------------
+# sustained voices (pad, drone, sub, lead, audio logo)
+# ----------------------------------------------------------------------------
+def pad_voice(midi: int, dur: float, seed: int, attack: float = 0.4, release: float = 0.7, detune: float = 9.0):
+    """Warm pad note: three slowly drifting detuned saws spread L/C/R (stereo, unfiltered:
+    the pad bus is low-passed as a whole with a moving cutoff)."""
+    rng = np.random.default_rng(seed)
+    f = mtof(midi)
+    n = s2n(dur + release)
+    t = tarr(n)
+    out = np.zeros((n, 2))
+    for cents, p in ((-detune, -0.75), (0.0, 0.0), (detune, 0.75)):
+        drift = 1.0 + 0.0011 * np.sin(TWO_PI * rng.uniform(0.13, 0.37) * t + rng.random() * 6.28)
+        s = saw(f * 2.0 ** (cents / 1200.0) * drift, n, rng.random())
+        l, r = pan_gains(p)
+        out[:, 0] += s * l
+        out[:, 1] += s * r
+    out /= np.sqrt(3.0)
+    # smooth (raised-cosine) attack, flat sustain, raised-cosine release
+    env = np.ones(n)
+    na = min(n, max(1, s2n(attack)))
+    env[:na] = 0.5 - 0.5 * np.cos(np.pi * (np.arange(na) + 0.5) / na)
+    g = min(n, s2n(dur))
+    nr = n - g
+    if nr > 0:
+        env[g:] *= 0.5 + 0.5 * np.cos(np.pi * (np.arange(nr) + 0.5) / nr)
+    return out * env[:, None]
+
+
+def sub_note(midi: int, dur: float, attack: float = 0.012, release: float = 0.05, h2: float = 0.12):
+    """Sub bass: sine + a touch of 2nd harmonic (so it reads on small speakers), mono."""
+    f = mtof(midi)
+    n = s2n(dur + release)
+    t = tarr(n)
+    y = np.sin(TWO_PI * f * t) + h2 * np.sin(2.0 * TWO_PI * f * t + 0.3)
+    env = np.ones(n)
+    na = s2n(attack)
+    env[:na] = 0.5 - 0.5 * np.cos(np.pi * (np.arange(na) + 0.5) / na)
+    g = min(n, s2n(dur))
+    nr = n - g
+    if nr > 0:
+        env[g:] *= 0.5 + 0.5 * np.cos(np.pi * (np.arange(nr) + 0.5) / nr)
+    return y * env / (1.0 + h2)
+
+
+def lead_voice(midi: int, dur: float, seed: int, glide_from: float | None = None, vib_cents: float = 11.0):
+    """Drop lead: 7-voice supersaw + octave layer + soft square sub, delayed vibrato and a short
+    glide into the note. Low-passed with a plucky envelope so it never gets fizzy (stereo)."""
+    rng = np.random.default_rng(seed)
+    rel = 0.14
+    n = s2n(dur + rel)
+    t = tarr(n)
+    vib = vib_cents * (1.0 - np.exp(-np.maximum(t - 0.13, 0.0) / 0.12)) * np.sin(TWO_PI * 5.3 * t + rng.random())
+    pitch = np.full(n, float(midi))
+    if glide_from is not None:
+        pitch += (glide_from - midi) * np.exp(-t / 0.018)
+    f = 440.0 * 2.0 ** ((pitch - 69.0) / 12.0) * 2.0 ** (vib / 1200.0)
+    out = np.zeros((n, 2))
+    offs = np.linspace(-1.0, 1.0, 7)
+    tot = 0.0
+    for k, o in enumerate(offs):
+        cents = np.sign(o) * abs(o) ** 1.25 * 17.0 + rng.uniform(-0.7, 0.7)
+        g = 1.0 if k == 3 else 0.72
+        s = saw(f * 2.0 ** (cents / 1200.0), n, rng.random()) * g
+        l, r = pan_gains(0.85 * o * (1 if k % 2 else -1))
+        out[:, 0] += s * l
+        out[:, 1] += s * r
+        tot += g * g
+    for k, cents in enumerate((-7.0, 7.0)):
+        s = saw(2.0 * f * 2.0 ** (cents / 1200.0), n, rng.random()) * 0.32
+        l, r = pan_gains(-0.6 if k == 0 else 0.6)
+        out[:, 0] += s * l
+        out[:, 1] += s * r
+        tot += 0.32 ** 2
+    sub = square(0.5 * f, n, rng.random()) * 0.42
+    out += sub[:, None] * 0.7071
+    tot += 0.42 ** 2
+    out /= np.sqrt(tot)
+    track = (mtof(midi) / 440.0) ** 0.3
+    fc = (1700.0 + 3300.0 * np.exp(-t / 0.075)) * track
+    out = sweep_filter(out, fc, "lp", q=0.85, per_oct=3.0)
+    env = adsr(n, 0.005, 0.22, 0.72, rel, dur)
+    return out * env[:, None]
+
+
+def logo_voice(midi: int, dur: float, seed: int):
+    """Audio-logo note: glassy FM bell + a long bright pluck + a soft octave sine halo (stereo)."""
+    f = mtof(midi)
+    bell = fm_bell(f, dur=dur, ratio=2.0, index=1.5, idx_tau=0.12, amp_tau=dur * 0.33)
+    halo = fm_bell(2.0 * f, dur=dur, ratio=1.0, index=0.3, idx_tau=0.3, amp_tau=dur * 0.22, attack=0.01)
+    pl = pluck(midi, 7, True)
+    n = max(len(bell), len(pl))
+    out = np.zeros((n, 2))
+    out[: len(bell)] += 0.62 * bell[:, None]
+    out[: len(halo), 0] += 0.22 * halo
+    out[: len(halo), 1] += 0.18 * halo
+    out[: len(pl)] += 0.85 * pl
+    return out
+
+
+def drone(midis, dur: float, seed: int):
+    """Dark evolving intro drone: detuned pad voices with slow beating (stereo, unfiltered)."""
+    n = s2n(dur)
+    out = np.zeros((n, 2))
+    for i, m in enumerate(midis):
+        v = pad_voice(m, dur - 0.5, seed + 13 * i, attack=0.5, release=0.5, detune=13.0)
+        out[: len(v)] += v[:n]
+    return out / np.sqrt(len(midis))
+
+
+def pitched(x, ratio: float):
+    """Resample a one-shot to change its pitch (and length) by `ratio` (linear interpolation)."""
+    n = len(x)
+    m = max(2, int(n / ratio))
+    pos = np.arange(m) * ratio
+    pos = pos[pos <= n - 1]
+    if x.ndim == 1:
+        return np.interp(pos, np.arange(n), x)
+    return np.stack([np.interp(pos, np.arange(n), x[:, c]) for c in range(x.shape[1])], axis=1)
