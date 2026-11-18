@@ -12,7 +12,7 @@ import {V4Hook} from './scenes/V4Hook';
 import {V4How} from './scenes/V4How';
 import {V4Trap} from './scenes/V4Trap';
 import {C4} from './theme';
-import {V4_SCENES, V4_SUB_Y, V4_VO} from './timeline';
+import {V4_CUES, V4_SCENES, V4_SUB_Y, V4_VO} from './timeline';
 
 export const V4_SCENE_COMPONENTS: Record<keyof typeof V4_SCENES, React.FC> = {
 	hook: V4Hook,
@@ -52,7 +52,8 @@ export const V4Main: React.FC = () => (
 			})}
 			<CutFlash cuts={RED_CUTS} core="255,170,172" mid="240,53,59" edge="255,205,206" />
 			<CutFlash cuts={GREEN_CUTS} core="190,255,220" mid="34,212,122" edge="210,255,230" />
-			<Subtitles lines={V4_VO} y={V4_SUB_Y} accent={C4.green} />
+			{/* da 28 s la domanda finale è già a tutto schermo: niente sottotitolo doppione */}
+			<Subtitles lines={V4_VO} y={V4_SUB_Y} accent={C4.green} hidden={(f) => f >= V4_CUES.question - 14} />
 			<Grain />
 		</AbsoluteFill>
 	</AbsFrameProvider>

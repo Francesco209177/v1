@@ -42,7 +42,7 @@ export const LockScreen: React.FC<{arrive: number; press: number; ring: number; 
 					lineHeight: 1,
 				}}
 			>
-				10:24
+				09:41
 			</div>
 			{/* notifica */}
 			<div
