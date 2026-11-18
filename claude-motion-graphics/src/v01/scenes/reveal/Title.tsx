@@ -19,7 +19,7 @@ export const shake = (f: number, at: number, amp: number): {x: number; y: number
 export const Title: React.FC<{f: number}> = ({f}) => {
 	if (f < R.title) return null;
 	// --- NON PENSA. ---
-	const p1 = prog(f, R.title, 7, ease.outExpo);
+	const p1 = prog(f, R.title - 1, 7, ease.outExpo); // già visibile (sfocato e grande) sul frame del cue
 	const h1 = hit(f, R.title, 14);
 	const sc1 = lerp(1.55, 1, p1);
 	const track1 = lerp(0.12, -0.02, p1) + 0.012 * prog(f, R.title + 7, R.end - R.title - 7, ease.outCubic);
