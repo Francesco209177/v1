@@ -43,7 +43,7 @@ export const Drive: React.FC<{L: number}> = ({L}) => {
 	const p = installProgress(L);
 	const done = L >= LOADED;
 	const hit = done ? Math.exp(-(L - LOADED) / 7) : 0;
-	const lab = prog(L, LOADED + 1, 10, ease.outCubic);
+	const lab = prog(L, LOADED + 1, 9, ease.outCubic);
 	const slabY = SSD.top + (1 - slabIn) * 60 + exit * 90;
 	const slabOp = slabIn * (1 - exit);
 
@@ -123,7 +123,7 @@ export const Drive: React.FC<{L: number}> = ({L}) => {
 					<div style={{...MONO, fontSize: 24, fontWeight: 700, color: COLORS.orangeBright, padding: '4px 10px 4px 13px', border: `1.5px solid ${alpha(COLORS.orange, 0.6)}`, borderRadius: 7}}>SSD</div>
 					<div style={{position: 'relative', flex: 1, height: 44}}>
 						{/* barra */}
-						<div style={{position: 'absolute', left: 0, right: 92, top: 18, height: 8, borderRadius: 4, background: alpha(COLORS.white, 0.08), opacity: 1 - lab}}>
+						<div style={{position: 'absolute', left: 0, right: 92, top: 18, height: 8, borderRadius: 4, background: alpha(COLORS.white, 0.08), opacity: 1 - clamp(lab * 2.5)}}>
 							<div
 								style={{
 									position: 'absolute',
@@ -137,7 +137,7 @@ export const Drive: React.FC<{L: number}> = ({L}) => {
 								}}
 							/>
 						</div>
-						<div style={{position: 'absolute', right: 0, top: 0, height: 44, display: 'flex', alignItems: 'center', fontFamily: FONTS.mono, fontWeight: 700, fontSize: 27, color: COLORS.white, opacity: 1 - lab}}>
+						<div style={{position: 'absolute', right: 0, top: 0, height: 44, display: 'flex', alignItems: 'center', fontFamily: FONTS.mono, fontWeight: 700, fontSize: 27, color: COLORS.white, opacity: 1 - clamp(lab * 2.5)}}>
 							{`${Math.floor(p * 100)}%`.padStart(4, ' ')}
 						</div>
 						{/* conferma */}

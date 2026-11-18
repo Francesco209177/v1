@@ -47,8 +47,8 @@ const Cursor: React.FC<{x: number; y: number; press: number; opacity: number}> =
 );
 
 export const ControlIcon: React.FC<{f: number}> = ({f}) => {
-	const expand = prog(f, CLICK, 10, ease.outBack);
-	const sel = prog(f, CLICK, 4, ease.outCubic);
+	const expand = prog(f, CLICK - 1, 10, ease.outBack);
+	const sel = prog(f, CLICK - 1, 3, ease.outCubic);
 	const click = hit(f, CLICK, 12);
 	const beat2 = hit(f, BEAT2, 10);
 	const entry = hit(f, 0, 10);
@@ -60,7 +60,7 @@ export const ControlIcon: React.FC<{f: number}> = ({f}) => {
 	const press = clamp(1 - Math.abs(f - CLICK) / 2.5);
 	const hoverY = lerp(L[0].top, L[1].top, move);
 	const hoverH = lerp(L[0].h, L[1].h, move);
-	const ripple = prog(f, CLICK, 14, ease.outCubic);
+	const ripple = prog(f, CLICK - 1, 14, ease.outCubic);
 	const x0 = CX - CARD.w / 2;
 
 	return (

@@ -116,12 +116,12 @@ export const UnplugFX: React.FC<{f: number}> = ({f}) => {
 /** Badge "NESSUNA CONNESSIONE": lampeggia a scatti allo strappo, collegato alla porta da una linea. */
 export const OfflineBadge: React.FC<{f: number}> = ({f}) => {
 	const g = f - UNPLUG;
-	if (g < 1 || g > 34) return null;
+	if (g < 1 || g > 26) return null;
 	const pose = hookPose(f);
 	const port = pt(pose, PORT_LOCAL.x, PORT_LOCAL.y, 6);
 	const flicker = g < 6 ? [1, 0.25, 1, 0.55, 1][g - 1] : 1;
 	const inP = ease.outBack(clamp((g - 1) / 5));
-	const out = ease.inCubic(invLerp(26, 34, g));
+	const out = ease.inCubic(invLerp(18, 26, g));
 	// badge a sinistra della porta, collegato da una linea a gomito
 	const bx = port.x - 300;
 	const by = port.y + 70;

@@ -128,16 +128,6 @@ export const OfflineIcon: React.FC<{f: number}> = ({f}) => {
 						<circle cx={W.cx} cy={W.cy} r={W.dot} fill={COLORS.orangeBright} opacity={dotLit} />
 					</>
 				)}
-				{/* barra di "spento": prima un solco scuro che taglia gli archi, poi la linea arancione */}
-				{g ? (
-					<Stroke d={slashD} w={26} color={COLORS.orange} draw={slashDraw} opacity={0.8 + 1.2 * slashHit} />
-				) : (
-					<>
-						<Stroke d={slashD} w={58} color={COLORS.black} draw={slashDraw} />
-						<Stroke d={slashD} w={22} color={COLORS.orangeBright} draw={slashDraw} />
-						<Stroke d={slashD} w={8} color={COLORS.white} draw={slashDraw} opacity={0.5 + 0.5 * slashHit} />
-					</>
-				)}
 			</>
 		);
 	};
@@ -150,6 +140,13 @@ export const OfflineIcon: React.FC<{f: number}> = ({f}) => {
 				</defs>
 				<g filter="url(#bo-glow)">{arcs('glow')}</g>
 				<g>{arcs('core')}</g>
+				{/* barra di "spento": prima un solco scuro che taglia gli archi, poi la linea arancione con il suo bagliore */}
+				<Stroke d={slashD} w={58} color={COLORS.black} draw={slashDraw} />
+				<g filter="url(#bo-glow)">
+					<Stroke d={slashD} w={30} color={COLORS.orange} draw={slashDraw} opacity={clamp(0.75 + 1.2 * slashHit)} />
+				</g>
+				<Stroke d={slashD} w={22} color={COLORS.orangeBright} draw={slashDraw} />
+				<Stroke d={slashD} w={8} color={COLORS.white} draw={slashDraw} opacity={0.5 + 0.5 * slashHit} />
 			</svg>
 			<ChatBubble f={f} />
 		</>
