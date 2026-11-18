@@ -1,6 +1,6 @@
 {
   "_doc": [
-    "Video 01: voce narrante provvisoria (Piper, it_IT 'paola') sulla musica di public/v01/music.wav.",
+    "Video 01: voce PROVVISORIA (Piper) — alternativa a v01_plan_enea.json (voce definitiva ElevenLabs 'Enea').",
     "Voce definitiva (es. ElevenLabs): stessi nomi file in public/v01/vo/, poi python3 audio/mix_final.py --plan audio/v01_plan.json --dir public/v01/vo"
   ],
   "voice": {
@@ -54,7 +54,7 @@
   "sfx": [],
   "mix": {
     "bed": "public/v01/music.wav",
-    "out": "public/v01/audio_final.wav",
+    "out": "public/v01/audio_scratch.wav",
     "duck_db": 8.0,
     "duck_attack_ms": 50,
     "duck_release_ms": 260,

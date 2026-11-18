@@ -33,15 +33,15 @@ export const V1_CUES = {
 	caveat: 840, //       28,0 s · "può sbagliare: verifica le informazioni importanti"
 } as const;
 
-/** Voce narrante (secondi, misurati sulle clip rifilate dal mixer). Testi = sottotitoli a schermo. File in public/v01/vo/. */
+/** Voce narrante definitiva (ElevenLabs "Enea"; secondi misurati dal mixer). Testi = sottotitoli. Clip in public/v01/vo_enea/. */
 export const V1_VO = [
-	{file: 'vo_01', start: 0.3, end: 2.28, text: 'ChatGPT non pensa come un essere umano.'},
-	{file: 'vo_02', start: 2.55, end: 3.98, text: 'Ma allora, come risponde?'},
-	{file: 'vo_03', start: 4.45, end: 7.78, text: 'Prima, trasforma la tua domanda in token: piccoli pezzi di testo.'},
-	{file: 'vo_04', start: 9.3, end: 14.06, text: 'Ogni token diventa una lista di numeri, e la rete calcola quali parole contano di più nel contesto.'},
-	{file: 'vo_05', start: 16.3, end: 20.16, text: 'Poi prevede il token più probabile, uno alla volta, fino a comporre la risposta.'},
-	{file: 'vo_06', start: 23.3, end: 25.25, text: 'Ha imparato da enormi quantità di testo.'},
-	{file: 'vo_07', start: 25.75, end: 28.94, text: 'Non pensa: prevede. E per questo, a volte, può sbagliare.'},
+	{file: 'vo_01', start: 0.1, end: 3.05, text: 'ChatGPT non pensa come un essere umano.'},
+	{file: 'vo_02', start: 3.15, end: 5.03, text: 'Ma allora, come risponde?'},
+	{file: 'vo_03', start: 5.15, end: 9.1, text: 'Prima, trasforma la tua domanda in token: piccoli pezzi di testo.'},
+	{file: 'vo_04', start: 9.25, end: 15.1, text: 'Ogni token diventa una lista di numeri, e la rete calcola quali parole contano di più nel contesto.'},
+	{file: 'vo_05', start: 16.15, end: 20.99, text: 'Poi prevede il token più probabile, uno alla volta, fino a comporre la risposta.'},
+	{file: 'vo_06', start: 23.05, end: 25.47, text: 'Ha imparato da enormi quantità di testo.'},
+	{file: 'vo_07', start: 25.6, end: 29.85, text: 'Non pensa: prevede. E per questo, a volte, può sbagliare.'},
 ] as const;
 
 /** I sottotitoli stanno attorno a y = 1390 (come nel video 02). */
