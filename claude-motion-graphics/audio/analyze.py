@@ -157,13 +157,26 @@ def main():
     for i in range(0, len(out), 3):
         print("   " + "   |   ".join(out[i:i + 3]))
 
-    # clicks: sample-to-sample jumps far above the local high-passed level
-    hh = signal.sosfilt(signal.butter(4, 9000, "high", fs=sr, output="sos"), mono)
-    env = np.sqrt(signal.sosfiltfilt(signal.butter(2, 30, fs=sr, output="sos"), hh ** 2) + 1e-14)
-    ratio = np.abs(hh) / (env + 1e-6)
-    bad = np.flatnonzero((ratio > 12) & (np.abs(hh) > 0.01))
-    print(f"\nCLICK SCAN (|HF| > 12x its local RMS and > -40 dBFS): {len(bad)} samples"
-          + (f", e.g. at {', '.join(f'{b / sr:.3f}s' for b in bad[:8])}" if len(bad) else ""))
+    # clicks: isolated discontinuities = second difference far above its local (5 ms) mean
+    from scipy.ndimage import uniform_filter1d
+    nclick, where = 0, []
+    for c in range(ch):
+        d2 = np.abs(np.diff(x[:, c], 2))
+        loc = uniform_filter1d(d2, 241, mode="nearest")
+        bad = np.flatnonzero((d2 > 25 * loc) & (d2 > 0.01))
+        nclick += len(bad)
+        where += [b / sr for b in bad[:4]]
+    print(f"\nCLICK SCAN (2nd difference > 25x its 5 ms mean and > -40 dBFS): {nclick} samples"
+          + (f", e.g. at {', '.join(f'{w:.4f}s' for w in sorted(where)[:8])}" if nclick else ""))
+
+    # loudness curves where the brief asks for a rise: intro, build, reverse swell
+    print("RISE CURVES (momentary LUFS, 400 ms window ending at t):")
+    for a_, b_ in ((0.5, 2.5), (14.25, 15.75), (24.5, 26.0)):
+        vals = []
+        for t_ in np.arange(a_, b_ + 1e-6, 0.25):
+            m_ = kw[int((t_ - 0.4) * sr):int(t_ * sr)]
+            vals.append(f"{t_:5.2f}:{-0.691 + 10 * np.log10(max(np.mean(m_), 1e-12)):6.1f}")
+        print("   " + "  ".join(vals))
 
     # sections
     print("\nSECTIONS   LUFS(ungated)  RMS dB   <120Hz  120-2k  2k-8k   >8k   corr  width(S/M dB)")

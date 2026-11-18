@@ -167,7 +167,7 @@ def build(seed: int = 2026):
         ev["hat_c"].append((b + 0.75, hum(0.36)))
         for k, v in enumerate((0.5, 0.32, 0.85, 0.4)):
             ev["shaker"].append((b + k / 4, hum(v, 0.12)))
-    ev["crash"] += [(32, "big", 1.0), (35, "small", 0.72), (38, "small", 0.72), (41, "small", 0.76), (44, "big", 0.8)]
+    ev["crash"] += [(32, "big", 1.0), (35, "small", 0.9), (38, "small", 0.9), (41, "small", 0.92), (44, "big", 0.85)]
     for b, v in ((47.25, 0.5), (47.5, 0.62), (47.625, 0.56), (47.75, 0.78), (47.875, 0.92)):
         ev["snare"].append((b, v, True))                     # fill into 24.0 s
     ev["crash"].append((48, "big", 0.62))
@@ -189,10 +189,10 @@ def build(seed: int = 2026):
     # intro drone: open fifth (no third yet, dark and ambiguous) fading in from silence
     ev["drone"].append((0, 10, [n2m(x) for x in ("A1", "A2", "E3", "A3")], 1.0))
     # impact chord (2.5 s, the third arrives: A minor add9), breakdown and final chord
-    ev["pad"].append((5, 8.2, [n2m(x) for x in ("A2", "E3", "A3", "C4", "E4", "B4")], 1.0, 0.012))
+    ev["pad"].append((5, 8.2, [n2m(x) for x in ("A2", "E3", "A3", "C4", "E4", "B4")], 0.6, 0.012))
     ev["pad"].append((48, 50, [n2m(x) for x in ("F3", "C4", "E4", "A4")], 1.0, 0.25))
     ev["pad"].append((50, 51.95, [n2m(x) for x in ("G3", "D4", "G4", "B4")], 1.0, 0.12))
-    ev["pad"].append((52, 59.7, [n2m(x) for x in ("A2", "A3", "E4", "B4", "C5", "E5")], 1.0, 0.008))
+    ev["pad"].append((52, 59.7, [n2m(x) for x in ("A2", "A3", "E4", "B4", "C5", "E5")], 0.85, 0.008))
 
     # ----------------------------------------------------------------- arp
     def arp_run(b0, b1, level, bright, octave=0, restart=True, doubles=False):
@@ -216,8 +216,8 @@ def build(seed: int = 2026):
 
     arp_run(8, 14, lambda u: 0.34 + 0.16 * u, lambda u: 2 + 2 * u)           # introduced quietly
     arp_run(14, 17.75, lambda u: 0.5 + 0.2 * u, lambda u: 4 + 2.5 * u)
-    arp_run(18, 26, 1.0, 8)                                                   # fully open
-    arp_run(26, 28, 1.0, 8, doubles=True)
+    arp_run(18, 26, 0.85, 8)                                                  # fully open
+    arp_run(26, 28, 0.9, 8, doubles=True)
     arp_run(28, 31.5, lambda u: 1.0 + 0.1 * u, lambda u: 8 + 2 * u,
             octave=lambda s: 0 if s < 30 else (12 if s < 31 else 24), doubles=True)
     arp_run(32, 48, 0.62, 7, octave=12)                                       # sparkle layer under the lead
@@ -249,7 +249,9 @@ def build(seed: int = 2026):
         vel = (1.0, 0.88, 0.96, 0.9, 0.84, 0.9)
         for i, nm in enumerate(notes):
             if i < 4:
-                ev["lead"].append((b0 + 0.75 * i, 0.75, n2m(nm), hum(vel[i], 0.04)))
+                # the 4th note is shortened: the lead breathes right before every picture cut
+                d = 0.75 if (i < 3 or len(notes) > 4) else 0.45
+                ev["lead"].append((b0 + 0.75 * i, d, n2m(nm), hum(vel[i], 0.04)))
             else:                                            # two 8th notes closing the last phrase
                 ev["lead"].append((b0 + 3.0 + 0.5 * (i - 4), 0.5, n2m(nm), hum(vel[i], 0.04)))
 

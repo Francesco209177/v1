@@ -87,30 +87,30 @@ class Stems:
 # Mix table: gain (dB), sidechain depth, reverb sends, whether the build high-pass applies.
 MIX = {
     # name        gain   duck  sends                               build_hp group
-    "kick":     (-7.0, 0.00, {}, True, "drums"),
+    "kick":     (-8.0, 0.00, {}, True, "drums"),
     "clap":     (-9.5, 0.00, {"room": 0.30, "hall": 0.10}, True, "drums"),
-    "hats":     (-17.0, 0.00, {"room": 0.10}, True, "drums"),
+    "hats":     (-15.5, 0.00, {"room": 0.10}, True, "drums"),
     "shaker":   (-21.5, 0.00, {"room": 0.10}, True, "drums"),
-    "roll":     (-10.5, 0.00, {"room": 0.25, "hall": 0.08}, False, "drums"),
+    "roll":     (-9.5, 0.00, {"room": 0.25, "hall": 0.08}, False, "drums"),
     "crash":    (-18.0, 0.00, {"hall": 0.15}, True, "drums"),
-    "sub":      (-13.5, 0.92, {}, True, "bass"),
+    "sub":      (-15.0, 0.92, {}, True, "bass"),
     "bass":     (-9.5, 0.55, {}, True, "bass"),
     "drone":    (-15.0, 0.00, {"hall": 0.35}, True, "music"),
     "pad":      (-24.5, 0.45, {"hall": 0.30}, True, "music"),
-    "chords":   (-16.5, 0.65, {"hall": 0.15}, True, "music"),
-    "stab":     (-13.0, 0.00, {"hall": 0.25}, True, "music"),
+    "chords":   (-15.0, 0.65, {"hall": 0.15}, True, "music"),
+    "stab":     (-11.5, 0.00, {"hall": 0.25}, True, "music"),
     "arp":      (-10.0, 0.28, {"hall": 0.22}, True, "music"),
-    "lead":     (-10.5, 0.15, {"hall": 0.20}, True, "music"),
+    "lead":     (-9.5, 0.15, {"hall": 0.20}, True, "music"),
     "bell":     (-15.0, 0.10, {"hall": 0.45}, True, "music"),
     "logo":     (-10.5, 0.00, {"big": 0.30, "hall": 0.15}, False, "music"),
     "echo":     (-14.0, 0.00, {"hall": 0.40}, False, "music"),
     "stream":   (-13.5, 0.00, {"hall": 0.20}, True, "music"),
-    "typing":   (-13.5, 0.00, {"room": 0.06}, True, "fx"),
+    "typing":   (-10.5, 0.00, {"room": 0.06}, True, "fx"),
     "sparkle":  (-16.0, 0.00, {"hall": 0.60}, True, "fx"),
     "boom":     (-8.5, 0.00, {}, False, "fx"),
     "air":      (-16.0, 0.00, {"big": 0.55}, False, "fx"),
     "shimmer":  (-19.0, 0.00, {"big": 0.60}, False, "fx"),
-    "riser":    (-13.0, 0.00, {"hall": 0.20}, False, "fx"),
+    "riser":    (-11.0, 0.00, {"hall": 0.20}, False, "fx"),
     "whoosh":   (-16.0, 0.00, {"hall": 0.25}, False, "fx"),
     "swell":    (-6.0, 0.00, {}, False, "fx"),
     "downlift": (-20.0, 0.00, {"hall": 0.20}, False, "fx"),
@@ -266,7 +266,7 @@ def render_lead(ev, st: Stems):
     # tame the 2-5 kHz presence region and the fizz above it
     lead = hp(lead, 180.0, 2)
     lead = biquad(lead, "peak", 3100.0, 0.8, -4.5)
-    lead = biquad(lead, "hishelf", 6500.0, 0.7, -5.0)
+    lead = biquad(lead, "hishelf", 6500.0, 0.7, -3.5)
     lead = lead + 0.20 * ping_pong(lead, sec(0.75), fb=0.32, taps=5, lp_hz=3200.0, hp_hz=400.0)
     st.audio["lead"] += width(lead, 1.15)
 
@@ -334,11 +334,11 @@ def render_fx(st: Stems):
 
     # 2.5 s IMPACT 1: soft but clear boom + shimmer bloom on A minor add9
     impact(st, CUE["sparkFormed"], dict(f_start=95.0, f_end=45.0, tau_p=0.06, tau_a=0.8, dur=2.6, drive=1.1,
-                                        snap=110.0), 0.62, 0.55, 0.22, seed=20, thud_gain=0.55)
+                                        snap=110.0), 0.5, 0.55, 0.22, seed=20, thud_gain=0.5)
     place(st.audio["shimmer"], ins.shimmer(am_hi, 5.0, 21, attack=0.03, tau=1.7), at(CUE["sparkFormed"]), 1.0)
 
     # 2.5-4.0 s: gentle whoosh peaking on 4.0 s (scene 2)
-    w = ins.whoosh(1.15, 0.8, 30, f_lo=350.0, f_hi=4200.0)
+    w = ins.whoosh(1.15, 0.45, 30, f_lo=350.0, f_hi=4200.0)
     place(st.audio["whoosh"], w, at(CUE["ideaStart"]) - s2n(1.15), 0.9)
 
     # 7.0 s IMPACT 2 ("Enter"): rising confirm blip + small sub hit + enter key
@@ -371,14 +371,14 @@ def render_fx(st: Stems):
     # shot accents 17.5 / 19.0 / 20.5 / 22.0 s: sub hit + air (crash, stab and big kick are in the score)
     for i, b in enumerate(arr.SHOT_BEATS[1:]):
         impact(st, b, dict(f_start=125.0, f_end=50.0, tau_p=0.04, tau_a=0.22, dur=0.8, drive=1.3, snap=170.0),
-               0.42, 0.45, 0.07, seed=80 + 10 * i, thud_gain=0.35)
+               0.42, 0.75, 0.07, seed=80 + 10 * i, thud_gain=0.35)
 
     # 23.5-24 s: reverse cymbal into scene 5
     rc = ins.reverse_swell(0.55, 90, noise_gain=1.0, tone_gain=0.0, hp_hz=2500.0, lp_hz=11000.0)
     place(st.audio["swell"], rc, ends_at(rc, CUE["outroStart"]) - s2n(0.015), 0.3)
 
     # 24 s IMPACT 4 + downlifter, then the 24-26 s REVERSE SWELL into the final hit
-    impact(st, CUE["outroStart"], dict(f_start=110.0, f_end=45.0, tau_p=0.06, tau_a=0.65, dur=2.0, drive=1.3,
+    impact(st, CUE["outroStart"], dict(f_start=110.0, f_end=45.0, tau_p=0.06, tau_a=0.4, dur=1.4, drive=1.3,
                                        snap=150.0), 0.66, 0.7, 0.2, seed=100)
     place(st.audio["downlift"], ins.downlifter(1.6, 101, f0=7000.0, f1=300.0), at(CUE["outroStart"]), 0.7)
     sw = ins.reverse_swell(2.0, 102, midis=[n2m(x) for x in ("A4", "C5", "E5", "B5", "E6")], noise_gain=0.8,
@@ -387,7 +387,7 @@ def render_fx(st: Stems):
 
     # 26 s FINAL HIT: sub boom, bright shimmer chord on the tonic, crash, long lush tail (logo motif in score)
     impact(st, CUE["lockup"], dict(f_start=140.0, f_end=44.0, tau_p=0.07, tau_a=1.0, dur=3.6, drive=1.5,
-                                   snap=190.0), 0.85, 1.0, 0.35, seed=110, thud_gain=0.6)
+                                   snap=190.0), 0.72, 1.0, 0.35, seed=110, thud_gain=0.6)
     place(st.audio["shimmer"], ins.shimmer(am_hi + [n2m("A7")], 4.0, 111, attack=0.01, tau=1.6),
           at(CUE["lockup"]), 1.25)
     place(st.audio["crash"], ins.crash("big"), at(CUE["lockup"]), 0.7)
@@ -480,8 +480,8 @@ def master_bus(mix):
     y = np.stack([m + s, m - s], axis=1)
     # gentle tilt: a hair of warmth, a soft dip in the presence region, smooth top
     y = biquad(y, "loshelf", 90.0, 0.7, 1.0)
-    y = biquad(y, "peak", 3400.0, 0.7, -1.5)
-    y = biquad(y, "hishelf", 11000.0, 0.7, -1.0)
+    y = biquad(y, "peak", 3400.0, 0.7, -1.0)
+    y = biquad(y, "hishelf", 10000.0, 0.7, 1.0)
     # glue: normalise to a fixed level, then a gentle tanh saturation
     y *= db2lin(-17.0 - lufs_integrated(y))
     y = soft_sat(y, 1.25)
@@ -537,7 +537,7 @@ def render(verbose: bool = True):
 
 def stem_report(st: Stems):
     """Loudness of every stem (after its fader) per section, to balance the mix by numbers."""
-    secs = [("intro", 0, 2.5), ("sc2", 4, 9), ("sc3", 9, 14), ("build", 14, 15.75), ("drop", 16, 24),
+    secs = [("intro", 0, 2.5), ("imp1", 2.5, 4), ("sc2", 4, 9), ("sc3", 9, 14), ("build", 14, 15.75), ("drop", 16, 24),
             ("brkdn", 24, 26), ("final", 26, 29)]
     print(f"{'stem':9s}" + "".join(f"{n:>8s}" for n, _, _ in secs) + "   <120Hz share")
     for name, x in st.audio.items():
