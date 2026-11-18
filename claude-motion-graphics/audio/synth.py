@@ -17,7 +17,7 @@ sidechain             kick-triggered ducking (sub, bass, pad, chords, arp, hall 
 sends                 hall (2.6 s), room (0.7 s), big (4.2 s) convolution reverbs
       |
 build bus             everything except risers / roll / impacts is high-passed 14-16 s
-suck-back             digital-silence gap 15.75 s -> 16.0 s (the drop lands in silence)
+suck-back             silent gap 15.75 s -> 16.0 s (the drop lands in silence)
       |
 master                HP 28 Hz, mono lows (side HP 140 Hz), gentle tilt EQ,
                       tanh saturation, true-peak look-ahead limiter,
@@ -41,14 +41,14 @@ import instruments as ins  # noqa: E402
 from dsp import (BEAT_S, N, SR, apply_fades, automation, b2s, biquad, db2lin, duck_gaps, hp, lin2db,  # noqa: E402
                  lp, lufs_integrated, lufs_window, make_ir, mtof, n2m, ping_pong, place, reverb, s2n,
                  sidechain_env, soft_sat, sweep_filter, tarr, to_stereo, true_peak, width)
-from scipy.ndimage import minimum_filter1d, uniform_filter1d, maximum_filter1d  # noqa: E402
+from scipy.ndimage import minimum_filter1d, uniform_filter1d  # noqa: E402
 from scipy import signal  # noqa: E402
 
 ROOT = os.path.dirname(HERE)
 OUT_WAV = os.path.join(ROOT, "public", "music.wav")
 
 TARGET_LUFS = -14.0
-TP_CEILING_DB = -1.25        # limiter ceiling on the 4x oversampled signal (spec: <= -1.0 dBTP)
+TP_CEILING_DB = -1.35        # limiter ceiling on the 4x oversampled signal (spec: <= -1.0 dBTP)
 FADE_START_S = 29.0          # CUES.fadeStart = frame 870
 SILENT_FROM_S = 29.94        # from here on the file is exact digital silence
 CUE = arr.CUE_BEATS
@@ -88,7 +88,7 @@ class Stems:
 MIX = {
     # name        gain   duck  sends                               build_hp group
     "kick":     (-8.0, 0.00, {}, True, "drums"),
-    "clap":     (-9.5, 0.00, {"room": 0.30, "hall": 0.10}, True, "drums"),
+    "clap":     (-7.0, 0.00, {"room": 0.30, "hall": 0.10}, True, "drums"),
     "hats":     (-15.5, 0.00, {"room": 0.10}, True, "drums"),
     "shaker":   (-21.5, 0.00, {"room": 0.10}, True, "drums"),
     "roll":     (-9.5, 0.00, {"room": 0.25, "hall": 0.08}, False, "drums"),
@@ -101,7 +101,7 @@ MIX = {
     "stab":     (-11.5, 0.00, {"hall": 0.25}, True, "music"),
     "arp":      (-10.0, 0.28, {"hall": 0.22}, True, "music"),
     "lead":     (-9.5, 0.15, {"hall": 0.20}, True, "music"),
-    "bell":     (-15.0, 0.10, {"hall": 0.45}, True, "music"),
+    "bell":     (-16.0, 0.10, {"hall": 0.45}, True, "music"),
     "logo":     (-10.5, 0.00, {"big": 0.30, "hall": 0.15}, False, "music"),
     "echo":     (-14.0, 0.00, {"hall": 0.40}, False, "music"),
     "stream":   (-13.5, 0.00, {"hall": 0.20}, True, "music"),
@@ -110,9 +110,9 @@ MIX = {
     "boom":     (-8.5, 0.00, {}, False, "fx"),
     "air":      (-16.0, 0.00, {"big": 0.55}, False, "fx"),
     "shimmer":  (-19.0, 0.00, {"big": 0.60}, False, "fx"),
-    "riser":    (-11.0, 0.00, {"hall": 0.20}, False, "fx"),
+    "riser":    (-9.5, 0.00, {"hall": 0.20}, False, "fx"),
     "whoosh":   (-16.0, 0.00, {"hall": 0.25}, False, "fx"),
-    "swell":    (-6.0, 0.00, {}, False, "fx"),
+    "swell":    (-3.5, 0.00, {}, False, "fx"),
     "downlift": (-20.0, 0.00, {"hall": 0.20}, False, "fx"),
     "confirm":  (-13.0, 0.00, {"hall": 0.30}, False, "fx"),
 }
@@ -205,7 +205,7 @@ def render_harmony(ev, st: Stems):
         fc = automation([(0.0, 140.0), (2.45, 1150.0), (3.2, 800.0), (5.0, 450.0)], n=len(d), log=True)
         fc *= 2.0 ** (0.25 * np.sin(2 * np.pi * 0.21 * tarr(len(d))))
         d = sweep_filter(d, fc, "lp", q=1.1, per_oct=4.0)
-        env = automation([(0.0, 0.0), (0.15, 0.0), (2.45, 1.0), (3.4, 0.85), (5.0, 0.0)], n=len(d))
+        env = automation([(0.0, 0.0), (0.15, 0.0), (2.45, 1.0), (2.7, 0.75), (3.6, 0.45), (4.8, 0.0)], n=len(d))
         d *= (env ** 1.6)[:, None]
         place(st.audio["drone"], d, at(b0), lvl)
 
@@ -329,8 +329,8 @@ def render_fx(st: Stems):
     am_hi = [n2m(x) for x in ("A5", "E6", "B6", "C7", "E7")]
 
     # 0-2.5 s: subtle rising tension
-    r = apply_fades(ins.noise_riser(2.15, 11, f0=500.0, f1=6500.0, curve=2.6, q=1.6, air=0.12), 30.0, 6.0)
-    place(st.audio["riser"], r, ends_at(r, CUE["sparkFormed"]) - s2n(0.012), 0.45)
+    r = apply_fades(ins.noise_riser(2.15, 11, f0=500.0, f1=6500.0, curve=2.6, q=1.6, air=0.12), 30.0, 25.0)
+    place(st.audio["riser"], r, ends_at(r, CUE["sparkFormed"]) - s2n(0.035), 0.45)
 
     # 2.5 s IMPACT 1: soft but clear boom + shimmer bloom on A minor add9
     impact(st, CUE["sparkFormed"], dict(f_start=95.0, f_end=45.0, tau_p=0.06, tau_a=0.8, dur=2.6, drive=1.1,
@@ -359,10 +359,10 @@ def render_fx(st: Stems):
     # 14-16 s BUILD: noise riser + rising saw layer (the low end is filtered out in master_bus)
     b0, b_gap = CUE["buildStart"], CUE["drop"] - 0.5
     dur = sec(b_gap - b0)
-    nr = apply_fades(ins.noise_riser(dur, 60, f0=300.0, f1=9500.0, curve=2.0, q=1.5, air=0.3), 50.0, 8.0)
+    nr = apply_fades(ins.noise_riser(dur, 60, f0=300.0, f1=9000.0, curve=1.0, q=1.5, air=0.25), 50.0, 8.0)
     place(st.audio["riser"], nr, at(b0), 1.0)
-    tr = apply_fades(ins.tone_riser(dur, 61, m0=57.0, m1=81.0, curve=1.8), 50.0, 8.0)
-    place(st.audio["riser"], tr, at(b0), 0.35)
+    tr = apply_fades(ins.tone_riser(dur, 61, m0=57.0, m1=81.0, curve=1.0), 50.0, 8.0)
+    place(st.audio["riser"], tr, at(b0), 0.5)
 
     # 16 s THE DROP: biggest hit
     impact(st, CUE["drop"], dict(f_start=150.0, f_end=46.0, tau_p=0.055, tau_a=0.6, dur=2.0, drive=1.6, snap=210.0),
@@ -383,10 +383,13 @@ def render_fx(st: Stems):
     place(st.audio["downlift"], ins.downlifter(1.6, 101, f0=7000.0, f1=300.0), at(CUE["outroStart"]), 0.7)
     sw = ins.reverse_swell(2.0, 102, midis=[n2m(x) for x in ("A4", "C5", "E5", "B5", "E6")], noise_gain=0.8,
                            tone_gain=1.0, hp_hz=350.0, lp_hz=9000.0, rt_scale=1.0)
-    place(st.audio["swell"], sw, ends_at(sw, CUE["lockup"]) - s2n(0.008), 1.0)
+    place(st.audio["swell"], sw, ends_at(sw, CUE["lockup"]) - s2n(0.02), 1.0)
+    # reverse cymbal layer on top: the air "inhales" into the logo
+    rc = ins.reverse_swell(2.0, 103, noise_gain=1.0, tone_gain=0.0, hp_hz=2800.0, lp_hz=12000.0, rt_scale=0.8)
+    place(st.audio["swell"], rc, ends_at(rc, CUE["lockup"]) - s2n(0.025), 0.3)
 
     # 26 s FINAL HIT: sub boom, bright shimmer chord on the tonic, crash, long lush tail (logo motif in score)
-    impact(st, CUE["lockup"], dict(f_start=140.0, f_end=44.0, tau_p=0.07, tau_a=1.0, dur=3.6, drive=1.5,
+    impact(st, CUE["lockup"], dict(f_start=140.0, f_end=44.0, tau_p=0.07, tau_a=0.75, dur=3.0, drive=1.5,
                                    snap=190.0), 0.72, 1.0, 0.35, seed=110, thud_gain=0.6)
     place(st.audio["shimmer"], ins.shimmer(am_hi + [n2m("A7")], 4.0, 111, attack=0.01, tau=1.6),
           at(CUE["lockup"]), 1.25)
@@ -410,7 +413,7 @@ def build_highpass_curve():
     t = tarr(N)
     t0, t1 = sec(CUE["buildStart"]), sec(CUE["drop"] - 0.5)
     u = np.clip((t - t0) / (t1 - t0), 0.0, 1.0)
-    fc = 20.0 * (420.0 / 20.0) ** (u ** 1.6)
+    fc = 20.0 * (380.0 / 20.0) ** (u ** 1.3)
     fc[t >= sec(CUE["drop"]) - 0.12] = 20.0       # inside the silent gap: snap back
     return fc
 

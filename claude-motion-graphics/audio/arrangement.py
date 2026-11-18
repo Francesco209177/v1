@@ -154,7 +154,7 @@ def build(seed: int = 2026):
                 ev["shaker"].append((b + k / 4, hum(v, 0.12)))
     roll = [28, 28.5, 29, 29.5] + [30 + k / 4 for k in range(4)] + [31 + k / 8 for k in range(4)]
     for i, b in enumerate(roll):                             # 8ths -> 16ths -> 32nds, crescendo
-        ev["snare"].append((b, 0.34 + 0.66 * (i / (len(roll) - 1)) ** 1.3, b >= 30))
+        ev["snare"].append((b, 0.45 + 0.55 * (i / (len(roll) - 1)) ** 1.3, b >= 30))
 
     for b in range(32, 48):                                  # drop
         shot = b in SHOT_BEATS

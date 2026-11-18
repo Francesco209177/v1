@@ -60,6 +60,7 @@ execFileSync(
 		'-ss', String(start), '-t', String(dur), '-i', path.join(ROOT, 'public', 'music.wav'),
 		'-map', '0:v:0', '-map', '1:a:0',
 		'-c:v', 'copy',
+		'-af', 'volume=-0.3dB', // margine per l'overshoot della codifica AAC
 		'-c:a', 'aac', '-b:a', '256k', '-ar', '48000', '-ac', '2',
 		'-t', String(dur),
 		'-movflags', '+faststart',
