@@ -1,7 +1,8 @@
 /**
  * Render finale: Remotion (H.264, 1080x1920, 30 fps) + mux della colonna sonora con FFmpeg.
  *   node scripts/render.mjs [--frames 0-899] [--concurrency 4] [--crf 15] [--out claude_motion_graphics.mp4] [--audio public/music.wav]
- *   --mux-only: salta il render e unisce l'audio all'ultimo video muto (out/video_silent.mp4).
+ *   --mux-only: salta il render e unisce l'audio all'ultimo video muto.
+ *   --comp V02 --silent out/v02_silent.mp4: rende un'altra composition (es. il video 02).
  */
 import {execFileSync} from 'node:child_process';
 import fs from 'node:fs';
@@ -14,16 +15,17 @@ const concurrency = Number(arg('concurrency', 4));
 const crf = Number(arg('crf', 15));
 const frameArg = arg('frames', null);
 const frameRange = frameArg ? String(frameArg).split('-').map(Number) : null;
-const silent = path.join(ROOT, 'out', 'video_silent.mp4');
+const compId = String(arg('comp', 'Main'));
+const silent = path.resolve(ROOT, String(arg('silent', path.join('out', compId === 'Main' ? 'video_silent.mp4' : `${compId.toLowerCase()}_silent.mp4`))));
 const audio = path.resolve(ROOT, String(arg('audio', path.join('public', 'music.wav'))));
 const muxOnly = Boolean(arg('mux-only', false));
 fs.mkdirSync(path.dirname(silent), {recursive: true});
 
 const t0 = Date.now();
 if (!muxOnly) {
-const {serveUrl, cleanup} = await makeBundle();
+const {serveUrl, cleanup} = await makeBundle(compId === 'Main' ? undefined : compId);
 try {
-	const composition = await selectComposition({serveUrl, id: 'Main', browserExecutable, chromiumOptions});
+	const composition = await selectComposition({serveUrl, id: compId, browserExecutable, chromiumOptions});
 	let last = -1;
 	await renderMedia({
 		composition,
