@@ -69,7 +69,7 @@ export const RevealPlate: React.FC<{a: number; from: {x: number; y: number}; bac
 	const cx = lerp(lerp(from.x, P.cx, pIn), back.x, pOut);
 	const cy = lerp(lerp(from.y, P.cy, pIn), back.y, pOut);
 	const sc = lerp(lerp(0.55, 1, pIn), 0.42, pOut);
-	const op = clamp(pIn * 2) * (1 - prog(a, T.retract + 3, 6, ease.inQuad));
+	const op = clamp(pIn * 2) * (1 - prog(a, T.retract + 1, 6, ease.inQuad));
 	const flash = hit(a, T.reveal, 10);
 	const g = a >= T.reveal && a <= T.reveal + 2 ? [0.75, 0.4, 0.15][a - T.reveal] : 0;
 	// note

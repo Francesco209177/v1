@@ -27,7 +27,7 @@ const Flag: React.FC<{k: number; children: React.ReactNode; style?: React.CSSPro
 				fontFamily: FONTS.mono,
 				fontWeight: 700,
 				fontSize: 24,
-				letterSpacing: '0.12em',
+				letterSpacing: '0.14em',
 				whiteSpace: 'nowrap',
 				opacity: clamp(k * 1.6),
 				transform: `scale(${0.6 + 0.4 * k})`,
