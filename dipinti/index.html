@@ -1,0 +1,1204 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+<title>Il Codice dei Dipinti</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=Caveat:wght@500;600&family=Instrument+Serif:ital@0;1&family=VT323&display=swap">
+<style>
+/* Layout: segnaletica nera in alto, poi una "parete" alla volta (manifesto, pianta, sala); l'audioguida è un apparecchio fisso in basso a destra. */
+:root{
+  --wall:#E7E7E2; --wall-2:#D9DAD3; --panel:#F5F5F1; --ink:#151515; --muted:#5A5B56; --line:#C2C3BB;
+  --klein:#1B3DBD; --on-klein:#FFFFFF; --red:#CC2E1E; --blue:#1F45C4; --yellow:#E9AE06; --gold:#B08422; --silver:#9EA3A8;
+  --tile-b:#1A1A1A; --tile-w:#F8F7F2; --sign:#121212; --on-sign:#F1F1EC; --device:#26272A; --device-2:#3B3C41;
+  --lcd:#B5C498; --lcd-ink:#1F2918; --ok:#1C7A44; --bad:#BF2617; --memo:#F3DF74; --memo-ink:#2A2614; --sel:#D6DDF6; --door:#3A352E; --door-2:#544D43; --light-in:#FFE7A0; --cork:#B4875A; --exit:#0E8A4A;
+  --display:"Archivo","Arial Narrow",Helvetica,Arial,sans-serif;
+  --body:"Archivo",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --serif:"Instrument Serif",Georgia,"Times New Roman",serif;
+  --lcd-f:"VT323",ui-monospace,Menlo,Consolas,monospace;
+  --hand:"Caveat","Segoe Print","Comic Sans MS",cursive;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --wall:#141518; --wall-2:#1D1F23; --panel:#22242A; --ink:#ECECE6; --muted:#9D9F98; --line:#383B42;
+    --klein:#7C95FF; --on-klein:#0D1020; --red:#F05A43; --blue:#5D7FFF; --yellow:#FFC83A; --gold:#D8AC48; --silver:#B9BEC4;
+    --tile-b:#0A0A0A; --tile-w:#E9E8E1; --sign:#050505; --on-sign:#F1F1EC; --device:#0E0F11; --device-2:#2B2D32;
+    --lcd:#9DB37A; --lcd-ink:#172010; --ok:#4FC07E; --bad:#FF6B5B; --memo:#D8C45B; --memo-ink:#221F10; --sel:#28304F; --door:#2A2B30; --door-2:#40424A; --light-in:#F2CF6A; --cork:#6E5235; --exit:#1FA35E;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --wall:#141518; --wall-2:#1D1F23; --panel:#22242A; --ink:#ECECE6; --muted:#9D9F98; --line:#383B42;
+  --klein:#7C95FF; --on-klein:#0D1020; --red:#F05A43; --blue:#5D7FFF; --yellow:#FFC83A; --gold:#D8AC48; --silver:#B9BEC4;
+  --tile-b:#0A0A0A; --tile-w:#E9E8E1; --sign:#050505; --on-sign:#F1F1EC; --device:#0E0F11; --device-2:#2B2D32;
+  --lcd:#9DB37A; --lcd-ink:#172010; --ok:#4FC07E; --bad:#FF6B5B; --memo:#D8C45B; --memo-ink:#221F10; --sel:#28304F; --door:#2A2B30; --door-2:#40424A; --light-in:#F2CF6A; --cork:#6E5235; --exit:#1FA35E;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--wall);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.55}
+button{font:inherit;cursor:pointer;color:inherit}
+:focus-visible{outline:2px solid var(--klein);outline-offset:2px}
+p{margin:0}
+h1,h2,h3{margin:0;font-family:var(--display);text-wrap:balance}
+.wrap{max-width:1180px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.serif{font-family:var(--serif)}
+.cap{font-size:.74rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+
+/* segnaletica */
+.sign{background:var(--sign);color:var(--on-sign)}
+.sign .wrap{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 20px;padding-block:12px}
+.sign-brand{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;min-width:0}
+.sign-name{font-family:var(--display);font-stretch:125%;font-weight:800;font-size:1.05rem;letter-spacing:.06em;text-transform:uppercase}
+.sign-where{font-size:.82rem;opacity:.75}
+.sign-tools{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.tog{background:transparent;border:1px solid rgba(241,241,236,.35);color:var(--on-sign);font-size:.76rem;padding:4px 10px;border-radius:999px}
+.tog:hover{border-color:var(--on-sign)}
+.clock{display:flex;align-items:center;gap:8px}
+.clock svg{width:38px;height:38px}
+.clock .face{fill:var(--on-sign)}
+.clock .tick{stroke:var(--sign);stroke-width:1.4}
+.clock .hh,.clock .mh{stroke:var(--sign);stroke-linecap:round;transform-origin:20px 20px;transition:transform .5s cubic-bezier(.3,1.5,.5,1)}
+.clock .hh{stroke-width:2.6}.clock .mh{stroke-width:1.8}
+.clock.late .mh{stroke:var(--bad)}
+.clock-t{font-family:var(--lcd-f);font-size:1.6rem;line-height:1;letter-spacing:.04em}
+.clock-l{display:block;font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;opacity:.7}
+.clock.jump svg{animation:jump .6s}
+@keyframes jump{30%{transform:scale(1.25) rotate(-8deg)}60%{transform:scale(.95)}}
+.float{position:fixed;z-index:80;pointer-events:none;font:700 1rem var(--body);color:var(--bad);background:var(--panel);padding:2px 8px;border-radius:999px;transform:translate(-50%,0);animation:floatup 1.4s ease-out forwards}
+@keyframes floatup{from{opacity:0;transform:translate(-50%,8px)}15%{opacity:1}to{opacity:0;transform:translate(-50%,46px)}}
+
+main{padding-block:28px 64px}
+.btn{display:inline-flex;align-items:center;gap:10px;background:var(--ink);color:var(--wall);border:0;border-radius:2px;padding:13px 22px;font-weight:700;font-stretch:112%;letter-spacing:.02em;transition:background .2s,transform .15s}
+.btn:hover{background:var(--klein);color:var(--on-klein)}
+.btn:active{transform:translateY(1px)}
+.btn:disabled{opacity:.4;cursor:not-allowed;background:var(--ink)}
+.btn .arr{transition:transform .2s}.btn:hover .arr{transform:translateX(4px)}
+.lnk{background:none;border:0;padding:6px 0;font-weight:600;border-bottom:2px solid currentColor}
+.lnk:hover{color:var(--klein)}
+.chip{background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:5px 12px;font-size:.84rem;font-weight:500}
+.chip:hover{border-color:var(--ink)}
+.chip.on{background:var(--ink);color:var(--wall);border-color:var(--ink)}
+
+/* manifesto d'ingresso */
+.poster{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:0;background:var(--panel);border:1px solid var(--line)}
+.p-art{display:grid;grid-template-columns:2fr 1fr 1.4fr;grid-template-rows:1.3fr 1fr 1.6fr;gap:10px;background:var(--ink);padding:10px;min-height:340px}
+.p-art i{display:block;background:var(--tile-w)}
+.p-art i:nth-child(1){background:var(--red);grid-row:span 2}
+.p-art i:nth-child(3){background:var(--yellow)}
+.p-art i:nth-child(5){background:var(--blue);grid-column:span 2}
+.p-art i:nth-child(6){background:var(--yellow)}
+.p-art i:nth-child(7){background:var(--blue)}
+.p-art i{animation:blockIn .7s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--k)*90ms)}
+@keyframes blockIn{from{transform:scale(.2);opacity:0}}
+.p-type{padding:clamp(20px,4vw,48px);display:flex;flex-direction:column;justify-content:space-between;gap:24px;min-width:0}
+.p-kicker{font-size:.8rem;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--klein)}
+.p-title{font-stretch:125%;font-weight:900;font-size:clamp(2.6rem,7.5vw,6rem);line-height:.9;letter-spacing:-.02em;text-transform:uppercase;display:flex;flex-direction:column}
+.p-title span{display:block;overflow:hidden}
+.p-title span b{display:inline-block;font-weight:inherit;animation:lineUp .8s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(.25s + var(--k)*.12s)}
+@keyframes lineUp{from{transform:translateY(105%)}}
+.p-dates{font-family:var(--serif);font-size:1.4rem;font-style:italic}
+.intro-cols{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:48px;margin-top:40px}
+.story{display:flex;flex-direction:column;gap:14px;max-width:62ch;font-size:1.05rem}
+.memo{position:relative;background:var(--memo);color:var(--memo-ink);font-family:var(--hand);font-size:1.45rem;line-height:1.25;padding:16px 20px 18px;transform:rotate(-1.2deg);box-shadow:0 10px 20px -12px rgba(0,0,0,.45);max-width:52ch}
+.memo::before{content:"";position:absolute;left:50%;top:-10px;width:86px;height:22px;margin-left:-43px;background:var(--wall-2);opacity:.85;transform:rotate(2deg)}
+.memo small{display:block;font-family:var(--body);font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;margin-top:6px;opacity:.75}
+.howto{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:10px;counter-reset:h}
+.howto li{display:grid;grid-template-columns:28px minmax(0,1fr);gap:10px;counter-increment:h}
+.howto li::before{content:counter(h);display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--ink);color:var(--wall);font-weight:700;font-size:.8rem}
+.ticket{display:flex;flex-direction:column;gap:14px;padding:20px;background:var(--panel);border:1px solid var(--line);border-left:8px solid var(--klein)}
+.ticket label{font-size:.74rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.ticket input{font:500 1.1rem var(--body);padding:11px 12px;border:1px solid var(--line);background:var(--wall);color:var(--ink);border-radius:2px;min-width:0}
+.side-stack{display:flex;flex-direction:column;gap:22px}
+
+/* libro delle firme */
+.guestbook{background:var(--panel);border:1px solid var(--line);padding:18px 20px;display:flex;flex-direction:column;gap:8px}
+.gb-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.gb-list li{display:grid;grid-template-columns:2.2em minmax(0,1fr) auto;align-items:baseline;gap:10px;padding:6px 0;border-bottom:1px dashed var(--line)}
+.gb-list li.me{background:var(--sel);padding-inline:6px;margin-inline:-6px}
+.gb-n{font-family:var(--serif);font-style:italic;color:var(--muted)}
+.gb-name{font-family:var(--hand);font-size:1.5rem;line-height:1.1;overflow-wrap:anywhere}
+.gb-meta{font-size:.8rem;color:var(--muted);text-align:right;font-variant-numeric:tabular-nums}
+.gb-meta b{display:block;font-family:var(--lcd-f);font-size:1.3rem;color:var(--ink);font-weight:400}
+
+/* pianta */
+.plan-head{display:flex;flex-wrap:wrap;align-items:end;justify-content:space-between;gap:16px;margin-bottom:20px}
+.plan-head h1{font-stretch:125%;font-weight:900;font-size:clamp(1.8rem,4.5vw,3rem);line-height:1;text-transform:uppercase}
+.plan-grid{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:32px;align-items:start}
+.plan-stage{position:relative;will-change:transform}
+.plan svg{display:block;width:100%;height:auto}
+.plan .wallp{fill:none;stroke:var(--ink);stroke-width:6;stroke-linejoin:round}
+.plan .rm{cursor:pointer}
+.plan .rm rect{fill:var(--panel);stroke:var(--ink);stroke-width:3;transition:fill .25s}
+.plan .rm:hover rect,.plan .rm:focus-visible rect{fill:var(--sel)}
+.plan .rm:focus-visible{outline:none}
+.plan .rm.done rect{fill:var(--sel)}
+.plan .rm .num{font:900 34px var(--display);font-stretch:125%;fill:var(--ink)}
+.plan .rm .nm{font:500 12px var(--body);fill:var(--muted)}
+.plan .rm .st{font:600 10px var(--body);letter-spacing:1.2px;fill:var(--klein)}
+.plan .rm .badge{fill:var(--klein)}
+.plan .rm .badge-t{fill:var(--on-klein);font:700 13px var(--body)}
+.plan .corr{fill:var(--wall-2)}
+.plan .corr-t{font:600 11px var(--body);letter-spacing:2px;fill:var(--muted)}
+.plan .door{cursor:pointer}
+.plan .door rect{fill:var(--bad);transition:fill .2s}
+.plan .door:hover rect{fill:var(--klein)}
+.plan .door text{font:700 10px var(--body);letter-spacing:1px;fill:var(--wall)}
+.plan .you{fill:var(--klein)}
+.plan .you-ring{fill:none;stroke:var(--klein);stroke-width:2;transform-origin:center;transform-box:fill-box;animation:ping 1.8s ease-out infinite}
+@keyframes ping{from{transform:scale(.6);opacity:1}to{transform:scale(2.4);opacity:0}}
+.notes{display:flex;flex-direction:column;gap:12px}
+.notes h2{font-size:1rem;font-stretch:112%;text-transform:uppercase;letter-spacing:.06em}
+.clue{display:grid;grid-template-columns:40px minmax(0,1fr);gap:10px;align-items:start;padding:10px 12px;background:var(--panel);border:1px solid var(--line)}
+.clue .rn{font:900 1.1rem var(--display);font-stretch:125%;text-align:center;padding-top:2px}
+.clue p{font-family:var(--hand);font-size:1.35rem;line-height:1.2}
+.clue.missing p{font-family:var(--body);font-size:.88rem;color:var(--muted)}
+.clue.new{animation:clueIn .7s cubic-bezier(.2,.9,.3,1.3) both}
+@keyframes clueIn{from{opacity:0;transform:translateX(30px) rotate(3deg)}}
+.plan-foot{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-top:28px;padding-top:16px;border-top:1px solid var(--line);font-size:.88rem;color:var(--muted)}
+
+/* sala */
+.room-top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;margin-bottom:22px}
+.room-head{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 22px;align-items:end;margin-bottom:24px}
+.room-num{font:900 clamp(4rem,11vw,8rem)/.8 var(--display);font-stretch:125%;grid-row:span 2;color:var(--ink)}
+.room-genre{font-size:.78rem;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--klein)}
+.room-name{font-family:var(--serif);font-weight:400;font-size:clamp(1.9rem,4.4vw,3.2rem);line-height:1.05}
+.room-body{display:flex;flex-direction:column;gap:24px}
+.installation{position:relative;background:var(--panel);border:1px solid var(--line);padding:clamp(14px,2.4vw,26px);display:flex;flex-direction:column;gap:14px;overflow:hidden}
+.installation .spot{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 55% 70% at var(--sx,50%) -10%,rgba(255,255,255,.55),transparent 70%);opacity:0;transition:opacity 1.2s}
+.lit .installation .spot{opacity:1}
+.label{display:block;font-size:.8rem;color:var(--muted);border-left:3px solid var(--ink);padding-left:10px;max-width:62ch}
+.label i{font-family:var(--serif);font-size:1.05rem;color:var(--ink)}
+.ask{display:flex;flex-direction:column;gap:12px;padding:18px 20px;border:2px solid var(--ink);background:var(--wall)}
+.ask-q{font-size:1.15rem;font-weight:600;max-width:60ch}
+.ask-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+.ask-hint{font-size:.85rem;color:var(--muted)}
+.cat{display:flex;flex-direction:column;gap:10px}
+.cat-page{background:var(--panel);border:1px solid var(--line);padding:12px 16px;display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px;transform-origin:left center}
+.cat-page b{font-family:var(--serif);font-style:italic;font-weight:400;font-size:1.3rem;color:var(--klein);line-height:1}
+.cat-page.new{animation:pageIn .6s cubic-bezier(.2,.8,.2,1) both}
+@keyframes pageIn{from{transform:perspective(800px) rotateY(-80deg);opacity:0}}
+.solved{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:22px;align-items:start}
+.scheda{background:var(--panel);border:1px solid var(--line);padding:18px 20px;display:flex;flex-direction:column;gap:8px}
+.scheda .num{font:900 2.4rem/1 var(--display);font-stretch:125%;color:var(--ok)}
+.scheda .frm{font-family:var(--lcd-f);font-size:1.35rem;overflow-x:auto;white-space:nowrap}
+.solved .memo.new{animation:memoIn .8s cubic-bezier(.2,.9,.3,1.3) .2s both}
+@keyframes memoIn{from{opacity:0;transform:translateY(-40px) rotate(-12deg) scale(1.1)}}
+.room-foot{margin-top:30px;padding-top:14px;border-top:1px solid var(--line);display:flex;flex-wrap:wrap;gap:14px;align-items:center;font-size:.88rem;color:var(--muted)}
+body.has-guide main{padding-bottom:120px}
+@media (min-width:1180px){ body.has-guide .wrap{padding-right:300px} body.has-guide .sign .wrap{padding-right:max(16px,env(safe-area-inset-right,0px))} }
+
+/* elementi comuni delle installazioni */
+.sc-bar{display:flex;flex-wrap:wrap;gap:8px}
+.sc-note{font-weight:600;min-height:1.5em}
+.sc-note .q{font-family:var(--serif);font-style:italic;font-weight:400;font-size:1.15rem}
+.empty{font-size:.85rem;color:var(--muted)}
+.shake{animation:shake .35s}
+@keyframes shake{25%{transform:translateX(-6px)}50%{transform:translateX(6px)}75%{transform:translateX(-3px)}}
+.swing{transform-origin:50% -12px;animation:swing 1.4s cubic-bezier(.3,.6,.4,1)}
+@keyframes swing{0%{transform:rotate(9deg)}25%{transform:rotate(-6deg)}50%{transform:rotate(3deg)}75%{transform:rotate(-1.5deg)}100%{transform:none}}
+
+/* I · targhetta */
+.plaque{align-self:center;background:var(--tile-w);color:#151515;padding:14px 18px 12px;box-shadow:0 8px 20px -12px rgba(0,0,0,.5);display:flex;flex-direction:column;gap:8px;min-width:min(100%,380px)}
+.plaque-h{font-size:.66rem;letter-spacing:.2em;text-transform:uppercase;color:#6A6A64}
+.plaque-slots{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px}
+.pslot{aspect-ratio:3/4;border-bottom:2px solid #151515;display:grid;place-items:center;min-width:0}
+.plaque-sub{font-family:var(--serif);font-style:italic;font-size:.95rem;color:#3F3F3A}
+.floor{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;padding:14px;background:var(--wall-2);min-height:76px;align-items:center}
+.vl{width:46px;height:58px;border:0;background:#151515;color:#F5F5F0;font:800 1.7rem var(--display);font-stretch:112%;display:grid;place-items:center;border-radius:2px;box-shadow:0 3px 0 rgba(0,0,0,.35);position:relative;transition:transform .15s}
+.pslot .vl{width:100%;max-width:46px;height:auto;aspect-ratio:46/58;font-size:clamp(1.1rem,3.5vw,1.7rem)}
+.vl:hover{transform:translateY(-3px)}
+.vl sub{position:absolute;right:4px;bottom:2px;font-size:.62rem;font-weight:700;color:var(--yellow)}
+.twins{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:.86rem}
+.twins span{font-family:var(--lcd-f);font-size:1.2rem;background:var(--wall-2);padding:0 8px}
+.twins span sub{color:var(--klein);font-size:.75rem}
+
+/* II · monocromi */
+.wallrow{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:10px;padding:18px 4px 8px;border-bottom:2px solid var(--line)}
+.fr{aspect-ratio:3/4;border:3px solid var(--ink);background:var(--wall);display:grid;place-items:center;position:relative;min-width:0}
+.fr::before{content:"";position:absolute;top:-16px;left:50%;width:2px;height:14px;background:var(--muted)}
+.cv{border:0;padding:0;width:100%;height:100%;display:block;border-radius:0;box-shadow:inset 0 0 0 3px rgba(255,255,255,.25)}
+.cv.R,.dot.R{background:var(--red)} .cv.B,.dot.B{background:var(--blue)} .cv.Y,.dot.Y{background:var(--yellow)}
+.cv .n{font:700 .85rem var(--body);color:#fff;mix-blend-mode:normal;text-shadow:0 1px 2px rgba(0,0,0,.4)}
+.crate{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;padding:14px;background:var(--wall-2);min-height:96px;align-items:end}
+.crate .cv{width:46px;height:62px;transition:transform .15s}
+.crate .cv:hover{transform:translateY(-5px) rotate(-3deg)}
+
+/* III · mosaico */
+.mosaic{display:grid;grid-template-columns:repeat(9,minmax(0,1fr));gap:5px;padding:10px;background:#8C8A80;border-radius:2px}
+.ts{aspect-ratio:1;border:0;padding:0;border-radius:1px;background:repeating-linear-gradient(45deg,rgba(0,0,0,.07) 0 4px,transparent 4px 8px),#BDBAAE;transition:transform .15s}
+.ts.N{background:var(--tile-b)} .ts.W{background:var(--tile-w)} .ts.G{background:linear-gradient(135deg,#F2D27A,var(--gold) 55%,#7E5C12)}
+.ts:hover{transform:scale(1.06)}
+.ts.flip{animation:flipT .45s ease-out}
+@keyframes flipT{from{transform:perspective(300px) rotateY(180deg)}}
+.palette{display:flex;flex-wrap:wrap;gap:10px}
+.pal{display:inline-flex;align-items:center;gap:8px;padding:4px 12px 4px 4px;border:1px solid var(--line);border-radius:999px;font-size:.85rem;background:var(--panel)}
+.pal i{width:22px;height:22px;border-radius:50%;display:block;border:1px solid var(--line)}
+.pal.N i{background:var(--tile-b)} .pal.W i{background:var(--tile-w)} .pal.G i{background:var(--gold)}
+.pal.zero{opacity:.45}
+
+/* IV · percorso */
+.route{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:18px;align-items:center}
+.route svg{width:100%;height:auto;display:block}
+.route .blk{fill:var(--wall-2)}
+.route .st{stroke:var(--line);stroke-width:2}
+.route .path{fill:none;stroke:var(--klein);stroke-width:6;stroke-linecap:round;stroke-linejoin:round}
+.route .walker{fill:var(--red);stroke:var(--panel);stroke-width:3;transition:transform .35s cubic-bezier(.3,1.3,.5,1)}
+.route .start{fill:var(--ink)} .route .lbl{font:600 11px var(--body);fill:var(--muted)}
+.route .statue{fill:var(--ink)}
+.word{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+.word span{aspect-ratio:1;display:grid;place-items:center;border:1px solid var(--line);font:600 1.5rem var(--lcd-f);background:var(--wall)}
+.word span.E{background:var(--klein);color:var(--on-klein);border-color:var(--klein)}
+.word span.N{background:var(--ink);color:var(--wall);border-color:var(--ink)}
+.dpad{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.dpad button{padding:9px 14px;border:2px solid var(--ink);background:var(--panel);font-weight:700}
+.dpad button:hover{background:var(--ink);color:var(--wall)}
+
+/* V · cornici */
+.frames{display:flex;align-items:flex-end;justify-content:center;gap:6px;padding:16px 6px 10px;border-bottom:2px solid var(--line);flex-wrap:nowrap}
+.cf{flex:1 1 0;max-width:86px;aspect-ratio:3/4;border:9px solid;background:var(--wall);padding:0;position:relative;transition:transform .2s,box-shadow .2s;min-width:0}
+.cf.G{border-color:var(--gold);border-image:linear-gradient(135deg,#F3D57E,var(--gold) 50%,#7B5A12) 9}
+.cf.S{border-color:var(--silver);border-image:linear-gradient(135deg,#F2F4F6,var(--silver) 50%,#5F646A) 9}
+.cf.N{border-color:#151515}
+.cf.sel{transform:translateY(-14px);box-shadow:0 14px 18px -10px rgba(0,0,0,.5)}
+.cf.target:hover{box-shadow:inset 0 0 0 3px var(--klein)}
+.cf.glue-l::after{content:"";position:absolute;right:-17px;top:42%;width:22px;height:14px;background:var(--klein);z-index:2;border-radius:2px}
+.rule{display:inline-flex;align-items:center;gap:8px;font-weight:600}
+.rule.ok{color:var(--ok)} .rule.no{color:var(--bad)}
+
+/* VI · deposito */
+.shelf{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:6px;padding:12px 8px 0;border-bottom:10px solid var(--ink)}
+.pic{aspect-ratio:3/4;border:4px solid #4A3A26;padding:0;position:relative;transition:transform .15s;min-width:0;border-radius:1px}
+.pic:hover{transform:translateY(-4px)}
+.pic.sel{transform:translateY(-10px);box-shadow:0 0 0 3px var(--klein)}
+.pic.M{background:radial-gradient(circle at 50% 36%,#2B2014 0 17%,transparent 18%),radial-gradient(ellipse 40% 34% at 50% 80%,#2B2014 0 98%,transparent 100%),linear-gradient(#7C8A5C,#A88B4E)}
+.pic.N{background:radial-gradient(circle at 30% 30%,#F4D24A 0 7%,transparent 8%),radial-gradient(circle at 70% 22%,#F4D24A 0 6%,transparent 7%),repeating-radial-gradient(circle at 40% 55%,#1C3C8C 0 6%,#3060B8 6% 11%),#1C3C8C}
+.pic.A{background:linear-gradient(90deg,var(--red) 0 50%,#F2F1EA 50%)}
+.pic.B{background:radial-gradient(circle,var(--yellow) 0 35%,#1A1A1A 36%)}
+.pic.C{background:repeating-linear-gradient(0deg,#2E7D4F 0 6px,#F2F1EA 6px 12px)}
+.pic .tg{position:absolute;left:50%;bottom:-24px;transform:translateX(-50%);font-size:.6rem;color:var(--muted);white-space:nowrap}
+.shelf-pad{height:22px}
+
+/* porta di sicurezza */
+.door-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px;align-items:start}
+.monitor{background:#0B0F0A;color:#9CF09C;font-family:var(--lcd-f);padding:18px;border:10px solid var(--device);border-radius:6px;box-shadow:inset 0 0 40px rgba(80,255,120,.08);min-height:260px;display:flex;flex-direction:column;gap:10px;position:relative;overflow:hidden}
+.monitor::after{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(0,0,0,.25) 0 2px,transparent 2px 4px)}
+.mon-big{font-size:3.6rem;line-height:1;color:#C9FFC9}
+.mon-l{font-size:1.25rem;line-height:1.15}
+.mon-l.dim{opacity:.6}
+.mon-clues{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px;font-size:1.15rem}
+.mon-clues .ok{color:#9CF09C}.mon-clues .no{color:#FF8A7A}.mon-clues .na{color:#6F8F6F}
+.monitor.alarm{animation:alarm .5s 3}
+@keyframes alarm{50%{background:#3A0A08}}
+.hooks{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;padding:18px 4px 8px;border-bottom:2px solid var(--line)}
+.exitdoor{position:relative;height:120px;border:4px solid var(--ink);border-bottom:0;overflow:hidden;background:linear-gradient(#FFFDF2,#FFF6CC)}
+.exitdoor .gl{position:absolute;top:0;bottom:0;width:50%;background:linear-gradient(90deg,var(--wall-2),var(--panel));border:2px solid var(--ink);transition:transform 1.4s cubic-bezier(.6,0,.2,1)}
+.exitdoor .gl.l{left:0}.exitdoor .gl.r{right:0}
+.exitdoor.open .gl.l{transform:translateX(-100%)}.exitdoor.open .gl.r{transform:translateX(100%)}
+.exitdoor .sg{position:absolute;left:50%;top:8px;transform:translateX(-50%);background:var(--ok);color:#fff;font:700 .7rem var(--body);letter-spacing:.12em;padding:3px 8px;z-index:2}
+
+/* audioguida */
+.guide{position:fixed;right:max(20px,env(safe-area-inset-right,0px));bottom:max(20px,env(safe-area-inset-bottom,0px));z-index:30;width:250px;background:var(--device);color:#E9E9E4;border-radius:22px 22px 26px 26px;padding:14px 14px 16px;box-shadow:0 24px 40px -18px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.08);display:flex;flex-direction:column;gap:10px}
+.g-top{display:flex;justify-content:space-between;align-items:center;font-size:.62rem;letter-spacing:.24em;font-weight:700;opacity:.8}
+.g-led{width:8px;height:8px;border-radius:50%;background:#444;transition:background .2s,box-shadow .2s}
+.g-led.ok{background:#5BF08A;box-shadow:0 0 8px #5BF08A}.g-led.bad{background:#FF5A4A;box-shadow:0 0 8px #FF5A4A}
+.g-screen{background:var(--lcd);color:var(--lcd-ink);font-family:var(--lcd-f);border-radius:6px;padding:8px 10px;min-height:86px;box-shadow:inset 0 2px 6px rgba(0,0,0,.35);position:relative;overflow:hidden}
+.g-l1{font-size:1rem;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.g-l2{font-size:2.2rem;line-height:1.05;letter-spacing:.1em;min-height:2.3rem}
+.g-wave{display:flex;gap:3px;height:14px;align-items:end}
+.g-wave i{flex:1;background:var(--lcd-ink);height:2px;opacity:.5}
+.g-screen.play .g-wave i{animation:wave .5s ease-in-out infinite alternate;animation-delay:calc(var(--k)*-70ms);opacity:.9}
+@keyframes wave{to{height:14px}}
+.g-screen.err{animation:static .4s steps(4) 2}
+@keyframes static{25%{filter:contrast(2) brightness(1.4);transform:translateX(2px)}50%{transform:translateX(-2px)}75%{filter:none}}
+.g-keys{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.g-keys button{height:40px;border:0;border-radius:10px;background:var(--device-2);color:#F0F0EA;font:600 1.15rem var(--body);box-shadow:0 2px 0 rgba(0,0,0,.5);transition:transform .06s,background .15s}
+.g-keys button:active,.g-keys button.press{transform:translateY(2px);box-shadow:none;background:#55575D}
+.g-keys .g-ok{background:var(--klein);color:var(--on-klein)}
+.g-hint{font-size:.66rem;opacity:.6;text-align:center}
+.g-fold{display:none}
+@media (max-width:640px){
+  .guide{left:max(10px,env(safe-area-inset-left,0px));right:max(10px,env(safe-area-inset-right,0px));bottom:max(10px,env(safe-area-inset-bottom,0px));width:auto;border-radius:18px;padding:10px 12px 12px}
+  .g-fold{display:block;background:transparent;border:1px solid rgba(255,255,255,.25);color:#EEE;border-radius:999px;font-size:.72rem;padding:3px 10px}
+  .guide.folded .g-keys,.guide.folded .g-hint{display:none}
+  .g-screen{min-height:0}
+  body.has-guide main{padding-bottom:360px}
+  body.has-guide.gfold main{padding-bottom:180px}
+}
+
+/* passaggi */
+.veil{position:fixed;inset:0;z-index:60;background:#000;opacity:0;pointer-events:none}
+.veil.block{pointer-events:auto}
+.bars{position:fixed;inset:0;z-index:61;pointer-events:none;display:grid;grid-template-rows:1fr 1fr 1fr}
+.bars i{display:block;transform:translateX(-101%)}
+.bars i:nth-child(1){background:var(--red)}.bars i:nth-child(2){background:var(--yellow);transform:translateX(101%)}.bars i:nth-child(3){background:var(--blue)}
+.flash{position:fixed;inset:0;z-index:70;background:#fff;opacity:0;pointer-events:none}
+
+/* fine: l'opera della squadra */
+.vernissage{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:36px;align-items:center}
+.opera{position:relative;padding:18px;background:#1A140C;box-shadow:0 30px 50px -25px rgba(0,0,0,.7);overflow:hidden}
+.opera svg{display:block;width:100%;height:auto}
+.velo{position:absolute;inset:0;z-index:2;background:repeating-linear-gradient(95deg,#8E8C86 0 18px,#A8A6A0 18px 40px,#7E7C76 40px 52px);box-shadow:inset 0 -30px 40px rgba(0,0,0,.3);transform-origin:top center}
+.velo.off{animation:veloOff 1.4s cubic-bezier(.6,0,.4,1) .9s both}
+@keyframes veloOff{30%{transform:skewX(-4deg) translateY(-3%)}100%{transform:translateY(115%) skewX(6deg)}}
+.didascalia{display:flex;flex-direction:column;gap:6px;border-left:4px solid var(--ink);padding-left:16px}
+.d-artist{font:800 1.6rem/1.1 var(--display);font-stretch:112%;overflow-wrap:anywhere}
+.d-title{font-family:var(--serif);font-style:italic;font-size:1.6rem;line-height:1.1}
+.d-meta{font-size:.92rem;color:var(--muted)}
+.d-inv{font-family:var(--lcd-f);font-size:1.1rem;color:var(--muted)}
+.stats{display:flex;flex-wrap:wrap;gap:12px 28px;margin-top:10px}
+.stat b{display:block;font:400 2.2rem/1 var(--lcd-f)}
+.stat span{font-size:.72rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.recap{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
+.recap div{background:var(--panel);border:1px solid var(--line);padding:12px 14px;display:flex;flex-direction:column;gap:4px}
+.recap .rn{font:900 1.3rem var(--display);font-stretch:125%}
+.recap .frm{font-family:var(--lcd-f);font-size:1.15rem;overflow-x:auto;white-space:nowrap}
+.recap .ans{font-weight:700;color:var(--ok)}
+.seq{display:flex;gap:6px}
+.seq i{width:28px;height:38px;display:block}
+.dot{display:inline-block;width:14px;height:14px;border-radius:2px;vertical-align:-2px}
+.section-t{font-size:1rem;font-stretch:112%;text-transform:uppercase;letter-spacing:.06em;margin:36px 0 12px}
+
+@media (max-width:860px){
+  .poster,.intro-cols,.plan-grid,.solved,.door-grid,.vernissage,.route{grid-template-columns:minmax(0,1fr)}
+  .p-art{min-height:220px}
+  .intro-cols{gap:28px}
+  .wallrow{gap:5px}
+  .shelf{gap:3px}
+  .pic{border-width:3px}
+  .pic .tg{display:none}
+  .vl{width:40px;height:50px;font-size:1.4rem}
+}
+/* ===== corridoio delle sale ===== */
+.cview{display:flex;flex-direction:column;gap:22px;will-change:transform}
+.c-head{display:flex;flex-wrap:wrap;align-items:end;justify-content:space-between;gap:12px}
+.c-head h1{font-family:var(--serif);font-weight:400;font-size:clamp(2rem,4.6vw,3.2rem);line-height:1}
+.c-head p{max-width:44ch;color:var(--muted)}
+.corr{position:relative;overflow-x:auto;overflow-y:hidden;border:3px solid var(--ink);background:var(--panel);scrollbar-width:thin;outline:none}
+.corr:focus-visible{box-shadow:0 0 0 3px var(--klein)}
+.track{position:relative;display:flex;align-items:flex-end;width:max-content;min-width:100%;height:380px;padding:0 70px;
+  background:linear-gradient(var(--wall-2) 0 38px,var(--ink) 38px 41px,transparent 41px),linear-gradient(transparent 0 calc(100% - 118px),var(--line) calc(100% - 118px) calc(100% - 115px),transparent 0),var(--panel)}
+.c-floor{position:absolute;left:0;right:0;bottom:0;height:84px;overflow:hidden;border-top:3px solid var(--ink)}
+.c-floor::before{content:"";position:absolute;left:-10%;right:-10%;top:0;height:220px;transform-origin:top center;transform:perspective(260px) rotateX(58deg);
+  background:repeating-conic-gradient(var(--ink) 0 25%,var(--panel) 0 50%) 0 0/46px 46px}
+.bay{position:relative;display:flex;align-items:flex-end;gap:34px;padding-right:34px;padding-bottom:84px;z-index:1}
+.dcol{position:relative;display:flex;flex-direction:column;align-items:center;gap:8px}
+.lamp{position:absolute;top:-158px;left:50%;width:34px;height:10px;margin-left:-17px;background:var(--ink);border-radius:0 0 8px 8px}
+.cone{position:absolute;top:-148px;left:50%;width:170px;height:150px;margin-left:-85px;pointer-events:none;clip-path:polygon(40% 0,60% 0,100% 100%,0 100%);
+  background:linear-gradient(var(--light-in),transparent);opacity:0;transition:opacity .6s}
+.dcol:hover .cone,.dcol.here .cone{opacity:.45}
+.dcol.solved .cone{opacity:.8}
+.plaque2{font:900 1.05rem var(--display);font-stretch:125%;background:var(--ink);color:var(--wall);padding:2px 10px;min-width:44px;text-align:center;position:relative;z-index:2}
+.dcol.solved .plaque2::after{content:"✓";margin-left:6px;color:var(--yellow)}
+.door-b{position:relative;width:106px;height:178px;padding:0;border:6px solid var(--ink);border-bottom:0;background:var(--light-in);perspective:700px;display:block}
+.door-b .leaf{position:absolute;inset:0;background:var(--door);transform-origin:left center;transition:transform .55s cubic-bezier(.5,0,.2,1);
+  box-shadow:inset 0 0 0 8px var(--door),inset 0 0 0 10px var(--door-2)}
+.door-b .leaf::before{content:"";position:absolute;left:14px;right:14px;top:16px;height:58px;border:2px solid var(--door-2)}
+.door-b .leaf::after{content:"";position:absolute;right:12px;top:50%;width:6px;height:22px;background:var(--gold);border-radius:3px}
+.door-b:hover .leaf{transform:rotateY(-12deg)}
+.door-b.opening .leaf,.door-b.ajar .leaf,.dcol.solved .door-b .leaf{transform:rotateY(-72deg)}
+.door-b .inside{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 100%,#FFFFFF,transparent 70%)}
+.door-b:focus-visible{outline:3px solid var(--klein);outline-offset:3px}
+.mini{width:66px;height:84px;border:5px solid var(--ink);margin-bottom:72px;box-shadow:0 8px 14px -8px rgba(0,0,0,.4);position:relative}
+.mini::before{content:"";position:absolute;top:-22px;left:50%;width:1px;height:18px;background:var(--muted)}
+.mini.a0{background:linear-gradient(90deg,var(--red) 0 60%,var(--tile-w) 60% 64%,var(--yellow) 64%)}
+.mini.a1{background:radial-gradient(circle at 50% 45%,var(--blue) 0 30%,var(--tile-w) 31%)}
+.mini.a2{background:repeating-linear-gradient(0deg,var(--ink) 0 8px,var(--tile-w) 8px 16px)}
+.mini.a3{background:linear-gradient(var(--yellow) 0 40%,var(--ink) 40% 44%,var(--blue) 44%)}
+.mini.a4{background:conic-gradient(var(--red) 0 25%,var(--tile-w) 0 50%,var(--blue) 0 75%,var(--tile-w) 0)}
+.mini.a5{background:linear-gradient(135deg,var(--tile-w) 0 45%,var(--red) 45% 55%,var(--tile-w) 55%)}
+.dcol.exit .door-b{border-color:var(--ink);background:#FFFFFF}
+.dcol.exit .door-b .leaf{background:var(--red);box-shadow:inset 0 0 0 8px var(--red),inset 0 0 0 10px rgba(0,0,0,.25)}
+.dcol.exit .door-b .leaf::before{left:10px;right:10px;top:84px;height:8px;border:0;background:#D7D9DC}
+.exit-sign{position:relative;z-index:2;background:var(--exit);color:#FFFFFF;font:700 .64rem var(--body);letter-spacing:.12em;padding:4px 8px;display:flex;align-items:center;gap:6px;white-space:nowrap}
+.exit-sign svg{width:12px;height:14px;fill:#FFFFFF}
+.visitor{position:absolute;left:0;bottom:22px;width:30px;height:64px;margin-left:-15px;z-index:3;pointer-events:none}
+.visitor svg{width:100%;height:100%;overflow:visible}
+.visitor .vb{fill:var(--klein)} .visitor .vl{stroke:var(--klein);stroke-width:5;stroke-linecap:round;transform-box:fill-box;transform-origin:top center}
+.visitor.left svg{transform:scaleX(-1)}
+.visitor.walking .vl1{animation:legA .26s ease-in-out infinite alternate}
+.visitor.walking .vl2{animation:legA .26s ease-in-out infinite alternate-reverse}
+.visitor.walking svg{animation:bob .26s ease-in-out infinite alternate}
+@keyframes legA{from{transform:rotate(22deg)}to{transform:rotate(-22deg)}}
+@keyframes bob{to{transform:translateY(-3px)}}
+.visitor.left.walking svg{animation:bobL .26s ease-in-out infinite alternate}
+@keyframes bobL{from{transform:scaleX(-1)}to{transform:scaleX(-1) translateY(-3px)}}
+.visitor::after{content:"";position:absolute;left:2px;right:2px;bottom:-6px;height:6px;border-radius:50%;background:rgba(0,0,0,.25)}
+.c-nav{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px}
+.c-nav .arrows{display:flex;gap:8px}
+.c-nav .arrows button{width:48px;height:40px;border:2px solid var(--ink);background:var(--panel);font-size:1.2rem;font-weight:700}
+.c-nav .arrows button:hover{background:var(--ink);color:var(--wall)}
+.c-nav p{font-size:.88rem;color:var(--muted)}
+.board-c{display:flex;flex-direction:column;gap:10px}
+.board-h{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.board-h h2{font-size:1rem;font-stretch:112%;text-transform:uppercase;letter-spacing:.06em}
+.board-h span{font-family:var(--lcd-f);font-size:1.4rem}
+.cork{min-height:150px;padding:22px 18px;display:flex;flex-wrap:wrap;gap:22px 18px;align-items:flex-start;border:8px solid #6B4B2A;
+  background:radial-gradient(circle at 20% 30%,rgba(0,0,0,.12) 0 1px,transparent 2px) 0 0/11px 13px,radial-gradient(circle at 70% 60%,rgba(255,255,255,.12) 0 1px,transparent 2px) 0 0/9px 7px,var(--cork)}
+.cork .empty-c{color:#F4EBDD;font-size:.95rem;max-width:52ch;align-self:center}
+.pnote{position:relative;width:min(100%,230px);background:var(--memo);color:var(--memo-ink);padding:16px 14px 12px;transform:rotate(var(--r));box-shadow:0 10px 16px -10px rgba(0,0,0,.6)}
+.pnote::before{content:"";position:absolute;top:-7px;left:50%;width:14px;height:14px;margin-left:-7px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#FF8A7A,var(--red) 60%,#6E140C);box-shadow:0 2px 3px rgba(0,0,0,.4)}
+.pnote p{font-family:var(--hand);font-size:1.35rem;line-height:1.15}
+.pnote small{display:block;margin-top:6px;font-size:.66rem;letter-spacing:.12em;text-transform:uppercase;opacity:.7}
+.pnote.new{animation:pinIn .8s cubic-bezier(.2,.9,.3,1.35) .5s both}
+@keyframes pinIn{from{opacity:0;transform:translateY(-60px) rotate(calc(var(--r) - 14deg)) scale(1.15)}}
+.cview-foot{display:flex;flex-wrap:wrap;gap:12px;align-items:center;padding-top:14px;border-top:1px solid var(--line);font-size:.88rem;color:var(--muted)}
+@media (max-width:640px){ .track{height:340px;padding:0 40px} .bay{gap:20px;padding-right:20px} .mini{width:52px;height:68px} }
+
+.no-anim *,.no-anim *::before,.no-anim *::after{animation:none!important;transition:none!important}
+
+/* ===== guida per chi organizza ===== */
+.manual{display:flex;flex-direction:column;gap:44px}
+.m-top{display:flex;flex-direction:column;gap:14px}
+.m-lead{font-size:1.1rem;max-width:62ch}
+.m-toc{display:flex;flex-wrap:wrap;gap:8px}
+.m-sec{display:flex;flex-direction:column;gap:14px;scroll-margin-top:16px}
+.m-h{font-family:var(--serif);font-weight:400;font-size:clamp(1.8rem,4vw,2.6rem);line-height:1;border-bottom:3px solid var(--ink);padding-bottom:8px}
+.m-p{max-width:70ch}
+.m-facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+.m-facts div{background:var(--panel);border:1px solid var(--line);padding:14px 16px;display:flex;flex-direction:column;gap:4px}
+.m-facts b{font:900 1.8rem/1 var(--display);font-stretch:125%}
+.m-facts span{font-size:.88rem;color:var(--muted)}
+.m-steps{margin:0;padding-left:1.4em;display:flex;flex-direction:column;gap:10px;max-width:72ch}
+.m-list{margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:8px;max-width:72ch}
+.m-rooms{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,460px),1fr));gap:18px}
+.m-room{background:var(--panel);border:1px solid var(--line);padding:18px 20px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.m-room header{display:flex;align-items:center;gap:16px;margin-bottom:6px}
+.m-num{font:900 3.2rem/.8 var(--display);font-stretch:125%}
+.m-k{font-size:.72rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--klein);margin-top:8px}
+.m-ans{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 16px;padding:10px 0}
+.m-ans .num{font:900 2.4rem/1 var(--display);font-stretch:125%;color:var(--ok)}
+.m-ans .frm{font-family:var(--lcd-f);font-size:1.3rem;overflow-wrap:anywhere}
+.m-two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px}
+.table-wrap{overflow-x:auto}
+.m-table{border-collapse:collapse;width:100%;font-size:.95rem}
+.m-table th,.m-table td{text-align:left;padding:9px 12px 9px 0;border-bottom:1px solid var(--line);vertical-align:top}
+.m-table th{font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.m-table .r{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+@media (max-width:860px){ .m-two{grid-template-columns:minmax(0,1fr)} }
+
+.clock .pin{fill:var(--sign)}
+</style>
+<header class="sign"><div class="wrap">
+  <div class="sign-brand"><span class="sign-name">Galleria Specchi</span><span class="sign-where" id="where">Ingresso</span></div>
+  <div class="sign-tools">
+    <div class="clock" id="clock" hidden><svg viewBox="0 0 40 40" aria-hidden="true"><circle class="face" cx="20" cy="20" r="18"/>
+      <g><line class="tick" x1="20.0" y1="6.0" x2="20.0" y2="3.5"/><line class="tick" x1="27.0" y1="7.9" x2="28.3" y2="5.7"/><line class="tick" x1="32.1" y1="13.0" x2="34.3" y2="11.7"/><line class="tick" x1="34.0" y1="20.0" x2="36.5" y2="20.0"/><line class="tick" x1="32.1" y1="27.0" x2="34.3" y2="28.2"/><line class="tick" x1="27.0" y1="32.1" x2="28.3" y2="34.3"/><line class="tick" x1="20.0" y1="34.0" x2="20.0" y2="36.5"/><line class="tick" x1="13.0" y1="32.1" x2="11.8" y2="34.3"/><line class="tick" x1="7.9" y1="27.0" x2="5.7" y2="28.3"/><line class="tick" x1="6.0" y1="20.0" x2="3.5" y2="20.0"/><line class="tick" x1="7.9" y1="13.0" x2="5.7" y2="11.7"/><line class="tick" x1="13.0" y1="7.9" x2="11.7" y2="5.7"/></g><line class="hh" id="hh" x1="20" y1="20" x2="20" y2="11"/><line class="mh" id="mh" x1="20" y1="20" x2="20" y2="6"/><circle cx="20" cy="20" r="1.8" class="pin"/></svg>
+      <span><span class="clock-t" id="ctime">00:00</span><span class="clock-l">allarme all'01:00</span></span></div>
+    <button type="button" class="tog" id="t-sound">Suono: sì</button><button type="button" class="tog" id="t-anim">Animazioni: sì</button>
+  </div></div></header>
+<main class="wrap" id="main"><div id="app"></div></main>
+<aside class="guide" id="guide" hidden aria-label="Audioguida">
+  <div class="g-top"><span>AUDIOGUIDA · GS</span><span class="g-led" id="gled"></span><button type="button" class="g-fold" id="g-fold">Chiudi tastiera</button></div>
+  <div class="g-screen" id="gscreen" aria-live="polite"><div class="g-l1" id="gl1">DIGITA IL NUMERO</div><div class="g-l2" id="gl2">_ _ _</div><div class="g-wave"><i style="--k:0"></i><i style="--k:1"></i><i style="--k:2"></i><i style="--k:3"></i><i style="--k:4"></i><i style="--k:5"></i><i style="--k:6"></i><i style="--k:7"></i><i style="--k:8"></i><i style="--k:9"></i><i style="--k:10"></i><i style="--k:11"></i><i style="--k:12"></i><i style="--k:13"></i><i style="--k:14"></i><i style="--k:15"></i></div></div>
+  <div class="g-keys"><button type="button" data-g="1">1</button><button type="button" data-g="2">2</button><button type="button" data-g="3">3</button><button type="button" data-g="4">4</button><button type="button" data-g="5">5</button><button type="button" data-g="6">6</button><button type="button" data-g="7">7</button><button type="button" data-g="8">8</button><button type="button" data-g="9">9</button><button type="button" data-g="del" aria-label="Cancella">⌫</button><button type="button" data-g="0">0</button><button type="button" data-g="ok" class="g-ok" aria-label="Conferma">▶</button></div>
+  <p class="g-hint">Puoi usare anche la tastiera del computer: numeri e Invio.</p>
+</aside>
+<div class="veil" id="veil"></div>
+<div class="bars" id="bars" hidden><i></i><i></i><i></i></div>
+<div class="flash" id="flash"></div>
+
+<script>
+const D = {"rooms":[{"name":"La targhetta caduta","genre":"Ritratti","story":"<p>Nella sala dei ritratti c'è un dipinto senza nome. Le lettere adesive della sua targhetta si sono staccate e sono finite sul pavimento: <b>G, I, O, T, T, O</b>. Due O e due T sono identiche.</p><div class=\"memo\">«Il numero di questa sala è quante parole diverse si possono comporre con queste sei lettere, anche senza senso.»<small>Il curatore</small></div>","q":"Quante parole diverse di 6 lettere si possono formare usando tutte le lettere G, I, O, T, T, O?","hints":["Se le sei lettere fossero tutte diverse, gli ordini sarebbero 6! = 720. Ma scambiare le due O tra loro non cambia la parola, e lo stesso vale per le due T.","Ogni parola compare 2!·2! = 4 volte tra i 720 ordini: dividi 6! per 2! e per 2!."],"label":"Anonimo, <i>Ritratto senza nome</i>, sec. XIV · targhetta in vinile, 6 lettere · Inv. GS-I-06","h":713503191,"x":"N11CVxfCmCe/pAyP1NFrYcBnUSn8/t8aFGHCeXBmmfdvfQmhv/HJiYGWkJf+P7MLuWK88m6jq+HLhNNBsSdOnRfNhznc6LADTFSfwFPy2K/xkm9tqpuBEKjeyp4twVOgBNnah/8uLUu/1qWkNwq6cxJD4JGDiL351soFJXT76GZL4CIU1zCHGDpGINvPX6Uev+Cpy+w89dxeEfzDpte8fBVQ3A7y3B56CcFlg52NAsseJ1gj3UPN1scdHSDvzZHHqcTqAZ9O1wFMpKrDYUMYahoJqcmg15ztxQH7Sn1aXGPfsMnfXJVPK5ijgTn7hUMkq1RenPbwhos9ibc5oIYDR7vrPOXjuSXYKyc3CRMNo3usASEpSh3LVZRYb6laJcdJyzSaTfQlb911emQ5i5qM"},{"name":"La parete dei monocromi","genre":"Arte astratta","story":"<p>Una lunga parete bianca con sette cornici vuote. Nella cassa accanto ci sono sette tele monocrome: <b>tre rosse, due blu e due gialle</b>. Le tele dello stesso colore sono identiche.</p><div class=\"memo\">«Appendetele come volete. Il numero della sala è quante pareti diverse potrebbe vedere un visitatore.»<small>Il curatore</small></div>","q":"In quanti modi diversi si possono appendere le 7 tele (3 rosse, 2 blu, 2 gialle) nelle 7 cornici?","hints":["Se le tele fossero tutte diverse le pareti sarebbero 7! = 5040. Ma scambiare due tele dello stesso colore non cambia niente.","Dividi 7! per 3! (le rosse), per 2! (le blu) e per 2! (le gialle)."],"label":"Collettivo Specchi, <i>Sette monocromi</i>, 2019 · acrilico su tela, 7 elementi · Inv. GS-II-07","h":1268293908,"x":"u2Sf/k9SpHQmUfHDqRDkgkm94fi7yUrgWoaNaGCqg3bXFdywBrJUhg1fgQrGZsHt1szo1/Tv201fahplensZe6GloqznhrQ8nHFGClTOnTEV3N8fXyBi/+vFLL5Vqlqlb1N/6Eej1TqfmvoHFvnNp0MjQAMqDmxy5l6Q7ePvLslMuvXH8ZMqe200/rnGbznM/HK73nqh0ErTxXt57pNUhAFQWwgRPt8WPN5/yfha2wUhVdlKsv77rLbOFPe/NiVlYwfseEacNnAtMGFvS0yhl2q8dhTqQqN8nZVyjVinS1sN42NI5G/5NkNJXkGtwCS5KtSxINCacsuB+eZygxAcEBrZcfznztYE1FeQof20xQajot+yA1IG7LOFl4YaAak9pLVtSF9whVq7GpFP21JICGygCtiO+wo="},{"name":"Il mosaico del pavimento","genre":"Arte romana","story":"<p>Al centro della sala c'è una fascia di mosaico con nove tessere grandi. Il restauratore le ha staccate per pulirle: <b>quattro nere, tre bianche e due dorate</b>.</p><div class=\"memo\">«Rimettere le nove tessere in fila. Ho contato tutti i disegni possibili: è il numero della sala.»<small>Dal taccuino del restauratore</small></div>","q":"Quanti disegni diversi si ottengono mettendo in fila 4 tessere nere, 3 bianche e 2 dorate?","hints":["Le tessere dello stesso colore sono identiche: parti da 9! e togli gli scambi tra tessere uguali.","Calcola 9! / (4!·3!·2!)."],"label":"Bottega romana, <i>Fascia a mosaico</i>, sec. II d.C. · marmo e pasta vitrea, 9 tessere · Inv. GS-III-09","h":1808868939,"x":"xKBJjuhJWglSx3fLHcgbFhjuasPxSMgtjBKA5yL8m8qYGdJ3xGoMq5IHRisSZIxl9WLYxFie7v3Q0y4ygSkGJK02hv0MSj+2dgGtukpgaZpzkfO07Xa79lr7M/u/ENjQ22yJCq0zLv/gR0rMc7FTj9OXnZspiOsLBsiowcP4ta4SgXl/46vJnmrFGhM4WQN+FTuUKRKain6gpABHIsxrkAq1GsBXFVPangJf8JfpFavJPfkzMQD8eE2fDsK/KWuP8et1H1aWXXKyBYANv2ELXqodko6AxdrtE8RCN4VDCcQs1btir1HR9d29awrYdzEpvtnUiG598PukUZPnZaGbaeZdv5dA/whMy21Av/JBtTsA+21QfKe2gnzIzpODWfwg13zBHxk5rThW3ASX2eGhpYk1o2E4Qqo4fFBAssiV"},{"name":"Il giro del custode","genre":"Sala delle mappe","story":"<p>Appesa al muro c'è la pianta dei corridoi che il custode percorre ogni notte. Parte dall'ingresso, in basso a sinistra, e arriva alla statua, in alto a destra, muovendosi solo <b>verso est</b> o <b>verso nord</b>: 4 tratti verso est e 3 verso nord.</p><div class=\"memo\">«Ogni notte ho fatto un percorso diverso, finché non li ho provati tutti. Quante notti mi sono servite?»<small>Il custode</small></div>","q":"Quanti percorsi diversi può fare il custode, muovendosi solo verso est o verso nord?","hints":["Ogni percorso si scrive come una parola di 7 lettere con 4 E (est) e 3 N (nord). Per esempio EENENEN.","Conta gli anagrammi di EEEENNN: 7! / (4!·3!)."],"label":"Ufficio tecnico, <i>Pianta del giro notturno</i>, 1988 · china su carta, 4 × 3 isolati · Inv. GS-IV-12","h":4205523627,"x":"cLmI3FB3Jn6sbZ7QTX3vvoNAyVw+efalwvemMy4Lol7dFV2dfJm/7HxOicAm1CrhdXTlOcfRyiHs0UO2w5nGYzxixkCALqcph4PQRUVzKpCYIh8lylhS/zDt3Z4qGDDlFK923FJv8AKF5aZOAOyL08TNMChYO1/UkSSjZWUgZBjcADnDcSSPZZSGzoZgOwRcXyUfQ6qXP4fiijx+G8ZsRsCyziOu0UvdFA8H4yCHL5vBwll7l75C65CXONDx8Xe5nkzloHFM7wkaAIJptUYdstCVk0rGwOkJOOtJ1jpgmfzAi23YkaSX/28BVDQKTNr6k+SREYrGiIV3e1RM2JzMxkFMDeunkf7iUgrHBe9s2F+Xv26lHuWlKenn2cximNFpi0DRZYzIqQ2OqB187F4lmfGTap3Hvt7R"},{"name":"Le cornici gemelle","genre":"Sala delle cornici","story":"<p>Sei cornici vuote aspettano di essere appese in fila: <b>due dorate, due d'argento e due nere</b>. Quelle dello stesso tipo sono identiche.</p><div class=\"memo\">«Le due cornici dorate devono stare sempre una accanto all'altra. Il numero della sala è quante file diverse rispettano questa regola.»<small>Il curatore</small></div>","q":"In quanti modi si possono mettere in fila le 6 cornici, se le due dorate devono stare vicine?","hints":["Incolla le due cornici dorate: diventano un solo blocco. Quanti oggetti restano da mettere in fila?","Restano 5 oggetti: il blocco dorato, 2 argento uguali e 2 nere uguali. Calcola 5! / (2!·2!)."],"label":"Bottega fiorentina, <i>Sei cornici</i>, sec. XIX · legno dorato, argentato e laccato · Inv. GS-V-06","h":506043987,"x":"vntOhl8ZLaNsGXs6IUGr6PFS8fusnFkEC2rVdylh0U2Ix18TwUlhBDtc+FlsD2pyd4VYz3B1UFuLgzakHvFDaI6IMVr+j5hLy7ZeIChel8p07V+X8pgS8qbZaQNxg5e+ygTpaxLtilvhSmHngNeqm722cgxMUVd3WjuRgx05HruHR+w56DOqLPPAjcLSrS48QbUwVd4MRZkB1sw9vh94ysMVStWX9gMuGxMOGUNrZv2vJD8LaVkZm0tIB59Kz92LCU8OWTxAvEKu+IS6CIT+9qqfHEknJ7OlBgtYmPGPlGSmXQ0aY1wasguyRgYaNb4zrrqGMtJ5YEueatNnca7liz9f/6EGA706G3O2aM+VM4j+WanfN2tjb23+3I70YcCVaOZED+1DNUQmmeeoPHXBfFa/wm0j+SCy3Lo="},{"name":"Il deposito","genre":"Magazzino delle opere","story":"<p>Nel deposito c'è uno scaffale con dieci posti. Bisogna sistemarci <b>4 copie identiche della Gioconda</b>, <b>3 copie identiche della Notte stellata</b> e <b>3 quadri originali</b>, tutti diversi tra loro.</p><div class=\"memo\">«Le copie si confondono, gli originali no. Il numero della sala è quante file diverse si vedono sullo scaffale.»<small>Il curatore</small></div>","q":"In quanti modi diversi si possono disporre i 10 quadri sullo scaffale?","hints":["Gli originali sono tutti diversi: per loro non c'è niente da dividere. Si divide solo per gli scambi tra copie identiche.","Calcola 10! / (4!·3!)."],"label":"Riproduzioni e originali in deposito · 10 opere su uno scaffale · Inv. GS-VI-10","h":3370825154,"x":"iktGZwFWKUUglp3ErCoIcc7iQpocQDRL/VKOHM7auYYO2B9XuDroSl9BFvI1nW7+4uonyLmWc+YezyqAdzefNX0brT04i6riBn1Aeeucg2TzmHZIs2IpbeN0AHx6PzdiAjnMFL/rVG8nwY3KqDCvi3gJ29IE6cfVuZjzUjvG2UMOIyriuO2jn09LA5Zl/1qnYx70JwJtzZ4EH47paHNHrZtv+jnWsNrUBZcXP6hiCGyEVMjRX5hLICZ0GNvrQxSCe5kpHhhrI60dMZBPOPHeF+rzexbmJUnmI8wnCiWUEXnUxHm9bg/BG/Nid9GC/aRVHJk7deumPPqiIrhOD8CmmyvoXuksNPJ1YOlGmLl3pxMIEkcubf72I/QjN25XaH0vAfCVFZgtavBNIIWytIqZy2UhIXgYLbip4M+2giMQnShzlx1m4pP6nVonlXfhwMOvXKWpcw=="}],"door":{"d1":919310464,"d2":3024957900}};
+const KEY = 'codice-dipinti-v1', GKEY = KEY + '-firme';
+const TOTAL = 3600, ERR_COST = 60, HINT_COST = 180;
+const $ = id => document.getElementById(id);
+const wait = ms => new Promise(r => setTimeout(r, ms));
+function fnv(s){ let h=0x811c9dc5; for(let i=0;i<s.length;i++){ h^=s.charCodeAt(i); h=Math.imul(h,0x01000193) } return h>>>0 }
+function check(k, a){ return fnv('galleria|'+k+'|'+a) === (typeof k==='number' ? D.rooms[k].h : D.door[k]) }
+function reveal(i, a){
+  try{ const bin=atob(D.rooms[i].x), out=new Uint8Array(bin.length); let s=fnv('svela|'+i+'|'+a)||1;
+    for(let j=0;j<bin.length;j++){ s^=s<<13; s>>>=0; s^=s>>>17; s^=s<<5; s>>>=0; out[j]=bin.charCodeAt(j)^(s&255) }
+    return JSON.parse(new TextDecoder().decode(out)) }catch(e){ return {topic:'',formula:'',expl:'',clue:{text:'',p:{}}} }
+}
+function esc(t){ return String(t).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])) }
+function fmt(n){ return String(n).replace(/\B(?=(\d{3})+(?!\d))/g,'.') }
+const ROMAN = ['I','II','III','IV','V','VI'];
+const CNAME = {R:'rossa', B:'blu', Y:'gialla'};
+
+/* stato della partita */
+function fresh(){ return {started:null, penalty:0, view:'intro', room:null, solved:{}, hints:{}, errors:0, hintCount:0, doorOn:false, finished:null, noClock:false, team:'', recorded:false, recId:null, at:0} }
+function load(){ try{ const s=JSON.parse(localStorage.getItem(KEY)); if(s && s.solved) return Object.assign(fresh(), s) }catch(e){} return fresh() }
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)) }catch(e){} }
+let S = load(), busy = false, confirmReset = false, confirmClear = false;
+function elapsed(){ if(!S.started) return 0; return Math.floor(((S.finished||Date.now()) - S.started)/1000) + S.penalty }
+function clockText(sec){ sec=Math.max(0,Math.min(TOTAL,sec)); return sec>=TOTAL ? '01:00' : '00:'+String(Math.floor(sec/60)).padStart(2,'0') }
+
+/* impostazioni */
+let muted=false, RM=false;
+try{ muted = localStorage.getItem(KEY+'-muto')==='1'; RM = localStorage.getItem(KEY+'-anim')==='0' }catch(e){}
+function applySettings(){
+  document.documentElement.classList.toggle('no-anim', RM);
+  $('t-sound').textContent = muted ? 'Suono: no' : 'Suono: sì'; $('t-sound').setAttribute('aria-pressed', String(!muted));
+  $('t-anim').textContent = RM ? 'Animazioni: no' : 'Animazioni: sì'; $('t-anim').setAttribute('aria-pressed', String(!RM));
+}
+$('t-sound').addEventListener('click', ()=>{ muted=!muted; try{localStorage.setItem(KEY+'-muto', muted?'1':'0')}catch(e){} applySettings(); sfx('key') });
+$('t-anim').addEventListener('click', ()=>{ RM=!RM; try{localStorage.setItem(KEY+'-anim', RM?'0':'1')}catch(e){} applySettings() });
+
+/* suoni sintetizzati: passi sul marmo, interruttori, audioguida, marimba */
+let AC=null;
+function ac(){ if(!AC){ try{ AC=new (window.AudioContext||window.webkitAudioContext)() }catch(e){} } if(AC && AC.state==='suspended') AC.resume(); return AC }
+function tone(f,t0,dur,type,vol,f2){ const a=ac(); if(!a) return; const o=a.createOscillator(), g=a.createGain(), t=a.currentTime+t0;
+  o.type=type||'sine'; o.frequency.setValueAtTime(f,t); if(f2) o.frequency.exponentialRampToValueAtTime(f2,t+dur);
+  g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(vol||.1,t+.006); g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+  o.connect(g).connect(a.destination); o.start(t); o.stop(t+dur+.03) }
+function noise(t0,dur,vol,freq,type,f2){ const a=ac(); if(!a) return; const n=Math.ceil(a.sampleRate*dur), b=a.createBuffer(1,n,a.sampleRate), d=b.getChannelData(0);
+  for(let i=0;i<n;i++) d[i]=Math.random()*2-1;
+  const s=a.createBufferSource(), f=a.createBiquadFilter(), g=a.createGain(), t=a.currentTime+t0;
+  s.buffer=b; f.type=type||'lowpass'; f.frequency.setValueAtTime(freq,t); if(f2) f.frequency.exponentialRampToValueAtTime(f2,t+dur);
+  g.gain.setValueAtTime(vol,t); g.gain.exponentialRampToValueAtTime(.0001,t+dur); s.connect(f).connect(g).connect(a.destination); s.start(t) }
+function mar(f,t,v){ tone(f,t,.6,'sine',v||.12); tone(f*4,t,.12,'sine',(v||.12)*.35) }
+const SFX = {
+  key:()=>tone(1046,0,.05,'sine',.08),
+  ok:()=>[523,659,784,1047,1319].forEach((f,i)=>mar(f,i*.09)),
+  bad:()=>{ noise(0,.35,.25,1800,'bandpass'); tone(220,.05,.3,'square',.05,170) },
+  steps:()=>{ for(let i=0;i<4;i++){ noise(i*.24,.07,.45,500); noise(i*.24+.09,.07,.12,500) } },
+  sw:()=>{ noise(0,.02,.5,4000,'highpass'); tone(100,.02,.25,'sine',.05) },
+  hang:()=>{ tone(90,0,.18,'sine',.25,60); noise(0,.06,.2,900) },
+  flip:()=>tone(1800+Math.random()*600,0,.05,'triangle',.07),
+  page:()=>noise(0,.25,.2,2400,'bandpass',900),
+  tick:()=>{ tone(2500,0,.03,'square',.04); tone(1900,.18,.03,'square',.04) },
+  flash:()=>{ noise(0,.12,.35,3000,'highpass'); tone(2000,0,.35,'sine',.03,5000) },
+  door:()=>{ noise(0,1.2,.2,300,'lowpass',1200); [784,988,1175].forEach((f,i)=>mar(f,.8+i*.12,.1)) },
+  walk:()=>{ noise(0,.05,.3,700) },
+  alarm:()=>{ for(let i=0;i<3;i++){ tone(880,i*.5,.25,'square',.06); tone(700,i*.5+.25,.25,'square',.06) } },
+  swoosh:()=>noise(0,.5,.25,300,'bandpass',3000),
+  creak:()=>{ tone(180,0,.5,'sawtooth',.03,260); noise(0,.4,.08,600,'bandpass') },
+  close:()=>{ noise(0,.12,.35,300); tone(70,0,.15,'sine',.2) }
+};
+function sfx(n){ if(muted) return; try{ SFX[n] && SFX[n]() }catch(e){} }
+
+/* orologio */
+function tickClock(){
+  const on = S.started && !S.noClock && ['plan','room','door'].includes(S.view);
+  $('clock').hidden = !on; if(!on) return;
+  const sec = elapsed(), m = Math.min(TOTAL,sec);
+  $('mh').style.transform = `rotate(${m/60*6}deg)`; $('hh').style.transform = `rotate(${m/3600*30}deg)`;
+  $('ctime').textContent = clockText(sec);
+  $('clock').classList.toggle('late', sec >= TOTAL-300);
+  if(sec >= TOTAL && !S.finished && !busy){ S.view='timeout'; save(); render() }
+}
+setInterval(tickClock, 1000);
+function penalty(sec, label){
+  S.penalty += sec; save(); tickClock(); sfx('tick');
+  const c=$('clock'); c.classList.remove('jump'); void c.offsetWidth; c.classList.add('jump');
+  const r=c.getBoundingClientRect(), f=document.createElement('span'); f.className='float'; f.textContent=label;
+  f.style.left=(r.left+r.width/2)+'px'; f.style.top=(r.bottom+4)+'px'; document.body.appendChild(f); setTimeout(()=>f.remove(),1500);
+}
+function restartAnim(el, cls){ if(!el) return; el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls) }
+
+/* libro delle firme */
+function guestbook(){ try{ const l=JSON.parse(localStorage.getItem(GKEY)); if(Array.isArray(l)) return l.sort((a,b)=>a.sec-b.sec || (a.errors+a.hints)-(b.errors+b.hints)) }catch(e){} return [] }
+function saveGuestbook(l){ try{ localStorage.setItem(GKEY, JSON.stringify(l)) }catch(e){} }
+function recordResult(){
+  if(S.recorded) return; S.recorded=true;
+  if(!S.noClock){ const l=guestbook(); S.recId=Date.now(); l.push({team:S.team||'Visitatori senza nome', sec:elapsed(), errors:S.errors, hints:S.hintCount, at:S.recId}); saveGuestbook(l) }
+  save();
+}
+function guestbookHtml(me, clear){
+  const l=guestbook(); if(!l.length) return '';
+  const items=l.slice(0,12).map((r,k)=>`<li class="${r.at===me?'me':''}"><span class="gb-n">${k+1}.</span><span class="gb-name">${esc(r.team)}</span><span class="gb-meta"><b>${clockText(r.sec)}</b>${r.errors} err. · ${r.hints} sch.</span></li>`).join('');
+  return `<section class="guestbook" aria-label="Libro delle firme"><p class="cap">Libro delle firme · uscite più rapide</p><ol class="gb-list">${items}</ol>
+  ${clear ? (confirmClear ? '<p class="sc-bar"><span>Cancellare tutte le firme?</span><button type="button" class="chip" id="gb-yes">Sì, cancella</button><button type="button" class="chip" id="gb-no">Annulla</button></p>' : '<p><button type="button" class="chip" id="gb-clear">Cancella il libro</button></p>') : ''}</section>`;
+}
+
+/* sequenze della porta: tutte le file di 2 rosse, 2 blu, 2 gialle */
+const ALLSEQ = (()=>{ const out=[]; (function go(p,c){ if(p.length===6){ out.push(p); return } for(const k of 'RBY') if(c[k]){ c[k]--; go(p+k,c); c[k]++ } })('',{R:2,B:2,Y:2}); return out })();
+function pred(p){
+  if(p.t==='is') return s=>s[p.i]===p.c;
+  if(p.t==='not') return s=>s[p.i]!==p.c;
+  if(p.t==='apart') return s=>s.lastIndexOf(p.c)-s.indexOf(p.c)>1;
+  return ()=>true;
+}
+function clues(){ return Object.keys(S.solved).map(Number).sort((a,b)=>a-b).map(i=>({i, ...reveal(i,S.solved[i]).clue})) }
+/* ===== installazioni ===== */
+const SUB = {2:'₁',5:'₂',3:'₁',4:'₂'};
+const GL = ['G','I','O','T','T','O'];
+function shuffle(a){ for(let j=a.length-1;j>0;j--){ const r=Math.floor(Math.random()*(j+1)); [a[j],a[r]]=[a[r],a[j]] } return a }
+
+const SCENES = {
+ /* I · la targhetta: anagrammi di GIOTTO */
+ 0:{ init:()=>({slots:Array(6).fill(null), twins:false, seen:new Set(), note:''}),
+  view:s=>{
+    const tile=(id,a,v)=>`<button type="button" class="vl" data-a="${a}" data-v="${v}" data-id="v${id}" aria-label="Lettera ${GL[id]}${s.twins&&SUB[id]?' '+SUB[id]:''}">${GL[id]}${s.twins&&SUB[id]?`<sub>${SUB[id]}</sub>`:''}</button>`;
+    const tray=[3,2,0,1,5,4].filter(id=>!s.slots.includes(id)), full=!s.slots.includes(null);
+    let tw='';
+    if(full && s.twins){
+      const o=s.slots.map((id,k)=>GL[id]==='O'?k:-1).filter(k=>k>=0), t=s.slots.map((id,k)=>GL[id]==='T'?k:-1).filter(k=>k>=0), vs=[];
+      for(const oo of [['₁','₂'],['₂','₁']]) for(const tt of [['₁','₂'],['₂','₁']]){
+        vs.push(s.slots.map((id,k)=>{ const c=GL[id]; const sub=c==='O'?oo[o.indexOf(k)]:c==='T'?tt[t.indexOf(k)]:''; return c+(sub?`<sub>${sub}</sub>`:'') }).join('')) }
+      tw=`<div class="twins">Con le copie numerate, la stessa parola si scrive in 4 modi: ${vs.map(v=>`<span>${v}</span>`).join('')}</div>`;
+    }
+    return `<div class="plaque"><span class="plaque-h">Didascalia</span><div class="plaque-slots">${s.slots.map((id,k)=>`<div class="pslot">${id==null?'':tile(id,'off',k)}</div>`).join('')}</div><span class="plaque-sub">Anonimo, sec. XIV</span></div>
+    <div class="floor">${tray.map(id=>tile(id,'on',id)).join('')||'<span class="empty">Tutte le lettere sono sulla targhetta.</span>'}</div>
+    ${tw}
+    <div class="sc-bar"><button type="button" class="chip${s.twins?' on':''}" data-a="twins" aria-pressed="${s.twins}">Distingui le copie</button><button type="button" class="chip" data-a="reset">Stacca tutte</button></div>
+    <p class="sc-note">${s.note||'Clicca le lettere per attaccarle alla targhetta. Parole diverse composte: '+s.seen.size}</p>` },
+  act:(s,a,v)=>{
+    if(a==='twins'){ s.twins=!s.twins; s.note=s.twins?'Ora le due O e le due T hanno un numero: O₁, O₂, T₁, T₂.':''; return {sound:'flip'} }
+    if(a==='reset'){ s.slots.fill(null); s.note=''; return {sound:'hang'} }
+    if(a==='off'){ s.slots[+v]=null; s.note=''; return {sound:'flip'} }
+    const k=s.slots.indexOf(null); if(k<0) return; s.slots[k]=+v;
+    if(s.slots.includes(null)){ s.note=''; return {sound:'flip'} }
+    const w=s.slots.map(id=>GL[id]).join(''), isNew=!s.seen.has(w); s.seen.add(w);
+    s.note = (isNew ? `Hai composto <span class="q">${w}</span>. Parole diverse: ${s.seen.size}.` : `<span class="q">${w}</span> l'avevi già composta. Parole diverse: ${s.seen.size}.`) + (s.twins?'':' Prova ad attivare «Distingui le copie».');
+    return {sound:isNew?'hang':'flip'} } },
+
+ /* II · la parete dei monocromi */
+ 1:{ init:()=>({fr:Array(7).fill(null), num:false, seen:new Set(), last:null, note:''}),
+  view:s=>{ const C=['R','R','R','B','B','Y','Y'], N={0:1,1:2,2:3,3:1,4:2,5:1,6:2};
+    const cv=(id,a,v,sw)=>`<button type="button" class="cv ${C[id]}${sw?' swing':''}" data-a="${a}" data-v="${v}" data-id="c${id}" aria-label="Tela ${CNAME[C[id]]}${s.num?' numero '+N[id]:''}">${s.num?`<span class="n">${N[id]}</span>`:''}</button>`;
+    const crate=[0,3,5,1,4,6,2].filter(id=>!s.fr.includes(id));
+    return `<div class="wallrow">${s.fr.map((id,k)=>`<div class="fr">${id==null?'':cv(id,'off',k,s.last===id)}</div>`).join('')}</div>
+    <div class="crate">${crate.map(id=>cv(id,'on',id,false)).join('')||'<span class="empty">La cassa è vuota.</span>'}</div>
+    <div class="sc-bar"><button type="button" class="chip${s.num?' on':''}" data-a="num" aria-pressed="${s.num}">Numera le tele</button><button type="button" class="chip" data-a="reset">Stacca tutte</button></div>
+    <p class="sc-note">${s.note||'Clicca le tele nella cassa per appenderle da sinistra. Pareti diverse viste: '+s.seen.size}</p>` },
+  act:(s,a,v)=>{ const C=['R','R','R','B','B','Y','Y']; s.last=null;
+    if(a==='num'){ s.num=!s.num; s.note=s.num?'Ora ogni tela ha un numero. Con i numeri, scambiare due rosse cambia la parete; senza, no.':''; return {sound:'flip'} }
+    if(a==='reset'){ s.fr.fill(null); s.note=''; return {sound:'hang'} }
+    if(a==='off'){ s.fr[+v]=null; s.note=''; return {sound:'flip'} }
+    const k=s.fr.indexOf(null); if(k<0) return; s.fr[k]=+v; s.last=+v;
+    if(s.fr.includes(null)){ s.note=''; return {sound:'hang'} }
+    const w=s.fr.map(id=>C[id]).join(''), isNew=!s.seen.has(w); s.seen.add(w);
+    const pretty=s.fr.map(id=>`<span class="dot ${C[id]}"></span>`).join(' ');
+    s.note = isNew ? `Parete nuova: ${pretty}. Pareti diverse viste: ${s.seen.size}.` : `Questa parete l'hai già vista: hai solo scambiato tele dello stesso colore? Pareti diverse: ${s.seen.size}.`;
+    return {sound:'hang'} } },
+
+ /* III · il mosaico */
+ 2:{ init:()=>({t:Array(9).fill(null), seen:new Set(), last:null, note:''}),
+  view:s=>{ const MAX={N:4,W:3,G:2}, NM={N:'nere',W:'bianche',G:'dorate'}, left=c=>MAX[c]-s.t.filter(x=>x===c).length;
+    return `<div class="palette">${['N','W','G'].map(c=>`<span class="pal ${c}${left(c)?'':' zero'}"><i></i>${NM[c]}: ${left(c)} da posare</span>`).join('')}</div>
+    <div class="mosaic">${s.t.map((c,k)=>`<button type="button" class="ts${c?' '+c:''}${s.last===k?' flip':''}" data-a="t" data-v="${k}" data-id="t${k}" aria-label="Posto ${k+1}: ${c?{N:'nera',W:'bianca',G:'dorata'}[c]:'vuoto'}"></button>`).join('')}</div>
+    <div class="sc-bar"><button type="button" class="chip" data-a="reset">Togli tutte le tessere</button></div>
+    <p class="sc-note">${s.note||'Clicca un posto per cambiare tessera: nera, bianca, dorata, vuoto. Disegni diversi completati: '+s.seen.size}</p>` },
+  act:(s,a,v)=>{ const MAX={N:4,W:3,G:2};
+    if(a==='reset'){ s.t.fill(null); s.last=null; s.note=''; return {sound:'hang'} }
+    const k=+v, order=[null,'N','W','G'], cur=s.t[k];
+    for(let j=1;j<=4;j++){ const c=order[(order.indexOf(cur)+j)%4]; if(c===null || MAX[c]-s.t.filter((x,i)=>x===c && i!==k).length>0){ s.t[k]=c; break } }
+    s.last=k;
+    if(s.t.includes(null)){ s.note=''; return {sound:'flip'} }
+    const w=s.t.join(''), isNew=!s.seen.has(w); s.seen.add(w);
+    s.note = isNew ? `Disegno completo! Disegni diversi: ${s.seen.size}.` : `Questo disegno l'avevi già fatto. Disegni diversi: ${s.seen.size}.`;
+    return {sound:isNew?'hang':'flip'} } },
+
+ /* IV · il giro del custode */
+ 3:{ init:()=>({path:[], seen:new Set(), prev:[0,0], note:''}),
+  view:s=>{ const P=(e,n)=>[30+60*e, 210-60*n]; let e=0,n=0; const pts=[P(0,0)];
+    for(const m of s.path){ if(m==='E') e++; else n++; pts.push(P(e,n)) }
+    let blocks=''; for(let i=0;i<4;i++) for(let j=0;j<3;j++) blocks+=`<rect class="blk" x="${38+60*i}" y="${38+60*j}" width="44" height="44" rx="3"/>`;
+    let streets=''; for(let i=0;i<=4;i++) streets+=`<line class="st" x1="${30+60*i}" y1="30" x2="${30+60*i}" y2="210"/>`; for(let j=0;j<=3;j++) streets+=`<line class="st" x1="30" y1="${30+60*j}" x2="270" y2="${30+60*j}"/>`;
+    const [px,py]=P(...s.prev);
+    return `<div class="route"><svg viewBox="0 0 300 240" role="img" aria-label="Griglia di corridoi 4 per 3. Percorso attuale: ${s.path.join('')||'nessun passo'}">${blocks}${streets}
+      <circle class="start" cx="30" cy="210" r="7"/><text class="lbl" x="10" y="232">Ingresso</text>
+      <g class="statue"><rect x="262" y="14" width="16" height="8"/><circle cx="270" cy="9" r="6"/></g><text class="lbl" x="214" y="12">Statua</text>
+      <polyline class="path" points="${pts.map(p=>p.join(',')).join(' ')}"/>
+      <circle class="walker" r="9" cx="0" cy="0" style="transform:translate(${px}px,${py}px)"/></svg>
+    <div><div class="word" aria-label="Parola del percorso">${Array.from({length:7},(_,k)=>`<span class="${s.path[k]||''}">${s.path[k]||''}</span>`).join('')}</div>
+    <div class="dpad"><button type="button" data-a="E" data-id="bE">Est →</button><button type="button" data-a="N" data-id="bN">Nord ↑</button><button type="button" data-a="undo">Indietro</button><button type="button" data-a="reset">Da capo</button></div></div></div>
+    <p class="sc-note">${s.note||'Guida il custode dall\'ingresso alla statua. Percorsi diversi completati: '+s.seen.size}</p>` },
+  act:(s,a)=>{ const e=s.path.filter(m=>m==='E').length, n=s.path.length-e;
+    s.prev=[e,n];
+    if(a==='reset'){ s.path=[]; s.note=''; return {sound:'walk'} }
+    if(a==='undo'){ s.path.pop(); s.note=''; return {sound:'walk'} }
+    if(s.path.length===7){ s.path=[]; s.prev=[0,0] }
+    const e2=s.path.filter(m=>m==='E').length, n2=s.path.length-e2;
+    if(a==='E' && e2>=4){ s.note='Più a est di così non si va: la statua è a soli 4 tratti dall\'ingresso.'; return {bad:'bE', sound:'bad'} }
+    if(a==='N' && n2>=3){ s.note='Più a nord di così non si va: servono solo 3 tratti verso nord.'; return {bad:'bN', sound:'bad'} }
+    s.path.push(a);
+    if(s.path.length<7){ s.note=''; return {sound:'walk'} }
+    const w=s.path.join(''), isNew=!s.seen.has(w); s.seen.add(w);
+    s.note = isNew ? `Arrivato alla statua con il percorso <span class="q">${w}</span>. Percorsi diversi: ${s.seen.size}.` : `Il percorso <span class="q">${w}</span> l'avevi già fatto. Percorsi diversi: ${s.seen.size}.`;
+    return {sound:'hang'} },
+  after:(fig,s)=>{ const w=fig.querySelector('.walker'); if(!w) return; const e=s.path.filter(m=>m==='E').length, n=s.path.length-e;
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{ w.style.transform=`translate(${30+60*e}px,${210-60*n}px)` })); s.prev=[e,n] } },
+
+ /* V · le cornici gemelle */
+ 4:{ init:()=>({order:[2,0,4,3,5,1], sel:null, glue:false, seen:new Set(), note:''}),
+  view:s=>{ const K=['G','G','S','S','N','N'], NM={G:'dorata',S:"d'argento",N:'nera'};
+    const gi=s.order.map((id,k)=>K[id]==='G'?k:-1).filter(k=>k>=0), adj=gi[1]-gi[0]===1;
+    const isSel=id=>s.sel!=null && (s.sel===id || (s.glue && K[s.sel]==='G' && K[id]==='G'));
+    return `<div class="frames">${s.order.map((id,k)=>`<button type="button" class="cf ${K[id]}${isSel(id)?' sel':''}${s.sel!=null&&!isSel(id)?' target':''}${s.glue&&adj&&k===gi[0]?' glue-l':''}" data-a="f" data-v="${id}" data-id="f${id}" aria-pressed="${isSel(id)}" aria-label="Cornice ${NM[K[id]]}, posto ${k+1}"></button>`).join('')}</div>
+    <div class="sc-bar"><span class="rule ${adj?'ok':'no'}">${adj?'✓ Le dorate sono vicine':'✗ Le dorate non sono vicine'}</span><button type="button" class="chip${s.glue?' on':''}" data-a="glue" aria-pressed="${s.glue}">Incolla le dorate</button></div>
+    <p class="sc-note">${s.note||'Clicca una cornice per sollevarla, poi clicca il posto dove spostarla. File valide trovate: '+s.seen.size}</p>` },
+  act:(s,a,v)=>{ const K=['G','G','S','S','N','N'];
+    const gi=()=>s.order.map((id,k)=>K[id]==='G'?k:-1).filter(k=>k>=0);
+    if(a==='glue'){ s.glue=!s.glue; s.sel=null;
+      if(s.glue){ const g=gi(); if(g[1]-g[0]!==1){ const second=s.order.splice(g[1],1)[0]; s.order.splice(g[0]+1,0,second) } s.note='Le due dorate ora sono un blocco unico: si spostano insieme.' }
+      else s.note='';
+      return {sound:'hang'} }
+    const id=+v;
+    if(s.sel==null){ s.sel=id; s.note=''; return {sound:'flip'} }
+    const moving = s.glue && K[s.sel]==='G' ? s.order.filter(x=>K[x]==='G') : [s.sel];
+    if(moving.includes(id)){ s.sel=null; s.note=''; return {sound:'flip'} }
+    const rest=s.order.filter(x=>!moving.includes(x)), tgt=s.order.indexOf(id), at=rest.indexOf(id) + (tgt>s.order.indexOf(moving[0])?1:0);
+    rest.splice(at,0,...moving); s.order=rest; s.sel=null;
+    const g=gi(), w=s.order.map(x=>K[x]).join('');
+    if(g[1]-g[0]!==1){ s.note='Le dorate si sono separate: questa fila non rispetta la regola.'; return {sound:'bad'} }
+    const isNew=!s.seen.has(w); s.seen.add(w);
+    s.note = isNew ? `Fila valida! File valide trovate: ${s.seen.size}.` : `Questa fila valida l'avevi già trovata. File valide: ${s.seen.size}.`;
+    return {sound:'hang'} } },
+
+ /* VI · il deposito */
+ 5:{ init:()=>({order:[0,4,7,1,5,8,2,6,9,3], sel:null, seen:new Set(['MNAMNBMNCM']), note:''}),
+  view:s=>{ const K=['M','M','M','M','N','N','N','A','B','C'], NM={M:'Gioconda (copia)',N:'Notte stellata (copia)',A:'Originale A',B:'Originale B',C:'Originale C'}, TG={M:'copia',N:'copia',A:'orig. A',B:'orig. B',C:'orig. C'};
+    return `<div class="shelf">${s.order.map((id,k)=>`<button type="button" class="pic ${K[id]}${s.sel===id?' sel':''}" data-a="p" data-v="${id}" data-id="p${id}" aria-pressed="${s.sel===id}" aria-label="${NM[K[id]]}, posto ${k+1}"><span class="tg">${TG[K[id]]}</span></button>`).join('')}</div><div class="shelf-pad"></div>
+    <div class="sc-bar"><button type="button" class="chip" data-a="shuffle">Mescola lo scaffale</button></div>
+    <p class="sc-note">${s.note||'Clicca due quadri per scambiarli, o mescola tutto. File diverse viste: '+s.seen.size}</p>` },
+  act:(s,a,v)=>{ const K=['M','M','M','M','N','N','N','A','B','C'];
+    const record=()=>{ const w=s.order.map(x=>K[x]).join(''), isNew=!s.seen.has(w); s.seen.add(w); return isNew };
+    if(a==='shuffle'){ shuffle(s.order); s.sel=null; const n=record(); s.note=n?`Scaffale mescolato: fila nuova. File diverse viste: ${s.seen.size}. Quante ne mancano?`:`Fila già vista! File diverse: ${s.seen.size}.`; return {sound:'swoosh'} }
+    const id=+v;
+    if(s.sel==null){ s.sel=id; s.note='Ora clicca il quadro con cui scambiarlo.'; return {sound:'flip'} }
+    if(s.sel===id){ s.sel=null; s.note=''; return {sound:'flip'} }
+    const i=s.order.indexOf(s.sel), j=s.order.indexOf(id), same=K[s.sel]===K[id]; [s.order[i],s.order[j]]=[s.order[j],s.order[i]]; s.sel=null;
+    if(same){ s.note='Hai scambiato due copie identiche: lo scaffale si vede esattamente come prima.'; return {sound:'bad'} }
+    const n=record(); s.note=n?`Fila nuova. File diverse viste: ${s.seen.size}.`:`Fila già vista. File diverse: ${s.seen.size}.`; return {sound:'hang'} } },
+
+ /* porta di sicurezza */
+ door:{ init:()=>({h:Array(6).fill(null), last:null, note:''}),
+  view:s=>{ const C=['R','B','Y','R','B','Y'];
+    const cv=(id,a,v,sw)=>`<button type="button" class="cv ${C[id]}${sw?' swing':''}" data-a="${a}" data-v="${v}" data-id="d${id}" aria-label="Tela ${CNAME[C[id]]}"></button>`;
+    const crate=[0,1,2,3,4,5].filter(id=>!s.h.includes(id)), full=!s.h.includes(null);
+    return `<div class="exitdoor" id="exitdoor"><span class="sg">USCITA</span><div class="gl l"></div><div class="gl r"></div></div>
+    <div class="hooks">${s.h.map((id,k)=>`<div class="fr">${id==null?'':cv(id,'off',k,s.last===id)}</div>`).join('')}</div>
+    <div class="crate">${crate.map(id=>cv(id,'on',id,false)).join('')||'<span class="empty">Tutte le tele sono appese.</span>'}</div>
+    <div class="sc-bar"><button type="button" class="btn" data-a="open" ${full&&S.doorOn?'':'disabled'}>Apri la porta</button><button type="button" class="chip" data-a="reset">Stacca tutte</button></div>
+    <p class="sc-note">${s.note||(S.doorOn?'Appendi le sei tele nell\'ordine del curatore, poi apri la porta.':'Il sistema è bloccato: prima rispondi alla domanda del monitor con l\'audioguida.')}</p>` },
+  act:(s,a,v)=>{ s.last=null;
+    if(a==='open') return {open:true};
+    if(a==='reset'){ s.h.fill(null); s.note=''; return {sound:'hang', mon:true} }
+    if(a==='off'){ s.h[+v]=null; s.note=''; return {sound:'flip', mon:true} }
+    const k=s.h.indexOf(null); if(k<0) return; s.h[k]=+v; s.last=+v; s.note=''; return {sound:'hang', mon:true} } }
+};
+const SC = {};
+function st(k){ return SC[k] || (SC[k] = SCENES[k].init()) }
+function rerender(fig, k, mutate){
+  const before=new Map(); fig.querySelectorAll('[data-id]').forEach(el=>before.set(el.dataset.id, el.getBoundingClientRect()));
+  const ae=document.activeElement, fid=ae && fig.contains(ae) ? ae.dataset.id : null;
+  const r=mutate();
+  fig.querySelector('.sc-body').innerHTML=SCENES[k].view(st(k));
+  if(fid){ const f=fig.querySelector(`[data-id="${fid}"]`); if(f) f.focus({preventScroll:true}) }
+  SCENES[k].after && SCENES[k].after(fig, st(k));
+  if(!RM) fig.querySelectorAll('[data-id]').forEach(el=>{ const b=before.get(el.dataset.id); if(!b) return; const a=el.getBoundingClientRect(), dx=b.left-a.left, dy=b.top-a.top;
+    if(Math.abs(dx)+Math.abs(dy)>1) el.animate([{transform:`translate(${dx}px,${dy}px)`},{transform:'none'}],{duration:480,easing:'cubic-bezier(.2,.8,.2,1.1)'}) });
+  return r;
+}
+function mountScene(fig){
+  const k=fig.dataset.scene; SCENES[k].after && SCENES[k].after(fig, st(k));
+  fig.addEventListener('click', e=>{
+    const t=e.target.closest('[data-a]'); if(!t || !fig.contains(t) || t.disabled) return;
+    if(busy) return;
+    const r=rerender(fig, k, ()=>SCENES[k].act(st(k), t.dataset.a, t.dataset.v)) || {};
+    if(r.sound) sfx(r.sound);
+    if(r.bad) restartAnim(fig.querySelector(`[data-id="${r.bad}"]`), 'shake');
+    if(r.mon) updateMonitor();
+    if(r.open) tryDoor();
+  });
+}
+/* ===== guida e soluzioni per chi organizza ===== */
+const MANUAL_ROOMS = [
+ { install:"Le sei lettere sono sul pavimento. Cliccandole si attaccano alla targhetta da sinistra; cliccando una lettera sulla targhetta torna a terra. Il pulsante «Distingui le copie» numera le lettere uguali (O₁, O₂, T₁, T₂): a targhetta piena compaiono le 4 scritture con le copie numerate che corrispondono alla stessa parola. Il gioco conta le parole diverse composte.",
+   tip:"Con le copie numerate le parole sarebbero 6! = 720; ogni parola vera ne raggruppa 4 (2! modi per le O × 2! per le T). Per questo si divide." },
+ { install:"Nella cassa ci sono 7 tele: 3 rosse, 2 blu, 2 gialle. Cliccandole si appendono nelle cornici da sinistra; cliccando una tela appesa torna nella cassa. «Numera le tele» scrive un numero sulle tele dello stesso colore. A parete piena il gioco dice se la parete è nuova o già vista.",
+   tip:"Chiedere alla classe: se scambio due tele rosse, il visitatore vede una parete diversa? E se le tele fossero numerate? È il cuore delle permutazioni con ripetizione." },
+ { install:"Nove posti vuoti nella fascia di mosaico. Cliccando un posto la tessera cambia: nera, bianca, dorata, vuoto. Il gioco rispetta quante tessere restano da posare (4 nere, 3 bianche, 2 dorate). A fila completa conta i disegni diversi.",
+   tip:"Si può ottenere lo stesso numero con le combinazioni: scegli dove vanno le 4 nere tra 9 posti, C(9,4) = 126, poi le 3 bianche tra i 5 rimasti, C(5,3) = 10: 126 · 10 = 1260." },
+ { install:"Una griglia di 4 × 3 isolati. Con «Est →» e «Nord ↑» il custode avanza e il percorso si scrive sotto come parola (per esempio EENENEN). I passi impossibili sono bloccati. «Indietro» annulla l'ultimo passo, «Da capo» riparte. A ogni arrivo alla statua il gioco conta i percorsi diversi.",
+   tip:"È il collegamento tra percorsi e anagrammi: ogni percorso è una parola con 4 E e 3 N, e viceversa. 7! / (4!·3!) = C(7,3) = 35." },
+ { install:"Sei cornici in fila. Si clicca una cornice per sollevarla e poi la cornice al cui posto spostarla. Un indicatore dice se le due dorate sono vicine. «Incolla le dorate» le unisce in un blocco unico che si sposta tutto insieme. Il gioco conta le file valide trovate.",
+   tip:"Senza il vincolo le file sarebbero 6! / (2!·2!·2!) = 90. Con le dorate incollate si contano 5 oggetti: 5! / (2!·2!) = 30. Il trucco del blocco vale per tutti i vincoli «devono stare vicini»." },
+ { install:"Uno scaffale con 10 quadri: 4 copie della Gioconda, 3 copie della Notte stellata e 3 originali diversi. Si cliccano due quadri per scambiarli, oppure si preme «Mescola lo scaffale». Se si scambiano due copie identiche il gioco avvisa che lo scaffale non è cambiato. Conta le file diverse viste.",
+   tip:"Mescolando a caso è quasi impossibile rivedere una fila già vista: sono 25.200. Gli originali, tutti diversi, non si dividono: si divide solo per le copie (4! e 3!)." }
+];
+function renderSolutions(){
+  const A=window.SOLUZIONI; A.answers.forEach((a,i)=>{ S.solved[i]=a }); S.doorOn=true;
+  $('where').textContent='Guida per chi organizza';
+  const R=D.rooms.map((r,i)=>({...r, i, a:A.answers[i], x:reveal(i,A.answers[i]), m:MANUAL_ROOMS[i]}));
+  // come cala il numero di sequenze, un biglietto alla volta
+  let pool=ALLSEQ.slice(); const steps=R.map(r=>{ const p=pred(r.x.clue.p), alone=ALLSEQ.filter(p).length; pool=pool.filter(p); return {r, alone, left:pool.length} });
+  const seqDots=s=>`<span class="seq">${[...s].map(c=>`<i class="cv ${c}"></i>`).join('')}</span>`;
+  const sec=(id,t,body)=>`<section class="m-sec" id="${id}"><h2 class="m-h">${t}</h2>${body}</section>`;
+  const toc=[['m-breve','In breve'],['m-come','Come si gioca'],['m-sale','Le sei sale'],['m-porta','La porta di sicurezza'],['m-fine','Fine della partita'],['m-comandi','Comandi e impostazioni'],['m-classe','Consigli per la classe']];
+  $('app').innerHTML=`<div class="manual">
+  <header class="m-top"><p class="cap">Il Codice dei Dipinti · non mostrare ai giocatori</p><h1 class="p-title" style="font-size:clamp(2.2rem,6vw,4.4rem)"><span><b style="--k:0">Guida e</b></span><span><b style="--k:1">soluzioni</b></span></h1>
+    <p class="m-lead">Tutto quello che serve per far giocare la classe: come funziona il gioco, che cosa si può fare in ogni sala, le risposte con le formule e come si arriva alla sequenza della porta.</p>
+    <nav class="m-toc" aria-label="Sommario">${toc.map(([id,t])=>`<button type="button" class="chip" data-go="${id}">${t}</button>`).join('')}</nav></header>
+
+  ${sec('m-breve','In breve',`<div class="m-facts">
+    <div><b>60 min</b><span>Si parte a mezzanotte, l'allarme scatta all'01:00</span></div>
+    <div><b>6 + 1</b><span>Sei sale in ordine libero e la porta di sicurezza</span></div>
+    <div><b>+1 min</b><span>Per ogni risposta sbagliata</span></div>
+    <div><b>+3 min</b><span>Per ogni scheda del catalogo (2 per sala)</span></div></div>
+    <p class="m-p">Argomento: <b>permutazioni con ripetizione</b>, cioè quanti modi diversi ci sono di ordinare oggetti non tutti distinti: lettere ripetute, tele dello stesso colore, tessere uguali, copie identiche di un quadro. Ogni sala risolta lascia un biglietto con un indizio; con i sei biglietti si ricostruisce la sequenza di tele che apre l'uscita.</p>`)}
+
+  ${sec('m-come','Come si gioca',`<ol class="m-steps">
+    <li><b>Ingresso.</b> Si scrive il nome della squadra e si preme «Entra in galleria». Se sul computer hanno già giocato altre squadre, qui si vede il libro delle firme.</li>
+    <li><b>Il corridoio.</b> È la base del gioco: sei porte con il numero romano e, in fondo a destra, l'uscita di sicurezza. Si cammina con le frecce ← → (pulsanti o tastiera) o cliccando una porta; Invio o il clic aprono la porta e si entra. Sotto c'è la bacheca, dove compaiono i biglietti trovati.</li>
+    <li><b>La sala.</b> In ogni sala ci sono il racconto, un biglietto del curatore con la richiesta, un'installazione da provare e la domanda. Le prove sull'installazione sono gratis e servono a capire il ragionamento, ma non danno la risposta.</li>
+    <li><b>L'audioguida.</b> La risposta, sempre un numero, si digita sull'audioguida (in basso a destra) e si conferma con ▶. Funziona anche la tastiera del computer: numeri, Backspace per cancellare, Invio per confermare.</li>
+    <li><b>Risposta giusta.</b> L'audioguida «suona la traccia», compare il biglietto del curatore con l'indizio per la porta e la scheda tecnica con la formula. La porta della sala resta aperta nel corridoio e il biglietto va in bacheca.</li>
+    <li><b>Risposta sbagliata.</b> L'audioguida dice «traccia non trovata» e l'orologio avanza di 1 minuto.</li>
+    <li><b>Il catalogo.</b> «Consulta il catalogo» mostra un aiuto alla volta (due per sala) e fa avanzare l'orologio di 3 minuti.</li>
+    <li><b>La porta di sicurezza.</b> Prima si attiva il monitor con un numero, poi si appendono sei tele nell'ordine giusto (spiegato sotto). Ci si può andare quando si vuole, anche prima di aver risolto tutte le sale.</li>
+    <li><b>L'01:00.</b> Se il tempo finisce si accendono le luci: si può ricominciare o «Continua senza orologio» (in quel caso la squadra non firma il libro).</li></ol>`)}
+
+  ${sec('m-sale','Le sei sale',`<p class="m-p">Le sale si possono fare in qualsiasi ordine. Per ognuna: che cosa si può fare, la domanda, la risposta e che cosa far notare.</p>
+  <div class="m-rooms">${R.map(r=>`<article class="m-room"><header><span class="m-num">${ROMAN[r.i]}</span><div><p class="cap">${esc(r.genre)}</p><h3 class="room-name" style="font-size:1.7rem">${esc(r.name)}</h3></div></header>
+    <p class="m-k">Che cosa c'è da provare</p><p>${r.m.install}</p>
+    <p class="m-k">Domanda</p><p class="ask-q" style="font-size:1rem">${r.q}</p>
+    <div class="m-ans"><span class="num">${fmt(r.a)}</span><span class="frm">${r.x.formula}</span></div>
+    <p>${r.x.expl}</p>
+    <p class="m-k">Schede del catalogo</p>${r.hints.map((h,k)=>`<div class="cat-page"><b>${k+1}</b><p>${h}</p></div>`).join('')}
+    <p class="m-k">Biglietto per la porta</p><div class="pnote" style="--r:-1.5deg;width:100%;max-width:340px"><p>«${esc(r.x.clue.text)}»</p></div>
+    <p class="m-k">Da far notare in classe</p><p>${r.m.tip}</p></article>`).join('')}</div>`)}
+
+  ${sec('m-porta','La porta di sicurezza',`<div class="m-two"><div>
+    <p class="m-k">Passo 1 · attivare il monitor</p><p>Il monitor chiede quante sequenze diverse si possono formare appendendo in fila 6 tele: 2 rosse, 2 blu e 2 gialle. La risposta si digita sull'audioguida.</p>
+    <div class="m-ans"><span class="num">90</span><span class="frm">6! / (2!·2!·2!) = 720 / 8 = 90</span></div></div>
+    <div><p class="m-k">Passo 2 · la sequenza del curatore</p><p>Sul pannello ci sono sei ganci e una cassa con le sei tele. Si clicca una tela per appenderla da sinistra, si clicca una tela appesa per toglierla, poi «Apri la porta». Il monitor mostra quante sequenze restano compatibili con i biglietti trovati e, per la fila appesa, segna ✓ o ✗ accanto a ogni biglietto. Una sequenza sbagliata fa suonare l'allarme e costa 1 minuto.</p>
+    <p class="m-k">La sequenza giusta</p>${seqDots(A.seq)}<p>Da sinistra: giallo, blu, rosso, giallo, rosso, blu.</p></div></div>
+    <p class="m-k">Come si deduce, un biglietto alla volta</p>
+    <div class="table-wrap"><table class="m-table"><thead><tr><th>Sala</th><th>Biglietto</th><th class="r">Da solo lascia</th><th class="r">Insieme ai precedenti</th></tr></thead><tbody>
+    <tr><td>—</td><td>Nessun biglietto</td><td class="r">90</td><td class="r">90</td></tr>
+    ${steps.map(s=>`<tr><td>${ROMAN[s.r.i]}</td><td>${esc(s.r.x.clue.text)}</td><td class="r">${s.alone}</td><td class="r"><b>${s.left}</b></td></tr>`).join('')}</tbody></table></div>
+    <p class="m-p">I sei biglietti servono tutti: togliendone uno qualsiasi restano almeno due sequenze possibili. L'ordine in cui si trovano non conta, alla fine resta sempre e solo la sequenza qui sopra. Il ragionamento completo: la seconda è blu (I) e la quinta è rossa (III). L'altra blu non può stare in prima o in terza, perché sarebbe vicina alla seconda (VI), né in quarta (V): va in sesta. Per prima, terza e quarta restano due gialle e una rossa. La rossa non può stare in quarta, accanto a quella in quinta (II); le gialle non possono stare in terza e quarta insieme, perché sarebbero vicine (IV). Quindi: prima gialla, terza rossa, quarta gialla.</p>`)}
+
+  ${sec('m-fine','Fine della partita',`<ul class="m-list">
+    <li><b>Vernissage.</b> La porta si apre, un lampo bianco, e la squadra «inaugura» la sua opera: un quadro astratto con le tele della sequenza, generato dal nome della squadra e dal tempo (ogni squadra ne ottiene uno diverso), svelato da un telo tra i flash dei fotografi.</li>
+    <li><b>La didascalia</b> accanto al quadro riporta il nome della squadra come autore, l'ora di uscita, le risposte sbagliate e le schede del catalogo usate.</li>
+    <li><b>Le sale, in breve:</b> un riepilogo di tutte le formule, utile da proiettare per la correzione.</li>
+    <li><b>Il libro delle firme</b> ordina le squadre per ora di uscita (le penalità sono comprese) e evidenzia l'ultima arrivata. È salvato solo sul computer dove si gioca.</li>
+    <li><b>«Nuovi visitatori»</b> riporta all'ingresso per la squadra successiva, tenendo il libro delle firme.</li></ul>`)}
+
+  ${sec('m-comandi','Comandi e impostazioni',`<table class="m-table"><tbody>
+    <tr><td><b>Suono: sì / no</b></td><td>In alto a destra. Passi, interruttori, audioguida, allarme e flash sono tutti generati dal browser: servono le casse.</td></tr>
+    <tr><td><b>Animazioni: sì / no</b></td><td>In alto a destra. Spegne camminata, zoom, luci e svelamento, se il computer è lento o qualcuno ne è infastidito.</td></tr>
+    <tr><td><b>Tastiera</b></td><td>Nel corridoio: ← → per camminare, Invio per entrare. Nelle sale: numeri, Backspace e Invio per l'audioguida.</td></tr>
+    <tr><td><b>Salvataggio</b></td><td>I progressi restano sul computer: si può chiudere la pagina e riaprirla senza perdere niente.</td></tr>
+    <tr><td><b>Ricomincia da capo</b></td><td>In fondo al corridoio, con conferma. Cancella la partita in corso ma non il libro delle firme.</td></tr>
+    <tr><td><b>Cancella il libro</b></td><td>All'ingresso, sotto il libro delle firme, con conferma.</td></tr>
+    <tr><td><b>Da telefono</b></td><td>L'audioguida si aggancia in basso e si chiude con «Chiudi tastiera».</td></tr></tbody></table>`)}
+
+  ${sec('m-classe','Consigli per la classe',`<ul class="m-list">
+    <li>Provate il gioco sul computer della classe il giorno prima, con proiettore e casse.</li>
+    <li>Schermo intero con F11. Squadre da 3–4 persone, con carta, penna e calcolatrice.</li>
+    <li>Se le squadre giocano una dopo l'altra sullo stesso computer, il libro delle firme diventa la classifica della classe.</li>
+    <li>Se una squadra è bloccata, prima di dare la risposta indicate l'installazione: «Prova a distinguere le copie», «Prova a incollare le dorate».</li>
+    <li>Alla fine proiettate «Le sale, in breve» per correggere insieme.</li>
+    <li>Questo file contiene tutte le risposte: tenetelo per voi.</li></ul>`)}
+  </div>`;
+  document.querySelectorAll('[data-go]').forEach(b=>b.addEventListener('click',()=>{ const t=$(b.dataset.go); if(t) t.scrollIntoView({behavior:RM?'auto':'smooth',block:'start'}) }));
+}
+/* ===== schermate ===== */
+function viewIntro(){
+  return `<section class="poster">
+    <div class="p-art" aria-hidden="true">${[0,1,2,3,4,5,6].map(k=>`<i style="--k:${k}"></i>`).join('')}</div>
+    <div class="p-type"><p class="p-kicker">Galleria Specchi · Mostra notturna</p>
+      <h1 class="p-title" aria-label="Il codice dei dipinti"><span><b style="--k:0">Il codice</b></span><span><b style="--k:1">dei</b></span><span><b style="--k:2">dipinti</b></span></h1>
+      <p class="p-dates">Stanotte, dalle 00:00 alle 01:00 · Sale I – VI</p></div>
+  </section>
+  <div class="intro-cols">
+    <div class="story">
+      <p>Ti sei fermato troppo a lungo davanti a un quadro. Quando ti volti, la Galleria Specchi è chiusa, le luci sono spente e la porta di sicurezza è bloccata.</p>
+      <p>Il curatore del museo ha una passione: le <b>copie identiche</b>. Lettere uguali, tele dello stesso colore, riproduzioni dello stesso quadro. In ogni sala ha lasciato un enigma su come contarle, e a chi lo risolve un biglietto con un indizio per la porta.</p>
+      <div class="memo">«La porta si apre solo con la mia sequenza di sei tele. Chi sa contare le copie, la troverà.»<small>Il curatore</small></div>
+      <p>All'01:00 l'allarme si riattiva e arriva il custode.</p>
+    </div>
+    <div class="side-stack">
+      <ol class="howto">
+        <li><span>Dal corridoio del museo entri nelle sale <b>nell'ordine che vuoi</b>.</span></li>
+        <li><span>In ogni sala c'è un'installazione da toccare e una domanda. La risposta è un numero: <b>digitalo sull'audioguida</b>.</span></li>
+        <li><span>Ogni risposta giusta ti dà un <b>biglietto del curatore</b> con un indizio sulla sequenza della porta.</span></li>
+        <li><span>Una risposta sbagliata fa avanzare l'orologio di <b>1 minuto</b>, una scheda del catalogo di <b>3 minuti</b>.</span></li>
+      </ol>
+      <div class="ticket"><label for="team">Nome dei visitatori</label><input id="team" maxlength="32" placeholder="Es. I Multinomiali" autocomplete="off">
+        <div><button type="button" class="btn" id="go">Entra in galleria <span class="arr">→</span></button></div></div>
+      ${guestbookHtml(null, true)}
+    </div>
+  </div>`;
+}
+
+const EXIT_ICO='<svg viewBox="0 0 12 14" aria-hidden="true"><circle cx="7" cy="2" r="1.8"/><path d="M6 4 3 8h2l-1 5 1 .5L8 9l2 1 .6-1L7.5 7l.5-2z"/></svg>';
+const VISITOR='<svg viewBox="0 0 30 64" aria-hidden="true"><circle class="vb" cx="15" cy="8" r="7"/><path class="vb" d="M7 18q8-4 16 0l-2 22H9z"/><line class="vl vl1" x1="12" y1="40" x2="12" y2="62"/><line class="vl vl2" x1="18" y1="40" x2="18" y2="62"/></svg>';
+function corridorHtml(o){
+  const bays=D.rooms.map((r,i)=>{ const done=S.solved[i]!=null, aj=o.back && S.at===i && !done;
+    return `<div class="bay"><div class="dcol${done?' solved':''}" data-i="${i}"><span class="lamp"></span><span class="cone"></span><span class="plaque2">${ROMAN[i]}</span>
+      <button type="button" class="door-b${aj?' ajar':''}" data-room="${i}" aria-label="Porta della sala ${ROMAN[i]}${done?', risolta':''}"><span class="inside"></span><span class="leaf"></span></button></div>
+      <span class="mini a${i}" aria-hidden="true"></span></div>` }).join('');
+  const exit=`<div class="bay"><div class="dcol exit" data-i="6"><span class="lamp"></span><span class="cone"></span><span class="exit-sign">${EXIT_ICO} USCITA DI SICUREZZA</span>
+    <button type="button" class="door-b${o.back&&S.at===6?' ajar':''}" data-door="1" aria-label="Porta di sicurezza"><span class="inside"></span><span class="leaf"></span></button></div></div>`;
+  return `<div class="corr" id="corr" tabindex="0" aria-label="Corridoio delle sale. Usa le frecce sinistra e destra per camminare, Invio per entrare."><div class="track" id="track">${bays}${exit}<div class="c-floor" aria-hidden="true"></div><div class="visitor" id="visitor">${VISITOR}</div></div></div>`;
+}
+function boardHtml(fresh){
+  const got=Object.keys(S.solved).map(Number).sort((a,b)=>a-b);
+  const notes=got.map((i,k)=>`<div class="pnote${fresh===i?' new':''}" style="--r:${[-3,2,-1.5,3,-2.5,1.5][i]}deg"><p>«${esc(reveal(i,S.solved[i]).clue.text)}»</p><small>Biglietto della sala ${ROMAN[i]}</small></div>`).join('');
+  return `<section class="board-c"><div class="board-h"><h2>Bacheca dei biglietti</h2><span>${got.length}/6</span></div>
+  <div class="cork">${notes||'<p class="empty-c">La bacheca è vuota. Ogni volta che risolvi una sala, il curatore ti lascia un biglietto: lo trovi appeso qui.</p>'}</div></section>`;
+}
+function viewPlan(o){
+  return `<div class="cview" id="planStage"><div class="c-head"><div><p class="cap">Galleria Specchi · Piano terra</p><h1>Il corridoio delle sale</h1></div>
+    <p>Cammina fino a una porta ed entra. Le sale si visitano nell'ordine che vuoi; l'uscita è in fondo, a destra.</p></div>
+  ${corridorHtml(o)}
+  <div class="c-nav"><div class="arrows"><button type="button" id="walk-l" aria-label="Vai alla porta a sinistra">←</button><button type="button" id="walk-r" aria-label="Vai alla porta a destra">→</button></div><p>Frecce ← → per camminare, Invio per entrare. Oppure clicca una porta.</p></div>
+  ${boardHtml(o.fresh)}
+  <div class="cview-foot">${confirmReset
+    ? '<span>Si riparte dall\'ingresso e si perdono tutti i biglietti. Sicuro?</span><button type="button" class="chip" id="reset-yes">Sì, ricomincia</button><button type="button" class="chip" id="reset-no">Annulla</button>'
+    : '<button type="button" class="chip" id="reset">Ricomincia da capo</button><span>I progressi restano salvati su questo computer.</span>'}</div></div>`;
+}
+function doorEl(idx){ const t=$('track'); return t ? t.querySelectorAll('.door-b')[idx] : null }
+function placeVisitor(idx, smooth){
+  const cor=$('corr'), d=doorEl(idx), v=$('visitor'); if(!cor||!d||!v) return;
+  const cx=d.getBoundingClientRect().left-$('track').getBoundingClientRect().left+d.offsetWidth/2;
+  cor.scrollTo({left:cx-cor.clientWidth/2, behavior:smooth&&!RM?'smooth':'auto'});
+  v.style.transform=`translateX(${cx}px)`; v.dataset.x=cx;
+  document.querySelectorAll('.dcol').forEach((c,k)=>c.classList.toggle('here',k===idx));
+}
+function settle(){ const cor=$('corr'); if(!cor||RM) return Promise.resolve(); return new Promise(res=>{ let last=-1, same=0, n=0;
+  (function chk(){ const x=cor.scrollLeft; if(Math.abs(x-last)<.5) same++; else same=0; last=x; if(same>=3||++n>60) res(); else requestAnimationFrame(chk) })() }) }
+async function walkTo(idx){
+  const d=doorEl(idx), v=$('visitor'), cor=$('corr'); if(!d||!v) return;
+  const cx=d.getBoundingClientRect().left-$('track').getBoundingClientRect().left+d.offsetWidth/2, prev=parseFloat(v.dataset.x||cx), dist=Math.abs(cx-prev);
+  S.at=idx; save();
+  cor.scrollTo({left:cx-cor.clientWidth/2, behavior:RM?'auto':'smooth'});
+  document.querySelectorAll('.dcol').forEach((c,k)=>c.classList.toggle('here',k===idx));
+  if(RM||dist<2){ v.style.transform=`translateX(${cx}px)`; v.dataset.x=cx; return }
+  const dur=Math.min(1200,280+dist*1.2); v.classList.add('walking'); v.classList.toggle('left',cx<prev);
+  for(let k=0;k<Math.max(1,Math.round(dur/260));k++) setTimeout(()=>sfx('walk'),k*260);
+  await v.animate([{transform:`translateX(${prev}px)`},{transform:`translateX(${cx}px)`}],{duration:dur,easing:'ease-in-out',fill:'forwards'}).finished;
+  v.getAnimations().forEach(a=>a.cancel()); v.style.transform=`translateX(${cx}px)`; v.dataset.x=cx; v.classList.remove('walking');
+}
+function viewRoom(i){
+  const r=D.rooms[i], ans=S.solved[i], shown=S.hints[i]||0;
+  let h=`<div class="room-top"><button type="button" class="lnk" id="back">← Torna al corridoio</button><span class="cap">Sala ${ROMAN[i]} di VI</span></div>
+  <header class="room-head"><span class="room-num" aria-hidden="true">${ROMAN[i]}</span><span class="room-genre">${esc(r.genre)}</span><h1 class="room-name">${esc(r.name)}</h1></header>
+  <div class="room-body"><div class="story">${r.story}</div>
+  <figure class="installation" style="--sx:${[30,60,45,70,40,55][i]}%" data-scene="${i}" aria-label="Installazione da provare"><span class="spot"></span><div class="sc-body">${SCENES[i].view(st(i))}</div></figure>
+  <span class="label">${r.label}</span>
+  <div class="ask"><p class="cap">Domanda del curatore</p><p class="ask-q">${r.q}</p>`;
+  if(ans==null){
+    h+=`<div class="ask-row"><span class="ask-hint">Digita la risposta sull'audioguida e premi ▶.</span>${shown<r.hints.length?`<button type="button" class="chip" id="hint">Consulta il catalogo (+3 min)</button>`:''}</div>
+    ${shown?`<div class="cat">${r.hints.slice(0,shown).map((t,k)=>`<div class="cat-page${k===shown-1&&S._newHint?' new':''}"><b>${k+1}</b><p>${t}</p></div>`).join('')}</div>`:''}</div>`;
+  } else {
+    const d=reveal(i,ans);
+    h+=`</div><div class="solved"><div class="memo${S._newSolve?' new':''}">«${esc(d.clue.text)}»<small>Biglietto del curatore · Sala ${ROMAN[i]}</small></div>
+    <div class="scheda"><p class="cap">Scheda tecnica · ${esc(d.topic)}</p><p class="num">${fmt(ans)}</p><p class="frm">${d.formula}</p><p>${d.expl}</p>
+    <div><button type="button" class="btn" id="back2">Torna al corridoio <span class="arr">→</span></button></div></div></div>`;
+  }
+  return h+`</div><div class="room-foot"><span>Puoi uscire e tornare in questa sala quando vuoi: le prove fatte restano.</span></div>`;
+}
+
+function monitorHtml(){
+  if(!S.doorOn) return `<p class="mon-l">SISTEMA DI SICUREZZA · BLOCCATO</p><p class="mon-l">Per attivare il monitor digita sull'audioguida quante sequenze diverse si possono formare appendendo in fila 6 tele: 2 rosse, 2 blu e 2 gialle.</p><p class="mon-l dim">_</p>`;
+  const cs=clues(), ps=cs.map(c=>pred(c.p)), n=ALLSEQ.filter(s=>ps.every(p=>p(s))).length;
+  const h=st('door').h, C=['R','B','Y','R','B','Y'], cur=h.includes(null)?null:h.map(id=>C[id]).join('');
+  return `<p class="mon-l">SEQUENZE COMPATIBILI CON I BIGLIETTI</p><p class="mon-big" id="mon-n" data-n="${n}">${n}</p><p class="mon-l dim">su ${ALLSEQ.length} possibili · biglietti letti: ${cs.length} di 6</p>
+  <ul class="mon-clues">${cs.length?cs.map(c=>{ const ok=cur?pred(c.p)(cur):null; return `<li class="${ok==null?'na':ok?'ok':'no'}">${ok==null?'·':ok?'✓':'✗'} ${ROMAN[c.i]}: ${esc(c.text)}</li>` }).join(''):'<li class="na">Nessun biglietto: torna nelle sale.</li>'}</ul>`;
+}
+let lastMon=null;
+function updateMonitor(){
+  const m=$('monitor'); if(!m) return; m.innerHTML=monitorHtml();
+  const el=$('mon-n'); if(el && lastMon!=null && +el.dataset.n!==lastMon && !RM){ const to=+el.dataset.n, from=lastMon, t0=performance.now();
+    (function stp(t){ const p=Math.min(1,(t-t0)/900); el.textContent=Math.round(from+(to-from)*(1-Math.pow(1-p,3))); if(p<1) requestAnimationFrame(stp) })(t0) }
+  if(el) lastMon=+el.dataset.n;
+}
+function viewDoor(){
+  return `<div class="room-top"><button type="button" class="lnk" id="back">← Torna al corridoio</button><span class="cap">Fondo dell'atrio</span></div>
+  <header class="room-head"><span class="room-num" aria-hidden="true">✕</span><span class="room-genre">Uscita</span><h1 class="room-name">La porta di sicurezza</h1></header>
+  <div class="door-grid"><div class="monitor" id="monitor" aria-live="polite">${monitorHtml()}</div>
+  <figure class="installation" style="--sx:50%" data-scene="door" aria-label="Pannello della porta"><span class="spot"></span><div class="sc-body">${SCENES.door.view(st('door'))}</div></figure></div>
+  <div class="room-foot"><span>Un tentativo sbagliato fa scattare un allarme breve e costa 1 minuto.</span></div>`;
+}
+function viewTimeout(){
+  return `<section class="poster" style="grid-template-columns:minmax(0,1fr)"><div class="p-type"><p class="p-kicker">01:00</p>
+  <h1 class="p-title"><span><b style="--k:0">Si accendono</b></span><span><b style="--k:1">le luci</b></span></h1>
+  <p class="p-dates">Il custode ti trova nell'atrio, con i biglietti del curatore in mano.</p>
+  <div class="sc-bar"><button type="button" class="btn" id="again">Ricomincia da capo</button><button type="button" class="chip" id="noclock">Continua senza orologio</button></div></div></section>`;
+}
+
+/* l'opera della squadra: composizione generata dal nome e dal tempo */
+function rng(seed){ let a=seed>>>0; return ()=>{ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296 } }
+function artwork(){
+  const R=rng(fnv((S.team||'')+'|'+elapsed())), W=600, H=420, L=8, COLS={R:'#CC2E1E',B:'#1F45C4',Y:'#E9AE06'}, seq=S.seq||'RBYRBY';
+  const xs=[0], cols=3; let acc=0; const ws=[R()+.6,R()+.6,R()+.6], sw=ws.reduce((a,b)=>a+b); for(let i=0;i<cols;i++){ acc+=ws[i]/sw*W; xs.push(Math.round(acc)) }
+  const cells=[]; for(let c=0;c<cols;c++){ const parts=2+(R()<.5?1:0); const hs=Array.from({length:parts},()=>R()+.5), hsum=hs.reduce((a,b)=>a+b); let y=0;
+    for(let p=0;p<parts;p++){ const h=p===parts-1?H-y:Math.round(hs[p]/hsum*H); cells.push({x:xs[c],y,w:xs[c+1]-xs[c],h}); y+=h } }
+  const idx=[]; while(idx.length<Math.min(6,cells.length)){ const k=Math.floor(R()*cells.length); if(!idx.includes(k)) idx.push(k) } idx.sort((a,b)=>a-b);
+  const fill=cells.map((c,k)=>{ const j=idx.indexOf(k); return j>=0?COLS[seq[j]]:'#F3F1EA' });
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Composizione astratta di riquadri rossi, blu e gialli"><rect width="${W}" height="${H}" fill="#111"/>${cells.map((c,k)=>`<rect x="${c.x+L/2}" y="${c.y+L/2}" width="${Math.max(0,c.w-L)}" height="${Math.max(0,c.h-L)}" fill="${fill[k]}"/>`).join('')}</svg>`;
+}
+function viewEnd(){
+  const sec=elapsed(), d=new Date(S.finished||Date.now()), yr=d.getFullYear(), inv=`GS-${yr}-${String((fnv(S.team||'x')%900)+100)}`;
+  const recap=D.rooms.map((r,i)=>{ const x=reveal(i,S.solved[i]); return `<div><span class="rn">${ROMAN[i]}</span><span>${esc(x.topic)}</span><span class="frm">${x.formula}</span><span class="ans">${fmt(S.solved[i])}</span></div>` }).join('');
+  return `<p class="cap">Fuori dalla Galleria Specchi · ${clockText(sec)}</p>
+  <h1 class="p-title" style="font-size:clamp(2.2rem,6vw,4.4rem);margin:8px 0 26px"><span><b style="--k:0">Vernissage</b></span></h1>
+  <div class="vernissage"><div class="opera">${artwork()}<div class="velo${RM?'':' off'}"${RM?' hidden':''}></div></div>
+  <div class="didascalia"><p class="d-artist">${esc(S.team||'Visitatori senza nome')}</p><p class="d-title">Senza titolo (due per colore), ${yr}</p>
+  <p class="d-meta">Calcolo combinatorio su tela · sei pannelli, ${ALLSEQ.length} disposizioni possibili, una sola giusta</p>
+  <p class="d-inv">Inv. ${inv}</p>
+  <div class="stats">${S.noClock?'':`<div class="stat"><b>${clockText(sec)}</b><span>Ora di uscita</span></div>`}<div class="stat"><b>${S.errors}</b><span>Risposte sbagliate</span></div><div class="stat"><b>${S.hintCount}</b><span>Schede del catalogo</span></div></div></div></div>
+  <h2 class="section-t">La sequenza del curatore</h2><div class="seq">${[...(S.seq||'')].map(c=>`<i class="cv ${c}"></i>`).join('')}</div>
+  <h2 class="section-t">Le sale, in breve</h2><div class="recap">${recap}<div><span class="rn">✕</span><span>Porta di sicurezza</span><span class="frm">6! / (2!·2!·2!) = 720 / 8</span><span class="ans">90</span></div></div>
+  <div style="margin-top:32px;display:grid;gap:18px;max-width:640px">${guestbookHtml(S.recId, false)}</div>
+  <div class="sc-bar" style="margin-top:24px"><button type="button" class="btn" id="again">Nuovi visitatori <span class="arr">→</span></button></div>`;
+}
+
+/* ===== audioguida ===== */
+let gEntry='';
+function guideIdle(){
+  const sc=$('gscreen'); sc.classList.remove('play','err'); $('gled').className='g-led';
+  if(S.view==='room'){ const i=S.room; $('gl1').textContent = S.solved[i]!=null ? `SALA ${ROMAN[i]} · TRACCIA ${S.solved[i]}` : `SALA ${ROMAN[i]} · DIGITA IL NUMERO`; }
+  else $('gl1').textContent = S.doorOn ? 'PORTA · SISTEMA ATTIVO' : 'PORTA · NUMERO DI SEQUENZE';
+  $('gl2').textContent = gEntry || '_ _ _';
+}
+function guideKey(k){
+  if(busy) return;
+  const btn=document.querySelector(`[data-g="${k}"]`); if(btn) restartAnim(btn,'press');
+  if(k==='del'){ gEntry=gEntry.slice(0,-1); sfx('key'); return guideIdle() }
+  if(k==='ok') return guideSubmit();
+  if(gEntry.length>=6) return; gEntry+=k; sfx('key'); guideIdle();
+}
+async function guideSubmit(){
+  if(!gEntry) return;
+  const a=String(parseInt(gEntry,10)), sc=$('gscreen');
+  if(S.view==='room'){
+    const i=S.room;
+    if(S.solved[i]!=null){ $('gl1').textContent='TRACCIA GIÀ ASCOLTATA'; gEntry=''; return }
+    if(check(i,a)){ S.solved[i]=a; gEntry=''; save(); sfx('ok');
+      sc.classList.add('play'); $('gled').className='g-led ok'; $('gl1').textContent=`▶ TRACCIA ${a} · NOTA DEL CURATORE`; $('gl2').textContent=a;
+      S._newSolve=true; render({stay:true}); S._newSolve=false; S._fresh=i;
+      setTimeout(()=>{ if(S.view==='room') guideIdle() }, 3200);
+    } else { S.errors++; gEntry=''; save(); sfx('bad'); sc.classList.remove('err'); void sc.offsetWidth; sc.classList.add('err'); $('gled').className='g-led bad';
+      $('gl1').textContent=`TRACCIA ${a} NON TROVATA`; $('gl2').textContent='— — —'; penalty(ERR_COST,'+1 min'); setTimeout(()=>{ if(S.view==='room') guideIdle() }, 1800) }
+  } else if(S.view==='door'){
+    if(S.doorOn){ $('gl1').textContent='SISTEMA GIÀ ATTIVO'; gEntry=''; return }
+    if(check('d1',a)){ S.doorOn=true; gEntry=''; save(); sfx('ok'); sc.classList.add('play'); $('gled').className='g-led ok'; $('gl1').textContent='▶ MONITOR ATTIVATO'; $('gl2').textContent=a;
+      lastMon=ALLSEQ.length; updateMonitor(); const f=document.querySelector('[data-scene="door"]'); if(f) rerender(f,'door',()=>{});
+      setTimeout(()=>{ if(S.view==='door') guideIdle() }, 2600);
+    } else { S.errors++; gEntry=''; save(); sfx('bad'); restartAnim(sc,'err'); $('gled').className='g-led bad'; $('gl1').textContent='NUMERO NON VALIDO'; $('gl2').textContent='— — —'; penalty(ERR_COST,'+1 min'); setTimeout(()=>{ if(S.view==='door') guideIdle() }, 1800) }
+  }
+}
+document.querySelectorAll('[data-g]').forEach(b=>b.addEventListener('click',()=>guideKey(b.dataset.g)));
+$('g-fold').addEventListener('click',()=>{ const g=$('guide'), f=g.classList.toggle('folded'); document.body.classList.toggle('gfold',f); $('g-fold').textContent=f?'Apri tastiera':'Chiudi tastiera' });
+document.addEventListener('keydown', e=>{
+  if(!['room','door'].includes(S.view) || e.ctrlKey || e.metaKey || e.altKey) return;
+  const t=e.target, typing = t && (t.tagName==='INPUT' || t.tagName==='TEXTAREA');
+  if(typing) return;
+  if(/^[0-9]$/.test(e.key)){ guideKey(e.key); e.preventDefault() }
+  else if(e.key==='Backspace'){ guideKey('del'); e.preventDefault() }
+  else if(e.key==='Enter' && (t===document.body || (t.closest && t.closest('#guide')))){ guideKey('ok'); e.preventDefault() }
+});
+
+/* ===== passaggi ===== */
+function veilTo(o, ms, delay){ const v=$('veil'); if(RM){ v.style.opacity=o; return Promise.resolve() } return v.animate([{opacity:getComputedStyle(v).opacity},{opacity:o}],{duration:ms,delay:delay||0,fill:'forwards',easing:'ease-in-out'}).finished.then(()=>{ v.style.opacity=o }) }
+async function lightsOn(){
+  const v=$('veil');
+  if(RM){ v.style.opacity=0; v.classList.remove('block'); document.querySelector('main').classList.add('lit'); return }
+  const steps=[1]; const n=2+Math.floor(Math.random()*3); for(let k=0;k<n;k++){ steps.push(.15+Math.random()*.3, .75+Math.random()*.25) } steps.push(0);
+  const frames=steps.map((o,k)=>({opacity:o, offset:k/(steps.length-1)}));
+  sfx('sw'); setTimeout(()=>sfx('sw'),180);
+  await v.animate(frames,{duration:650+n*120,fill:'forwards',easing:'steps(1,end)'}).finished; v.style.opacity=0; v.getAnimations().forEach(a=>a.cancel());
+  v.classList.remove('block');
+  setTimeout(()=>document.querySelector('main').classList.add('lit'),60);
+}
+async function zoomInto(sel, swap){
+  const tgt=document.querySelector(sel), stage=$('planStage');
+  busy=true; $('veil').classList.add('block');
+  if(!RM && tgt && stage){
+    const r=tgt.getBoundingClientRect(), b=stage.getBoundingClientRect(), cx=r.left+r.width/2, cy=r.top+r.height/2, s=Math.max(innerWidth/r.width, innerHeight/r.height)*1.1;
+    stage.style.transformOrigin=`${cx-b.left}px ${cy-b.top}px`; sfx('steps');
+    const an=stage.animate([{transform:'none'},{transform:`translate(${innerWidth/2-cx}px,${innerHeight/2-cy}px) scale(${s})`}],{duration:850,easing:'cubic-bezier(.65,0,.25,1)',fill:'forwards'});
+    await Promise.all([an.finished, veilTo(1,420,430)]);
+  } else await veilTo(1,0);
+  swap(); window.scrollTo(0,0);
+  await lightsOn(); busy=false;
+}
+async function zoomOutTo(sel, swap){
+  busy=true; $('veil').classList.add('block'); sfx('sw');
+  await veilTo(1, RM?0:260);
+  swap(); window.scrollTo(0,0);
+  const tgt=document.querySelector(sel), stage=$('planStage');
+  if(!RM && tgt && stage){
+    const r=tgt.getBoundingClientRect(), b=stage.getBoundingClientRect(), cx=r.left+r.width/2, cy=r.top+r.height/2, s=Math.max(innerWidth/r.width, innerHeight/r.height)*1.1;
+    stage.style.transformOrigin=`${cx-b.left}px ${cy-b.top}px`; sfx('steps');
+    const an=stage.animate([{transform:`translate(${innerWidth/2-cx}px,${innerHeight/2-cy}px) scale(${s})`},{transform:'none'}],{duration:850,easing:'cubic-bezier(.65,0,.25,1)'});
+    await Promise.all([an.finished, veilTo(0,380)]);
+  } else await veilTo(0,0);
+  $('veil').classList.remove('block'); busy=false;
+}
+async function paintBars(swap){
+  const b=$('bars'); busy=true;
+  if(RM){ swap(); busy=false; return }
+  b.hidden=false; const bars=[...b.children]; sfx('swoosh');
+  await Promise.all(bars.map((el,k)=>el.animate([{transform:`translateX(${k===1?101:-101}%)`},{transform:'none'}],{duration:520,delay:k*90,easing:'cubic-bezier(.7,0,.3,1)',fill:'forwards'}).finished));
+  swap(); window.scrollTo(0,0); sfx('swoosh');
+  await Promise.all(bars.map((el,k)=>el.animate([{transform:'none'},{transform:`translateX(${k===1?-101:101}%)`}],{duration:520,delay:k*90,easing:'cubic-bezier(.7,0,.3,1)',fill:'forwards'}).finished));
+  bars.forEach(el=>el.getAnimations().forEach(a=>a.cancel())); b.hidden=true; busy=false;
+}
+async function tryDoor(){
+  const h=st('door').h, C=['R','B','Y','R','B','Y'];
+  if(!S.doorOn || h.includes(null) || busy) return;
+  const seq=h.map(id=>C[id]).join('');
+  if(!check('d2',seq)){
+    S.errors++; save(); sfx('alarm'); restartAnim($('monitor'),'alarm'); penalty(ERR_COST,'+1 min');
+    const f=document.querySelector('[data-scene="door"]'); rerender(f,'door',()=>{ st('door').note='Allarme breve: la sequenza non è quella del curatore. Controlla i biglietti sul monitor.' }); return }
+  busy=true; S.finished=Date.now(); S.seq=seq; save(); sfx('door');
+  const d=$('exitdoor'); if(d) d.classList.add('open');
+  await wait(RM?0:1500);
+  const fl=$('flash'); if(!RM) await fl.animate([{opacity:0},{opacity:1}],{duration:500,fill:'forwards'}).finished;
+  S.view='end'; recordResult(); save(); render(); window.scrollTo(0,0);
+  if(!RM){ await fl.animate([{opacity:1},{opacity:0}],{duration:700,fill:'forwards'}).finished;
+    [1500,1900,2150,2700].forEach(t=>setTimeout(()=>{ sfx('flash'); fl.animate([{opacity:0},{opacity:.85},{opacity:0}],{duration:260}) },t)) }
+  busy=false;
+}
+
+/* ===== rendering ===== */
+function render(o){
+  o=o||{}; const app=$('app'), v=S.view;
+  document.querySelector('main').classList.remove('lit');
+  if(v==='intro') app.innerHTML=viewIntro();
+  else if(v==='plan') app.innerHTML=viewPlan(o);
+  else if(v==='room') app.innerHTML=viewRoom(S.room);
+  else if(v==='door') app.innerHTML=viewDoor();
+  else if(v==='timeout') app.innerHTML=viewTimeout();
+  else app.innerHTML=viewEnd();
+  const g=['room','door'].includes(v); $('guide').hidden=!g; document.body.classList.toggle('has-guide',g);
+  $('where').textContent = v==='room' ? `Sala ${ROMAN[S.room]} · ${D.rooms[S.room].name}` : v==='door' ? 'Porta di sicurezza' : v==='plan' ? 'Corridoio delle sale' : v==='end' ? 'Uscita' : 'Ingresso';
+  if(g){ gEntry=''; guideIdle() }
+  if(o.stay) document.querySelector('main').classList.add('lit');
+  if(v==='door') lastMon = S.doorOn ? +($('mon-n')||{dataset:{n:0}}).dataset.n : null;
+  if(v==='plan') placeVisitor(S.at||0,false);
+  tickClock(); bind();
+}
+function bind(){
+  const on=(id,fn)=>{ const el=$(id); if(el) el.addEventListener('click',fn) };
+  document.querySelectorAll('[data-scene]').forEach(mountScene);
+  on('go',()=>{ if(busy) return; ac(); const t=$('team'); for(const k in SC) delete SC[k]; paintBars(()=>{ S=fresh(); S.team=(t&&t.value.trim().slice(0,32))||'Visitatori senza nome'; S.started=Date.now(); S.view='plan'; save(); render() }) });
+  const go=async idx=>{ if(busy) return; busy=true; ac(); await walkTo(idx); await settle(); const d=doorEl(idx); if(d){ d.classList.add('opening'); sfx('creak') } await wait(RM?0:520); busy=false;
+    if(idx===6) zoomInto('[data-door]', ()=>{ S.view='door'; save(); render() });
+    else zoomInto(`[data-room="${idx}"]`, ()=>{ S.view='room'; S.room=idx; save(); render() }) };
+  document.querySelectorAll('[data-room]').forEach(g=>g.addEventListener('click',()=>go(+g.dataset.room)));
+  document.querySelectorAll('[data-door]').forEach(g=>g.addEventListener('click',()=>go(6)));
+  const step=async dir=>{ if(busy) return; ac(); busy=true; await walkTo(Math.max(0,Math.min(6,(S.at||0)+dir))); busy=false };
+  on('walk-l',()=>step(-1)); on('walk-r',()=>step(1));
+  const cor=$('corr'); if(cor) cor.addEventListener('keydown',e=>{ if(e.key==='ArrowRight'){ e.preventDefault(); step(1) } else if(e.key==='ArrowLeft'){ e.preventDefault(); step(-1) } else if((e.key==='Enter'||e.key===' ') && e.target===cor){ e.preventDefault(); go(S.at||0) } });
+  const back=async()=>{ if(busy) return; const from=S.view==='door'?'[data-door]':`[data-room="${S.room}"]`, fr=S._fresh; if(S.view==='door') S.at=6; else S.at=S.room;
+    await zoomOutTo(from, ()=>{ S.view='plan'; save(); render({fresh:fr, back:true}); S._fresh=null });
+    const aj=document.querySelector('.door-b.ajar'); if(aj){ await wait(RM?0:250); aj.classList.remove('ajar'); sfx('close') } };
+  on('back',back); on('back2',back);
+  on('hint',()=>{ if(busy) return; const i=S.room; S.hints[i]=(S.hints[i]||0)+1; S.hintCount++; save(); sfx('page'); penalty(HINT_COST,'+3 min'); S._newHint=true; render({stay:true}); S._newHint=false });
+  on('reset',()=>{ confirmReset=true; render({stay:true}) });
+  on('reset-no',()=>{ confirmReset=false; render({stay:true}) });
+  on('reset-yes',()=>{ confirmReset=false; for(const k in SC) delete SC[k]; paintBars(()=>{ S=fresh(); save(); render() }) });
+  on('again',()=>{ for(const k in SC) delete SC[k]; paintBars(()=>{ S=fresh(); save(); render() }) });
+  on('noclock',()=>{ S.noClock=true; S.view='plan'; save(); render() });
+  const keepTeam=fn=>()=>{ const t=$('team'), val=t?t.value:''; fn(); render({stay:true}); const t2=$('team'); if(t2) t2.value=val };
+  on('gb-clear',keepTeam(()=>{ confirmClear=true })); on('gb-no',keepTeam(()=>{ confirmClear=false })); on('gb-yes',keepTeam(()=>{ confirmClear=false; saveGuestbook([]) }));
+}
+applySettings();
+if(window.SOLUZIONI) renderSolutions(); else render({stay:true});
+</script>
+</body>
+</html>
