@@ -162,8 +162,8 @@ export const OfflineSeq: React.FC<{f: number}> = ({f}) => (
 		<Keyword
 			f={f}
 			word="OFFLINE"
-			qualifier="dopo il download iniziale del modello"
-			highlight={['download', 'iniziale']}
+			qualifier="dopo aver scaricato modello e componenti"
+			highlight={['scaricato', 'modello', 'componenti']}
 			note="alcune funzioni online, es. ricerca web, non sono disponibili"
 			noteAt={36}
 		/>
