@@ -22,7 +22,7 @@ export const Tokens: React.FC<{f: number; beat: number}> = ({f, beat}) => (
 const ROW_H = 32;
 const NUM_W = 80;
 const COL_TOP = CH / 2 + 22; // dal centro del chip all'inizio della colonna
-const valueStart = (i: number, j: number): number => T.vectors + i * 2 + j * 2.2;
+const valueStart = (i: number, j: number): number => T.vectors - 1 + i * 2 + j * 2.2;
 const SETTLE = 8;
 
 /**

@@ -1,5 +1,5 @@
 import React from 'react';
-import {clamp, ease, invLerp, lerp} from '../../../lib/math';
+import {clamp, ease, lerp} from '../../../lib/math';
 import {alpha, COLORS} from '../../../theme';
 import {ChatInput} from './ChatInput';
 import {sBand} from './timing';
@@ -37,6 +37,19 @@ export const Monitor: React.FC<{f: number; s: number}> = ({f, s}) => {
 					}}
 				/>
 			) : null}
+			{/* luce dello schermo sul piano sotto il monitor (riflesso caldo e morbido) */}
+			{!cheap ? (
+				<div
+					style={{
+						position: 'absolute',
+						left: MON.x - 60,
+						top: MON.y + MON.h - 40,
+						width: MON.w + 120,
+						height: 260,
+						background: `radial-gradient(50% 50% at 50% 30%, ${alpha(COLORS.orange, 0.09)} 0%, ${alpha(COLORS.orangeDeep, 0.04)} 45%, rgba(0,0,0,0) 100%)`,
+					}}
+				/>
+			) : null}
 			{/* cornice */}
 			<div
 				style={{
@@ -48,6 +61,17 @@ export const Monitor: React.FC<{f: number; s: number}> = ({f, s}) => {
 					borderRadius: MON.r,
 					background: 'linear-gradient(165deg, #2A2623 0%, #191715 38%, #100F0E 100%)',
 					boxShadow: 'inset 0 0 0 1.5px rgba(250,249,245,0.10), inset 0 2px 0 rgba(255,255,255,0.12), inset 0 -2px 0 rgba(0,0,0,0.5)',
+				}}
+			/>
+			{/* filo di luce sul bordo superiore della cornice */}
+			<div
+				style={{
+					position: 'absolute',
+					left: MON.x + 60,
+					top: MON.y,
+					width: MON.w - 120,
+					height: 2,
+					background: `linear-gradient(90deg, rgba(255,240,228,0), rgba(255,240,228,0.32) 35%, ${alpha(COLORS.orangeHot, 0.22)} 70%, rgba(255,240,228,0))`,
 				}}
 			/>
 			{/* LED di accensione */}
@@ -86,6 +110,7 @@ export const Monitor: React.FC<{f: number; s: number}> = ({f, s}) => {
 						width: SCR.w + 400,
 						height: 700,
 						background: `radial-gradient(closest-side, ${alpha(COLORS.orange, 0.11)} 0%, ${alpha(COLORS.orangeDeep, 0.05)} 55%, ${alpha(COLORS.orangeDeep, 0)} 100%)`,
+						opacity: 0.25 + 0.75 * chrome,
 					}}
 				/>
 				{/* contenuto (coordinate del frame) */}
@@ -103,18 +128,30 @@ export const Monitor: React.FC<{f: number; s: number}> = ({f, s}) => {
 						}}
 					/>
 				) : null}
-				{/* griglia di pixel: fessure scure + sub-pixel caldi */}
+				{/* griglia di pixel: sul testo (moltiplica) ogni pixel si scompone in 3 sub-pixel caldi con fessure scure */}
 				{grid > 0.01 ? (
 					<div
 						style={{
 							position: 'absolute',
 							inset: 0,
 							opacity: grid,
+							mixBlendMode: 'multiply',
 							backgroundImage: [
-								'linear-gradient(90deg, rgba(4,3,3,0.78) 0 16%, rgba(0,0,0,0) 16% 100%)',
-								'linear-gradient(0deg, rgba(4,3,3,0.78) 0 16%, rgba(0,0,0,0) 16% 100%)',
-								`linear-gradient(90deg, rgba(0,0,0,0) 0 16%, ${alpha(COLORS.orangeDeep, 0.1)} 16% 44%, ${alpha(COLORS.orange, 0.09)} 44% 72%, ${alpha(COLORS.orangeBright, 0.08)} 72% 100%)`,
+								'linear-gradient(0deg, rgb(10,8,7) 0 17%, rgba(0,0,0,0) 17% 100%)',
+								`linear-gradient(90deg, rgb(10,8,7) 0 13%, rgb(255,150,105) 13% 40%, rgb(255,205,170) 40% 67%, rgb(255,236,220) 67% 94%, rgb(10,8,7) 94% 100%)`,
 							].join(', '),
+							backgroundSize: `${PITCH}px ${PITCH}px`,
+						}}
+					/>
+				) : null}
+				{/* ...e sul vetro scuro la griglia resta appena visibile (retroilluminazione) */}
+				{grid > 0.01 ? (
+					<div
+						style={{
+							position: 'absolute',
+							inset: 0,
+							opacity: grid * (1 - 0.5 * sBand(s, 8, 20)),
+							backgroundImage: `linear-gradient(90deg, rgba(0,0,0,0) 0 13%, ${alpha(COLORS.orangeDeep, 0.07)} 13% 40%, ${alpha(COLORS.orange, 0.06)} 40% 67%, ${alpha(COLORS.orangeBright, 0.05)} 67% 94%, rgba(0,0,0,0) 94%)`,
 							backgroundSize: `${PITCH}px ${PITCH}px`,
 						}}
 					/>
@@ -145,5 +182,3 @@ export const glassOpacity = (s: number): number => 1 - sBand(s, 11, 34);
 
 /** Luce del vetro che resta "addosso" mentre lo attraversiamo (0..1). */
 export const passGlow = (s: number): number => clamp(sBand(s, 6, 16) * (1 - sBand(s, 18, 40)));
-
-export const invS = (s: number, a: number, b: number): number => invLerp(a, b, s);

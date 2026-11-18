@@ -40,7 +40,8 @@ export const flightPos = (f: number, i: number, p: number): Vec2 => {
 /** Inviluppo di un fuoco di attenzione (0..1). */
 export const focusEnv = (f: number, k: number): number => {
 	const F = FOCUS[k];
-	return prog(f, F.at, 6, ease.outCubic) * (1 - prog(f, F.out, 7, ease.inCubic));
+	// parte un frame prima del cue: sul frame del colpo il token è già acceso
+	return prog(f, F.at - 1, 6, ease.outCubic) * (1 - prog(f, F.out, 7, ease.inCubic));
 };
 
 export const chipState = (f: number, i: number, beat: number): ChipState => {
@@ -50,7 +51,8 @@ export const chipState = (f: number, i: number, beat: number): ChipState => {
 	let opacity = clamp((f - s0) / 4);
 	// piccoli finché sono ammassati vicino alla rete, a piena scala solo nello slot
 	let scale = 0.22 + 0.78 * ease.inOutSine(p);
-	let glow = 1 + 0.9 * (1 - p) + 0.7 * hit(f, T.vectors + i * 2, 10);
+	// cue 30: lampo d'insieme esattamente sul colpo, poi l'onda che accompagna le colonne
+	let glow = 1 + 0.9 * (1 - p) + 0.5 * hit(f, T.vectors, 8) + 0.5 * hit(f, T.vectors + i * 2, 10);
 	let active = false;
 
 	FOCUS.forEach((F, k) => {
@@ -74,7 +76,7 @@ export const chipState = (f: number, i: number, beat: number): ChipState => {
 	const sc = T.process + i * 1.3;
 	const fwd = prog(f, T.process, 16);
 	const energy = prog(f, T.process, T.collapse - T.process, ease.inQuad);
-	glow += 0.9 * hit(f, sc, 12) + 0.4 * beat * fwd;
+	glow += 0.9 * hit(f, sc, 12) + 0.4 * hit(f, T.process, 8) + 0.4 * beat * fwd;
 	if (f >= sc + 2) active = true;
 	opacity *= 1 - 0.18 * energy;
 

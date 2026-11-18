@@ -1,15 +1,14 @@
 import React from 'react';
 import {FrameCanvas} from '../../../components/FrameCanvas';
 import {drawGlow, withAlpha} from '../../../lib/canvas';
-import {clamp, ease, hash, invLerp, lerp, TAU} from '../../../lib/math';
+import {clamp, ease, hash, invLerp, lerp} from '../../../lib/math';
 import {COLORS} from '../../../theme';
 import {tokenWidth} from '../../components/TokenChip';
 import {VP} from '../hook/timing';
 import {SIZE, SLOTS, T} from './layout';
-import {departAt, FLIGHT, layerXf, scanBeam, splitP, toScreen} from './motion';
+import {charAt, charX, departAt, FLIGHT, layerXf, scanBeam, splitP, toScreen} from './motion';
 import {flightPos, flightU} from './Chips';
 import {HOP, netState, PATHS, projectNet} from './net';
-import {charAt, charX} from './motion';
 
 const GAP = 18;
 
@@ -172,17 +171,17 @@ export const TokenLight: React.FC<{abs: number}> = ({abs}) => {
 				const x0 = lerp(A.x, B.x, e0);
 				const y0 = lerp(A.y, B.y, e0);
 				const k = Math.min(2.2, (A.k + B.k) / 2) * ns.cam.scale;
-				ctx.strokeStyle = withAlpha(COLORS.orangeHot, 0.75 * fade);
-				ctx.lineWidth = 2 + 3 * k;
+				ctx.strokeStyle = withAlpha(COLORS.orangeHot, 0.8 * fade);
+				ctx.lineWidth = 2.5 + 3.5 * k;
 				ctx.beginPath();
 				ctx.moveTo(x0, y0);
 				ctx.lineTo(x, y);
 				ctx.stroke();
-				drawGlow(ctx, x, y, 4 + 6 * k, COLORS.orangeBright, fade, COLORS.white);
+				drawGlow(ctx, x, y, 6 + 8 * k, COLORS.orangeBright, fade, COLORS.white);
+				drawGlow(ctx, x, y, 18 + 16 * k, COLORS.orange, 0.25 * fade, COLORS.orangeBright);
 				if (fr < 0.3 && hop > 0) drawGlow(ctx, A.x, A.y, 12 * k + 6, COLORS.orange, 0.6 * (1 - fr / 0.3) * fade, COLORS.orangeHot);
 			}
 		}
-		void TAU;
 		ctx.globalCompositeOperation = 'source-over';
 	};
 	return <FrameCanvas frame={abs} draw={draw} />;

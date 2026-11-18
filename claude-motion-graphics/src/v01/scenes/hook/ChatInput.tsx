@@ -5,8 +5,8 @@ import {alpha, COLORS, FONTS} from '../../../theme';
 import {BREAK, CHAR_AT, CHARS, caretOn, fieldGrow, TYPE_END, TYPE_START, typedCount} from './timing';
 
 /** Campo di input (coordinate del frame a scala 1): il bordo inferiore resta fermo, il campo cresce verso l'alto. */
-export const FIELD = {x: 100, w: 880, bottom: 880, h1: 196, lineH: 70, padX: 44, padTop: 32} as const;
-export const TEXT_SIZE = 56;
+export const FIELD = {x: 100, w: 880, bottom: 880, h1: 198, lineH: 74, padX: 44, padTop: 32} as const;
+export const TEXT_SIZE = 60;
 
 /**
  * Input di chat generico ed elegante: bordo arancione luminoso, placeholder mono, testo Inter 56 px digitato
@@ -47,9 +47,9 @@ export const ChatInput: React.FC<{f: number; chrome: number; cheap: boolean}> = 
 			style={{
 				display: 'inline-block',
 				width: 5,
-				height: 58,
+				height: 62,
 				marginLeft: 4,
-				verticalAlign: -12,
+				verticalAlign: -13,
 				borderRadius: 2,
 				background: COLORS.orangeBright,
 				opacity: caret,

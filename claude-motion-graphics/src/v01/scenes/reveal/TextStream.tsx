@@ -101,7 +101,7 @@ export const TextStream: React.FC<{f: number; cx: number; cy: number; netScale: 
 				const a0 = armAngle(k);
 				const n = 40;
 				ctx.lineWidth = 2;
-				ctx.strokeStyle = withAlpha(COLORS.orange, 0.09 * lanes);
+				ctx.strokeStyle = withAlpha(COLORS.orange, 0.13 * lanes);
 				ctx.beginPath();
 				for (let j = 0; j <= n; j++) {
 					const p = spiral(cx, cy, a0, ARM_R, SWIRL, j / n, core);
@@ -110,8 +110,8 @@ export const TextStream: React.FC<{f: number; cx: number; cy: number; netScale: 
 				}
 				ctx.stroke();
 				// impulsi lungo il fiume
-				for (let m = 0; m < 4; m++) {
-					const t = ((f / 34 + m / 4 + k * 0.13) % 1 + 1) % 1;
+				for (let m = 0; m < 6; m++) {
+					const t = ((f / 30 + m / 6 + k * 0.13) % 1 + 1) % 1;
 					const p = spiral(cx, cy, a0, ARM_R, SWIRL, t, core);
 					drawGlow(ctx, p.x, p.y, 3 + 4 * t, COLORS.orange, 0.5 * lanes * Math.sin(Math.PI * t), COLORS.orangeHot);
 				}

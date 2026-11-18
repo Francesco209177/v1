@@ -15,7 +15,9 @@ const slow = (s: number) => s < 2;
 const rowState = (f: number, s: number, i: number) => {
 	const {stagger, dur} = GROW(s);
 	const g = prog(f, SHOW[s] + i * stagger, dur, ease.outQuart);
-	const label = prog(f, SHOW[s] + i * stagger - 1, Math.max(3, dur * 0.6), ease.outCubic);
+	// nei passi veloci l'etichetta della riga 0 aspetta che il chip precedente sia decollato (niente sovrapposizioni)
+	const lAt = FAST(s) && i === 0 && s > 0 ? PICK[s - 1] + 4 : SHOW[s] + i * stagger - 1;
+	const label = prog(f, lAt, FAST(s) ? 2 : Math.max(3, dur * 0.6), ease.outCubic);
 	// l'ultimo passo non collassa: resta visibile (attenuato) mentre la risposta è completa
 	const c = s === N - 1 && i > 0 ? 0 : prog(f, PICK[s] + (slow(s) ? 3 : 1), slow(s) ? 9 : 2, ease.inCubic);
 	return {g, label, c};

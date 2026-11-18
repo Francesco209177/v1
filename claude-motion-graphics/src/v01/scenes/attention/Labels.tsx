@@ -75,17 +75,17 @@ const Dot: React.FC = () => <span style={{color: COLORS.grayDim}}>·</span>;
 export const Labels: React.FC<{f: number; beat: number}> = ({f, beat}) => {
 	const noteIn = prog(f, 56, 10, ease.outCubic);
 	const noteOut = prog(f, T.process, 8, ease.inCubic);
-	const noteY = rowY(f, 1) + CH / 2 + lerp(318, 66, condenseP(f));
+	const noteY = rowY(f, 1) + CH / 2 + lerp(306, 66, condenseP(f));
 	return (
 		<>
-			<HudLabel y={LABEL_Y} inAt={T.vectors} outAt={T.condense + 1} f={f} beatHit={beat}>
+			<HudLabel y={LABEL_Y} inAt={T.vectors - 1} outAt={T.condense + 1} f={f} beatHit={beat}>
 				<span style={{color: COLORS.orangeBright}}>Embedding</span>
 				<Dot />
 				<span>ogni token</span>
 				<Arrow color={COLORS.orangeBright} />
 				<span>numeri</span>
 			</HudLabel>
-			<HudLabel y={LABEL_Y} inAt={T.attention} outAt={T.process} f={f} beatHit={beat}>
+			<HudLabel y={LABEL_Y} inAt={T.attention - 1} outAt={T.process} f={f} beatHit={beat}>
 				<span style={{color: COLORS.orangeBright}}>Attenzione</span>
 				<Dot />
 				<span>quali parole contano di più</span>

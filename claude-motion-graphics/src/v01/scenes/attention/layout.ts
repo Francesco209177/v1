@@ -81,9 +81,6 @@ export const slot = (f: number, i: number): {x: number; y: number} => ({
 	y: rowY(f, ROW_OF[i]),
 });
 
-/** Ordine di lettura (sinistra → destra, riga per riga). */
-export const READ_ORDER = TOKENS.map((_, i) => i);
-
 // ------------------------------------------------------------------ rete neurale: camera
 
 export type NetPose = Required<NetCamera> & {opacity: number; activity: number; flash: number; focusLayer: number};
@@ -91,12 +88,12 @@ export type NetPose = Required<NetCamera> & {opacity: number; activity: number; 
 /** Posa della rete: identica a V1_NET_AT_270 su f = 0, arretra sullo sfondo, torna avanti nell'elaborazione, collassa. */
 export const netAt = (f: number, beat: number): NetPose => {
 	const rec = prog(f, 0, T.recedeEnd, ease.inOutCubic);
-	const fwd = prog(f, T.process, 30, ease.inOutCubic);
+	const fwd = prog(f, T.process, 24, ease.inOutCubic);
 	const energy = prog(f, T.process, T.collapse - T.process, ease.inQuad);
 	const col = collapseP(f);
 	const antic = prog(f, T.collapse - 6, 6, ease.outCubic) * (1 - col);
 	const s = lerp(lerp(V1_NET_AT_270.scale, 0.42, rec), 0.7, fwd) * (1 + 0.04 * antic) * (1 - 0.975 * col);
-	const cy = lerp(lerp(lerp(V1_NET_AT_270.cy, 1170, rec), 1032, fwd), CUT_POINT.y, prog(f, T.collapse, T.end - T.collapse, ease.inOutCubic));
+	const cy = lerp(lerp(lerp(V1_NET_AT_270.cy, 1150, rec), 1032, fwd), CUT_POINT.y, prog(f, T.collapse, T.end - T.collapse, ease.inOutCubic));
 	const opacity = lerp(lerp(1, 0.34, rec), 1, fwd);
 	const activity = Math.min(1, lerp(lerp(V1_NET_AT_270.activity, 0.2, rec), 0.75, fwd) + 0.25 * energy);
 	// archi di attenzione: la rete "risponde" sui beat
@@ -107,7 +104,7 @@ export const netAt = (f: number, beat: number): NetPose => {
 		cx: V1_NET_AT_270.cx,
 		cy,
 		scale: s,
-		yaw: 0,
+		yaw: 0, // la rotazione condivisa v1NetYaw(abs) è passata da chi disegna
 		pitch: lerp(V1_NET_AT_270.pitch, -0.26, rec) + 0.06 * fwd,
 		dist: V1_NET_AT_270.dist,
 		opacity,

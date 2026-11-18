@@ -14,7 +14,7 @@ const speed = (a: number): number => {
 	if (a < 72) return 0;
 	if (a < 90) return 0.07 * ease.inQuad(invLerp(72, 90, a));
 	let v = 0.0045 + 0.0655 * Math.exp(-(a - 90) / 8);
-	v += 0.03 * ease.inOutSine(invLerp(214, 232, a)) * (1 - ease.inOutSine(invLerp(238, 256, a)));
+	v += 0.035 * ease.inOutSine(invLerp(224, 244, a)) * (1 - ease.inOutSine(invLerp(248, 264, a)));
 	return v;
 };
 
@@ -29,8 +29,8 @@ const travel = (a: number): number => {
 /** Intensità globale del pulviscolo. */
 const level = (a: number): number => {
 	const inHook = ease.inOutSine(invLerp(78, 88, a));
-	const calm = 1 - 0.45 * ease.inOutSine(invLerp(104, 124, a)) + 0.45 * ease.inOutSine(invLerp(212, 226, a));
-	const out = 1 - ease.inOutSine(invLerp(236, 258, a));
+	const calm = 1 - 0.45 * ease.inOutSine(invLerp(104, 124, a)) + 0.45 * ease.inOutSine(invLerp(220, 234, a));
+	const out = 1 - ease.inOutSine(invLerp(246, 264, a));
 	return inHook * calm * out;
 };
 

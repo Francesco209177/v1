@@ -3,7 +3,7 @@ import {FrameCanvas} from '../../../components/FrameCanvas';
 import {drawGlow, withAlpha} from '../../../lib/canvas';
 import {bezier2, clamp, ease, hash, hit, prog, TAU} from '../../../lib/math';
 import {COLORS} from '../../../theme';
-import {flightPath} from './AnswerArea';
+import {exitPos, flightEase, flightPath} from './AnswerArea';
 import {ANSWER, ANSWER_SLOTS, appendAt, C, CTX, EXIT, FLY, HUB, landAt, LIFT, loopDur, loopFrom, PANEL, PICK, pointOnLoop, rowY, SHOW} from './data';
 
 /**
@@ -65,11 +65,11 @@ export const PredictFX: React.FC<{f: number}> = ({f}) => {
 					const x = PANEL.trackX + (k / 7) * PANEL.trackW * 0.62;
 					drawGlow(ctx, x, y, 8 + 6 * fl, COLORS.orange, 0.45 * fl, COLORS.orangeHot);
 				}
-				const rr = 40 + (slow ? 120 : 60) * (1 - fl);
-				ctx.strokeStyle = withAlpha(COLORS.orangeHot, 0.8 * fl);
-				ctx.lineWidth = 2 + 3 * fl;
+				const rr = 34 + (slow ? 70 : 40) * (1 - fl);
+				ctx.strokeStyle = withAlpha(COLORS.orangeHot, 0.7 * fl);
+				ctx.lineWidth = 1.5 + 2.5 * fl;
 				ctx.beginPath();
-				ctx.ellipse(a.x, a.y + 10, rr * 1.4, rr * 0.7, 0, 0, TAU);
+				ctx.ellipse(a.x, a.y + 10, rr * 1.25, rr * 0.62, 0, 0, TAU);
 				ctx.stroke();
 				drawGlow(ctx, a.x, a.y + 10, 16 + 16 * fl, COLORS.orange, 0.45 * fl, COLORS.orangeHot);
 			}
@@ -83,14 +83,14 @@ export const PredictFX: React.FC<{f: number}> = ({f}) => {
 				const n = 18;
 				for (let k = 0; k <= n; k++) {
 					const tt = tail + ((head - tail) * k) / n;
-					const pt = bezier2(a, c, b, ease.inOutCubic(tt));
+					const pt = bezier2(a, c, b, flightEase(s)(tt));
 					const w = k / n;
 					drawGlow(ctx, pt.x, pt.y, 3 + 9 * w, COLORS.orange, 0.5 * w * (1 - prog(f, end, 4)), COLORS.orangeHot);
 				}
 				// scintille che si staccano
 				for (let k = 0; k < 10; k++) {
 					const tt = clamp(head - 0.08 - hash(s, k) * 0.35);
-					const pt = bezier2(a, c, b, ease.inOutCubic(tt));
+					const pt = bezier2(a, c, b, flightEase(s)(tt));
 					const off = (f - start) * (1.5 + 3 * hash(k, s + 3));
 					const ang = hash(k, s + 7) * TAU;
 					drawGlow(ctx, pt.x + Math.cos(ang) * off * 3, pt.y + Math.sin(ang) * off * 3, 2 + 2 * hash(k, 9), COLORS.orangeBright, 0.7 * (1 - prog(f, end - 2, 6)), COLORS.white);
@@ -159,6 +159,32 @@ export const PredictFX: React.FC<{f: number}> = ({f}) => {
 			}
 		}
 
+		// 8a) la risposta si stira in linee di luce che corrono al centro
+		if (f >= EXIT) {
+			ANSWER.forEach((t, s) => {
+				const {ex, x, y} = exitPos(f, s);
+				if (ex <= 0.02 || ex >= 0.995) return;
+				const w = 40 + 30 * t.length;
+				const len = w * (0.6 + 5 * ex);
+				const dir = x < HUB.x ? -1 : 1;
+				const g = ctx.createLinearGradient(x + dir * len, y, x, y);
+				g.addColorStop(0, withAlpha(COLORS.orange, 0));
+				g.addColorStop(0.75, withAlpha(COLORS.orangeBright, 0.5 * Math.min(1, ex * 2)));
+				g.addColorStop(1, withAlpha(COLORS.orangeHot, 0.95 * Math.min(1, ex * 2)));
+				ctx.strokeStyle = g;
+				// alone morbido + filo luminoso
+				ctx.lineWidth = 14 * (1 - 0.6 * ex);
+				ctx.globalAlpha = 0.35;
+				ctx.beginPath();
+				ctx.moveTo(x + dir * len, y);
+				ctx.lineTo(x, y);
+				ctx.stroke();
+				ctx.globalAlpha = 1;
+				ctx.lineWidth = 3;
+				ctx.stroke();
+				drawGlow(ctx, x, y, 10 + 10 * ex, COLORS.orangeHot, 0.8 * ex, COLORS.white);
+			});
+		}
 		// 8) uscita: scie che convergono nel punto di luce del taglio (690)
 		const from = EXIT - 4;
 		if (f >= from) {

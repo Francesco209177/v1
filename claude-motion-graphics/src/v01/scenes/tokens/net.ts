@@ -6,31 +6,37 @@ import {T} from './layout';
 export const NET = buildNet();
 
 /** Inizio della convergenza finale sulla posa condivisa V1_NET_AT_270 (ultimi ~30 frame). */
-const CONV = T.end - 31;
+const CONV = T.end - 27;
+
+type Pose = {cx: number; cy: number; scale: number; pitch: number; dist: number};
+/** Rosone lontano visto dall'alto (lungo l'asse: ingresso verso di noi), poi DENTRO il tunnel degli strati. */
+const FAR: Pose = {cx: 540, cy: 760, scale: 0.75, pitch: 1.15, dist: 1500};
+const DEEP: Pose = {cx: 540, cy: 700, scale: 0.75, pitch: 1.0, dist: 330};
+const mixPose = (a: Pose, b: Pose, t: number): Pose => ({
+	cx: lerp(a.cx, b.cx, t),
+	cy: lerp(a.cy, b.cy, t),
+	scale: lerp(a.scale, b.scale, t),
+	pitch: lerp(a.pitch, b.pitch, t),
+	dist: lerp(a.dist, b.dist, t),
+});
 
 /**
- * Camera della rete (225–269): parte DENTRO la rete (dist piccola, nodi enormi che sfrecciano) mentre
- * seguiamo i token; la distanza cresce e la rete si ricompone, poi converge ESATTAMENTE su V1_NET_AT_270
- * a 269 (pendenza nulla, yaw = v1NetYaw(abs)).
+ * Camera della rete (223–269). I token volano nel rosone lontano (strato d'ingresso), la camera li SEGUE
+ * dentro la rete lungo l'asse (gli anelli di neuroni sfrecciano via ai bordi), poi una gru esce e si posa:
+ * dist piccola che cresce fino a V1_NET_AT_270, raggiunta ESATTAMENTE a 269 (pendenza nulla, yaw = v1NetYaw).
  */
 export const netState = (abs: number) => {
-	const t = clamp((abs - T.intoNet) / (T.end - T.intoNet));
+	const t = clamp((abs - (T.intoNet - 2)) / (T.end - T.intoNet + 2));
+	const dive = ease.inOutSine(invLerp(232, 252, abs));
 	const c = ease.inOutCubic(invLerp(CONV, T.end, abs));
-	const fly = ease.outCubic(t);
-	const N = V1_NET_AT_270;
-	const cam: Required<NetCamera> = {
-		cx: lerp(lerp(540, 540, fly), N.cx, c),
-		cy: lerp(lerp(980, 800, fly), N.cy, c),
-		scale: lerp(lerp(0.62, 0.85, fly), N.scale, c),
-		pitch: lerp(lerp(-0.78, -0.3, fly), N.pitch, c),
-		dist: lerp(lerp(250, 1000, fly), N.dist, c),
-		yaw: v1NetYaw(abs) - 1.15 * Math.pow(1 - t, 3),
-	};
+	const p = mixPose(mixPose(FAR, DEEP, dive), V1_NET_AT_270, c);
+	const cam: Required<NetCamera> = {...p, yaw: v1NetYaw(abs) - 0.9 * Math.pow(1 - t, 3)};
 	return {
 		cam,
-		opacity: ease.outCubic(clamp((abs - (T.intoNet - 2)) / 9)),
-		reveal: lerp(ease.outCubic(invLerp(T.intoNet - 2, 250, abs)), N.reveal, c),
-		activity: lerp(0.12, N.activity, c),
+		// dentro la rete i neuroni vicinissimi diventano enormi: li si attenua un poco (a 269 opacità piena)
+		opacity: ease.inOutSine(clamp((abs - (T.intoNet - 2)) / 10)) * (1 - 0.3 * dive * (1 - c)),
+		reveal: lerp(lerp(0.45, 1, ease.outCubic(invLerp(T.intoNet - 2, 242, abs))), V1_NET_AT_270.reveal, c),
+		activity: lerp(0.1, V1_NET_AT_270.activity, ease.inOutSine(invLerp(236, T.end, abs))),
 		c,
 	};
 };
@@ -70,4 +76,4 @@ export const tokenPath = (i: number): number[] => {
 	return path;
 };
 export const PATHS = Array.from({length: 11}, (_, i) => tokenPath(i));
-export const HOP = 5;
+export const HOP = 4.5;

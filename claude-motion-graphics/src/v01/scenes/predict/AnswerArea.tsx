@@ -8,9 +8,13 @@ import {ANS, ANSWER, ANSWER_SLOTS, chipCenterInRow, EXIT, FLY, HUB, landAt, LIFT
 export const flightPath = (s: number): {a: Vec2; c: Vec2; b: Vec2} => {
 	const a = {x: chipCenterInRow(ANSWER[s]), y: rowY(0) - 10};
 	const b = ANSWER_SLOTS[s];
-	const c = {x: lerp(a.x, b.x, 0.5) - 150, y: lerp(a.y, b.y, 0.3)};
+	// l'arco esce a sinistra del pannello: il chip non attraversa le altre righe
+	const c = {x: Math.min(a.x, b.x) - 250, y: lerp(a.y, b.y, 0.42)};
 	return {a, c, b};
 };
+
+/** Lenti: partenza e arrivo morbidi. Veloci: stacco immediato dal pannello, atterraggio frenato. */
+export const flightEase = (s: number): ((t: number) => number) => (s < 2 ? ease.inOutCubic : ease.outQuad);
 
 /** Posizione/velocità del chip in volo al frame f (null se non in volo). */
 export const flightAt = (f: number, s: number): {p: Vec2; t: number; lift: number; speed: number; dir: number} | null => {
@@ -19,16 +23,23 @@ export const flightAt = (f: number, s: number): {p: Vec2; t: number; lift: numbe
 	if (f < P || f >= end) return null;
 	const lift = prog(f, P, LIFT(s), ease.outCubic);
 	const raw = clamp((f - P - LIFT(s)) / FLY(s));
-	const t = ease.inOutCubic(raw);
+	const t = flightEase(s)(raw);
 	const {a, c, b} = flightPath(s);
 	const p = bezier2(a, c, b, t);
-	const p2 = bezier2(a, c, b, ease.inOutCubic(clamp(raw + 0.04)));
+	const p2 = bezier2(a, c, b, flightEase(s)(clamp(raw + 0.04)));
 	const speed = Math.hypot(p2.x - p.x, p2.y - p.y) / 0.04 / FLY(s);
 	const dir = Math.atan2(p2.y - p.y, p2.x - p.x);
 	return {p: {x: p.x, y: p.y - 10 * lift * (1 - t)}, t, lift, speed, dir};
 };
 
-/** Area RISPOSTA: cornice, token già scelti, token in volo, cursore. */
+/** Uscita: i token della risposta corrono verso il punto di luce (le scie sono nel canvas). */
+export const exitPos = (f: number, s: number): {ex: number; x: number; y: number} => {
+	const ex = prog(f, EXIT + (s % 4) * 0.6, 9, ease.inExpo);
+	const slot = ANSWER_SLOTS[s];
+	return {ex, x: lerp(slot.x, HUB.x, ex), y: lerp(slot.y, HUB.y, ease.inCubic(clamp(ex * 1.1)))};
+};
+
+/** Area RISPOSTA: cornice, token già scelti, cursore. */
 export const AnswerArea: React.FC<{f: number; enter: number; exit: number}> = ({f, enter, exit}) => {
 	const landed = ANSWER.map((_, s) => f >= landAt(s));
 	const nLanded = landed.filter(Boolean).length;
@@ -95,11 +106,9 @@ export const AnswerArea: React.FC<{f: number; enter: number; exit: number}> = ({
 				const fresh = s === nLanded - 1 && !done ? 1 : 0;
 				const slot = ANSWER_SLOTS[s];
 				// uscita: i token corrono verso il centro stirandosi in una linea di luce
-				const ex = prog(f, EXIT + (s % 4) * 0.6, 11, ease.inExpo);
-				const x = lerp(slot.x, HUB.x, ex);
-				const y = lerp(slot.y, HUB.y, ease.inCubic(clamp(ex * 1.1)));
-				const sw = 1 + 2.6 * ex;
-				const sh = 1 - 0.78 * ex;
+				const {ex, x, y} = exitPos(f, s);
+				const sw = 1 + 4 * ex;
+				const sh = 1 - 0.88 * ex;
 				const lit = sweep > 0 && sweep < 1 ? Math.exp(-(((slot.x - lerp(40, 1040, sweep)) / 120) ** 2)) : 0;
 				return (
 					<div
@@ -112,7 +121,7 @@ export const AnswerArea: React.FC<{f: number; enter: number; exit: number}> = ({
 							height: 1920,
 							transformOrigin: `${x}px ${y}px`,
 							transform: ex > 0 ? `scale(${sw}, ${sh})` : undefined,
-							opacity: 1 - prog(f, EXIT + 6, 6, ease.inQuad),
+							opacity: 1 - prog(ex, 0.12, 0.3),
 						}}
 					>
 						<TokenChip
@@ -144,31 +153,35 @@ export const AnswerArea: React.FC<{f: number; enter: number; exit: number}> = ({
 					}}
 				/>
 			) : null}
-
-			{/* token in volo */}
-			{ANSWER.map((t, s) => {
-				const fl = flightAt(f, s);
-				if (!fl) return null;
-				const stretch = clamp(fl.speed / 200, 0, 1);
-				const sc = lerp((PANEL.chipSize / ANS.size) * (1 + 0.22 * fl.lift), 1.06, fl.t);
-				const deg = (fl.dir * 180) / Math.PI;
-				return (
-					<div
-						key={`fly-${s}`}
-						style={{
-							position: 'absolute',
-							left: 0,
-							top: 0,
-							width: 1080,
-							height: 1920,
-							transformOrigin: `${fl.p.x}px ${fl.p.y}px`,
-							transform: `rotate(${deg}deg) scale(${1 + 0.3 * stretch}, ${1 - 0.1 * stretch}) rotate(${-deg}deg)`,
-						}}
-					>
-						<TokenChip text={t} x={fl.p.x} y={fl.p.y} size={ANS.size} glow={1.6} scale={sc} active />
-					</div>
-				);
-			})}
 		</>
 	);
 };
+
+/** Token in volo: sopra al canvas delle luci, così la scia resta dietro al chip. */
+export const FlyingChips: React.FC<{f: number}> = ({f}) => (
+	<>
+		{ANSWER.map((t, s) => {
+			const fl = flightAt(f, s);
+			if (!fl) return null;
+			const stretch = clamp(fl.speed / 200, 0, 1);
+			const sc = lerp((PANEL.chipSize / ANS.size) * (1 + 0.32 * fl.lift), 1.06, ease.outCubic(fl.t));
+			const deg = (fl.dir * 180) / Math.PI;
+			return (
+				<div
+					key={`fly-${s}`}
+					style={{
+						position: 'absolute',
+						left: 0,
+						top: 0,
+						width: 1080,
+						height: 1920,
+						transformOrigin: `${fl.p.x}px ${fl.p.y}px`,
+						transform: `rotate(${deg}deg) scale(${1 + 0.18 * stretch}, ${1 - 0.06 * stretch}) rotate(${-deg}deg)`,
+					}}
+				>
+					<TokenChip text={t} x={fl.p.x} y={fl.p.y} size={ANS.size} glow={1.6} scale={sc} active />
+				</div>
+			);
+		})}
+	</>
+);

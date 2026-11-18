@@ -12,7 +12,7 @@ const SAMPLES = 44;
 
 /** Ordine di accensione: archi più forti per primi. */
 const rankOf = (w: number[], k: number): number => [...w.keys()].sort((a, b) => w[b] - w[a]).indexOf(k);
-const drawP = (f: number, at: number, rank: number): number => prog(f, at + rank * 1.6, 13, ease.outCubic);
+const drawP = (f: number, at: number, rank: number): number => prog(f, at - 1 + rank * 1.1, 11, ease.outCubic);
 
 const strokePart = (ctx: CanvasRenderingContext2D, c: Cubic, d: number): void => {
 	ctx.beginPath();
@@ -113,7 +113,7 @@ export const WeightPills: React.FC<{f: number}> = ({f}) => (
 			if (env <= 0.01) return [];
 			return F.labels.map((k, li) => {
 				const rank = rankOf(F.w.slice(0, F.q), k);
-				const on = prog(f, F.at + 6 + rank * 1.6, 7, ease.outBack);
+				const on = prog(f, F.at + 5 + rank * 1.1, 7, ease.outBack);
 				if (on <= 0) return null;
 				const p = cubicAt(arcGeom(f, F.q, k), 0.8);
 				const strong = li === 0;

@@ -26,10 +26,10 @@ export const flightPos = (i: number, abs: number, u: number): Pt => {
 	const from = toScreen(abs, slotPos(i, abs));
 	const proj = projectNet(netState(abs).cam);
 	const to = proj[PATHS[i][0]];
-	const ctrl = {x: lerp(from.x, 540, 0.85), y: lerp(from.y, to.y, 0.35) + 150};
+	const ctrl = {x: lerp(from.x, to.x, 0.35), y: lerp(from.y, to.y, 0.75) - 30};
 	return bezier2(from, ctrl, to, u);
 };
-export const flightU = (i: number, abs: number): number => ease.inQuad(clamp((abs - departAt(i)) / FLIGHT));
+export const flightU = (i: number, abs: number): number => ease.inOutSine(clamp((abs - departAt(i)) / FLIGHT));
 
 /**
  * I blocchi TokenChip: compaiono al cue 180 con uno sfasamento di 1–2 frame (pop + lampo), gli ID scorrono
@@ -63,9 +63,9 @@ export const Chips: React.FC = () => {
 					const prev = flightPos(s.i, abs, flightU(s.i, abs - 1));
 					const v = Math.hypot(c.x - prev.x, c.y - prev.y);
 					ang = Math.atan2(c.y - prev.y, c.x - prev.x);
-					stretch = clamp(v / 70, 0, 1.4);
-					sc *= lerp(1, 0.16, e);
-					rot = lerp(rot, 0, clamp(u * 3));
+					stretch = clamp(v / 90, 0, 0.6);
+					sc *= lerp(1, 0.12, e);
+					rot = lerp(rot, 0, clamp(u * 4));
 					op = 1 - ease.inQuad(clamp((u - 0.55) / 0.4));
 				}
 				const active = age < 3 || (SUBWORD.has(s.i) && abs >= 199 && abs < T.intoNet);
@@ -96,7 +96,7 @@ export const Chips: React.FC = () => {
 							width: 1080,
 							height: 1920,
 							transformOrigin: `${c.x}px ${c.y}px`,
-							transform: `rotate(${deg}deg) scaleX(${1 + stretch}) scaleY(${1 - 0.25 * clamp(stretch)}) rotate(${-deg}deg)`,
+							transform: `rotate(${deg}deg) scaleX(${1 + stretch}) rotate(${-deg}deg)`,
 						}}
 					>
 						{chip}

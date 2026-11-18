@@ -48,8 +48,8 @@ const Word: React.FC<{w: string; f: number; at: number; size: number; color: str
 
 /** "Può sbagliare: verifica le informazioni importanti." — entra calma sul cue (840 = relativo 150). */
 export const Caveat: React.FC<{f: number}> = ({f}) => {
-	if (f < R.caveat - 6) return null;
-	const sep = prog(f, R.caveat - 6, 12, ease.outCubic);
+	if (f < R.caveat - 8) return null;
+	const sep = prog(f, R.caveat - 8, 12, ease.outCubic);
 	const g = glitchAt(f);
 	const s1 = 48;
 	const s2 = 42;
@@ -87,8 +87,8 @@ export const Caveat: React.FC<{f: number}> = ({f}) => {
 				}}
 			>
 				<WarnIcon f={f} size={s1 * 0.82} />
-				<Word w="Può" f={f} at={R.caveat} size={s1} color={COLORS.white} />
-				<Word w="sbagliare:" f={f} at={R.caveat + 2} size={s1} color={COLORS.white} glitch={g} />
+				<Word w="Può" f={f} at={R.caveat - 2} size={s1} color={COLORS.white} />
+				<Word w="sbagliare:" f={f} at={R.caveat} size={s1} color={COLORS.white} glitch={g} />
 			</div>
 			{/* riga 2 */}
 			<div
@@ -108,7 +108,7 @@ export const Caveat: React.FC<{f: number}> = ({f}) => {
 				}}
 			>
 				{['verifica', 'le', 'informazioni', 'importanti.'].map((w, i) => (
-					<Word key={i} w={w} f={f} at={R.caveat + 5 + i * 2} size={s2} color={i === 0 ? COLORS.orange : alpha(COLORS.white, 0.92)} glow={i === 0} />
+					<Word key={i} w={w} f={f} at={R.caveat + 4 + i * 2} size={s2} color={i === 0 ? COLORS.orange : alpha(COLORS.white, 0.92)} glow={i === 0} />
 				))}
 			</div>
 		</div>
@@ -117,7 +117,7 @@ export const Caveat: React.FC<{f: number}> = ({f}) => {
 
 /** Piccolo triangolo di avviso (SVG), disegnato a tratto. */
 const WarnIcon: React.FC<{f: number; size: number}> = ({f, size}) => {
-	const p = prog(f, R.caveat - 2, 10, ease.outCubic);
+	const p = prog(f, R.caveat - 4, 10, ease.outCubic);
 	const len = 3 * size * 0.95;
 	return (
 		<svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{opacity: p, marginRight: 4, flexShrink: 0, filter: `drop-shadow(0 0 6px ${alpha(COLORS.orange, 0.7)})`}}>

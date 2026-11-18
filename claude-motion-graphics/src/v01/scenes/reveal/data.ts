@@ -131,10 +131,10 @@ export const ARM_R = 1050;
 export const FRAGS: Frag[] = (() => {
 	const rnd = seeded(7031);
 	const out: Frag[] = [];
-	const total = 176;
+	const total = 250;
 	for (let i = 0; i < total; i++) {
 		const u = rnd();
-		const layer: 0 | 1 | 2 = u < 0.12 ? 0 : u < 0.6 ? 1 : 2;
+		const layer: 0 | 1 | 2 = u < 0.1 ? 0 : u < 0.6 ? 1 : 2;
 		const birth = -52 + (i / total) * 124 + (rnd() - 0.5) * 6;
 		const life = layer === 0 ? 30 + rnd() * 14 : layer === 1 ? 46 + rnd() * 22 : 52 + rnd() * 24;
 		const size = layer === 0 ? 74 + rnd() * 56 : layer === 1 ? 30 + rnd() * 14 : 20 + rnd() * 6;
@@ -176,9 +176,9 @@ export const FRAGS: Frag[] = (() => {
 export type Dust = {ch: string; birth: number; life: number; a0: number; R0: number; swirl: number; size: number};
 export const DUST: Dust[] = (() => {
 	const rnd = seeded(911);
-	return Array.from({length: 240}, (_, i) => ({
+	return Array.from({length: 340}, (_, i) => ({
 		ch: GLYPHS[Math.floor(rnd() * GLYPHS.length)],
-		birth: -40 + (i / 240) * 114 + rnd() * 4,
+		birth: -40 + (i / 340) * 114 + rnd() * 4,
 		life: 26 + rnd() * 26,
 		a0: armAngle(i % ARMS) + (rnd() - 0.5) * 0.8,
 		R0: 420 + rnd() * 700,

@@ -3,7 +3,7 @@ import {AbsoluteFill, useCurrentFrame} from 'remotion';
 import {useAbsFrame} from '../../lib/frame';
 import {beatPulse, clamp, ease, hit, lerp, prog} from '../../lib/math';
 import {alpha, COLORS, FONTS} from '../../theme';
-import {AnswerArea} from './predict/AnswerArea';
+import {AnswerArea, FlyingChips} from './predict/AnswerArea';
 import {ContextRow} from './predict/ContextRow';
 import {C, EXIT, HUB, landAt, loopFrom, NOTE_Y, PANEL, PICK, SHOW} from './predict/data';
 import {Connector, LoopLine} from './predict/LoopLine';
@@ -122,6 +122,7 @@ export const V1Predict: React.FC = () => {
 				</div>
 
 				<PredictFX f={f} />
+				<FlyingChips f={f} />
 			</div>
 		</AbsoluteFill>
 	);
