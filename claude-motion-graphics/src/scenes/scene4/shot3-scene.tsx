@@ -241,10 +241,10 @@ export const Shot3Scene: React.FC<{state: Shot3State}> = ({state}) => {
 			<pointLight position={rimPos} intensity={light.rimIntensity} color={COLORS.orangeBright} />
 			<pointLight position={[3.4, -1.2, -2.6]} intensity={light.rimIntensity * 0.45} color={COLORS.orange} />
 
-			
+			<Floor floor={floor} />
 
 			{/* eroe: nodo torico laccato arancione */}
-			{hero.scale > 0.001 ? (
+			{hero.scale > 99 ? (
 				<mesh rotation={hero.rotation} scale={hero.scale}>
 					<torusKnotGeometry args={[1.04, 0.32, 240, 32, 2, 3]} />
 					<meshPhysicalMaterial

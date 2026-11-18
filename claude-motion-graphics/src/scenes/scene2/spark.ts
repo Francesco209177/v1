@@ -1,4 +1,4 @@
-import {bezier2, clamp, ease, hit, lerp, tween} from '../../lib/math';
+import {Vec2, bezier2, clamp, ease, hit, lerp, tween} from '../../lib/math';
 import {SPARK_POSE} from '../../timeline';
 import {lastKeyBefore, ROWS} from './layout';
 import {settle, T} from './timing';
@@ -22,8 +22,7 @@ const backOut = (u: number, s = 1.2): number => 1 + (s + 1) * Math.pow(u - 1, 3)
 export const sparkState = (f: number): SparkState => {
 	// ── entrata
 	const k = ease.inOutSine(clamp(f / T.anticEnd));
-	const start = {x: FROM.x, y: FROM.y + 12 * k};
-	let pos = start;
+	let pos: Vec2 = {x: FROM.x, y: FROM.y + 12 * k};
 	let size: number = FROM.size;
 	let rotation = -14 * k;
 	let scale = 1 - 0.06 * k;

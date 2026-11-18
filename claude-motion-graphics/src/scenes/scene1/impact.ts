@@ -90,7 +90,7 @@ export const drawRipples = (ctx: CanvasRenderingContext2D, f: number): void => {
 	for (const at of RIPPLE_BEATS) {
 		const t = (f - at) / RIPPLE_LIFE;
 		if (t < 0 || t >= 1) continue;
-		const radius = lerp(RING_BIRTH, 345, ease.outCubic(t));
+		const radius = lerp(RING_BIRTH + 16, 352, ease.outCubic(t)); // nasce staccata dalle punte: non "cerchia" il logo
 		strokeArc(ctx, radius, 0, TAU, lerp(2.4, 1, t), 0.34 * Math.pow(1 - t, 1.4) * lerp(0.5, 1, clamp(t * RIPPLE_LIFE)));
 	}
 	ctx.globalAlpha = 1;

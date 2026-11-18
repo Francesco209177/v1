@@ -2,7 +2,7 @@ import {drawGlow, glowSprite, withAlpha} from '../../lib/canvas';
 import {CODE_METRICS} from '../../lib/code';
 import {TAU, bezier2, clamp, ease, hash, hit, lerp} from '../../lib/math';
 import {COLORS} from '../../theme';
-import {CELLS, CW, GUTTERS, HUB, ORIGIN, PROMPT_SCALE, ROWS, cursorAt, lastKeyBefore, rowY} from './layout';
+import {CELLS, CW, GUTTERS, HUB, ORIGIN, ROWS, cursorAt, lastKeyBefore, rowY} from './layout';
 import {sparkState} from './spark';
 import {T} from './timing';
 
@@ -140,6 +140,3 @@ export const drawLight = (ctx: CanvasRenderingContext2D, frame: number): void =>
 		drawGlow(ctx, x, y, 5.5, COLORS.orange, fade, '#FFFFFF');
 	}
 };
-
-/** Usato dal prompt più grande: scala dei bagliori dei tasti. */
-export const PROMPT_GLOW = PROMPT_SCALE;

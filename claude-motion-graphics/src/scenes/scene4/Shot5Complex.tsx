@@ -1,7 +1,8 @@
 import React, {useMemo} from 'react';
 import {useCurrentFrame} from 'remotion';
 import {FrameCanvas} from '../../components/FrameCanvas';
-import {drawSystem} from './shot5-draw';
+import {HEIGHT, WIDTH} from '../../timeline';
+import {BLOOM_SCALE, drawBloom, drawSystem} from './shot5-draw';
 import {buildSystem} from './shot5-system';
 
 /**
@@ -15,5 +16,19 @@ import {buildSystem} from './shot5-system';
 export const Shot5Complex: React.FC = () => {
 	const frame = useCurrentFrame();
 	const system = useMemo(() => buildSystem(), []);
-	return <FrameCanvas frame={frame} additive draw={(ctx) => drawSystem(ctx, system, frame)} />;
+	return (
+		<>
+			{/* alone morbido a bassa risoluzione, ingrandito dal browser */}
+			<FrameCanvas
+				frame={frame}
+				additive
+				width={WIDTH * BLOOM_SCALE}
+				height={HEIGHT * BLOOM_SCALE}
+				style={{width: WIDTH, height: HEIGHT}}
+				draw={(ctx) => drawBloom(ctx, system, frame)}
+			/>
+			{/* particelle, linee e luci a piena risoluzione */}
+			<FrameCanvas frame={frame} additive draw={(ctx) => drawSystem(ctx, system, frame)} />
+		</>
+	);
 };

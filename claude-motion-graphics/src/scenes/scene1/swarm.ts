@@ -188,7 +188,7 @@ export const drawSwarm = (ctx: CanvasRenderingContext2D, swarm: Swarm, f: number
 			1, // globalAlpha fuori da [0,1] verrebbe ignorato dal canvas
 			ap * tw * lockFade * lerp(p.alphaFree * (1 + 0.22 * beat), p.alphaLock * heatUp, focus) * (1 + 1.4 * birth),
 		);
-		const size = lerp(p.sizeFree, p.sizeLock * tighten, focus) * (0.45 + 0.55 * ap) * (1 + 0.9 * birth);
+		const size = lerp(p.sizeFree * (1 + 0.14 * beat), p.sizeLock * tighten, focus) * (0.45 + 0.55 * ap) * (1 + 0.9 * birth);
 
 		// scia: due posizioni precedenti calcolate analiticamente, visibile solo se la particella corre
 		swarmPosition(p, f - 0.8, k, b);
