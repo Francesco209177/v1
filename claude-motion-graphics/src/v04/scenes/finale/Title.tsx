@@ -8,7 +8,7 @@ import {F, FL} from './timing';
 type Line = {text: string; size: number; y: number; at: number; accent?: boolean};
 const LINES: Line[] = [
 	{text: 'PRIMA DI', size: 126, y: 772, at: F.title},
-	{text: 'CLICCARE,', size: 152, y: 912, at: F.title + 2},
+	{text: 'CLICCARE,', size: 152, y: 912, at: F.title},
 	{text: 'PENSA.', size: 220, y: 1088, at: F.pensa, accent: true},
 ];
 
@@ -21,13 +21,13 @@ export const takeover = (f: number): number => ease.inOutCubic(clamp((f - F.take
  */
 const SlamLine: React.FC<{f: number; line: Line}> = ({f, line}) => {
 	const d = f - line.at;
-	if (d < -6) return null;
-	const pre = clamp((d + 6) / 6);
+	if (d < -5) return null;
+	const pre = clamp((d + 5) / 5);
 	const pin = ease.inQuart(pre);
 	const landed = d >= 0;
-	const scale = landed ? 1 - 0.045 * Math.sin(clamp(d / 7) * Math.PI) : lerp(2.3, 1, pin);
-	const track = landed ? lerp(-0.02, 0.012, ease.outCubic(clamp(d / 90))) : lerp(0.55, -0.02, pin);
-	const blur = landed ? 0 : (1 - pin) * 9;
+	const scale = landed ? 1 - 0.045 * Math.sin(clamp(d / 7) * Math.PI) : lerp(1.85, 1, pin);
+	const track = landed ? lerp(-0.02, 0.012, ease.outCubic(clamp(d / 90))) : lerp(0.38, -0.02, pin);
+	const blur = landed ? 0 : (1 - pin) * 7;
 	const flash = landed ? hit(d, 0, 6) : 0;
 	const sweep = prog(f, F.sweep + (line.accent ? 6 : 0), 22, ease.inOutSine);
 	const col = line.accent ? C4.green : C4.white;

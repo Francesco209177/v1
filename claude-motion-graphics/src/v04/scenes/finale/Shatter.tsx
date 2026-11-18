@@ -196,8 +196,8 @@ export const Shatter: React.FC<{f: number}> = ({f}) => {
 						ctx.stroke();
 					}
 					// lampo all'impatto
-					const flash = Math.exp(-f / 3);
-					if (flash > 0.02) {
+					const flash = Math.exp(-f / 2);
+					if (flash > 0.04) {
 						drawGlow(ctx, IMPACT.x, IMPACT.y, 70 * (1 + f * 0.25), C4.green, 0.9 * flash, C4.greenHot);
 						ctx.globalAlpha = 0.7 * flash;
 						const g = ctx.createLinearGradient(0, 0, 1080, 0);
@@ -205,7 +205,7 @@ export const Shatter: React.FC<{f: number}> = ({f}) => {
 						g.addColorStop(0.5, a4(C4.greenHot, 1));
 						g.addColorStop(1, a4(C4.green, 0));
 						ctx.fillStyle = g;
-						ctx.fillRect(-40, IMPACT.y - 5 * (1 + f), 1160, 10 * (1 + f));
+						ctx.fillRect(-40, IMPACT.y - 3 - 2 * f, 1160, 6 + 4 * f);
 						ctx.globalAlpha = 1;
 					}
 				}}

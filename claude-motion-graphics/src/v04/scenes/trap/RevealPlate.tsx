@@ -1,6 +1,6 @@
 import React from 'react';
 import {AbsoluteFill} from 'remotion';
-import {clamp, ease, hash, invLerp, lerp, prog} from '../../../lib/math';
+import {clamp, ease, hash, hit, lerp, prog} from '../../../lib/math';
 import {FONTS} from '../../../theme';
 import {a4, C4} from '../../theme';
 import {V4_FAKE} from '../../timeline';
@@ -67,7 +67,7 @@ export const RevealPlate: React.FC<{a: number; from: {x: number; y: number}; bac
 	const cy = lerp(lerp(from.y, P.cy, pIn), back.y, pOut);
 	const sc = lerp(lerp(0.55, 1, pIn), 0.42, pOut);
 	const op = clamp(pIn * 2) * (1 - prog(a, T.retract + 7, 6));
-	const flash = hit(a, T.reveal, 6);
+	const flash = hit(a, T.reveal, 10);
 	const g = a >= T.reveal && a <= T.reveal + 2 ? [1, 0.6, 0.25][a - T.reveal] : 0;
 	// note
 	const n1 = prog(a, T.ann1, 7, ease.outCubic) * (1 - prog(a, T.retract - 3, 6));
@@ -140,5 +140,3 @@ export const RevealPlate: React.FC<{a: number; from: {x: number; y: number}; bac
 		</AbsoluteFill>
 	);
 };
-
-const hit = (a: number, at: number, len: number): number => (a < at ? 0 : Math.exp(-(a - at) / len * 2.2) * (1 - invLerp(at + len * 3, at + len * 4, a)));
