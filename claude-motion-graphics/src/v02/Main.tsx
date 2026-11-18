@@ -10,7 +10,7 @@ import {V2Hook} from './scenes/V2Hook';
 import {V2How} from './scenes/V2How';
 import {V2Reveal} from './scenes/V2Reveal';
 import {V2Secret} from './scenes/V2Secret';
-import {V2_SCENES} from './timeline';
+import {V2_CUES, V2_SCENES} from './timeline';
 
 export const V2_SCENE_COMPONENTS: Record<keyof typeof V2_SCENES, React.FC> = {
 	hook: V2Hook,
@@ -34,7 +34,8 @@ export const V2Main: React.FC<{withAudio?: boolean}> = ({withAudio = false}) => 
 				);
 			})}
 			<CutFlash />
-			<Subtitles />
+			{/* da 28,5 s la domanda finale è già a tutto schermo: niente sottotitolo doppione */}
+			<Subtitles hidden={(f) => f >= V2_CUES.question - 3} />
 			<Grain />
 			{withAudio ? <Audio src={staticFile('v02/audio_final.wav')} /> : null}
 		</AbsoluteFill>
