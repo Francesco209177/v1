@@ -15,9 +15,10 @@ export const HUB = {
 export const T = {
 	coverHold: 8, //      nero pieno fino a qui
 	coverGone: 60, //     poi la stanza si accende
+	implode: 59, //       anticipazione: archi di luce che si chiudono verso il simbolo
 	handoff: 66, //       lo spark solido comincia ad affiorare sotto le particelle
 	formed: CUES.sparkFormed - SCENES.intro.start, // 75 · IMPATTO (cue musicale)
-	swarmGone: 84, //     ultime particelle spente
+	swarmGone: 80, //     ultime particelle fuse nel simbolo solido
 	extrasOut: 101, //    orbite e raggi cominciano a rientrare
 	extrasGone: 116, //   da qui resta solo lo spark
 	titleIn: 26,
@@ -51,6 +52,16 @@ export const flash = (f: number): number => {
 	if (t < 0) return 0.28 * clamp(1 + t / 4) ** 2;
 	return Math.exp(-t / 4.2) * (1 - smooth((t - 14) / 10));
 };
+
+/** Flare anamorfico: stesso attacco del lampo ma coda molto più corta (niente "filo" residuo sullo spark). */
+export const flare = (f: number): number => {
+	const t = f - T.formed;
+	if (t < 0) return 0.28 * clamp(1 + t / 4) ** 2;
+	return Math.exp(-t / 2.3) * (1 - smooth((t - 6) / 6));
+};
+
+/** Carica prima dell'impatto: 0 → 1 mentre l'energia si raccoglie (da implode al cue). */
+export const charge = (f: number): number => smooth((f - T.implode) / (T.formed - T.implode));
 
 /** "Calore" del simbolo (bianco-arancio) che si raffredda dopo l'impatto. */
 export const heat = (f: number): number => {

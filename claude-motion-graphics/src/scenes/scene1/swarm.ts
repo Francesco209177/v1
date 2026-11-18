@@ -1,9 +1,9 @@
 import {drawGlow} from '../../lib/canvas';
-import {clamp, lerp, seeded, TAU} from '../../lib/math';
+import {beatPulse, clamp, lerp, seeded, TAU} from '../../lib/math';
 import {sampleSparkPoints} from '../../lib/spark';
 import {COLORS} from '../../theme';
 import {HEIGHT, WIDTH} from '../../timeline';
-import {HUB, POSE, smooth, T} from './motion';
+import {charge, HUB, POSE, smooth, T} from './motion';
 
 /**
  * SCIAME — le particelle che convergono e compongono il simbolo.
@@ -20,10 +20,11 @@ export type SwarmParticle = {
 	// bersaglio relativo al mozzo (px, scala 1)
 	tx: number;
 	ty: number;
-	// tempi: inizio attrazione, 1/durata, comparsa
+	// tempi: inizio attrazione, 1/durata, comparsa (+ se nasce in campo: si "accende" con un piccolo bagliore)
 	p0: number;
 	invDur: number;
 	t0: number;
+	ignite: boolean;
 	// stato libero (spazio "circolare", relativo al mozzo)
 	fx: number;
 	fy: number;
@@ -53,6 +54,10 @@ export type Swarm = {particles: SwarmParticle[]; rMax: number};
 /** Il campo libero è un disco schiacciato in x (formato 9:16) e spostato verso il centro del frame. */
 const SQUASH_X = 0.7;
 const BIAS_Y = 130;
+/** Primo frame (frazionario) in cui può accendersi una particella: prima è buio totale. */
+const FIRST_LIGHT = 1;
+/** Da qui le particelle agganciate cominciano a fondersi nel simbolo solido (spente a swarmGone-1). */
+const FUSE_START = T.formed - 4;
 /** Durata dell'assemblaggio: il mozzo si chiude a formed-ASSEMBLY, le punte ESATTAMENTE a formed. */
 const ASSEMBLY = 18;
 
@@ -116,7 +121,8 @@ export const buildSwarm = (count: number, seed: number): Swarm => {
 			ty: POSE.y + pt.y * POSE.size - HUB.y,
 			p0,
 			invDur: 1 / dur,
-			t0: -1000,
+			t0: 0,
+			ignite: false,
 			fx: Math.cos(a0) * r0,
 			fy: Math.sin(a0) * r0,
 			vx: Math.cos(driftA) * driftV,
@@ -128,9 +134,9 @@ export const buildSwarm = (count: number, seed: number): Swarm => {
 			ph2: rnd() * TAU,
 			swirl: 1.15 + 0.85 * rnd() + 0.25 * z,
 			omega: 0.0028 + 0.0034 * z,
-			sizeFree: bokeh ? 8 + 8 * rnd() : 1.05 + 2.3 * Math.pow(zc, 1.6) * (0.55 + 0.9 * rnd()),
+			sizeFree: bokeh ? 8 + 8 * rnd() : 1.2 + 2.55 * Math.pow(zc, 1.6) * (0.55 + 0.9 * rnd()),
 			sizeLock: 1.45 + 0.75 * rnd(),
-			alphaFree: bokeh ? 0.1 + 0.07 * rnd() : 0.28 + 0.72 * zc,
+			alphaFree: bokeh ? 0.1 + 0.07 * rnd() : 0.36 + 0.64 * zc,
 			alphaLock: 0.55 + 0.35 * rnd(),
 			twF: 0.22 + 0.4 * rnd(),
 			twPh: rnd() * TAU,
@@ -138,36 +144,51 @@ export const buildSwarm = (count: number, seed: number): Swarm => {
 			core: deep ? COLORS.orangeBright : hot ? COLORS.white : COLORS.orangeHot,
 		};
 
-		// comparsa: chi parte dentro l'inquadratura si accende (poche subito, poi sempre di più);
-		// chi parte fuori campo entra volando e non ha bisogno di fade.
+		// comparsa: MAI prima del frame 1 (il frame 0 è nero vero). Chi nasce in campo si accende:
+		// una manciata ai frame 2–3 (le più vicine per prime), poi la popolazione cresce in fretta.
+		// Chi parte fuori campo entra volando: basta un fade brevissimo.
 		swarmPosition(p, 4, 1, probe);
 		const onScreen = probe.x > -10 && probe.x < WIDTH + 10 && probe.y > -10 && probe.y < HEIGHT + 10;
 		const q = rnd();
-		if (onScreen) p.t0 = Math.min(2 + 30 * Math.pow(q, 0.65), p0 + 0.35 * dur);
+		p.ignite = onScreen;
+		p.t0 = onScreen
+			? Math.min(FIRST_LIGHT + 23 * Math.pow(q, 0.8) * lerp(1.25, 0.6, zc), p0 + 0.35 * dur)
+			: FIRST_LIGHT + 4 * q;
 		return p;
 	});
 	return {particles, rMax};
 };
 
-/** Disegna lo sciame (testa luminosa + scia analitica a due segmenti). Richiede composite 'lighter'. */
-export const drawSwarm = (ctx: CanvasRenderingContext2D, swarm: Swarm, f: number, k: number): void => {
-	// handoff: mentre lo spark solido affiora, le particelle agganciate si stringono e si spengono
-	const lockFade = 1 - smooth((f - (T.formed - 2)) / (T.swarmGone - T.formed + 1));
+/**
+ * Disegna lo sciame (testa luminosa + scia analitica a due segmenti). Richiede composite 'lighter'.
+ * `abs` = frame assoluto: lo sciame luccica leggermente sul beat.
+ */
+export const drawSwarm = (ctx: CanvasRenderingContext2D, swarm: Swarm, f: number, k: number, abs: number = f): void => {
+	// handoff: mentre lo spark solido affiora, le particelle agganciate si stringono e si fondono nel simbolo
+	const lockFade = 1 - smooth((f - FUSE_START) / (T.swarmGone - 1 - FUSE_START));
 	if (lockFade <= 0) return;
 	const tighten = 1 - 0.35 * smooth((f - T.handoff) / 12);
+	const beat = beatPulse(abs, 5);
+	const heatUp = 1 + 0.4 * charge(f); // le particelle agganciate si scaldano verso l'impatto
 	const a: Vec = {x: 0, y: 0};
 	const b: Vec = {x: 0, y: 0};
 	const c: Vec = {x: 0, y: 0};
 	ctx.lineCap = 'round';
 	for (const p of swarm.particles) {
-		const ap = smooth((f - p.t0) / 7);
-		if (ap <= 0) continue;
+		const age = f - p.t0;
+		if (age <= 0) continue;
+		const ap = smooth(age / 6);
 		const S = swarmPosition(p, f, k, a);
 		if (a.x < -80 || a.x > WIDTH + 80 || a.y < -80 || a.y > HEIGHT + 80) continue;
 		const focus = S * S;
 		const tw = 0.74 + 0.26 * Math.sin(f * p.twF + p.twPh);
-		const alpha = ap * tw * lockFade * lerp(p.alphaFree, p.alphaLock, focus);
-		const size = lerp(p.sizeFree, p.sizeLock * tighten, focus) * (0.45 + 0.55 * ap);
+		// scintilla di accensione: nasce più grande e più chiara, si assesta in ~8 frame
+		const birth = p.ignite ? Math.exp(-age / 3.5) : 0;
+		const alpha = Math.min(
+			1, // globalAlpha fuori da [0,1] verrebbe ignorato dal canvas
+			ap * tw * lockFade * lerp(p.alphaFree * (1 + 0.22 * beat), p.alphaLock * heatUp, focus) * (1 + 1.4 * birth),
+		);
+		const size = lerp(p.sizeFree, p.sizeLock * tighten, focus) * (0.45 + 0.55 * ap) * (1 + 0.9 * birth);
 
 		// scia: due posizioni precedenti calcolate analiticamente, visibile solo se la particella corre
 		swarmPosition(p, f - 0.8, k, b);
@@ -177,12 +198,12 @@ export const drawSwarm = (ctx: CanvasRenderingContext2D, swarm: Swarm, f: number
 			swarmPosition(p, f - 1.7, k, c);
 			ctx.strokeStyle = p.color;
 			ctx.lineWidth = Math.max(1, Math.min(size, 3.2) * 0.95);
-			ctx.globalAlpha = alpha * 0.5 * trail;
+			ctx.globalAlpha = alpha * 0.58 * trail;
 			ctx.beginPath();
 			ctx.moveTo(a.x, a.y);
 			ctx.lineTo(b.x, b.y);
 			ctx.stroke();
-			ctx.globalAlpha = alpha * 0.2 * trail;
+			ctx.globalAlpha = alpha * 0.24 * trail;
 			ctx.beginPath();
 			ctx.moveTo(b.x, b.y);
 			ctx.lineTo(c.x, c.y);

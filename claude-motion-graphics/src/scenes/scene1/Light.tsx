@@ -1,8 +1,9 @@
 import React, {useMemo} from 'react';
 import {useCurrentFrame} from 'remotion';
-import {clamp, ease, invLerp, seeded} from '../../lib/math';
+import {useAbsFrame} from '../../lib/frame';
+import {beatPulse, clamp, ease, invLerp, seeded} from '../../lib/math';
 import {alpha, COLORS} from '../../theme';
-import {extrasOut, flash, HUB, T} from './motion';
+import {extrasOut, flare, flash, HUB, T} from './motion';
 
 /** Gradiente conico di raggi irregolari (larghezza e intensità variabili, deterministici). */
 const rayGradient = (seed: number, count: number, from: number): string => {
@@ -32,8 +33,10 @@ const RAY_MASK =
  */
 export const LightRays: React.FC = () => {
 	const f = useCurrentFrame();
+	const abs = useAbsFrame();
 	const t = f - T.formed;
-	const k = t < 0 ? 0 : (0.4 + 0.6 * Math.exp(-t / 7)) * (1 - extrasOut(f));
+	// accesi dall'impatto, poi un respiro sul beat; rientrano con gli altri extra
+	const k = t < 0 ? 0 : (0.4 + 0.6 * Math.exp(-t / 7) + 0.22 * beatPulse(abs, 4)) * (1 - extrasOut(f));
 	// i due motivi sono statici: cambia solo l'angolo "from"
 	const layers = useMemo(() => [{seed: 11, count: 13, speed: 0.22, phase: 0}, {seed: 29, count: 17, speed: -0.16, phase: 40}], []);
 	if (k <= 0.002) return null;
@@ -92,6 +95,7 @@ export const ImpactBloom: React.FC = () => {
 	const f = useCurrentFrame();
 	const k = flash(f);
 	if (k <= 0.003) return null;
+	const kf = flare(f);
 	const t = Math.max(0, f - T.formed);
 	const size = 900 + 700 * ease.outExpo(clamp(t / 14));
 	const flareW = 1500 + 500 * ease.outExpo(clamp(t / 10));
@@ -115,8 +119,8 @@ export const ImpactBloom: React.FC = () => {
 					top: HUB.y - 300,
 					width: flareW,
 					height: 600,
-					background: `radial-gradient(50% 50% at 50% 50%, ${alpha(COLORS.white, 0.8 * k)} 0%, ${alpha(COLORS.orangeBright, 0.32 * k)} 30%, ${alpha(COLORS.orange, 0)} 100%)`,
-					transform: `scaleY(${0.022 + 0.055 * k})`,
+					background: `radial-gradient(50% 50% at 50% 50%, ${alpha(COLORS.white, 0.8 * kf)} 0%, ${alpha(COLORS.orangeBright, 0.32 * kf)} 30%, ${alpha(COLORS.orange, 0)} 100%)`,
+					transform: `scaleY(${0.02 + 0.06 * kf})`,
 				}}
 			/>
 		</div>

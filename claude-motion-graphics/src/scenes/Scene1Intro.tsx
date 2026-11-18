@@ -7,21 +7,21 @@ import {useAbsFrame} from '../lib/frame';
 import {ease, invLerp, lerp, tween} from '../lib/math';
 import {SPARK_VIEWBOX} from '../lib/spark';
 import {COLORS} from '../theme';
-import {buildEmbers, buildMotes, drawEmbers, drawMotes, drawRings} from './scene1/impact';
+import {buildEmbers, buildMotes, drawEmbers, drawImplosion, drawMotes, drawRings, drawRipples} from './scene1/impact';
 import {CoreGlow, ImpactBloom, LightRays} from './scene1/Light';
 import {cameraScale, cameraShake, flash, heat, HUB, POSE, sparkBreath, sparkPop, T} from './scene1/motion';
 import {buildSwarm, drawSwarm} from './scene1/swarm';
 
 const PARTICLES = 1400;
 const EMBERS = 80;
-const MOTES = 10;
+const MOTES = 14;
 /** Raggio (viewBox) a cui la maschera `reveal` di ClaudeSpark è completamente aperta. */
 const REVEAL_FULL = 17.5 / SPARK_VIEWBOX;
 
 /**
  * SCENA 1 · INTRO (0–119) — dal nero, particelle arancioni convergono a spirale e compongono
  * il simbolo di Claude; sul cue (f 75) impatto di luce e il simbolo prende vita.
- * Livelli, dal basso: velo nero → raggi → orbite (dietro) → luce → spark → particelle/impatto → titolo.
+ * Livelli, dal basso: velo nero → raggi → anelli e orbite (dietro) → luce → spark → particelle/braci → bloom → titolo.
  */
 export const Scene1Intro: React.FC = () => {
 	const frame = useCurrentFrame();
@@ -45,9 +45,11 @@ export const Scene1Intro: React.FC = () => {
 	const hot = heat(frame);
 
 	const post = frame >= T.formed && frame < T.extrasGone;
-	const swarmOn = frame <= T.swarmGone;
+	const swarmOn = frame > 0 && frame < T.swarmGone;
+	const backOn = frame >= T.implode && frame < T.extrasGone;
 	const cam = cameraScale(frame);
 	const shake = cameraShake(frame);
+	const titleDrift = lerp(8, -8, invLerp(T.titleIn, T.titleOut + 8, frame));
 
 	return (
 		<AbsoluteFill>
@@ -60,11 +62,15 @@ export const Scene1Intro: React.FC = () => {
 				}}
 			>
 				<LightRays />
-				{post ? (
+				{/* dietro al simbolo: archi di anticipazione, onde d'urto, metà lontana delle orbite */}
+				{backOn ? (
 					<FrameCanvas
 						additive
 						draw={(ctx) => {
 							ctx.globalCompositeOperation = 'lighter';
+							drawImplosion(ctx, frame);
+							drawRings(ctx, frame);
+							drawRipples(ctx, frame);
 							drawMotes(ctx, motes, frame, false);
 						}}
 					/>
@@ -96,14 +102,14 @@ export const Scene1Intro: React.FC = () => {
 					/>
 				) : null}
 
+				{/* davanti al simbolo: sciame, braci dell'impatto, metà vicina delle orbite */}
 				{swarmOn || post ? (
 					<FrameCanvas
 						additive
 						draw={(ctx) => {
 							ctx.globalCompositeOperation = 'lighter';
-							if (swarmOn) drawSwarm(ctx, swarm, frame, k);
+							if (swarmOn) drawSwarm(ctx, swarm, frame, k, abs);
 							if (post) {
-								drawRings(ctx, frame);
 								drawEmbers(ctx, embers, frame, k);
 								drawMotes(ctx, motes, frame, true);
 							}
@@ -112,17 +118,20 @@ export const Scene1Intro: React.FC = () => {
 				) : null}
 				<ImpactBloom />
 
-				<Caption
-					text={'Come si crea una\nmotion graphics\ncon Claude Code?'}
-					highlight={['Claude', 'Code?']}
-					y={1230}
-					size={92}
-					weight={700}
-					inAt={T.titleIn}
-					// tre frasi: "motion" e "Code?" atterrano sui beat 3 e 4 (f 45 e 60)
-					wordAt={[26, 29, 32, 35, 41, 45, 50, 53, 56]}
-					outAt={T.titleOut}
-				/>
+				{/* titolo: deriva lentissima verso l'alto, così non è mai fermo mentre lo si legge */}
+				<div style={{position: 'absolute', inset: 0, transform: `translateY(${titleDrift}px)`}}>
+					<Caption
+						text={'Come si crea una\nmotion graphics\ncon Claude Code?'}
+						highlight={['Claude', 'Code?']}
+						y={1230}
+						size={92}
+						weight={700}
+						inAt={T.titleIn}
+						// tre frasi: "motion" e "Code?" atterrano sui beat 3 e 4 (f 45 e 60)
+						wordAt={[26, 29, 32, 35, 41, 45, 50, 53, 56]}
+						outAt={T.titleOut}
+					/>
+				</div>
 			</AbsoluteFill>
 		</AbsoluteFill>
 	);
