@@ -19,7 +19,7 @@ export const V4Hook: React.FC = () => {
 	const al = alarmP(f);
 	const finger = fingerState(f, pose);
 	const tap = projectPhone(pose, TAP_POINT.x, TAP_POINT.y);
-	const blur = Math.min(13, zoomSpeed(f) * 50) + 12 * diveP(f) ** 2; // motion blur del tuffo
+	const blur = Math.min(13, zoomSpeed(f) * 50) + 10 * diveP(f) ** 2 + 14 * diveP(f) ** 4; // motion blur del tuffo
 	const wake = f >= H.notif ? Math.exp(-(f - H.notif) / 6) : 0;
 	const phone = (
 		<>

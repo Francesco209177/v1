@@ -44,7 +44,7 @@ const makeShards = (): {shards: Shard[]; spokes: Pt[][]} => {
 				rz: (hash(seed, 22) - 0.5) * 2 * (ring === 2 ? 50 : 110),
 				rx: (hash(seed, 23) - 0.5) * 2 * 70,
 				ry: (hash(seed, 24) - 0.5) * 2 * 70,
-				fadeAt: 5 + hash(seed, 25) * 8 + ring * 2,
+				fadeAt: 4 + hash(seed, 25) * 6 + ring * 1.5,
 				ring,
 			});
 		});
@@ -82,12 +82,12 @@ const shardMotion = (s: Shard, t: number) => {
 	const travel = s.speed * k;
 	return {
 		tx: s.dir.x * travel,
-		ty: s.dir.y * travel + 0.32 * t * t,
+		ty: s.dir.y * travel + 0.12 * t * t,
 		rz: s.rz * k,
 		rx: s.rx * k,
 		ry: s.ry * k,
 		sc: 1 - 0.3 * k,
-		op: 1 - ease.inQuad(clamp((t - s.fadeAt) / 10)),
+		op: 1 - ease.inQuad(clamp((t - s.fadeAt) / 8)),
 	};
 };
 

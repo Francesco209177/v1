@@ -237,7 +237,7 @@ export const MailWindow: React.FC<{a: number; pose: WinPose}> = ({a, pose}) => {
 							}}
 						>
 							<div style={{position: 'absolute', left: L.cursorRest.x - L.tip.x - 10, top: -9, width: 16, height: 16, background: '#0A0D0E', borderLeft: `1.5px solid ${a4(dock > 0.01 ? C4.red : C4.white, 0.2 + 0.5 * dock)}`, borderTop: `1.5px solid ${a4(dock > 0.01 ? C4.red : C4.white, 0.2 + 0.5 * dock)}`, transform: 'rotate(45deg)'}} />
-							<div style={{opacity: 1 - revealP(a)}}>
+							<div style={{opacity: a < T.reveal ? 1 : prog(a, T.retract + 4, 5)}}>
 								<div>
 									https://
 									<PhishDomain k={dock} color={dock > 0.02 ? C4.redBright : C4.white} />

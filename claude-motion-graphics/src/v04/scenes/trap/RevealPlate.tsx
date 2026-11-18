@@ -25,7 +25,7 @@ const N1_Y = PT - 132;
 const N2_Y = PT + P.h + 70;
 
 const Body: React.FC<{a: number}> = ({a}) => {
-	const zk = prog(a, T.reveal, 6, ease.outCubic);
+	const zk = prog(a, T.reveal - 1, 4, ease.outCubic); // lo zero è rosso già sul cue
 	const ring = prog(a, T.ring, 8, ease.inOutCubic);
 	const ringPulse = Math.exp(-Math.max(0, a - (T.ring + 8)) / 6) * (a >= T.ring + 8 ? 1 : 0);
 	const under = prog(a, T.underline, 7, ease.outCubic);
@@ -64,14 +64,14 @@ const Body: React.FC<{a: number}> = ({a}) => {
  */
 export const RevealPlate: React.FC<{a: number; from: {x: number; y: number}; back: {x: number; y: number}}> = ({a, from, back}) => {
 	if (a < T.reveal - 1 || a > T.retract + 14) return null;
-	const pIn = prog(a, T.reveal - 1, 8, ease.outExpo);
+	const pIn = prog(a, T.reveal - 1, 6, ease.outExpo);
 	const pOut = prog(a, T.retract, 12, ease.inOutCubic);
 	const cx = lerp(lerp(from.x, P.cx, pIn), back.x, pOut);
 	const cy = lerp(lerp(from.y, P.cy, pIn), back.y, pOut);
 	const sc = lerp(lerp(0.55, 1, pIn), 0.42, pOut);
-	const op = clamp(pIn * 2) * (1 - prog(a, T.retract + 7, 6));
+	const op = clamp(pIn * 2) * (1 - prog(a, T.retract + 3, 6, ease.inQuad));
 	const flash = hit(a, T.reveal, 10);
-	const g = a >= T.reveal && a <= T.reveal + 2 ? [1, 0.6, 0.25][a - T.reveal] : 0;
+	const g = a >= T.reveal && a <= T.reveal + 2 ? [0.75, 0.4, 0.15][a - T.reveal] : 0;
 	// note
 	const n1 = prog(a, T.ann1, 7, ease.outCubic) * (1 - prog(a, T.retract - 3, 6));
 	const n2 = prog(a, T.ann2, 7, ease.outCubic) * (1 - prog(a, T.retract - 3, 6));
@@ -112,11 +112,11 @@ export const RevealPlate: React.FC<{a: number; from: {x: number; y: number}; bac
 								<Body a={a} />
 								<div style={{position: 'absolute', inset: 0, background: '#FF2A30', mixBlendMode: 'multiply'}} />
 							</>,
-							{background: '#000', mixBlendMode: 'screen', opacity: 0.9 * g, transform: `translateX(${16 * g}px)`, isolation: 'isolate', overflow: 'hidden'},
+							{background: '#000', mixBlendMode: 'screen', opacity: 0.8 * g, transform: `translateX(${10 * g}px)`, isolation: 'isolate', overflow: 'hidden'},
 						)}
-						{plateBox(<Body a={a} />, {mixBlendMode: 'screen', opacity: 0.35 * g, transform: `translateX(${-12 * g}px)`})}
+						{plateBox(<Body a={a} />, {mixBlendMode: 'screen', opacity: 0.25 * g, transform: `translateX(${-7 * g}px)`})}
 						{[0, 1, 2].map((i) => (
-							<div key={i} style={{position: 'absolute', left: PL - 40 + hash(a, i) * 60, top: PT + hash(a, i + 9) * P.h, width: P.w * (0.4 + 0.5 * hash(a, i + 4)), height: 3 + 4 * hash(a, i + 6), background: `rgba(255,214,215,${0.7 * g})`, boxShadow: `0 0 16px ${a4(C4.red, g)}`}} />
+							<div key={i} style={{position: 'absolute', left: PL - 40 + hash(a, i) * 60, top: PT + [-10, P.h + 6, P.h + 22][i] + hash(a, i + 9) * 8, width: P.w * (0.4 + 0.5 * hash(a, i + 4)), height: 2 + 3 * hash(a, i + 6), background: `rgba(255,214,215,${0.7 * g})`, boxShadow: `0 0 16px ${a4(C4.red, g)}`}} />
 						))}
 					</>
 				) : null}
