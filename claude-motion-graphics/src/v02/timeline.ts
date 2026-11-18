@@ -31,16 +31,16 @@ export const V2_CUES = {
 	question: 855, //     28,5 s · "Tu la useresti?"
 } as const;
 
-/** Voce narrante (secondi). Testi = sottotitoli a schermo. File in public/v02/vo/. */
+/** Voce narrante (secondi, misurati sulle clip rifilate dal mixer). Testi = sottotitoli a schermo. File in public/v02/vo/. */
 export const V2_VO = [
-	{file: 'vo_01', start: 0.1, end: 3.5, text: "E se ti dicessi che puoi usare l'intelligenza artificiale senza Internet?"},
-	{file: 'vo_02', start: 3.9, end: 7.3, text: 'Il segreto è installare il modello direttamente sul tuo computer.'},
-	{file: 'vo_03', start: 9.4, end: 14.0, text: 'Il tuo hardware esegue il modello localmente, elaborando richieste e generando risposte.'},
-	{file: 'vo_04', start: 17.05, end: 19.5, text: 'I tuoi dati possono restare sul dispositivo.'},
-	{file: 'vo_05', start: 19.65, end: 21.4, text: 'Niente connessione necessaria,'},
-	{file: 'vo_06', start: 22.15, end: 23.2, text: 'più controllo.'},
-	{file: 'vo_07', start: 24.35, end: 28.45, text: "Il futuro dell'intelligenza artificiale potrebbe essere proprio sulla tua scrivania."},
-	{file: 'vo_08', start: 28.55, end: 29.8, text: 'Tu la useresti?'},
+	{file: 'vo_01', start: 0.1, end: 3.27, text: "E se ti dicessi che puoi usare l'intelligenza artificiale senza Internet?"},
+	{file: 'vo_02', start: 3.9, end: 7.07, text: 'Il segreto è installare il modello direttamente sul tuo computer.'},
+	{file: 'vo_03', start: 9.4, end: 13.74, text: 'Il tuo hardware esegue il modello localmente, elaborando richieste e generando risposte.'},
+	{file: 'vo_04', start: 17.05, end: 19.34, text: 'I tuoi dati possono restare sul dispositivo.'},
+	{file: 'vo_05', start: 19.65, end: 21.11, text: 'Niente connessione necessaria,'},
+	{file: 'vo_06', start: 22.15, end: 23.03, text: 'più controllo.'},
+	{file: 'vo_07', start: 24.35, end: 28.11, text: "Il futuro dell'intelligenza artificiale potrebbe essere proprio sulla tua scrivania."},
+	{file: 'vo_08', start: 28.55, end: 29.48, text: 'Tu la useresti?'},
 ] as const;
 
 /** Zone sicure Reels (come il video 01). I sottotitoli stanno attorno a y = 1380. */
