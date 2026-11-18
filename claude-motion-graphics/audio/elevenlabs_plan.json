@@ -1,0 +1,54 @@
+{
+  "_doc": [
+    "Piano audio ElevenLabs per il reel: voce narrante italiana + effetti sonori, sincronizzati alla timeline (src/timeline.ts, 30 fps).",
+    "Generare ogni elemento con ElevenLabs e salvarlo in public/elevenlabs/<file> (mp3 o wav). Poi: python3 audio/synth.py --bed && python3 audio/mix_final.py",
+    "voice: start = secondo in cui inizia la frase (sincronizzata con l'entrata della caption); end_by = limite massimo. Se la clip è più lunga, mix_final.py la accelera (max 1.15x) senza cambiare intonazione.",
+    "sfx align: 'onset' = il primo transiente cade su 'at'; 'peak' = il punto più forte cade su 'at' (whoosh); 'end' = la clip finisce su 'at' (riser, swell).",
+    "Testi: identici alle caption a schermo. Lingua: italiano. Prompt degli effetti in inglese (resa migliore del modello Sound Effects)."
+  ],
+  "voice": {
+    "language": "it",
+    "model": "eleven_multilingual_v2",
+    "style_notes": "Voce italiana calda, sicura, moderna, ritmo da spot tecnologico; né enfatica né robotica. Stessa voce e stesse impostazioni per tutte le frasi.",
+    "settings": {"stability": 0.45, "similarity_boost": 0.8, "style": 0.25, "use_speaker_boost": true, "speed": 1.05},
+    "gain_db": 0.0,
+    "lines": [
+      {"file": "vo_01.mp3", "text": "Come si crea una motion graphics con Claude Code?", "start": 0.90, "end_by": 3.95},
+      {"file": "vo_02.mp3", "text": "Tutto parte da un semplice prompt.", "start": 4.75, "end_by": 6.95},
+      {"file": "vo_03.mp3", "text": "Claude scrive il codice,", "start": 9.30, "end_by": 11.45},
+      {"file": "vo_04.mp3", "text": "genera animazioni", "start": 11.55, "end_by": 13.70},
+      {"file": "vo_05.mp3", "text": "e costruisce ogni scena.", "start": 13.85, "end_by": 15.70},
+      {"file": "vo_06.mp3", "text": "Dall'idea al video,", "start": 16.35, "end_by": 18.70},
+      {"file": "vo_07.mp3", "text": "tutto attraverso il codice.", "start": 19.25, "end_by": 21.90},
+      {"file": "vo_08.mp3", "text": "Claude Code.", "start": 26.15, "end_by": 27.10},
+      {"file": "vo_09.mp3", "text": "Il tuo studio di motion graphics, alimentato dall'AI.", "start": 27.20, "end_by": 29.85}
+    ]
+  },
+  "sfx": [
+    {"file": "sfx_01_particles.mp3", "prompt": "soft glittering particles swirling and converging toward the center, magical high-tech shimmer, gentle rising", "duration": 2.4, "at": 2.50, "align": "end", "gain_db": -6},
+    {"file": "sfx_02_spark_hit.mp3", "prompt": "deep soft cinematic impact with a warm shimmering bell tail, premium tech logo reveal", "duration": 2.5, "at": 2.50, "align": "onset", "gain_db": -3},
+    {"file": "sfx_03_whoosh.mp3", "prompt": "smooth airy whoosh transition, clean and modern", "duration": 1.0, "at": 4.00, "align": "peak", "gain_db": -8},
+    {"file": "sfx_04_typing.mp3", "prompt": "fast soft typing on a quiet laptop keyboard, close and dry, no room", "duration": 2.0, "at": 4.55, "align": "onset", "gain_db": -12},
+    {"file": "sfx_05_enter.mp3", "prompt": "futuristic UI confirm sound, short bright digital blip going up with a tiny sub thump", "duration": 0.6, "at": 7.00, "align": "onset", "gain_db": -6},
+    {"file": "sfx_06_datastream.mp3", "prompt": "fast digital data stream bleeps and computer processing sounds, code being generated, rising", "duration": 2.0, "at": 7.10, "align": "onset", "gain_db": -14},
+    {"file": "sfx_07_impact.mp3", "prompt": "punchy cinematic tech impact with sub boom and short metallic shimmer", "duration": 1.6, "at": 9.00, "align": "onset", "gain_db": -4},
+    {"file": "sfx_08_riser.mp3", "prompt": "intense cinematic riser building tension, white noise sweep up and rising synth tone", "duration": 2.0, "at": 15.75, "align": "end", "gain_db": -7},
+    {"file": "sfx_09_drop.mp3", "prompt": "massive cinematic boom impact, deep sub drop and bright glassy shimmer, trailer hit", "duration": 2.5, "at": 16.00, "align": "onset", "gain_db": -2},
+    {"file": "sfx_10_swoosh.mp3", "prompt": "quick sharp swoosh, fast motion graphics transition", "duration": 0.7, "at": 17.50, "align": "peak", "gain_db": -9},
+    {"file": "sfx_11_swoosh.mp3", "prompt": "quick swoosh with a light metallic glint, motion graphics transition", "duration": 0.7, "at": 19.00, "align": "peak", "gain_db": -9},
+    {"file": "sfx_12_light.mp3", "prompt": "bright electric light flash with a soft neon hum swell", "duration": 0.9, "at": 20.50, "align": "onset", "gain_db": -10},
+    {"file": "sfx_13_swoosh.mp3", "prompt": "fast whoosh with digital glitch texture, motion graphics transition", "duration": 0.7, "at": 22.00, "align": "peak", "gain_db": -9},
+    {"file": "sfx_14_outro_hit.mp3", "prompt": "soft deep impact with airy whoosh, elegant and restrained", "duration": 1.4, "at": 24.00, "align": "onset", "gain_db": -6},
+    {"file": "sfx_15_suck.mp3", "prompt": "reverse cymbal swell and everything being sucked into a single point, rising suction", "duration": 2.0, "at": 26.00, "align": "end", "gain_db": -6},
+    {"file": "sfx_16_logo_hit.mp3", "prompt": "elegant tech logo reveal hit, warm sub boom, shimmering chime and long airy tail", "duration": 3.5, "at": 26.00, "align": "onset", "gain_db": -3}
+  ],
+  "mix": {
+    "bed": "public/music_bed.wav",
+    "out": "public/music_final.wav",
+    "duck_db": 7.0,
+    "duck_attack_ms": 60,
+    "duck_release_ms": 250,
+    "target_lufs": -14.0,
+    "true_peak_db": -1.5
+  }
+}

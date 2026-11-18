@@ -517,7 +517,8 @@ def to_int16(x, env, seed: int = 1234):
     return np.clip(q, -32768, 32767).astype(np.int16)
 
 
-def render(verbose: bool = True):
+def render(verbose: bool = True, bed: bool = False):
+    """bed=True: base musicale senza il gruppo "fx" (whoosh, impatti, riser...), da completare con effetti esterni."""
     t0 = time.time()
     ev = arr.build()
     st = make_stems()
@@ -529,6 +530,10 @@ def render(verbose: bool = True):
     render_bells(ev, st)
     render_textures(ev, st)
     render_fx(st)
+    if bed:
+        for name, cfg in st.cfg.items():
+            if cfg["group"] == "fx":
+                st.audio[name][:] = 0.0
     if verbose:
         print(f"stems rendered in {time.time() - t0:.1f} s")
     mix = mix_down(st, ev)
@@ -552,14 +557,16 @@ def stem_report(st: Stems):
 
 
 def main():
-    out, gr, env, st = render()
+    bed = "--bed" in sys.argv
+    out, gr, env, st = render(bed=bed)
     if "--stems" in sys.argv:
         stem_report(st)
     pcm = to_int16(out, env)
-    os.makedirs(os.path.dirname(OUT_WAV), exist_ok=True)
-    wavfile.write(OUT_WAV, SR, pcm)
+    out_wav = OUT_WAV.replace("music.wav", "music_bed.wav") if bed else OUT_WAV
+    os.makedirs(os.path.dirname(out_wav), exist_ok=True)
+    wavfile.write(out_wav, SR, pcm)
     f = pcm.astype(np.float64) / 32768.0
-    print(f"wrote {OUT_WAV}: {len(pcm)} samples x {pcm.shape[1]} ch @ {SR} Hz, 16-bit")
+    print(f"wrote {out_wav}: {len(pcm)} samples x {pcm.shape[1]} ch @ {SR} Hz, 16-bit")
     print(f"integrated {lufs_integrated(f):.2f} LUFS, true peak {lin2db(true_peak(f)):.2f} dBTP, "
           f"max limiter gain reduction {lin2db(gr.min()):.1f} dB")
     for name, a, b in (("intro", 0, 2.5), ("impact1", 2.5, 4), ("scene2", 4, 9), ("scene3", 9, 14),

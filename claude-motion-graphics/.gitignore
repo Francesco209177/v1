@@ -3,3 +3,4 @@ out/
 .cache/
 *.log
 __pycache__/
+public/music_bed.wav

@@ -1,6 +1,7 @@
 /**
  * Render finale: Remotion (H.264, 1080x1920, 30 fps) + mux della colonna sonora con FFmpeg.
- *   node scripts/render.mjs [--frames 0-899] [--concurrency 4] [--crf 15] [--out claude_motion_graphics.mp4]
+ *   node scripts/render.mjs [--frames 0-899] [--concurrency 4] [--crf 15] [--out claude_motion_graphics.mp4] [--audio public/music.wav]
+ *   --mux-only: salta il render e unisce l'audio all'ultimo video muto (out/video_silent.mp4).
  */
 import {execFileSync} from 'node:child_process';
 import fs from 'node:fs';
@@ -14,9 +15,12 @@ const crf = Number(arg('crf', 15));
 const frameArg = arg('frames', null);
 const frameRange = frameArg ? String(frameArg).split('-').map(Number) : null;
 const silent = path.join(ROOT, 'out', 'video_silent.mp4');
+const audio = path.resolve(ROOT, String(arg('audio', path.join('public', 'music.wav'))));
+const muxOnly = Boolean(arg('mux-only', false));
 fs.mkdirSync(path.dirname(silent), {recursive: true});
 
 const t0 = Date.now();
+if (!muxOnly) {
 const {serveUrl, cleanup} = await makeBundle();
 try {
 	const composition = await selectComposition({serveUrl, id: 'Main', browserExecutable, chromiumOptions});
@@ -48,6 +52,7 @@ try {
 } finally {
 	cleanup();
 }
+}
 
 const fps = 30;
 const start = frameRange ? frameRange[0] / fps : 0;
@@ -57,7 +62,7 @@ execFileSync(
 	[
 		'-hide_banner', '-loglevel', 'error', '-y',
 		'-i', silent,
-		'-ss', String(start), '-t', String(dur), '-i', path.join(ROOT, 'public', 'music.wav'),
+		'-ss', String(start), '-t', String(dur), '-i', audio,
 		'-map', '0:v:0', '-map', '1:a:0',
 		'-c:v', 'copy',
 		'-af', 'volume=-0.3dB', // margine per l'overshoot della codifica AAC

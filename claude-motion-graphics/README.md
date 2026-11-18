@@ -50,5 +50,18 @@ node scripts/verify.mjs                 # durata, risoluzione, fps, codec, audio
 npx remotion studio src/index.ts        # anteprima interattiva
 ```
 
+## Voce narrante ed effetti con ElevenLabs
+
+`audio/elevenlabs_plan.json` contiene il copione italiano (9 frasi, identiche alle caption, con inizio e limite in secondi)
+e 16 effetti sonori (prompt, durata, cue e allineamento: `onset`, `peak` o `end`). Dopo aver generato i file con ElevenLabs
+in `public/elevenlabs/` con i nomi indicati nel piano:
+
+```bash
+python3 audio/synth.py --bed                     # base musicale senza gli effetti sintetizzati → public/music_bed.wav
+python3 audio/mix_final.py --require-all         # voce + effetti + ducking + master -14 LUFS → public/music_final.wav
+node scripts/render.mjs --mux-only --audio public/music_final.wav
+node scripts/verify.mjs
+```
+
 Ogni frame è funzione pura del numero di frame (nessun `Math.random`, timer o stato), quindi il render è deterministico anche in parallelo.
 Il simbolo di Claude usa il tracciato vettoriale di Simple Icons (dati CC0); il marchio appartiene ad Anthropic.
