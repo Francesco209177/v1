@@ -87,34 +87,34 @@ class Stems:
 # Mix table: gain (dB), sidechain depth, reverb sends, whether the build high-pass applies.
 MIX = {
     # name        gain   duck  sends                               build_hp group
-    "kick":     (-5.0, 0.00, {}, True, "drums"),
-    "clap":     (-15.0, 0.00, {"room": 0.30, "hall": 0.10}, True, "drums"),
-    "hats":     (-23.5, 0.00, {"room": 0.10}, True, "drums"),
-    "shaker":   (-27.0, 0.00, {"room": 0.10}, True, "drums"),
-    "roll":     (-15.0, 0.00, {"room": 0.25, "hall": 0.08}, False, "drums"),
-    "crash":    (-21.0, 0.00, {"hall": 0.15}, True, "drums"),
-    "sub":      (-9.5, 0.92, {}, True, "bass"),
-    "bass":     (-13.0, 0.55, {}, True, "bass"),
-    "drone":    (-13.0, 0.00, {"hall": 0.35}, True, "music"),
-    "pad":      (-21.0, 0.45, {"hall": 0.30}, True, "music"),
-    "chords":   (-24.0, 0.65, {"hall": 0.15}, True, "music"),
-    "stab":     (-17.0, 0.00, {"hall": 0.25}, True, "music"),
-    "arp":      (-15.0, 0.28, {"hall": 0.22}, True, "music"),
-    "lead":     (-13.5, 0.15, {"hall": 0.20}, True, "music"),
-    "bell":     (-17.0, 0.10, {"hall": 0.45}, True, "music"),
-    "logo":     (-11.5, 0.00, {"big": 0.30, "hall": 0.15}, False, "music"),
-    "echo":     (-17.0, 0.00, {"hall": 0.40}, False, "music"),
-    "stream":   (-19.0, 0.00, {"hall": 0.20}, True, "music"),
-    "typing":   (-22.0, 0.00, {"room": 0.06}, True, "fx"),
-    "sparkle":  (-21.0, 0.00, {"hall": 0.60}, True, "fx"),
-    "boom":     (-6.5, 0.00, {}, False, "fx"),
-    "air":      (-17.0, 0.00, {"big": 0.55}, False, "fx"),
+    "kick":     (-7.0, 0.00, {}, True, "drums"),
+    "clap":     (-9.5, 0.00, {"room": 0.30, "hall": 0.10}, True, "drums"),
+    "hats":     (-17.0, 0.00, {"room": 0.10}, True, "drums"),
+    "shaker":   (-21.5, 0.00, {"room": 0.10}, True, "drums"),
+    "roll":     (-10.5, 0.00, {"room": 0.25, "hall": 0.08}, False, "drums"),
+    "crash":    (-18.0, 0.00, {"hall": 0.15}, True, "drums"),
+    "sub":      (-13.5, 0.92, {}, True, "bass"),
+    "bass":     (-9.5, 0.55, {}, True, "bass"),
+    "drone":    (-15.0, 0.00, {"hall": 0.35}, True, "music"),
+    "pad":      (-24.5, 0.45, {"hall": 0.30}, True, "music"),
+    "chords":   (-16.5, 0.65, {"hall": 0.15}, True, "music"),
+    "stab":     (-13.0, 0.00, {"hall": 0.25}, True, "music"),
+    "arp":      (-10.0, 0.28, {"hall": 0.22}, True, "music"),
+    "lead":     (-10.5, 0.15, {"hall": 0.20}, True, "music"),
+    "bell":     (-15.0, 0.10, {"hall": 0.45}, True, "music"),
+    "logo":     (-10.5, 0.00, {"big": 0.30, "hall": 0.15}, False, "music"),
+    "echo":     (-14.0, 0.00, {"hall": 0.40}, False, "music"),
+    "stream":   (-13.5, 0.00, {"hall": 0.20}, True, "music"),
+    "typing":   (-13.5, 0.00, {"room": 0.06}, True, "fx"),
+    "sparkle":  (-16.0, 0.00, {"hall": 0.60}, True, "fx"),
+    "boom":     (-8.5, 0.00, {}, False, "fx"),
+    "air":      (-16.0, 0.00, {"big": 0.55}, False, "fx"),
     "shimmer":  (-19.0, 0.00, {"big": 0.60}, False, "fx"),
-    "riser":    (-17.0, 0.00, {"hall": 0.20}, False, "fx"),
-    "whoosh":   (-19.0, 0.00, {"hall": 0.25}, False, "fx"),
-    "swell":    (-15.0, 0.00, {}, False, "fx"),
-    "downlift": (-21.0, 0.00, {"hall": 0.20}, False, "fx"),
-    "confirm":  (-17.0, 0.00, {"hall": 0.30}, False, "fx"),
+    "riser":    (-13.0, 0.00, {"hall": 0.20}, False, "fx"),
+    "whoosh":   (-16.0, 0.00, {"hall": 0.25}, False, "fx"),
+    "swell":    (-6.0, 0.00, {}, False, "fx"),
+    "downlift": (-20.0, 0.00, {"hall": 0.20}, False, "fx"),
+    "confirm":  (-13.0, 0.00, {"hall": 0.30}, False, "fx"),
 }
 RETURNS_DB = {"hall": -6.0, "room": -9.0, "big": -5.0}
 
@@ -163,7 +163,7 @@ def render_drums(ev, st: Stems):
         else:
             semis = 3.0 * (b - 47)
         x = ins.pitched(ins.snare(i % 3, tight), 2.0 ** (semis / 12.0))
-        place(st.audio["roll"], apply_fades(x, 0.0, 10.0), at(b), v)
+        place(st.audio["roll"], apply_fades(hp(x, 150.0, 2), 0.0, 10.0), at(b), v)
 
     for b, size, v in ev["crash"]:
         place(st.audio["crash"], ins.crash(size), at(b), v)
@@ -218,7 +218,8 @@ def render_harmony(ev, st: Stems):
             v = ins.pad_voice(m, dur, 1000 + 37 * i + j, attack=attack, release=rel)
             place(pad, v, at(b0), lvl * reg)
     pad = sweep_filter(pad, pad_cutoff(), "lp", q=0.75, per_oct=4.0)
-    pad = hp(pad, 110.0, 2)
+    pad = hp(pad, 170.0, 2)
+    pad = biquad(pad, "peak", 320.0, 0.8, -3.0)            # keep the low-mids clear for bass and arp
     st.audio["pad"] += width(pad, 1.3)
 
     chords = stereo()
