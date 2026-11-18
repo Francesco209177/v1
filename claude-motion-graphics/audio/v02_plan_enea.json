@@ -1,0 +1,70 @@
+{
+  "_doc": [
+    "Video 02: voce definitiva ElevenLabs 'Enea' (eleven_v4), una ripresa unica divisa con audio/split_vo.py in public/v02/vo_enea/.",
+    "python3 audio/mix_final.py --plan audio/v02_plan_enea.json --dir public/v02/vo_enea"
+  ],
+  "voice": {
+    "language": "it",
+    "gain_db": 0.0,
+    "lines": [
+      {
+        "file": "vo_01.wav",
+        "text": "E se ti dicessi che puoi usare l'intelligenza artificiale senza Internet?",
+        "start": 0.05,
+        "end_by": 4.05
+      },
+      {
+        "file": "vo_02.wav",
+        "text": "Il segreto è installare il modello direttamente sul tuo computer.",
+        "start": 4.15,
+        "end_by": 8.8
+      },
+      {
+        "file": "vo_03.wav",
+        "text": "Il tuo hardware esegue il modello localmente, elaborando richieste e generando risposte.",
+        "start": 9.3,
+        "end_by": 16.4
+      },
+      {
+        "file": "vo_04.wav",
+        "text": "I tuoi dati possono restare sul dispositivo.",
+        "start": 17.0,
+        "end_by": 19.55
+      },
+      {
+        "file": "vo_05.wav",
+        "text": "Niente connessione necessaria,",
+        "start": 19.6,
+        "end_by": 21.9
+      },
+      {
+        "file": "vo_06.wav",
+        "text": "più controllo.",
+        "start": 22.1,
+        "end_by": 23.8
+      },
+      {
+        "file": "vo_07.wav",
+        "text": "Il futuro dell'intelligenza artificiale potrebbe essere proprio sulla tua scrivania.",
+        "start": 24.2,
+        "end_by": 28.5
+      },
+      {
+        "file": "vo_08.wav",
+        "text": "Tu la useresti?",
+        "start": 28.6,
+        "end_by": 29.85
+      }
+    ]
+  },
+  "sfx": [],
+  "mix": {
+    "bed": "public/v02/music.wav",
+    "out": "public/v02/audio_final.wav",
+    "duck_db": 8.0,
+    "duck_attack_ms": 50,
+    "duck_release_ms": 260,
+    "target_lufs": -14.0,
+    "true_peak_db": -1.5
+  }
+}
