@@ -1,0 +1,37 @@
+{
+  "name": "claude-motion-graphics",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Reel 9:16 di 30s: come si crea una motion graphics con Claude Code (Remotion + audio procedurale)",
+  "scripts": {
+    "studio": "remotion studio src/index.ts",
+    "audio": "python3 audio/synth.py",
+    "render": "node scripts/render.mjs",
+    "still": "node scripts/still.mjs",
+    "verify": "node scripts/verify.mjs"
+  },
+  "dependencies": {
+    "@fontsource/inter": "^5.3.0",
+    "@fontsource/jetbrains-mono": "^5.3.0",
+    "@fontsource/space-grotesk": "^5.3.0",
+    "@react-three/fiber": "^8.17.10",
+    "@remotion/bundler": "^4.0.544",
+    "@remotion/cli": "^4.0.544",
+    "@remotion/layout-utils": "^4.0.544",
+    "@remotion/media-utils": "^4.0.544",
+    "@remotion/noise": "^4.0.544",
+    "@remotion/paths": "^4.0.544",
+    "@remotion/renderer": "^4.0.544",
+    "@remotion/shapes": "^4.0.544",
+    "@remotion/three": "^4.0.544",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@types/three": "^0.170.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "remotion": "^4.0.544",
+    "simple-icons": "^16.38.0",
+    "three": "^0.170.0",
+    "typescript": "^5.6.3"
+  }
+}
