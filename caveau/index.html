@@ -639,12 +639,44 @@ button.frag:hover{transform:translateY(-3px)}
 .safe-bar .btn:disabled{opacity:.35;cursor:not-allowed;filter:grayscale(.6);box-shadow:none;transform:none}
 .safe-bar .sc-reset:disabled{opacity:.4;cursor:not-allowed}
 @media (max-width:560px){ .sc-8{--th:40px} .dial-s,.handle-s{width:68px;height:68px} .sd-window,.sd-lamps{gap:4px} .sd-window{padding:7px} .safe-door{padding:14px 12px} .tag{width:50px;height:68px} .sd-plate{font-size:.75rem} }
+/* ===== sigilli segreti e stanza segreta ===== */
+.seal-c{display:inline-grid;place-items:center;width:34px;height:34px;border-radius:50%;flex:none;background:radial-gradient(circle at 35% 30%,#FFF1B8,#E0B44E 45%,#8E6418);box-shadow:0 3px 6px rgba(0,0,0,.45),inset 0 0 0 2px rgba(90,60,10,.35);font:700 1rem var(--display);color:#3A2808}
+.seal-c.big{width:52px;height:52px;font-size:1.5rem}
+.flying-seal{position:fixed;z-index:80;pointer-events:none;width:36px;height:36px}
+.glint-seal{position:absolute;z-index:3;border:0;padding:0;cursor:pointer;animation:glintS 1s ease-in-out infinite}
+@keyframes glintS{50%{box-shadow:0 0 18px 6px rgba(255,220,120,.9);transform:scale(1.18) rotate(12deg)}}
+.seals{display:inline-flex;align-items:center;gap:8px;background:transparent;border:1px solid var(--brass);color:var(--brass);border-radius:999px;padding:3px 10px 3px 7px;font:600 .75rem var(--mono);cursor:pointer}
+.seals:hover{background:var(--tile)}
+.sl-dots{display:inline-flex;gap:3px}
+.sl-dots i{width:9px;height:9px;border-radius:50%;border:1px solid var(--brass);display:block}
+.sl-dots i.on{background:var(--brass);box-shadow:0 0 6px var(--brass)}
+.seals.pulse{animation:sealsPulse .6s}
+@keyframes sealsPulse{40%{transform:scale(1.25)}}
+.toast{position:fixed;left:50%;bottom:max(20px,env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:85;display:flex;align-items:center;gap:12px;width:max-content;max-width:min(540px,calc(100vw - 32px));padding:12px 16px;background:var(--surface);color:var(--ink);border:2px solid var(--brass);border-radius:8px;box-shadow:0 16px 30px -12px rgba(0,0,0,.6);font-size:.95rem;animation:toastIn .45s cubic-bezier(.2,.9,.3,1.3) both}
+.toast.out{animation:toastOut .4s ease-in both}
+@keyframes toastIn{from{opacity:0;transform:translate(-50%,30px)}}
+@keyframes toastOut{to{opacity:0;transform:translate(-50%,20px)}}
+.sc-hooks{position:relative}
+.hk-secret{position:absolute;right:-10px;top:-10px;width:13px;height:13px;border:0;padding:0;border-radius:50%;background:radial-gradient(circle at 35% 35%,#FFF4C8,var(--brass) 65%);opacity:.45;cursor:pointer;animation:hkGlint 6s infinite}
+@keyframes hkGlint{0%,88%,100%{opacity:.45;box-shadow:none}93%{opacity:1;box-shadow:0 0 10px 3px rgba(242,193,78,.9)}}
+.doors li.sdoor{padding:0;border-color:var(--brass);overflow:hidden}
+.doors li.sdoor button{width:100%;height:100%;border:0;background:linear-gradient(160deg,#F1D58A,#C99A3A);color:#2A1E08;font-size:1rem;cursor:pointer}
+.doors li.sdoor.new{animation:sdoorIn 1s cubic-bezier(.2,.9,.3,1.4) both}
+@keyframes sdoorIn{from{transform:scale(0) rotate(-90deg)}}
+.doors li.sdoor.done button{background:var(--accent);color:var(--on-accent)}
+#intro-dial{cursor:pointer}
+.dial.twist{animation:twist .45s cubic-bezier(.3,1.5,.5,1)}
+@keyframes twist{from{transform:rotate(-120deg) scale(1.12)}}
+.float.good{color:var(--accent)}
+.dp-seals{font-size:.95rem;color:var(--muted)} .dp-seals b{color:var(--brass)}
+.seal.gold .s-wax{fill:#D4A537}
+.star{color:var(--brass)}
 </style>
 
 <div class="wrap">
   <header class="status" id="status" hidden>
     <span class="brand">Banco Tartaglia · Caveau storico</span>
-    <span class="status-r"><span class="timer" id="timer"><small>Allarme tra</small><span id="clock">60:00</span></span><span class="toggles"><button class="sound" id="sound" type="button">Suono: sì</button><button class="sound" id="animt" type="button">Animazioni: sì</button><button class="sound" id="darkt" type="button">Buio: sì</button></span></span>
+    <span class="status-r"><span class="timer" id="timer"><small>Allarme tra</small><span id="clock">60:00</span></span><button type="button" class="seals" id="seals" hidden></button><span class="toggles"><button class="sound" id="sound" type="button">Suono: sì</button><button class="sound" id="animt" type="button">Animazioni: sì</button><button class="sound" id="darkt" type="button">Buio: sì</button></span></span>
     <ol class="doors" id="doors" aria-label="Porte aperte"></ol>
   </header>
   <main id="app"></main>
@@ -655,6 +687,7 @@ button.frag:hover{transform:translateY(-3px)}
 
 <script>
 const ROOMS = [{"place":"Atrio","name":"L'atrio delle chiavi","story":"<p>Sul muro ci sono sei ganci in fila. Sul tavolo, sei chiavi tutte diverse. Accanto, un biglietto del direttore:</p>\n   <p class=\"note\">«La porta si sblocca solo se appendo le chiavi nell'ordine giusto. L'ordine non lo ricordo mai, ma so quanti ordini esistono. Quel numero è il codice.»</p>","q":"In quanti modi diversi si possono appendere le 6 chiavi ai 6 ganci, una per gancio?","hints":["Usi tutte le chiavi e conta solo l'ordine in cui le metti: sono permutazioni semplici.","Per il primo gancio hai 6 scelte, per il secondo 5, per il terzo 4… Moltiplica fino a 1."],"word":false,"h":1244732469,"x":"JWs4Bcnq383j/pilVLirMVkKiP3MmGm3itjpFutI+LvZWDdfg46E7WSq2UgpHBWLp/2f1UC2sBcSb0e+Me8gLR06CSpRApnQsBzY1alNAG2QH/VYOyLHP/5nTzp+XXAXGg/EmUxWWDlwdvNPvyH8eTMak6ItKAwOzlnwmONul+7ojBdsJGBAO1YBsOZyjIJy27bLyPyLUu5oh6cqoP1ecLzlq/785NoJqI8rPw13lLypldDjnEuI1pQzmFDuSx0ljNsfH0M2dfjOuROlHQ=="},{"place":"Galleria","name":"La galleria dei direttori","story":"<p>Otto ritratti di vecchi direttori ti fissano dalle pareti. Sul soffitto ci sono tre faretti: uno rosso, uno verde, uno blu. Ognuno va puntato su un ritratto diverso.</p>\n   <p class=\"note\">«Solo una disposizione dei tre colori accende il sensore. Quante ne dovrebbe provare un ladro, al peggio?»</p>","q":"In quanti modi puoi puntare i 3 faretti colorati su 3 ritratti diversi, scelti tra gli 8?","hints":["Scegli 3 ritratti su 8, ma rosso‑verde‑blu non è la stessa cosa di blu‑verde‑rosso: l'ordine conta e non ci sono ripetizioni. Sono disposizioni semplici.","Il faretto rosso ha 8 ritratti possibili, il verde 7, il blu 6."],"word":false,"h":2125366765,"x":"Wci1KpRT5uX9Ecc9kD4xbwqgVfJfxG+VfOcKrE22Je8dgSUwbbFcaUrJZCxKFEjVOXL/O4Hv3xoyBVkPcsgvniJ1XDnlstpSdXvRpgaY/f24H0cCTamdEgzmAylPxXZS0fqIwz6NFpoQLF8jftwkheFT3+CCxMbcgF0/RJTlSElT2tSluDSqvlBdz4NbSNdVNsLAmmItG89tueJxfaGBH9+mjNyZaWxUh3fUquoUiHyxAe3eiofNqLQ1c5RbRxMGGyTTDD18cToKCw=="},{"place":"Anticamera","name":"Il tastierino guasto","story":"<p>La terza porta ha un tastierino numerico. Solo cinque tasti funzionano ancora: <b>1, 3, 4, 7, 9</b>. Gli altri sono scollegati da anni.</p>\n   <p class=\"note\">«Il codice ha quattro cifre. Non ho mai avuto paura di ripetere la stessa cifra, anche quattro volte.»</p>","q":"Quanti codici di 4 cifre si possono digitare usando solo i 5 tasti funzionanti?","hints":["L'ordine conta e la stessa cifra può tornare più volte: sono disposizioni con ripetizione.","Ognuna delle 4 posizioni ha sempre 5 scelte, indipendenti l'una dall'altra."],"word":false,"h":2132309239,"x":"im+ev8x9Tx7t6nuPXufJ0gJ2m6/Vz/7MVE7M5Dh5WfNYD3nzhMxRpCx3lT2Y1MlKtn8dJn3k2y4KAKmSlhCZCxEEF5nBIhJYLQfaZVYqZLQurYdjuZzfoXFZYGirnJsSQSLc+oHYFn/KwD/tGddj9geGzKKiYK04PFgoLnrKqnfYr6VO57FyAX/B3iiG45LKSoXyvLsuj10jyDtnwlIZiUyR/3XhMS5H1D+Hn3+3BRArNIacwuiArEeNjGOQQUwyN+ZYofKz1nUYSgaPPZuWRjVAFe7QUu9pQlyZTfhRwvpmED7jY6XCdUk="},{"place":"Archivio","name":"L'insegna caduta","story":"<p>In archivio l'insegna d'ottone si è staccata dal muro. Per terra ci sono le sue nove lettere: <b>T A R T A G L I A</b>.</p>\n   <p class=\"note\">«Rimettile in fila come vuoi, anche senza senso. Conta le parole diverse che puoi leggere: è il codice.»</p>","q":"Quanti anagrammi, anche privi di significato, ha la parola TARTAGLIA?","hints":["Sono permutazioni di 9 lettere, ma alcune lettere sono uguali: scambiare due A tra loro non cambia la parola. Permutazioni con ripetizione.","Conta le lettere uguali: la A compare 3 volte, la T 2 volte. Dividi 9! per 3! e per 2!."],"word":false,"h":1013111380,"x":"cQZUL8A1LHwp8qZIb4TfRjGteR+1poML/tq/JA0AHYTHQ19rgGTSL+7IVkoJVDROCWl6RreDl2DhknzNy72BpOaQKPLUd8xsD3H7OTXpcAb++ktPahcjPWtqqo087oxSm5ECCsizvl8PNOf5ZIyqruE7Tl8hq2lnZE9pJeZp4R2ts8qgBf3vG3nRTHk6NiygLsTLjMnqhDdKnOMN1v2BmdS4TKjT+E+CL5mrYnN30h18FgXJdTEhwITJFxcL2FcXYT8xWWQ5hd9ibQ=="},{"place":"Sala cassette","name":"Le cassette di sicurezza","story":"<p>Dieci cassette di sicurezza, numerate da 1 a 10. Il meccanismo scatta solo se si girano nello stesso istante le chiavi di quattro cassette precise.</p>\n   <p class=\"note\">«Quali quattro? Questo è il segreto. Quanti gruppi di quattro esistono, invece, è il codice.»</p>","q":"In quanti modi si possono scegliere 4 cassette tra le 10?","hints":["Le chiavi si girano insieme: scegliere le cassette 2, 5, 7, 9 o 9, 7, 5, 2 è la stessa cosa. L'ordine non conta: sono combinazioni semplici.","Parti dalle disposizioni 10·9·8·7 e dividi per i 4! ordini di ogni gruppo."],"word":false,"h":992213701,"x":"5gDqgk3NHlHbJwz7TnDi68lX7Y4wic2E+C7wdtI3QOExJ000Uy2jVwoQ/R44WhW5mn394CLuUd77Dna6fH5lcOiq6GTrCB/vkbaj8ircVCMrrIRKfXESLrKVS2fKkZQlN05deOweRydQX0YN1dkCJNIb0tz3RD5fbvcMQKQqwMWPcajk5I3sHjisIn32umfWO6ZQiA3si9nzoEm5OLr6wsslPHhwPS8QUsrRXdDNff/DNMrFsyxTUEDRJvhVznnBWpnwZM+sX2U="},{"place":"Sala del triangolo","name":"Il pavimento di Tartaglia","story":"<p>Il pavimento è un grande triangolo di piastrelle. Su ognuna è inciso un numero: in quanti modi la si può raggiungere partendo dalla cima e scendendo, a ogni passo, di una riga in diagonale, a sinistra o a destra.</p>\n   <p>Le quattro righe più basse sono consumate dai passi. Una sola piastrella è dorata.</p>","q":"Quale numero era inciso sulla piastrella dorata?","hints":["Guarda le righe leggibili: ogni numero è la somma dei due che ha sopra. Puoi ricostruire le righe consumate una alla volta.","È il triangolo di Tartaglia: nella riga n, al posto k (contando da 0), c'è C(n,k). La piastrella dorata è nella riga 8 al posto 3."],"word":false,"h":433704656,"x":"+b+MqpYuggHemtemRMU7WkOfccYMM1i6C78WjABn59iosncVPWlos5YTegvshQibKkRKz1s49HHZPZS+A24gHzo3zR+HKrUEEC/kUfbfJkZF70ZkTRN/DW1jqqJwLulb3C5V8wuAIOa+zMwb10hiievf48557tpQ2FSwMJcnPWLccWVoKZ2Snp5Si0K7VVkZ0tlEDNGYNyLFVVz6nEFXzKmqxPicsw92V+pOx2dmtJW27OmF4adrTAo1Jt9HuGcV68PKJhu1Qc04kWWlIIAxbC54W55jDgfnum9KGFI/yfn743X8KIQzheYvJURNbJCzhp43pw=="},{"place":"Sala di controllo","name":"Il turno di notte","story":"<p>Sul tabellone del turno di notte ci sono i nomi di 6 guardie e 4 tecnici. La penultima porta si apre con il numero di squadre che il direttore poteva formare.</p>\n   <p class=\"note\">«Una squadra è fatta di quattro persone. Mai, per nessun motivo, una squadra senza almeno un tecnico.»</p>","q":"Quante squadre di 4 persone con almeno un tecnico si possono formare?","hints":["«Almeno uno» si conta bene al contrario: tutte le squadre possibili meno quelle vietate.","Tutte le squadre: C(10,4). Quelle senza tecnici sono fatte solo di guardie: C(6,4)."],"word":false,"h":2690217309,"x":"FZYNXOJNQ9/qv+itjA3PMiIz4gZkJIp06VZjXP7ZmnmsndTb0QV5EtwK/8YFVZw5dTB8rljFF+HN4NIZyzDFjGYTNhLPw/f2QpPvH2IAg/5yTMeRh9q+0G0Hb2B93hYPBzltZbOCG3xjtJh9whT+1AXk2ykCtl3ZpvxHRiYp6PTi12ZOSLgv8ayAEuvdKesDmblg9naVNODJrx2kzKcmygjVo1jrvBmZclYaZCZwz226T240TSGK5bK817OptrR7+QFVg+K/nkYu9JYZo4BVXeHE+vIrqy1IvCchnl27LxiivWrZx5265oTgILHy9grOtz9//Jo/RQlsx11m6w=="},{"place":"Porta blindata","name":"La porta blindata","story":"<p>L'ultima porta. Una ruota a dieci cifre, da 0 a 9, e cinque finestrelle per il codice. Inciso nell'acciaio:</p>\n   <p class=\"note\">«Cinque cifre, tutte diverse. La prima è dispari, l'ultima è pari. Il numero dei codici possibili apre la porta, e ti dice quanto sarebbe stato sciocco tirare a caso.»</p>","q":"Quanti codici di 5 cifre tutte diverse cominciano con una cifra dispari e finiscono con una cifra pari?","hints":["Parti dalle posizioni vincolate: scegli prima la prima cifra e l'ultima, poi riempi le tre centrali con le cifre rimaste.","Prima cifra: 5 scelte (1, 3, 5, 7, 9). Ultima: 5 scelte (0, 2, 4, 6, 8). Per le tre centrali restano 8 cifre, senza ripetizioni e in ordine."],"word":false,"h":3189898625,"x":"2y838iLtJ85uUvS61+LGKcSHWnImWHCF1eazAvS5otjqj3WWytOdzr8PGPWkHR2FcNJDS4AztQidXsE097cV5ql/bwjyePYMHrNNWikk1873XvT9H5oL4WAzyUIgMj4YFoKmkUoA0CXNjdflmh4ULncG3o0HOVtxBMurykpR7vSpmsfHvFzm5TUs8ncm7MGHU7I4qI6ZQa5UwAjdPZOQLzL8F8W9nojCZqxmiseuTocMUqqb9yW4nH6gdcoOxBLGBLCi5+2C2+jnf4yRN6ewZDHtL6FZ/Q/fJNilLqkM08qMjucO7LKmZqRYUkdaGdwNp6ebp7agx9+fgHkNWs0K/h+MzNEbYSml2V8XpIzsfgXexc54Chyv2GRbpi2jlBkVCsmNLGtb43uerg=="},{"place":"Ufficio del direttore","name":"La cassaforte del direttore","story":"<p>La porta blindata si apre sull'ufficio del direttore. Il cancello verso la strada è comandato da una cassaforte a lettere, e sul tavolo c'è l'ultimo biglietto:</p>\n   <p class=\"note\">«Ogni mia serratura ti ha lasciato una lettera. Mettile in fila dal codice più piccolo al più grande: leggerai la parola che apre il cancello.»</p>","q":"Quale parola apre la cassaforte del direttore?","hints":["Ogni lettera porta scritto il codice della porta da cui viene. Mettile in ordine dal codice più piccolo al più grande.","Si parte dalla E del 56 e si finisce con la E del 30.240. La parola descrive quello che stai per fare."],"word":true,"h":1286609876,"x":"tp/sdA66hzngbZJJ2eBFED+imdRBPMCEkOx/XHYJFMDmrE10MlvOAIjZ+ULjYCTVCcbs87tilNQwnLf37aCBW3PnXrFLQH6ry+qpmK0wVuixbO5YxNOu76w/lfH56QlusL+xpBhoBm+H6SstY0dIdIPXR0CzgzmxvlO8LnceDRemQoHGvl3+DXAsEFeMCO1lLxSr5okwwRma8+ncY8wcXDZPMg5AtoyBU53kb/m/on/6/QaJlbXhU79MxKkqbxLP0Y1v0hbS0xiuRD2h7Y07y0rnqtdIqowHdq0g6bP9CPi7F0caScN9cryvGr7iqgghclV8hWl04pNdBGQsGdE="}];
+const SECRET = {"story":"<p>Dietro la porta segreta c'è lo studiolo privato del direttore. Su un forziere di ferro sono incise le stesse lettere dell'insegna: <b>T, A, R, T, A, G, L, I, A</b>. Accanto, un biglietto scritto più in piccolo degli altri:</p>\n   <p class=\"note\">«Per chi ha trovato tutti i miei sigilli. Il forziere si apre con il numero di parole che si possono scrivere con queste nove lettere tenendo le tre A sempre vicine, ma le due T mai vicine.»</p>","q":"Quanti anagrammi di TARTAGLIA hanno le tre A tutte vicine e le due T non vicine?","hints":["Incolla le tre A in un blocco unico: restano 7 oggetti da mettere in fila (il blocco, T, T, R, G, L, I), con le due T uguali tra loro.","Con le A vicine le file sono 7!/2! = 2520. Togli quelle in cui anche le due T sono vicine: blocco AAA, blocco TT, R, G, L, I sono 6 oggetti tutti diversi, cioè 6! = 720."],"h":3302213398,"x":"FOlQW3gGACiBkBdVbZnLSVpDMg8nEvPbjV2Ps8NG64F4Kr42L/hYG+GBiFd558+5hNqKW53bvuuvaWj3ocKIYkeRL0zmbQvBTjPrJjVGlsne/dVC4qQdzW7DVVkzPnYFbUuYb+iJNLaghZnj3Dz4JuzmGWZgLsvk0mK8eaWc35LvMohJ2r13dHzByzMdK+8z9mt3Y69oxG9VOkLhZc+CyXxSBKzBTWuyVRAPYVtHv0oLwyFAPOBeuhPoTPZBXXiP5Tn5TT28FgjDCZk3XRmz9D8otV7vOEe19TgWeJK5Y33IfkRUEOZ1OqAoZxnYdSQL8pU/t13j6VlHHaNTG0F79QlwD3/tFY54fuyHpU+BgToN037H39BWesW4nKPrKAYA4XiB9+Kb1uorg2PBVz1rcv5JfpXsPAnymWmtP+4Zo1IGrYLf"};
 const KEY = 'caveau-tartaglia-v2';
 const TOTAL = 3600, HINT_COST = 120, ERR_COST = 30;
 const $ = id => document.getElementById(id);
@@ -670,7 +703,7 @@ function reveal(i,a){
   }catch(e){return {topic:'',formula:'',expl:''}}
 }
 
-function fresh(){return {started:null,penalty:0,room:0,answers:[],hints:{},errors:0,hintCount:0,finished:null,noTimer:false,team:'',recorded:false,recId:null}}
+function fresh(){return {started:null,penalty:0,room:0,answers:[],hints:{},errors:0,hintCount:0,finished:null,noTimer:false,team:'',recorded:false,recId:null,secrets:[],secretSolved:null,inSecret:false,secretHints:0}}
 function load(){try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&Array.isArray(s.answers))return Object.assign(fresh(),s)}catch(e){}return fresh()}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
 let S = load();
@@ -803,8 +836,8 @@ const fx = (()=>{
 
 /* piccoli effetti */
 function letters(t){ let i=0; return t.split(' ').map(w=>`<span class="w">${[...w].map(c=>`<span class="ch" style="--i:${i++}" aria-hidden="true">${c}</span>`).join('')}</span>`).join(' ') }
-function floatText(txt, el){ if(!el || el.hidden) return; const r=el.getBoundingClientRect(), s=document.createElement('span');
-  s.className='float'; s.textContent=txt; s.style.left=(r.left+r.width/2)+'px'; s.style.top=r.top+'px'; document.body.appendChild(s); setTimeout(()=>s.remove(),1300) }
+function floatText(txt, el, cls){ if(!el || el.hidden) return; const r=el.getBoundingClientRect(), s=document.createElement('span');
+  s.className='float'+(cls?' '+cls:''); s.textContent=txt; s.style.left=(r.left+r.width/2)+'px'; s.style.top=r.top+'px'; document.body.appendChild(s); setTimeout(()=>s.remove(),1300) }
 function restartAnim(el, cls){ if(!el) return; el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls) }
 function countUp(el, to, f, dur){ if(!el) return; if(RM){ el.textContent=f(to); return } const t0=performance.now();
   (function st(t){ const p=Math.min(1,(t-t0)/dur), e=1-Math.pow(1-p,3); el.textContent=f(Math.round(to*e)); if(p<1) requestAnimationFrame(st) })(t0) }
@@ -863,7 +896,7 @@ async function transition(kind, cardHtml, swap){
   ov.className='tr t-'+kind; ov.style.setProperty('--x',p.x+'px'); ov.style.setProperty('--y',p.y+'px');
   ov.innerHTML=`<div class="layers">${t.html}</div>${cardHtml}`; ov.hidden=false; void ov.offsetWidth;
   ov.classList.add('cover'); sfx(t.sIn); await wait(t.inMs);
-  ov.classList.add('card-on'); sfx('stamp');
+  ov.classList.add('card-on'); sfx('stamp'); maybeGlint(ov, kind);
   await Promise.race([wait(2700), new Promise(r=>{ ov.onclick=r })]); ov.onclick=null;
   swap(); window.scrollTo(0,0);
   ov.classList.add('reveal'); sfx(t.sOut); await wait(t.outMs);
@@ -905,10 +938,11 @@ const SCENES = [
   init:()=>({hooks:Array(6).fill(null), tried:new Set(), note:''}),
   view:s=>{ const free=[0,1,2,3,4,5].filter(k=>!s.hooks.includes(k));
     return `<p class="sc-tip">Prova tu: clicca le chiavi per appenderle ai ganci, una dopo l'altra. Clicca una chiave appesa per staccarla.</p>
-    <div class="sc-hooks">${s.hooks.map((k,h)=>`<div class="hook"><span class="hook-ico" aria-hidden="true"></span>${k==null?'<span class="hook-empty"></span>':`<button type="button" class="sc-key hung" data-a="off" data-v="${h}" data-id="k${k}" aria-label="Stacca la chiave ${k+1} dal gancio ${h+1}">${keySvg(k)}</button>`}<span class="hook-n">${h+1}</span></div>`).join('')}</div>
+    <div class="sc-hooks">${s.hooks.map((k,h)=>`<div class="hook"><span class="hook-ico" aria-hidden="true"></span>${k==null?'<span class="hook-empty"></span>':`<button type="button" class="sc-key hung" data-a="off" data-v="${h}" data-id="k${k}" aria-label="Stacca la chiave ${k+1} dal gancio ${h+1}">${keySvg(k)}</button>`}<span class="hook-n">${h+1}</span></div>`).join('')}${S.secrets.includes('hook')?'':'<button type="button" class="hk-secret" data-a="secret" data-secret="hook" aria-label="Un gancio in più, quasi invisibile"></button>'}</div>
     <div class="sc-table">${free.map(k=>`<button type="button" class="sc-key" data-a="on" data-v="${k}" data-id="k${k}" aria-label="Appendi la chiave ${k+1}">${keySvg(k)}</button>`).join('')||'<span class="sc-empty">Tutte le chiavi sono appese.</span>'}</div>
     ${foot(s.note||'Ordini diversi provati: '+s.tried.size,'Stacca tutte')}` },
   act:(s,a,v)=>{
+    if(a==='secret') return {secret:'hook', sound:'clink'};
     if(a==='reset'){ s.hooks.fill(null); s.note=''; return {sound:'clink'} }
     if(a==='off'){ s.hooks[+v]=null; s.note=''; return {sound:'clink'} }
     const h=s.hooks.indexOf(null); if(h<0) return; s.hooks[h]=+v;
@@ -955,7 +989,7 @@ const SCENES = [
     if(s.digits.length<4){ s.note=''; return {sound:'beep'} }
     const code=s.digits.join(''), isNew=!s.tried.has(code), rep=new Set(s.digits).size<4; s.tried.add(code);
     s.note = isNew ? `Codice ${s.digits.join(' ')} provato${rep?': le cifre ripetute sono ammesse!':'.'} Codici diversi: ${s.tried.size}.` : `Codice già provato. Codici diversi: ${s.tried.size}.`;
-    return {sound:isNew?'ding':'click2'} } },
+    return {sound:isNew?'ding':'click2', secret:new Set(s.digits).size===1?'keys':null} } },
  { /* 3 · lettere dell'insegna */
   init:()=>({items:[...'GATIARLTA'].map((ch,id)=>({ch,id})), sel:null, seen:new Set(['GATIARLTA']), note:''}),
   view:s=>`<p class="sc-tip">Prova tu: clicca due lettere per scambiarle di posto.</p>
@@ -972,7 +1006,7 @@ const SCENES = [
     if(x.ch===y.ch){ s.note=`Hai scambiato due ${x.ch}: la parola è rimasta ${w}! Ecco perché nel conteggio si divide.`; return {sound:'buzz'} }
     const isNew=!s.seen.has(w); s.seen.add(w);
     s.note = isNew ? `Nuova parola: ${w}. Parole diverse: ${s.seen.size}.` : `${w} l'avevi già trovata. Parole diverse: ${s.seen.size}.`;
-    return {sound:isNew?'ding':'swap'} } },
+    return {sound:isNew?'ding':'swap', secret:w==='TARTAGLIA'?'sign':null} } },
  { /* 4 · cassette di sicurezza */
   init:()=>({sel:[], groups:new Set(), orders:new Set(), just:null, note:''}),
   view:s=>`<p class="sc-tip">Prova tu: clicca quattro cassette per infilare le chiavi. Clicca di nuovo per toglierle.</p>
@@ -1040,7 +1074,7 @@ const SCENES = [
     if(!s.sel.some(x=>x>=6)){ s.invalid.add(g); s.note=`Squadra di sole guardie: non vale! Squadre vietate trovate: ${s.invalid.size}.`; return {sound:'buzz'} }
     const isNew=!s.valid.has(g); s.valid.add(g);
     s.note = isNew ? `Squadra valida! Squadre valide trovate: ${s.valid.size}.` : `Questa squadra l'avevi già formata. Valide: ${s.valid.size}.`;
-    return {sound:isNew?'ding':'click2'} } },
+    return {sound:isNew?'ding':'click2', secret:s.sel.every(x=>x>=6)?'team':null} } },
  { /* 7 · porta blindata */
   init:()=>({d:[1,2,3,4,5], rot:0, prev:0, last:null, found:new Set(), note:''}),
   view:s=>{ const d=s.d, odd=d[0]%2===1, even=d[4]%2===0, diff=new Set(d).size===5;
@@ -1123,14 +1157,15 @@ function rerender(fig, i, mutate){
 }
 function mountScenes(root){
   root.querySelectorAll('[data-scene]').forEach(fig=>{
-    const i=+fig.dataset.scene;
+    const ds=fig.dataset.scene, i=isNaN(+ds)?ds:+ds;
     SCENES[i].after && SCENES[i].after(fig, st(i));
     fig.addEventListener('click', e=>{
       const t=e.target.closest('[data-a]'); if(!t || !fig.contains(t)) return;
-      const r=rerender(fig, i, ()=>SCENES[i].act(st(i), t.dataset.a, t.dataset.v)) || {};
+      const tr=t.getBoundingClientRect(); const r=rerender(fig, i, ()=>SCENES[i].act(st(i), t.dataset.a, t.dataset.v)) || {};
       if(r.sound) sfx(r.sound);
       if(r.bad) restartAnim(fig.querySelector(`[data-id="${r.bad}"]`), 'shake');
       if(r.submit){ const lf=document.getElementById('lock'); if(lf && lf.requestSubmit) lf.requestSubmit() }
+      if(r.secret) findSecret(r.secret, tr);
     });
     fig.addEventListener('input', e=>{
       const el=e.target.closest('input[data-in]'); if(!el || !SCENES[i].input) return;
@@ -1144,13 +1179,146 @@ function mountScenes(root){
 }
 
 const SAFE_ICO = '<svg viewBox="0 0 20 24" aria-hidden="true"><path d="M5 11V7a5 5 0 0 1 10 0v4" fill="none" stroke="currentColor" stroke-width="2.6"/><rect x="2" y="11" width="16" height="12" rx="2" fill="currentColor"/></svg>';
+/* ===== i sigilli segreti del direttore ===== */
+const SECRET_BONUS = 180;
+const SEAL_INFO = {
+  dial:{name:"La manopola dell'ingresso", hint:"All'ingresso qualcosa gira, se insisti."},
+  hook:{name:"Il gancio in più", hint:"Nell'atrio c'è un gancio di troppo."},
+  keys:{name:"Le cifre gemelle", hint:"Sul tastierino guasto, quattro volte la stessa cifra."},
+  sign:{name:"L'insegna rimessa a posto", hint:"L'insegna caduta, com'era prima di cadere."},
+  team:{name:"La squadra dei tecnici", hint:"Nel turno di notte, una squadra tutta di tecnici."},
+  glint:{name:"Il luccichio nel passaggio", hint:"Tra una porta e l'altra, guarda bene gli angoli dello schermo."}
+};
+const SEAL_IDS = Object.keys(SEAL_INFO);
+function sealsCount(){ return (S.secrets||[]).length }
+function renderSeals(){
+  const b=$('seals'); if(!b) return; const n=sealsCount();
+  b.hidden = !S.started || n===0;
+  b.innerHTML = `<span class="sl-dots" aria-hidden="true">${SEAL_IDS.map(id=>`<i class="${S.secrets.includes(id)?'on':''}"></i>`).join('')}</span><span>Sigilli ${n}/6</span>`;
+  b.setAttribute('aria-label', `Sigilli segreti trovati: ${n} di 6. Clicca per un indizio`);
+}
+function toast(html, ms){
+  const t=document.createElement('div'); t.className='toast'; t.setAttribute('role','status'); t.innerHTML=html; document.body.appendChild(t);
+  setTimeout(()=>{ t.classList.add('out'); setTimeout(()=>t.remove(),450) }, ms||4200);
+}
+function findSecret(id, rect){
+  if(!SEAL_INFO[id] || S.secrets.includes(id)) return;
+  S.secrets.push(id); save();
+  document.querySelectorAll(`[data-secret="${id}"]`).forEach(e=>e.remove());
+  const n=sealsCount(); sfx('coins'); renderSeals();
+  if(!RM){
+    const r=rect||{left:innerWidth/2-17,top:innerHeight/2-17,width:34,height:34}, c=document.createElement('span');
+    c.className='seal-c flying-seal'; c.textContent='T'; c.style.left=(r.left+r.width/2-18)+'px'; c.style.top=(r.top+r.height/2-18)+'px'; document.body.appendChild(c);
+    const tg=$('seals'), tr=tg && !tg.hidden ? tg.getBoundingClientRect() : null;
+    const dx=tr ? tr.left+16-(r.left+r.width/2) : 0, dy=tr ? tr.top+tr.height/2-(r.top+r.height/2) : -140;
+    c.animate([{transform:'scale(.3) rotate(-90deg)',opacity:0},{transform:'scale(1.7) rotate(0)',opacity:1,offset:.3},{transform:`translate(${dx}px,${dy}px) scale(.55) rotate(360deg)`,opacity:.9}],
+      {duration:1300,easing:'cubic-bezier(.4,0,.2,1)'}).onfinish=()=>{ c.remove(); restartAnim($('seals'),'pulse') };
+  }
+  toast(`<span class="seal-c">T</span><span><b>Sigillo segreto trovato!</b> ${SEAL_INFO[id].name}.${n<6?` Ne hai ${n} su 6.`:''}</span>`);
+  if(n===6) setTimeout(()=>{ S._sdNew=true; if(S.started) doors(); S._sdNew=false; sfx('win'); fx.rain(120);
+    toast('<span class="seal-c">★</span><span><b>Tutti e sei i sigilli!</b> Nella barra delle porte, in alto, si è aperta una porta segreta.</span>', 6500) }, 1700);
+}
+function showSeals(){
+  const got=SEAL_IDS.filter(id=>S.secrets.includes(id)), miss=SEAL_IDS.filter(id=>!S.secrets.includes(id));
+  toast(`<span class="seal-c">T</span><span><b>Sigilli segreti: ${got.length}/6.</b> ${got.map(id=>SEAL_INFO[id].name).join(', ')}.${miss.length?` Indizio per il prossimo: «${SEAL_INFO[miss[0]].hint}»`:' Li hai trovati tutti: la porta segreta è nella barra in alto.'}</span>`, 7000);
+}
+function secretDoorHtml(){
+  if(sealsCount()<6 || S.finished) return '';
+  return `<li class="sdoor${S.secretSolved?' done':''}${S._sdNew?' new':''}"><button type="button" id="secret-btn" aria-label="Porta segreta${S.secretSolved?', già aperta':''}">★</button></li>`;
+}
+function maybeGlint(ov, kind){
+  if(RM || !S.started || S.secrets.includes('glint') || ['ante','shutter','light'].includes(kind)) return;
+  if(!['wheel','rings'].includes(kind) && Math.random()<.4) return;
+  const g=document.createElement('button'); g.type='button'; g.className='seal-c glint-seal'; g.textContent='T'; g.setAttribute('aria-label','Un luccichio nell\'angolo');
+  const c=Math.floor(Math.random()*4); g.style.left=(c%2 ? innerWidth-74 : 26)+'px'; g.style.top=(c<2 ? 96 : innerHeight-84)+'px';
+  g.addEventListener('click', e=>{ e.stopPropagation(); const r=g.getBoundingClientRect(); g.remove(); findSecret('glint', r) });
+  ov.appendChild(g); setTimeout(()=>g.remove(), 2600);
+}
+function sealGold(){ return SEAL.replace('class="seal"','class="seal gold"').replace(/sealp/g,'sealg').replace('BANCO TARTAGLIA · CAVEAU STORICO ·','TESORO DEL DIRETTORE · SIGILLO D\'ORO ·') }
+function sealsLine(){ if(!S.secrets || !S.secrets.length) return ''; return `<p class="dp-seals">Sigilli segreti trovati: <b>${S.secrets.length}/6</b>${S.secretSolved?' · <b>stanza segreta aperta</b>':''}</p>` }
+
+/* la stanza segreta */
+SCENES.secret = {
+  init:()=>({items:[...'GATIARLTA'].map((ch,id)=>({ch,id})), sel:null, ok:new Set(), note:''}),
+  view:s=>{ const w=s.items.map(x=>x.ch).join(''), A=[...w].flatMap((c,i)=>c==='A'?[i]:[]), T=[...w].flatMap((c,i)=>c==='T'?[i]:[]), aOk=A[2]-A[0]===2, tOk=T[1]-T[0]>1;
+    const chk=(ok,txt)=>`<li class="${ok?'ok':'no'}"><span aria-hidden="true">${ok?'✓':'✗'}</span> ${txt}</li>`;
+    return `<p class="sc-tip">Prova tu: clicca due lettere per scambiarle e cerca parole che rispettino entrambe le regole del forziere.</p>
+    <div class="sc-letters">${s.items.map((it,p)=>`<button type="button" class="lt-tile${s.sel===p?' sel':''}" data-a="l" data-v="${p}" data-id="l${it.id}" aria-pressed="${s.sel===p}" aria-label="Lettera ${it.ch}, posizione ${p+1}">${it.ch}</button>`).join('')}</div>
+    <ul class="vd-checks">${chk(aOk,'Le tre A sono tutte vicine')}${chk(tOk,'Le due T non sono vicine')}</ul>
+    ${foot(s.note||'Parole valide trovate: '+s.ok.size,'Rimescola')}` },
+  act:(s,a,v)=>{
+    const rules=()=>{ const w=s.items.map(x=>x.ch).join(''), A=[...w].flatMap((c,i)=>c==='A'?[i]:[]), T=[...w].flatMap((c,i)=>c==='T'?[i]:[]); return [w, A[2]-A[0]===2 && T[1]-T[0]>1] };
+    if(a==='reset'){ for(let j=s.items.length-1;j>0;j--){ const r=Math.floor(Math.random()*(j+1)); [s.items[j],s.items[r]]=[s.items[r],s.items[j]] } s.sel=null; s.note=''; return {sound:'swap'} }
+    const p=+v;
+    if(s.sel==null){ s.sel=p; s.note='Ora clicca la lettera con cui scambiarla.'; return {sound:'click2'} }
+    if(s.sel===p){ s.sel=null; s.note=''; return {sound:'click2'} }
+    const x=s.items[s.sel], y=s.items[p]; s.items[s.sel]=y; s.items[p]=x; s.sel=null;
+    const [w,ok]=rules();
+    if(!ok){ s.note=''; return {sound:'swap'} }
+    const isNew=!s.ok.has(w); s.ok.add(w);
+    s.note = isNew ? `${w} rispetta entrambe le regole! Parole valide: ${s.ok.size}.` : `${w} l'avevi già trovata. Valide: ${s.ok.size}.`;
+    return {sound:isNew?'ding':'swap'} }
+};
+function revealSecret(a){
+  try{ const bin=atob(SECRET.x), out=new Uint8Array(bin.length); let s=fnv('k|s|'+a)||1;
+    for(let j=0;j<bin.length;j++){ s^=s<<13; s>>>=0; s^=s>>>17; s^=s<<5; s>>>=0; out[j]=bin.charCodeAt(j)^(s&255) }
+    return JSON.parse(new TextDecoder().decode(out)) }catch(e){ return {topic:'',formula:'',expl:''} }
+}
+function viewSecret(){
+  const sol=S.secretSolved, shown=S.secretHints||0, backLbl=S.room<8 ? 'Torna alla porta '+(S.room+1) : 'Torna alla cassaforte';
+  let h=`<div class="room"><div class="col"><p class="eyebrow">Stanza segreta · Studiolo del direttore</p><h2>Il tesoro del direttore</h2>
+  <div class="story">${SECRET.story}</div>${scene('secret')}<p class="question">${SECRET.q}</p></div><div class="col side">`;
+  if(sol){ const d=revealSecret(sol);
+    h+=`<div class="solved"><p class="eyebrow">Forziere aperto · ${d.topic}</p><p class="code">${fmt(sol)}</p><p class="formula">${d.formula}</p><p>${d.expl}</p>
+    <div class="frag-found"><span class="seal-c big">★</span><p><b>Regalo del direttore:</b> 3 minuti in più prima dell'allarme e il sigillo d'oro sul diploma.</p></div>
+    <div class="row"><button class="btn" id="back-secret">${backLbl}</button></div></div>`;
+  } else {
+    h+=`<form class="lock" id="slock" autocomplete="off"><div class="lock-head"><label for="code-s">Codice del forziere</label></div>
+      <div class="lock-row"><input id="code-s" inputmode="numeric" placeholder="0000" aria-describedby="sfb"><button class="btn" type="submit">Apri il forziere</button></div>
+      <p class="fb" id="sfb" aria-live="polite"></p></form>
+    <div class="hints">${SECRET.hints.slice(0,shown).map((t,k)=>`<p class="hint"><b>Indizio ${k+1}.</b> ${t}</p>`).join('')}
+      ${shown<SECRET.hints.length?'<button class="btn-ghost" id="shint">Chiedi un indizio (−2 min)</button>':''}</div>
+    <div class="row"><button class="btn-ghost" id="back-secret">${backLbl}</button></div>`;
+  }
+  return h+'</div></div>';
+}
+function enterSecret(){ if(busy || S.inSecret || sealsCount()<6 || S.finished) return;
+  transition('iris', card('Stanza segreta','Il tesoro del direttore','Sei sigilli e una porta che non era sulla pianta.'), ()=>{ S.inSecret=true; save(); render() }) }
+function leaveSecret(){ if(busy) return;
+  transition('iris', card(S.room<8?'Porta '+(S.room+1):'Cassaforte', ROOMS[S.room].name, 'Torni dove eri rimasto.'), ()=>{ S.inSecret=false; save(); render() }) }
+function bindSecret(){
+  const d=$('intro-dial');
+  if(d){ let n=0; d.addEventListener('click',()=>{ restartAnim(d,'twist'); sfx('tick'); if(S.secrets.includes('dial')) return; if(++n>=3) findSecret('dial', d.getBoundingClientRect()) }) }
+  const b=$('back-secret'); if(b) b.addEventListener('click', leaveSecret);
+  const h=$('shint'); if(h) h.addEventListener('click',()=>{ if(busy) return; S.secretHints=(S.secretHints||0)+1; S.hintCount++; S.penalty+=HINT_COST; save(); sfx('hint'); floatText('−2:00',$('timer')); restartAnim($('timer'),'hit');
+    const v=($('code-s')||{}).value||''; render({anim:false}); if($('code-s')) $('code-s').value=v });
+  const f=$('slock');
+  if(f){ const inp=$('code-s'), fb=$('sfb');
+    inp.addEventListener('input',()=>{ sfx('key'); fb.textContent='' });
+    f.addEventListener('submit', async e=>{ e.preventDefault(); if(busy) return;
+      const v=inp.value.replace(/[\s.'’]/g,'');
+      if(!/^\d+$/.test(v)){ fb.className='fb bad'; fb.textContent='Scrivi un numero intero, senza altri simboli.'; return }
+      const a=String(parseInt(v,10));
+      if(fnv('tartaglia|segreta|'+a)===SECRET.h){
+        busy=true; S.secretSolved=a; S.penalty-=SECRET_BONUS; save(); f.classList.add('open'); sfx('win');
+        const br=f.getBoundingClientRect(); fx.win(1, br.left+br.width/2, br.top+br.height/2); fx.rain(160);
+        floatText('+3:00 · regalo del direttore',$('timer'),'good'); tick();
+        await wait(RM?0:900); busy=false; render({anim:false});
+      } else {
+        S.errors++; S.penalty+=ERR_COST; save(); tick(); sfx('bad'); floatText('−0:30',$('timer')); restartAnim($('timer'),'hit'); restartAnim(f,'shake');
+        fb.className='fb bad'; fb.textContent='Codice errato: il forziere non si apre. Hai perso 30 secondi.'; inp.select();
+      } }) }
+}
+$('seals').addEventListener('click', showSeals);
+$('doors').addEventListener('click', e=>{ if(e.target.closest('#secret-btn')) enterSecret() });
+
 function doors(){
   $('doors').innerHTML = ROOMS.map((_,i)=>{
     const done=S.answers[i]!=null, cls = done ? 'done' : (i===S.room ? 'now' : '');
     const fr = done && i<8 ? reveal(i,S.answers[i]).frag : '';
     const label = i===8 ? SAFE_ICO : (fr ? `<small>${i+1}</small><b>${fr}</b>` : String(i+1));
     return `<li class="${cls}"${i===S.room?' aria-current="step"':''} aria-label="${i===8?'Cassaforte':'Porta '+(i+1)}${fr?', lettera '+fr:''}">${label}</li>`;
-  }).join('');
+  }).join('') + secretDoorHtml();
 }
 function flyFrag(room){
   const src=document.querySelector('.frag-found .frag'), li=$('doors').children[room];
@@ -1183,11 +1351,11 @@ function board(){ try{ const l=JSON.parse(localStorage.getItem(BKEY)); if(Array.
 function saveBoard(l){ try{ localStorage.setItem(BKEY, JSON.stringify(l)) }catch(e){} }
 function recordResult(){
   if(S.recorded) return; S.recorded=true;
-  if(!S.noTimer){ const l=board(); S.recId=Date.now(); l.push({team:S.team||'Squadra senza nome', time:TOTAL-remaining(), errors:S.errors, hints:S.hintCount, at:S.recId}); saveBoard(l) }
+  if(!S.noTimer){ const l=board(); S.recId=Date.now(); l.push({team:S.team||'Squadra senza nome', time:TOTAL-remaining(), errors:S.errors, hints:S.hintCount, at:S.recId, secret:!!S.secretSolved, seals:(S.secrets||[]).length}); saveBoard(l) }
   save();
 }
 function boardHtml(list, me, clear){
-  const rows=list.slice(0,10).map((r,k)=>`<tr class="${r.at===me?'me':''}" style="--d:${k}"><td class="rk">${k+1}</td><td>${esc(r.team)}</td><td class="n">${mmss(r.time)}</td><td class="n">${r.errors}</td><td class="n">${r.hints}</td></tr>`).join('');
+  const rows=list.slice(0,10).map((r,k)=>`<tr class="${r.at===me?'me':''}" style="--d:${k}"><td class="rk">${k+1}</td><td>${esc(r.team)}${r.secret?' <span class="star" title="Ha aperto la stanza segreta">★</span>':''}</td><td class="n">${mmss(r.time)}</td><td class="n">${r.errors}</td><td class="n">${r.hints}</td></tr>`).join('');
   return `<section class="board"><h3>Classifica di questo computer</h3>
   <div class="table-scroll"><table><thead><tr><th>#</th><th>Squadra</th><th class="n">Tempo</th><th class="n">Errori</th><th class="n">Indizi</th></tr></thead><tbody>${rows}</tbody></table></div>
   <p class="muted small">Il tempo comprende le penalità per errori e indizi.${list.length>10?' Sono mostrate le prime 10 squadre.':''}</p>
@@ -1204,7 +1372,7 @@ const SEAL = `<svg class="seal" viewBox="0 0 120 120" aria-hidden="true"><defs><
 function viewIntro(){
   const list=board();
   return `<div class="room"><div class="col">
-  <svg class="dial" viewBox="0 0 100 100" aria-hidden="true">
+  <svg class="dial" id="intro-dial" viewBox="0 0 100 100" role="img" aria-label="Manopola di una vecchia cassaforte">
     <circle cx="50" cy="50" r="46" fill="none" stroke="currentColor" stroke-width="2"/>
     <circle cx="50" cy="50" r="38" fill="none" stroke="currentColor" stroke-width="7" stroke-dasharray="1.5 6.46"/>
     <circle cx="50" cy="50" r="20" fill="none" stroke="currentColor" stroke-width="2"/>
@@ -1217,7 +1385,7 @@ function viewIntro(){
     <p>Brescia, ore 18:00. La visita guidata al caveau storico del Banco Tartaglia è finita, ma tu ti sei fermato a guardare una vecchia cassaforte. Alle tue spalle la porta blindata si chiude con un tonfo.</p>
     <p>Su un leggio trovi il registro del vecchio direttore, un matematico che non si fidava delle chiavi:</p>
     <p class="note">«Ho protetto ogni porta con un conteggio. Chi sa contare senza elencare, esce. Gli altri aspettano l'allarme delle 19:00.»</p>
-    <p>Otto porte ti separano dall'ufficio del direttore, dove una cassaforte comanda il cancello d'uscita. Ogni porta si apre con un numero e ti lascia una lettera.</p>
+    <p>Otto porte ti separano dall'ufficio del direttore, dove una cassaforte comanda il cancello d'uscita. Ogni porta si apre con un numero e ti lascia una lettera. Si dice che abbia nascosto anche qualche segreto in più, per chi guarda con attenzione.</p>
   </div>
   </div><div class="col side">
   <h3>Regole</h3>
@@ -1255,8 +1423,8 @@ function viewEnd(){
       <div class="stat"><b>${S.errors}</b><span>Codici sbagliati</span></div>
       <div class="stat"><b>${S.hintCount}</b><span>Indizi usati</span></div>
     </div>
-    <p class="dp-grade">Grado ottenuto: <b>${grade()}</b></p>
-    <div class="dp-sign"><span class="dp-date">Brescia, ${date}</span>${SEAL}<span class="dp-sig">N. Tartaglia<small>Il Direttore</small></span></div>
+    <p class="dp-grade">Grado ottenuto: <b>${grade()}</b></p>${sealsLine()}
+    <div class="dp-sign"><span class="dp-date">Brescia, ${date}</span>${S.secretSolved?sealGold():''}${SEAL}<span class="dp-sig">N. Tartaglia<small>Il Direttore</small></span></div>
   </div></section>
   ${list.length ? boardHtml(list, S.recId, false) : ''}
   <h3>Il registro del direttore</h3>
@@ -1315,6 +1483,7 @@ function render(o){
   if(!inGame){app.innerHTML=viewIntro()}
   else if(S.room>=ROOMS.length){recordResult();app.innerHTML=viewEnd();view='end'}
   else if(remaining()<=0 && !S.finished && !S.noTimer){timedOutShown=true;app.innerHTML=viewTimeout();view='timeout'}
+  else if(S.inSecret){app.innerHTML=viewSecret();view='secret'}
   else{app.innerHTML=viewRoom(S.room)}
   if(inGame){
     doors(); tick();
@@ -1326,6 +1495,7 @@ function render(o){
   if(anim){ app.dataset.ent=String(S.started && S.room<ROOMS.length ? S.room%4 : 0); void app.offsetWidth; app.classList.add('enter'); let d=0;
     app.querySelectorAll(':scope>:not(.room), .col>*').forEach(el=>el.style.setProperty('--d',d++)) }
   if(view==='end' && o.anim!==false) celebrate();
+  renderSeals();
   if(view==='timeout' && o.anim!==false){ sfx('alarm'); if(!RM){ const al=document.createElement('div'); al.className='alarm'; document.body.appendChild(al); setTimeout(()=>al.remove(),3400) } }
   bind();
 }
@@ -1334,6 +1504,7 @@ function restart(){S=fresh();confirmReset=false;save();render();window.scrollTo(
 
 function bind(){
   const on=(id,fn)=>{const el=$(id);if(el)el.addEventListener('click',fn)};
+  bindSecret();
   const keepTeam=fn=>()=>{ const t=$('team'), v=t?t.value:''; fn(); render({anim:false}); const t2=$('team'); if(t2) t2.value=v };
   on('clear',keepTeam(()=>{confirmClear=true}));
   on('clear-no',keepTeam(()=>{confirmClear=false}));
