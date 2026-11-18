@@ -3,6 +3,7 @@ import {AbsoluteFill} from 'remotion';
 import {useAbsFrame} from '../../lib/frame';
 import {NeuralNet} from '../../v02/components/NeuralNet';
 import {DiveDust} from './hook/Dust';
+import {Ambience} from './tokens/Ambience';
 import {Chips} from './tokens/Chips';
 import {Labels} from './tokens/Labels';
 import {T} from './tokens/layout';
@@ -21,6 +22,7 @@ export const V1Tokens: React.FC = () => {
 	const net = abs >= T.intoNet - 2 ? netState(abs) : null;
 	return (
 		<AbsoluteFill>
+			<Ambience abs={abs} />
 			<DiveDust abs={abs} />
 			{net ? <NeuralNet frame={abs} camera={net.cam} reveal={net.reveal} activity={net.activity} opacity={net.opacity} /> : null}
 			<Labels />

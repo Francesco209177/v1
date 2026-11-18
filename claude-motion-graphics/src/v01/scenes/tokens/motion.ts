@@ -11,9 +11,9 @@ export const layerXf = (abs: number): {s: number; dx: number; dy: number} => {
 	const ant = -0.03 * ease.inOutSine(invLerp(214, T.intoNet, abs));
 	const tt = abs - T.start;
 	return {
-		s: lerp(0.42, 1, arrive) + push + ant,
+		s: lerp(0.56, 1, arrive) + push + ant,
 		dx: 4 * Math.sin(tt / 53),
-		dy: 7 * Math.sin(tt / 37) - 26 * (1 - arrive),
+		dy: 7 * Math.sin(tt / 37) - 26 * (1 - arrive) - 14 * Math.sin(Math.PI * invLerp(212, 230, abs)),
 	};
 };
 
@@ -52,7 +52,7 @@ export const charX = (i: number, j: number): number => {
 };
 
 /** Istante di comparsa (ricomposizione) di ogni carattere: sparso, come pixel che tornano al loro posto. */
-export const charAt = (i: number, j: number): number => T.start + 3 + hash(i * 17 + j, 53) * 17;
+export const charAt = (i: number, j: number): number => T.start + 2 + hash(i * 17 + j, 53) * 14;
 
 /** Posizione del raggio di scansione (x) e sua intensità. */
 export const scanBeam = (abs: number): {x: number; a: number} => {

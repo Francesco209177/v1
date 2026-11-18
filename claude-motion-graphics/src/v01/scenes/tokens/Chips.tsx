@@ -63,7 +63,7 @@ export const Chips: React.FC = () => {
 					const prev = flightPos(s.i, abs, flightU(s.i, abs - 1));
 					const v = Math.hypot(c.x - prev.x, c.y - prev.y);
 					ang = Math.atan2(c.y - prev.y, c.x - prev.x);
-					stretch = clamp(v / 90, 0, 0.6);
+					stretch = clamp(v / 110, 0, 0.35);
 					sc *= lerp(1, 0.12, e);
 					rot = lerp(rot, 0, clamp(u * 4));
 					op = 1 - ease.inQuad(clamp((u - 0.55) / 0.4));

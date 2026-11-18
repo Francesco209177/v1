@@ -10,8 +10,8 @@ const CONV = T.end - 27;
 
 type Pose = {cx: number; cy: number; scale: number; pitch: number; dist: number};
 /** Rosone lontano visto dall'alto (lungo l'asse: ingresso verso di noi), poi DENTRO il tunnel degli strati. */
-const FAR: Pose = {cx: 540, cy: 760, scale: 0.75, pitch: 1.15, dist: 1500};
-const DEEP: Pose = {cx: 540, cy: 700, scale: 0.75, pitch: 1.0, dist: 330};
+const FAR: Pose = {cx: 540, cy: 1000, scale: 0.75, pitch: 1.15, dist: 1500};
+const DEEP: Pose = {cx: 540, cy: 760, scale: 0.75, pitch: 1.0, dist: 330};
 const mixPose = (a: Pose, b: Pose, t: number): Pose => ({
 	cx: lerp(a.cx, b.cx, t),
 	cy: lerp(a.cy, b.cy, t),

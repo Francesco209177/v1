@@ -19,7 +19,7 @@ const rowState = (f: number, s: number, i: number) => {
 	const lAt = FAST(s) && i === 0 && s > 0 ? PICK[s - 1] + 4 : SHOW[s] + i * stagger - 1;
 	const label = prog(f, lAt, FAST(s) ? 2 : Math.max(3, dur * 0.6), ease.outCubic);
 	// l'ultimo passo non collassa: resta visibile (attenuato) mentre la risposta è completa
-	const c = s === N - 1 && i > 0 ? 0 : prog(f, PICK[s] + (slow(s) ? 3 : 1), slow(s) ? 9 : 2, ease.inCubic);
+	const c = s === N - 1 ? 0 : prog(f, PICK[s] + (slow(s) ? 3 : 1), slow(s) ? 9 : 2, ease.inCubic);
 	return {g, label, c};
 };
 

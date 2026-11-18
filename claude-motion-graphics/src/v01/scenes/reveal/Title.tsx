@@ -109,7 +109,7 @@ export const Title: React.FC<{f: number}> = ({f}) => {
 					fontFamily: FONTS.display,
 					fontWeight: 700,
 					fontSize: 188,
-					letterSpacing: '-0.02em',
+					letterSpacing: '0.006em',
 					whiteSpace: 'nowrap',
 					transform: `scale(${sc2})`,
 				}}

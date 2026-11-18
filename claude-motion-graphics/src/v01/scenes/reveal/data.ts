@@ -17,12 +17,12 @@ export const LAYOUT = {labelY: 268, titleY1: 798, titleY2: 972, sepY: 1092, cave
 
 /** Camera della rete neurale condivisa: nasce dal punto di luce, cresce assorbendo testo, si condensa, poi sale dietro al titolo. */
 export const netPose = (f: number) => {
-	const grow = prog(f, 0, 44, ease.outCubic);
+	const grow = prog(f, 0, 40, ease.outCubic);
 	const absorb = prog(f, 10, R.condense - 10, ease.inOutSine);
 	const suck = f < R.title ? prog(f, R.condense - 4, R.title - R.condense + 4, ease.inCubic) : 0;
 	const settle = prog(f, R.title, 26, ease.outBack);
 	const settleY = prog(f, R.title, 22, ease.outCubic);
-	let scale = lerp(0.42, 0.9, grow) + 0.07 * absorb;
+	let scale = lerp(0.5, 0.9, grow) + 0.07 * absorb;
 	let cy = lerp(760, 700, grow);
 	scale = lerp(scale, 0.42, suck);
 	cy = lerp(cy, 680, suck);
@@ -34,9 +34,9 @@ export const netPose = (f: number) => {
 	const drift = prog(f, R.title + 20, 60, ease.inOutSine);
 	cy += Math.sin((f - R.title) / 34) * 5 * drift;
 	scale += 0.02 * prog(f, R.title + 30, R.end - R.title - 30, ease.inOutSine);
-	const reveal = prog(f, 0, 30, ease.outCubic);
+	const reveal = prog(f, 0, 22, ease.outCubic);
 	const activity = f < R.title ? clamp(0.35 + 0.65 * absorb) : lerp(1, 0.32, prog(f, R.title, 30));
-	const brightness = f < R.title ? 0.65 + 0.35 * absorb : lerp(1, 0.78, prog(f, R.title, 40));
+	const brightness = f < R.title ? 0.72 + 0.28 * absorb : lerp(1, 0.8, prog(f, R.title, 40));
 	const flash = clamp(0.5 * absorb * 0.6 + 0.9 * suck + hit(f, R.title, 16) + 0.5 * hit(f, R.prevede, 12));
 	return {cx: 540, cy, scale, reveal, activity, brightness, flash, pitch: V1_NET_AT_270.pitch, dist: V1_NET_AT_270.dist, absorb, suck};
 };

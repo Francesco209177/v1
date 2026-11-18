@@ -15,7 +15,7 @@ export const T = {
 /** Dimensione dei token (JetBrains Mono: avanzamento 0,6 em). */
 export const SIZE = 56;
 export const CW = SIZE * 0.6;
-const GAP = 18;
+export const GAP = 18;
 
 /** Tre righe con a-capo naturali: "Come fa ChatGPT" / "a sapere" / "tutte queste cose?". */
 export const ROWS: number[][] = [
