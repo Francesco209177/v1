@@ -57,7 +57,7 @@ export const TipCard: React.FC<{
 				top,
 				width: W,
 				height,
-				transform: `translate(${dx}px, ${dy + (1 - enter) * 90}px) scale(${(0.94 + 0.06 * enter) * (1 - 0.88 * ab)}, ${(0.94 + 0.06 * enter) * (1 - 0.92 * ab)})`,
+				transform: `translate(${dx}px, ${dy + (1 - enter) * 140}px) scale(${(0.94 + 0.06 * enter) * (1 - 0.88 * ab)}, ${(0.94 + 0.06 * enter) * (1 - 0.92 * ab)})`,
 				opacity: clamp(enter * 1.4) * (1 - ease.inQuad(absorb)),
 			}}
 		>

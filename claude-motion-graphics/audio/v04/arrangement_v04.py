@@ -25,8 +25,8 @@ Two keys: the THREAT half (0-16 s) is C minor (aeolian; the harmonic-minor B nat
 the G7 dominant that leads into the groove), the DEFEND half (16 s on) is its relative major, Eb major,
 reached through Bb (V of Eb) under the suck-back riser.
 
-The narrator speaks almost all the time, so the melodic hooks live in the voice gaps (7.13-9.3 s,
-13.67-17.3 s, 22.8-24.6 s, 27.44-27.95 s); everything else is drones, filtered pads / pulses, bass and
+The narrator speaks almost all the time, so the melodic hooks live in the voice gaps of the final narration
+(7.62-9.3 s, 13.85-17.2 s, 22.95-24.4 s, 27.52-27.85 s); everything else is drones, filtered pads / pulses, bass and
 drums kept out of the 1-4 kHz band.
 
 Running this file prints the note names per bar and validates them against the key of the half,
@@ -70,10 +70,11 @@ CUE_BEATS = {k: v * 2.0 for k, v in CUE_T.items()}
 STEP_BEATS = (18, 21, 24, 27, 30)
 TIP_BEATS = (35, 38, 42)
 
-# voice-over windows (seconds, src/v04/timeline.ts V4_VO): the hooks stay out of them
-VO = ((0.15, 2.89), (3.4, 7.13), (9.3, 13.67), (17.3, 18.62), (19.0, 20.35), (20.75, 22.8), (24.6, 27.44),
-      (27.95, 29.84))
-GAPS = ((2.89, 3.4), (7.13, 9.3), (13.67, 17.3), (18.62, 19.0), (20.35, 20.75), (22.8, 24.6), (27.44, 27.95))
+# voice-over windows (seconds) of the FINAL narrator (ElevenLabs take, supplied by the coordinator;
+# they replace the scratch windows of src/v04/timeline.ts V4_VO): the hooks stay out of them
+VO = ((0.05, 3.39), (3.5, 7.62), (9.3, 13.85), (17.2, 19.01), (19.1, 20.41), (20.75, 22.95), (24.4, 27.52),
+      (27.85, 29.8))
+GAPS = ((3.39, 3.5), (7.62, 9.3), (13.85, 17.2), (19.01, 19.1), (20.41, 20.75), (22.95, 24.4), (27.52, 27.85))
 
 # (start beat, end beat, chord, bass note)
 HARMONY = [
@@ -126,13 +127,12 @@ ACCENT = (1.0, 0.55, 0.75, 0.9, 0.58, 0.72, 0.92, 0.6)   # 3+3+2 feel
 # defend: its bright mirror, rising G - Bb - Eb.
 LEAD_PHRASES = [
     # (start beat, style, [(offset, duration, note), ...])
-    (14.5, "threat", [(0.0, 0.75, "C5"), (0.75, 0.75, "Ab4"), (1.5, 1.0, "G4"), (2.5, 0.5, "D5"),
-                      (3.0, 0.5, "B4")]),                                                     # 7.25 s
+    (15.5, "threat", [(0.0, 0.75, "C5"), (0.75, 0.75, "Ab4"), (1.5, 1.0, "G4")]),            # 7.75 s (Ab = b9 of G7)
     (28.0, "threat", [(0.0, 0.75, "C5"), (0.75, 0.75, "Ab4"), (1.5, 0.5, "G4")]),            # 14.0 s
-    (45.75, "defend", [(0.0, 0.5, "G5"), (0.5, 0.5, "Bb5"), (1.0, 1.0, "Eb6")]),            # 22.875 s
-    (55.0, "defend", [(0.0, 0.5, "G5"), (0.5, 0.4, "Bb5")]),                                  # 27.5 s pickup
+    (46.0, "defend", [(0.0, 0.5, "G5"), (0.5, 0.5, "Bb5"), (1.0, 1.0, "Eb6")]),             # 23.0 s, into the build
+    (55.125, "defend", [(0.0, 0.25, "G5"), (0.25, 0.3, "Bb5")]),                              # 27.56 s pickup (32nds)
 ]
-FLOURISH = (34.0, ("Bb4", "Eb5", "G5", "Bb5", "Eb6"), 0.125)   # shield arpeggio, 17.0-17.25 s (gap)
+FLOURISH = (34.0, ("Bb4", "Eb5", "G5", "Bb5", "Eb6"), 0.09375)  # shield arpeggio, 17.0-17.19 s (gap)
 
 
 def chord_at(beat: float) -> str:
@@ -179,7 +179,7 @@ def build(seed: int = 2404):
         return float(v * (1.0 + rng.uniform(-amt, amt)))
 
     ev = {k: [] for k in ("kick", "snap", "hat_c", "hat_o", "shaker", "roll", "crash", "pad", "drone", "sub", "bass",
-                          "pulse", "arp", "lead", "flourish", "bell", "tick", "stab", "heart", "sparkle")}
+                          "pulse", "arp", "lead", "flourish", "bell", "tick", "stab", "sting", "heart", "sparkle")}
 
     # ------------------------------------------------------------------ hook 0.2-2.0 s
     # low tension drone from the notification on (C pedal under the threat harmony)
@@ -349,6 +349,8 @@ def build(seed: int = 2404):
              (50, ("Eb3", "Bb3", "Eb4", "G4", "Bb4"), 0.95, 0.7))
     for b, notes, v, bright in stabs:
         ev["stab"].append((b, [n2m(x) for x in notes], v, bright))
+    # 6.0 s reveal: the sour sting over Fm (F + C + Ab, with the 9th G rubbing against Ab on top)
+    ev["sting"].append((12, [n2m(x) for x in ("F2", "C3", "Ab3", "G4", "Ab4")], 1.0))
 
     # ------------------------------------------------------------------ lead (voice gaps only) + flourish
     for b0, style, notes in LEAD_PHRASES:
@@ -400,7 +402,7 @@ def report(ev=None) -> bool:
     print(f"KEYS: 0-16 s {KEY_THREAT}: {' '.join(SCALE_THREAT)}")
     print(f"      16-30 s {KEY_DEFEND}: {' '.join(SCALE_DEFEND)}   tempo 120 BPM, 4/4, 15 bars of 2 s")
     print("PROGRESSION: " + " | ".join(f"{b0 / 2:g}s {ch}" for b0, b1, ch, _ in HARMONY))
-    print("HOOKS (voice gaps only): threat C5 Ab4 G4 (7.25 s, 14.0 s)  /  defend G5 Bb5 Eb6 (22.9 s, 27.5 s)")
+    print("HOOKS (voice gaps only): threat C5 Ab4 G4 (7.75 s, 14.0 s)  /  defend G5 Bb5 Eb6 (23.0 s, 27.56 s)")
 
     melodic = {"pulse": 1, "arp": 1, "bass": 1, "lead": 2, "bell": 2, "flourish": 1}
     for bar in range(15):
@@ -430,6 +432,9 @@ def report(ev=None) -> bool:
         for e in ev["stab"]:
             if b0 <= e[0] < b1:
                 print(f"   stab     {e[0] / 2:g}s: {_names(e[1])}")
+        for e in ev["sting"]:
+            if b0 <= e[0] < b1:
+                print(f"   sting    {e[0] / 2:g}s: {_names(e[1])}  (detuned +-26 cents, sagging)")
         subs = [f"{nn(e[2])}@{e[0] / 2:g}s" for e in ev["sub"] if b0 <= e[0] < b1]
         if subs:
             print(f"   sub      {'  '.join(subs)}")
@@ -457,7 +462,7 @@ def report(ev=None) -> bool:
     for e in ev["pad"]:
         for m in e[2]:
             check("pad", e[0], m)
-    for e in ev["stab"]:
+    for e in ev["stab"] + ev["sting"]:
         for m in e[1]:
             check("stab", e[0], m)
     for e in ev["drone"]:                          # pedal point: scale only
@@ -468,7 +473,8 @@ def report(ev=None) -> bool:
         if e[2] != n2m(seg[3]):
             bad_chord.append(("sub", e[0] / 2, nn(e[2]), seg[2]))
     lead_in_vo = [(round(e[0] / 2, 3), nn(e[2])) for e in ev["lead"] if in_vo(e[0] / 2)]
-    lead_into_vo = [(round(e[0] / 2, 3), nn(e[2])) for e in ev["lead"] if in_vo((e[0] + e[1]) / 2 - 0.02)]
+    lead_into_vo = [(round(e[0] / 2, 3), nn(e[2])) for e in ev["lead"]
+                    if any(e[0] / 2 < a < (e[0] + e[1]) / 2 for a, _ in VO)]
     print("\nVALIDATION")
     print(f"   notes outside the key of their half (C minor / Eb major): {len(bad_scale)} {bad_scale[:8]}")
     print(f"   notes that are neither chord tone nor allowed colour: {len(bad_chord)} {bad_chord[:8]}")

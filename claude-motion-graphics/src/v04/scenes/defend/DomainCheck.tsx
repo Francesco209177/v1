@@ -47,6 +47,12 @@ const Verdict: React.FC<{ok: boolean; p: number; pop: number}> = ({ok, p, pop}) 
 
 type Seg = {t: string; mark?: 'zero' | 'extra' | 'o'};
 
+/** Domini fittizi (V4_FAKE, dominio riservato .example) divisi nei pezzi da evidenziare. */
+const R = V4_FAKE.realDomain; // account.orbyx.example
+const P = V4_FAKE.phishDomain; // 0rbyx-verifica.example
+const REAL: Seg[] = [{t: R.slice(0, 8)}, {t: R.slice(8, 9), mark: 'o'}, {t: R.slice(9)}];
+const PHISH: Seg[] = [{t: P.slice(0, 1), mark: 'zero'}, {t: P.slice(1, 5)}, {t: P.slice(5, 14), mark: 'extra'}, {t: P.slice(14)}];
+
 /**
  * Confronto fra due barre degli indirizzi: quella ufficiale (account.orbyx.example, spunta verde) e quella
  * falsa (0rbyx-verifica.example, croce rossa). Una lama di scansione passa sulle barre e accende le differenze:
@@ -55,8 +61,8 @@ type Seg = {t: string; mark?: 'zero' | 'extra' | 'o'};
 export const DomainCheck: React.FC<{f: number; at: number; top: number}> = ({f, at, top}) => {
 	const W = STACK.width - STACK.pad * 2;
 	const rows: {ok: boolean; segs: Seg[]; label: string; typeAt: number; verdictAt: number}[] = [
-		{ok: true, segs: [{t: 'account.'}, {t: 'o', mark: 'o'}, {t: 'rbyx.example'}], label: 'UFFICIALE', typeAt: at + 1, verdictAt: at + 25},
-		{ok: false, segs: [{t: '0', mark: 'zero'}, {t: 'rbyx'}, {t: '-verifica', mark: 'extra'}, {t: '.example'}], label: 'FALSO', typeAt: at + 4, verdictAt: at + 27},
+		{ok: true, segs: REAL, label: 'UFFICIALE', typeAt: at + 1, verdictAt: at + 25},
+		{ok: false, segs: PHISH, label: 'FALSO', typeAt: at + 4, verdictAt: at + 27},
 	];
 	// lama di scansione: attraversa le barre e passa sullo zero esattamente sul beat (at + 15)
 	const scanX = -40 + (f - (at + 13)) * 56;

@@ -117,3 +117,42 @@ export const zoomSpeed = (f: number): number => {
 
 /** Intensità dell'allarme rosso dopo il tocco. */
 export const alarmP = (f: number): number => prog(f, H.tap + 2, 8, ease.outCubic);
+
+/** Angolo del dito (gradi): entra dal basso a destra e punta in alto a sinistra. */
+export const FINGER_ANGLE = -50;
+const BX = Math.sin(-FINGER_ANGLE * DEG); // direzione del corpo del dito (verso la mano)
+const BY = Math.cos(-FINGER_ANGLE * DEG);
+/** Distanza tra la punta e il centro del polpastrello (è il polpastrello a toccare il pulsante). */
+const PAD = 38;
+
+/** Distanza (px, lungo l'asse del dito) dal punto di contatto: avvicinamento lento, esitazione, pressione decisa. */
+const fingerDist = (f: number): number => {
+	if (f < H.fingerIn) return 1200;
+	if (f < H.hover) return lerp(1080, 118, ease.outCubic(invLerp(H.fingerIn, H.hover, f)));
+	if (f < H.press) return lerp(118, 142, ease.inOutSine(invLerp(H.hover, H.press, f))); // anticipazione: si ritrae appena
+	if (f < H.tap) return lerp(142, 0, ease.inQuart(invLerp(H.press, H.tap, f))); // pressione decisa
+	if (f < H.tap + 4) return -4 * ease.outCubic(invLerp(H.tap, H.tap + 2, f));
+	return lerp(-4, 1100, ease.inCubic(invLerp(H.tap + 4, H.tap + 18, f)));
+};
+
+export type FingerState = {x: number; y: number; angle: number; h: number; prox: number; press: number; opacity: number};
+
+/** Stato del dito nel frame f (segue il pulsante proiettato, quindi il contatto a 60 è esatto). */
+export const fingerState = (f: number, pose: PhonePose): FingerState => {
+	const t = projectPhone(pose, TAP_POINT.x, TAP_POINT.y);
+	const d = fingerDist(f);
+	// leggero arco d'ingresso (laterale) e micro-tremolio di esitazione
+	const lat = f < H.hover ? 80 * (1 - ease.outCubic(invLerp(H.fingerIn, H.hover, f))) : 0;
+	const tremble = f >= H.hover && f < H.press ? Math.sin(f * 1.7) * 1.4 : 0;
+	const nx = -BY;
+	const ny = BX;
+	return {
+		x: t.x - BX * PAD + BX * d + nx * (lat + tremble),
+		y: t.y - BY * PAD + BY * d + ny * (lat + tremble),
+		angle: FINGER_ANGLE,
+		h: clamp(d / 170),
+		prox: clamp(1 - Math.max(0, d) / 330) * (f < H.tap + 6 ? 1 : 0.4),
+		press: f >= H.tap && f < H.tap + 5 ? 1 - (f - H.tap) / 5 : 0,
+		opacity: f < H.fingerIn ? 0 : 1 - clamp((f - (H.tap + 12)) / 6),
+	};
+};
