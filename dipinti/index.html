@@ -480,6 +480,26 @@ body.has-guide main{padding-bottom:120px}
 .m-table .r{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 @media (max-width:860px){ .m-two{grid-template-columns:minmax(0,1fr)} }
 
+/* ===== esito della risposta: giusta e sbagliata ===== */
+.fxo{position:fixed;inset:0;z-index:66;pointer-events:none;overflow:hidden}
+.fx-glow{position:absolute;inset:0;background:radial-gradient(circle at 50% 44%,rgba(255,236,170,.6),transparent 62%);opacity:0}
+.fx-blob{position:absolute;left:0;top:0;width:var(--s);height:var(--s);margin:calc(var(--s) / -2) 0 0 calc(var(--s) / -2);border-radius:var(--br)}
+.fx-blob.R{background:var(--red)} .fx-blob.B{background:var(--blue)} .fx-blob.Y{background:var(--yellow)}
+.fx-frame{position:absolute;left:50%;top:44%;padding:14px;background:linear-gradient(135deg,#F3D57E,var(--gold) 45%,#7B5A12);box-shadow:0 30px 60px -20px rgba(0,0,0,.6);opacity:0}
+.fx-frame div{background:var(--panel);border:3px solid #6B4B12;padding:16px 40px 20px;text-align:center;min-width:min(70vw,300px)}
+.fx-frame small{display:block;font:700 .78rem var(--body);letter-spacing:.2em;text-transform:uppercase;color:var(--ok)}
+.fx-frame b{display:block;font:900 clamp(3rem,10vw,6rem)/1 var(--display);font-stretch:125%;color:var(--ink)}
+.fx-red{position:absolute;inset:0}
+.fx-laser{position:absolute;left:-20vw;width:140vw;height:3px;background:#FF2A1A;box-shadow:0 0 8px 2px rgba(255,40,20,.8),0 0 26px 6px rgba(255,40,20,.35);opacity:0}
+.fx-stamp{position:absolute;left:50%;top:44%;border:5px solid var(--bad);color:var(--bad);background:var(--panel);padding:12px 22px 14px;font:900 clamp(1.3rem,4.5vw,2.4rem)/1.05 var(--display);font-stretch:125%;text-transform:uppercase;text-align:center;opacity:0;box-shadow:0 20px 40px -16px rgba(0,0,0,.5)}
+.fx-stamp small{display:block;font:700 .8rem var(--body);letter-spacing:.14em;margin-top:6px;font-stretch:100%}
+@keyframes quake{10%,50%,90%{transform:translateX(-9px)}30%,70%{transform:translateX(9px)}}
+.quake{animation:quake .5s}
+.guide.g-good{animation:gGood .7s cubic-bezier(.3,1.6,.5,1)}
+@keyframes gGood{35%{transform:translateY(-14px) scale(1.04);box-shadow:0 0 0 4px var(--ok),0 0 40px 6px var(--ok)}}
+.guide.g-bad{animation:gBad .45s}
+@keyframes gBad{20%,60%{transform:translateX(-10px) rotate(-2deg);box-shadow:0 0 0 4px var(--bad)}40%,80%{transform:translateX(10px) rotate(2deg);box-shadow:0 0 0 4px var(--bad)}}
+
 .clock .pin{fill:var(--sign)}
 </style>
 <header class="sign"><div class="wrap">
@@ -567,7 +587,8 @@ const SFX = {
   alarm:()=>{ for(let i=0;i<3;i++){ tone(880,i*.5,.25,'square',.06); tone(700,i*.5+.25,.25,'square',.06) } },
   swoosh:()=>noise(0,.5,.25,300,'bandpass',3000),
   creak:()=>{ tone(180,0,.5,'sawtooth',.03,260); noise(0,.4,.08,600,'bandpass') },
-  close:()=>{ noise(0,.12,.35,300); tone(70,0,.15,'sine',.2) }
+  close:()=>{ noise(0,.12,.35,300); tone(70,0,.15,'sine',.2) },
+  siren:()=>{ for(let i=0;i<3;i++){ tone(1050,i*.36,.18,'square',.045,760); tone(760,i*.36+.18,.18,'square',.045,1050) } }
 };
 function sfx(n){ if(muted) return; try{ SFX[n] && SFX[n]() }catch(e){} }
 
@@ -1045,6 +1066,40 @@ function viewEnd(){
   <div class="sc-bar" style="margin-top:24px"><button type="button" class="btn" id="again">Nuovi visitatori <span class="arr">→</span></button></div>`;
 }
 
+/* ===== animazioni di esito ===== */
+function fxLayer(){ const o=document.createElement('div'); o.className='fxo'; o.setAttribute('aria-hidden','true'); document.body.appendChild(o); return o }
+function fxOk(num){
+  const g=$('guide'); restartAnim(g,'g-good');
+  if(RM) return;
+  const o=fxLayer(), r=g.getBoundingClientRect(), ox=r.width?r.left+r.width/2:innerWidth/2, oy=r.width?r.top+50:innerHeight/2;
+  o.innerHTML='<div class="fx-glow"></div>';
+  o.firstChild.animate([{opacity:0},{opacity:1,offset:.25},{opacity:0}],{duration:1900,fill:'forwards'});
+  for(let k=0;k<28;k++){ const b=document.createElement('i'), sz=14+Math.random()*48, ang=Math.random()*Math.PI*2, dist=160+Math.random()*Math.max(innerWidth,innerHeight)*.45;
+    b.className='fx-blob '+'RBY'[k%3]; b.style.setProperty('--s',sz+'px');
+    b.style.setProperty('--br',`${40+Math.random()*30}% ${30+Math.random()*40}% ${40+Math.random()*30}% ${30+Math.random()*40}%`); o.appendChild(b);
+    const tx=innerWidth/2+Math.cos(ang)*dist, ty=innerHeight*.44+Math.sin(ang)*dist*.7;
+    b.animate([{transform:`translate(${ox}px,${oy}px) scale(.2)`,opacity:1},{transform:`translate(${tx}px,${ty}px) scale(1) rotate(${Math.random()*90}deg)`,opacity:1,offset:.45},{transform:`translate(${tx}px,${ty+34}px) scale(1.2,.8)`,opacity:0}],
+      {duration:1500+Math.random()*500,delay:Math.random()*140,easing:'cubic-bezier(.2,.7,.3,1)',fill:'forwards'}) }
+  const f=document.createElement('div'); f.className='fx-frame'; f.innerHTML=`<div><small>✓ Traccia trovata</small><b>${fmt(num)}</b></div>`; o.appendChild(f);
+  f.animate([{transform:'translate(-50%,-50%) scale(.3) rotate(-10deg)',opacity:0},{transform:'translate(-50%,-50%) scale(1.08) rotate(2deg)',opacity:1,offset:.2},{transform:'translate(-50%,-50%) scale(1) rotate(0)',opacity:1,offset:.3},{transform:'translate(-50%,-50%) scale(1)',opacity:1,offset:.8},{transform:'translate(-50%,-30%) scale(.85)',opacity:0}],{duration:2200,easing:'ease-out',fill:'forwards'});
+  setTimeout(()=>o.remove(),2500);
+}
+function fxBad(title, sub){
+  const g=$('guide'); restartAnim(g,'g-bad'); sfx('siren');
+  if(RM) return;
+  const o=fxLayer(); o.innerHTML='<div class="fx-red"></div>';
+  const on='inset 0 0 130px 34px rgba(255,40,20,.55)', off='inset 0 0 0 0 rgba(255,40,20,0)';
+  o.firstChild.animate([{boxShadow:off},{boxShadow:on},{boxShadow:off},{boxShadow:on},{boxShadow:off}],{duration:1400,fill:'forwards'});
+  for(let k=0;k<5;k++){ const l=document.createElement('i'); l.className='fx-laser'; l.style.top=(12+k*18+Math.random()*6)+'%'; o.appendChild(l);
+    const a=(k%2?1:-1)*(8+Math.random()*10);
+    l.animate([{transform:`rotate(${a}deg) translateX(-100%)`,opacity:0},{transform:`rotate(${a}deg) translateX(0)`,opacity:1,offset:.4},{transform:`rotate(${-a}deg) translateX(8%)`,opacity:1,offset:.7},{transform:`rotate(${-a}deg) translateX(100%)`,opacity:0}],{duration:1300,delay:k*70,easing:'ease-in-out',fill:'forwards'}) }
+  const st=document.createElement('div'); st.className='fx-stamp'; st.innerHTML=`${title}<small>${sub||''}</small>`; o.appendChild(st);
+  const T='translate(-50%,-50%) rotate(-7deg)';
+  st.animate([{transform:T+' scale(2.6)',opacity:0},{transform:T+' scale(.95)',opacity:1,offset:.18},{transform:T+' scale(1)',opacity:1,offset:.26},{transform:T+' scale(1)',opacity:1,offset:.82},{transform:T+' scale(1)',opacity:0}],{duration:1800,fill:'forwards'});
+  restartAnim(document.querySelector('main'),'quake');
+  setTimeout(()=>o.remove(),2000);
+}
+
 /* ===== audioguida ===== */
 let gEntry='';
 function guideIdle(){
@@ -1066,18 +1121,18 @@ async function guideSubmit(){
   if(S.view==='room'){
     const i=S.room;
     if(S.solved[i]!=null){ $('gl1').textContent='TRACCIA GIÀ ASCOLTATA'; gEntry=''; return }
-    if(check(i,a)){ S.solved[i]=a; gEntry=''; save(); sfx('ok');
+    if(check(i,a)){ S.solved[i]=a; gEntry=''; save(); sfx('ok'); fxOk(a);
       sc.classList.add('play'); $('gled').className='g-led ok'; $('gl1').textContent=`▶ TRACCIA ${a} · NOTA DEL CURATORE`; $('gl2').textContent=a;
       S._newSolve=true; render({stay:true}); S._newSolve=false; S._fresh=i;
       setTimeout(()=>{ if(S.view==='room') guideIdle() }, 3200);
-    } else { S.errors++; gEntry=''; save(); sfx('bad'); sc.classList.remove('err'); void sc.offsetWidth; sc.classList.add('err'); $('gled').className='g-led bad';
+    } else { S.errors++; gEntry=''; save(); sfx('bad'); fxBad('Traccia non trovata', `Hai digitato ${fmt(a)} · +1 minuto`); sc.classList.remove('err'); void sc.offsetWidth; sc.classList.add('err'); $('gled').className='g-led bad';
       $('gl1').textContent=`TRACCIA ${a} NON TROVATA`; $('gl2').textContent='— — —'; penalty(ERR_COST,'+1 min'); setTimeout(()=>{ if(S.view==='room') guideIdle() }, 1800) }
   } else if(S.view==='door'){
     if(S.doorOn){ $('gl1').textContent='SISTEMA GIÀ ATTIVO'; gEntry=''; return }
-    if(check('d1',a)){ S.doorOn=true; gEntry=''; save(); sfx('ok'); sc.classList.add('play'); $('gled').className='g-led ok'; $('gl1').textContent='▶ MONITOR ATTIVATO'; $('gl2').textContent=a;
+    if(check('d1',a)){ S.doorOn=true; gEntry=''; save(); sfx('ok'); fxOk(a); sc.classList.add('play'); $('gled').className='g-led ok'; $('gl1').textContent='▶ MONITOR ATTIVATO'; $('gl2').textContent=a;
       lastMon=ALLSEQ.length; updateMonitor(); const f=document.querySelector('[data-scene="door"]'); if(f) rerender(f,'door',()=>{});
       setTimeout(()=>{ if(S.view==='door') guideIdle() }, 2600);
-    } else { S.errors++; gEntry=''; save(); sfx('bad'); restartAnim(sc,'err'); $('gled').className='g-led bad'; $('gl1').textContent='NUMERO NON VALIDO'; $('gl2').textContent='— — —'; penalty(ERR_COST,'+1 min'); setTimeout(()=>{ if(S.view==='door') guideIdle() }, 1800) }
+    } else { S.errors++; gEntry=''; save(); sfx('bad'); fxBad('Numero non valido', `Hai digitato ${fmt(a)} · +1 minuto`); restartAnim(sc,'err'); $('gled').className='g-led bad'; $('gl1').textContent='NUMERO NON VALIDO'; $('gl2').textContent='— — —'; penalty(ERR_COST,'+1 min'); setTimeout(()=>{ if(S.view==='door') guideIdle() }, 1800) }
   }
 }
 document.querySelectorAll('[data-g]').forEach(b=>b.addEventListener('click',()=>guideKey(b.dataset.g)));
@@ -1142,7 +1197,7 @@ async function tryDoor(){
   if(!S.doorOn || h.includes(null) || busy) return;
   const seq=h.map(id=>C[id]).join('');
   if(!check('d2',seq)){
-    S.errors++; save(); sfx('alarm'); restartAnim($('monitor'),'alarm'); penalty(ERR_COST,'+1 min');
+    S.errors++; save(); sfx('alarm'); fxBad('Sequenza rifiutata', 'Controlla i biglietti · +1 minuto'); restartAnim($('monitor'),'alarm'); penalty(ERR_COST,'+1 min');
     const f=document.querySelector('[data-scene="door"]'); rerender(f,'door',()=>{ st('door').note='Allarme breve: la sequenza non è quella del curatore. Controlla i biglietti sul monitor.' }); return }
   busy=true; S.finished=Date.now(); S.seq=seq; save(); sfx('door');
   const d=$('exitdoor'); if(d) d.classList.add('open');
