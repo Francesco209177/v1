@@ -21,7 +21,8 @@ export const flightAt = (f: number, s: number): {p: Vec2; t: number; lift: numbe
 	const P = PICK[s];
 	const end = landAt(s);
 	if (f < P || f >= end) return null;
-	const lift = prog(f, P, LIFT(s), ease.outCubic);
+	// stacco immediato sul frame della scelta (già sollevato e ingrandito), poi il volo
+	const lift = prog(f, P - 1, LIFT(s) + 1, ease.outCubic);
 	const raw = clamp((f - P - LIFT(s)) / FLY(s));
 	const t = flightEase(s)(raw);
 	const {a, c, b} = flightPath(s);
@@ -164,7 +165,8 @@ export const FlyingChips: React.FC<{f: number}> = ({f}) => (
 			const fl = flightAt(f, s);
 			if (!fl) return null;
 			const stretch = clamp(fl.speed / 200, 0, 1);
-			const sc = lerp((PANEL.chipSize / ANS.size) * (1 + 0.32 * fl.lift), 1.06, ease.outCubic(fl.t));
+			const pop = hit(f, PICK[s], s < 2 ? 8 : 4);
+			const sc = lerp((PANEL.chipSize / ANS.size) * (1 + 0.3 * fl.lift + 0.22 * pop), 1.06, ease.outCubic(fl.t));
 			const deg = (fl.dir * 180) / Math.PI;
 			return (
 				<div
@@ -179,7 +181,7 @@ export const FlyingChips: React.FC<{f: number}> = ({f}) => (
 						transform: `rotate(${deg}deg) scale(${1 + 0.18 * stretch}, ${1 - 0.06 * stretch}) rotate(${-deg}deg)`,
 					}}
 				>
-					<TokenChip text={t} x={fl.p.x} y={fl.p.y} size={ANS.size} glow={1.6} scale={sc} active />
+					<TokenChip text={t} x={fl.p.x} y={fl.p.y} size={ANS.size} glow={1.6 + 1.2 * pop} scale={sc} active />
 				</div>
 			);
 		})}

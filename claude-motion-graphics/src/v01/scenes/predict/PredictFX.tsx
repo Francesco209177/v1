@@ -3,6 +3,7 @@ import {FrameCanvas} from '../../../components/FrameCanvas';
 import {drawGlow, withAlpha} from '../../../lib/canvas';
 import {bezier2, clamp, ease, hash, hit, prog, TAU} from '../../../lib/math';
 import {COLORS} from '../../../theme';
+import {tokenWidth} from '../../components/TokenChip';
 import {exitPos, flightEase, flightPath} from './AnswerArea';
 import {ANSWER, ANSWER_SLOTS, appendAt, C, CTX, EXIT, FLY, HUB, landAt, LIFT, loopDur, loopFrom, PANEL, PICK, pointOnLoop, rowY, SHOW} from './data';
 
@@ -65,11 +66,13 @@ export const PredictFX: React.FC<{f: number}> = ({f}) => {
 					const x = PANEL.trackX + (k / 7) * PANEL.trackW * 0.62;
 					drawGlow(ctx, x, y, 8 + 6 * fl, COLORS.orange, 0.45 * fl, COLORS.orangeHot);
 				}
-				const rr = 34 + (slow ? 70 : 40) * (1 - fl);
+				// anello che si allarga dal bordo del chip
+				const hw = tokenWidth(ANSWER[s], PANEL.chipSize) / 2;
+				const grow = (slow ? 90 : 50) * (1 - fl);
 				ctx.strokeStyle = withAlpha(COLORS.orangeHot, 0.7 * fl);
 				ctx.lineWidth = 1.5 + 2.5 * fl;
 				ctx.beginPath();
-				ctx.ellipse(a.x, a.y + 10, rr * 1.25, rr * 0.62, 0, 0, TAU);
+				ctx.ellipse(a.x, a.y + 10, hw + 18 + grow, 34 + grow * 0.45, 0, 0, TAU);
 				ctx.stroke();
 				drawGlow(ctx, a.x, a.y + 10, 16 + 16 * fl, COLORS.orange, 0.45 * fl, COLORS.orangeHot);
 			}
@@ -102,7 +105,7 @@ export const PredictFX: React.FC<{f: number}> = ({f}) => {
 			if (im > 0.01) {
 				const sl = ANSWER_SLOTS[s];
 				drawGlow(ctx, sl.x, sl.y, 26 + 30 * im, COLORS.orange, 0.7 * im, COLORS.orangeHot);
-				const rr = 50 + (slow ? 140 : 80) * (1 - im);
+				const rr = 46 + (slow ? 80 : 46) * (1 - im);
 				ctx.strokeStyle = withAlpha(COLORS.orangeHot, 0.6 * im);
 				ctx.lineWidth = 2 + 2 * im;
 				ctx.beginPath();

@@ -111,7 +111,7 @@ export const ProbPanel: React.FC<{f: number; enter: number; beat: number}> = ({f
 				const y = rowY(i) - PANEL.top;
 				const win = i === 0;
 				const barW = PANEL.trackW * r.p * g * (1 - c);
-				const pct = FAST(s) ? Math.round(r.p * 100) : Math.round(r.p * 100 * clamp(g * 1.05));
+				const pct = FAST(s) ? Math.round(r.p * 100) : Math.max(1, Math.round(r.p * 100 * clamp(g * 1.05)));
 				const fl = win ? flash : 0;
 				return (
 					<React.Fragment key={`${s}-${i}`}>
@@ -173,6 +173,19 @@ export const ProbPanel: React.FC<{f: number; enter: number; beat: number}> = ({f
 								opacity: enter,
 							}}
 						>
+							{/* binario vuoto: luce di "calcolo" che scorre mentre il modello legge il nuovo contesto */}
+							{barW < 6 && f > 20 ? (
+								<div
+									style={{
+										position: 'absolute',
+										top: 0,
+										bottom: 0,
+										width: 120,
+										left: (((f / 16 + i * 0.09) % 1) * 1.4 - 0.2) * PANEL.trackW - 60,
+										background: `linear-gradient(90deg, ${alpha(COLORS.orange, 0)}, ${alpha(COLORS.orange, 0.35)}, ${alpha(COLORS.orange, 0)})`,
+									}}
+								/>
+							) : null}
 							<div
 								style={{
 									position: 'absolute',

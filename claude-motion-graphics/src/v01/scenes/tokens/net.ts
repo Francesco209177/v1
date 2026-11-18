@@ -10,7 +10,7 @@ const CONV = T.end - 27;
 
 type Pose = {cx: number; cy: number; scale: number; pitch: number; dist: number};
 /** Rosone lontano visto dall'alto (lungo l'asse: ingresso verso di noi), poi DENTRO il tunnel degli strati. */
-const FAR: Pose = {cx: 540, cy: 1000, scale: 0.75, pitch: 1.15, dist: 1500};
+const FAR: Pose = {cx: 540, cy: 800, scale: 0.75, pitch: 1.15, dist: 1500};
 const DEEP: Pose = {cx: 540, cy: 760, scale: 0.75, pitch: 1.0, dist: 330};
 const mixPose = (a: Pose, b: Pose, t: number): Pose => ({
 	cx: lerp(a.cx, b.cx, t),
@@ -27,7 +27,7 @@ const mixPose = (a: Pose, b: Pose, t: number): Pose => ({
  */
 export const netState = (abs: number) => {
 	const t = clamp((abs - (T.intoNet - 2)) / (T.end - T.intoNet + 2));
-	const dive = ease.inOutSine(invLerp(232, 252, abs));
+	const dive = ease.inOutSine(invLerp(234, 254, abs));
 	const c = ease.inOutCubic(invLerp(CONV, T.end, abs));
 	const p = mixPose(mixPose(FAR, DEEP, dive), V1_NET_AT_270, c);
 	const cam: Required<NetCamera> = {...p, yaw: v1NetYaw(abs) - 0.9 * Math.pow(1 - t, 3)};
@@ -61,12 +61,47 @@ export const projectNet = (cam: Required<NetCamera>): Proj[] => {
 	});
 };
 
-/** Nodi dello strato di ingresso (0) e percorso di ogni token lungo le connessioni, strato per strato. */
-const INPUT = NET.nodes.map((n, i) => ({n, i})).filter((o) => o.n.layer === 0);
-const ENTRY = [4, 0, 6, 2, 8, 5, 1, 7, 3, 4, 0];
+/** Centro dell'anello d'ingresso (strato 0) sullo schermo: è il "vortice" in cui i token spiraleggiano. */
+export const INPUT = NET.nodes.map((n, i) => ({n, i})).filter((o) => o.n.layer === 0);
+export const ringCenter = (proj: Proj[]): {x: number; y: number} => {
+	let x = 0;
+	let y = 0;
+	for (const o of INPUT) {
+		x += proj[o.i].x;
+		y += proj[o.i].y;
+	}
+	return {x: x / INPUT.length, y: y / INPUT.length};
+};
 
-export const tokenPath = (i: number): number[] => {
-	const path = [INPUT[ENTRY[i] % INPUT.length].i];
+/**
+ * Nodo d'ingresso di ogni token: quello il cui angolo (attorno al vortice) segue di ~0,9 rad la posizione
+ * del token, così tutti girano nello stesso verso. Calcolato una volta su una posa di riferimento.
+ */
+export const SWIRL = 0.9;
+export const assignEntries = (from: {x: number; y: number}[], refAbs: number): number[] => {
+	const proj = projectNet(netState(refAbs).cam);
+	const c = ringCenter(proj);
+	const used = new Map<number, number>();
+	return from.map((p) => {
+		const want = Math.atan2(p.y - c.y, p.x - c.x) + SWIRL;
+		let best = INPUT[0].i;
+		let bestD = Infinity;
+		for (const o of INPUT) {
+			const a = Math.atan2(proj[o.i].y - c.y, proj[o.i].x - c.x);
+			const d = Math.abs(Math.atan2(Math.sin(a - want), Math.cos(a - want))) + 0.6 * (used.get(o.i) ?? 0);
+			if (d < bestD) {
+				bestD = d;
+				best = o.i;
+			}
+		}
+		used.set(best, (used.get(best) ?? 0) + 1);
+		return best;
+	});
+};
+
+/** Percorso lungo le connessioni, strato per strato, a partire dal nodo d'ingresso. */
+export const tokenPath = (i: number, entry: number): number[] => {
+	const path = [entry];
 	for (let l = 0; l < 5; l++) {
 		const from = path[path.length - 1];
 		const out = NET.edges.filter((e) => e.a === from);
@@ -75,5 +110,4 @@ export const tokenPath = (i: number): number[] => {
 	}
 	return path;
 };
-export const PATHS = Array.from({length: 11}, (_, i) => tokenPath(i));
 export const HOP = 4.5;

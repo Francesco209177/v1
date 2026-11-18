@@ -7,8 +7,8 @@ import {tokenWidth} from '../../components/TokenChip';
 import {VP} from '../hook/timing';
 import {GAP, SIZE, SLOTS, T} from './layout';
 import {charAt, charX, departAt, FLIGHT, layerXf, scanBeam, splitP, toScreen} from './motion';
-import {flightPos, flightU} from './Chips';
-import {HOP, netState, PATHS, projectNet} from './net';
+import {flightPos, flightU, PATHS} from './flight';
+import {HOP, netState, projectNet} from './net';
 
 /** Confini interni alle righe (tra due token consecutivi): lì si aprono le crepe di luce. */
 const BOUNDS = SLOTS.filter((s) => !s.first).map((s) => {

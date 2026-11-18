@@ -61,5 +61,5 @@ export const scanBeam = (abs: number): {x: number; a: number} => {
 };
 
 /** Partenza del volo verso la rete per il token i (in fila, in ordine di lettura). */
-export const departAt = (i: number): number => T.intoNet + i;
-export const FLIGHT = 9;
+export const departAt = (i: number): number => T.intoNet + i * 0.9;
+export const FLIGHT = 10;
