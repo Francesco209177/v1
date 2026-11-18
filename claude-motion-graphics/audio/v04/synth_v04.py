@@ -99,35 +99,35 @@ MIX = {
     "sub":      (-15.0, 0.90, {}, "bass"),
     "bass":     (-12.0, 0.55, {}, "bass"),
     "heart":    (-11.0, 0.00, {}, "bass"),
-    "drone":    (-17.0, 0.00, {"hall": 0.20}, "music"),
+    "drone":    (-14.0, 0.00, {"hall": 0.20}, "music"),
     "pulse":    (-15.0, 0.45, {"hall": 0.15}, "music"),
-    "hookpulse": (-18.0, 0.00, {"hall": 0.10}, "music"),
+    "hookpulse": (-10.0, 0.00, {"hall": 0.10}, "music"),
     "pad":      (-21.0, 0.35, {"hall": 0.30}, "music"),
-    "alarm":    (-19.0, 0.00, {"hall": 0.30}, "music"),
+    "alarm":    (-14.0, 0.00, {"hall": 0.30}, "music"),
     "breath":   (-22.0, 0.00, {}, "music"),
     "air":      (-31.0, 0.00, {"hall": 0.20}, "music"),
     "arp":      (-14.0, 0.30, {"hall": 0.25}, "music"),
-    "lead":     (-14.0, 0.10, {"hall": 0.30}, "music"),
-    "flourish": (-16.0, 0.00, {"hall": 0.35}, "music"),
+    "lead":     (-12.5, 0.10, {"hall": 0.30}, "music"),
+    "flourish": (-15.0, 0.00, {"hall": 0.30}, "music"),
     "bell":     (-15.0, 0.00, {"hall": 0.25, "big": 0.08}, "music"),
     "ping":     (-15.0, 0.00, {"hall": 0.30, "big": 0.15}, "music"),
     "stab":     (-15.0, 0.00, {"hall": 0.25}, "music"),
-    "sting":    (-15.0, 0.00, {"hall": 0.25, "big": 0.10}, "music"),
-    "tick":     (-24.0, 0.00, {"room": 0.15}, "fx"),
+    "sting":    (-12.0, 0.00, {"hall": 0.25, "big": 0.10}, "music"),
+    "tick":     (-19.0, 0.00, {"room": 0.15}, "fx"),
     "notif":    (-14.0, 0.00, {"hall": 0.20}, "fx"),
-    "chime":    (-16.0, 0.00, {"hall": 0.30}, "fx"),
+    "chime":    (-12.0, 0.00, {"hall": 0.25}, "fx"),
     "sparkle":  (-21.0, 0.00, {"hall": 0.40}, "fx"),
     "boom":     (-9.5, 0.00, {}, "fx"),
     "tap":      (-12.0, 0.00, {"room": 0.15}, "fx"),
     "glitch":   (-21.0, 0.00, {"room": 0.20}, "fx"),
     "impair":   (-19.0, 0.00, {"big": 0.55}, "fx"),
     "swoosh":   (-17.0, 0.00, {"hall": 0.25}, "fx"),
-    "shimmer":  (-22.0, 0.00, {"big": 0.40}, "fx"),
+    "shimmer":  (-22.0, 0.00, {"big": 0.25}, "fx"),
     "bloom":    (-22.0, 0.00, {"big": 0.30}, "fx"),
     "riser":    (-14.0, 0.00, {"hall": 0.20}, "fx"),
     "swell":    (-10.0, 0.00, {}, "fx"),
     "downlift": (-21.0, 0.00, {"hall": 0.20}, "fx"),
-    "shatter":  (-14.0, 0.00, {"room": 0.20, "hall": 0.15}, "fx"),
+    "shatter":  (-12.0, 0.00, {"room": 0.20, "hall": 0.15}, "fx"),
 }
 RETURNS_DB = {"hall": -7.0, "room": -10.0, "big": -6.0}
 TAPE_STEMS = ("pad", "pulse", "bass", "sub", "hats")
@@ -218,8 +218,8 @@ def render_bass(ev, st: Stems):
 def pad_cutoff():
     base = automation([(0.0, 600), (1.95, 700), (2.0, 1500), (2.6, 950), (3.45, 900), (3.5, 1300), (4.2, 850),
                        (5.95, 800), (6.0, 1500), (6.6, 850), (8.0, 900), (8.95, 1000), (9.0, 1250), (9.6, 1000),
-                       (14.9, 1000), (15.0, 750), (16.0, 650), (16.95, 900), (17.0, 2900), (17.8, 1800),
-                       (23.4, 1800), (23.95, 2600), (24.0, 2900), (24.5, 1700), (24.95, 1700), (25.0, 2800),
+                       (14.9, 1000), (15.0, 750), (16.0, 650), (16.95, 900), (17.0, 2900), (17.8, 1550),
+                       (23.4, 1550), (23.95, 2600), (24.0, 2900), (24.5, 1700), (24.95, 1700), (25.0, 2800),
                        (25.6, 1600), (27.9, 1600), (28.0, 1900), (30.0, 1000)], log=True)
     t = tarr(N)
     lfo = 2.0 ** (0.2 * np.sin(2 * np.pi * 0.11 * t) + 0.08 * np.sin(2 * np.pi * 0.29 * t + 1.3))
@@ -260,7 +260,7 @@ def render_harmony(ev, st: Stems):
 
 def render_hook_pulse(st: Stems):
     """0.2-2.0 s: the rising filtered pulse (the finger approaches the button): a C2/C3/G2 saw cluster
-    gated on 16ths, its low-pass opening 160 Hz -> 1.5 kHz and its level rising ~14 dB."""
+    gated on 16ths, its low-pass opening 160 Hz -> 1.5 kHz and its level rising ~20 dB."""
     t0, t1 = 0.2, 2.0
     a = s2n(t0)
     n = s2n(t1 - t0)
@@ -287,7 +287,7 @@ def render_hook_pulse(st: Stems):
     x *= gate[:, None]
     fc = 160.0 * (1500.0 / 160.0) ** (u ** 1.5)
     x = sweep_filter(x, fc, "lp", q=1.6, per_oct=4.0)
-    lvl = db2lin(-14.0) ** (1.0 - u)
+    lvl = db2lin(-20.0) ** ((1.0 - u) ** 1.3)
     x *= lvl[:, None]
     x = apply_fades(x, 30.0, 12.0)
     x = voice_pocket(x, -5.0)
@@ -341,19 +341,19 @@ def render_lead(ev, st: Stems):
         place(lead, x, at(b), v, pan=(-0.15, 0.15)[i % 2])
     lead = hp(lead, 200.0, 2)
     lead = voice_pocket(lead, -2.5, 3000.0, 0.8)
-    lead = lead + 0.3 * ping_pong(lead, sec(0.75), fb=0.4, taps=5, lp_hz=3000.0, hp_hz=400.0)
+    lead = lead + 0.3 * ping_pong(lead, sec(0.75), fb=0.4, taps=4, lp_hz=3000.0, hp_hz=400.0)
     st.audio["lead"] += width(lead, 1.15)
 
     fl = stereo()
     for b, m, v, pan in ev["flourish"]:
-        pl = ins.pluck(m, 7, True)
-        bell = ins.fm_bell(mtof(m), dur=1.2, ratio=2.0, index=0.8, idx_tau=0.05, amp_tau=0.35)
+        pl = ins.pluck(m, 7, False)
+        bell = ins.fm_bell(mtof(m), dur=0.8, ratio=2.0, index=0.8, idx_tau=0.04, amp_tau=0.16)
         x = np.zeros((max(len(pl), len(bell)), 2))
         x[: len(pl)] += 0.8 * pl
         x[: len(bell)] += 0.5 * bell[:, None]
         place(fl, x, at(b), v, pan=pan)
     fl = hp(fl, 250.0, 2)
-    fl = fl + 0.25 * ping_pong(fl, sec(0.75), fb=0.35, taps=4, lp_hz=3500.0, hp_hz=500.0, first=1)
+    fl = voice_pocket(fl, -3.0, 2500.0, 0.8)
     st.audio["flourish"] += fl
 
 
@@ -453,7 +453,7 @@ def render_fx(st: Stems):
     zoom = fx.stutter(fx.glitch_blip(108, 601, 0.03), grain_s=0.016, pattern=(1.0, 0.8, 0.7, 0.6, 0.5, 0.4),
                       step_s=0.015625, hold=3, bits=0, hp_hz=5000.0, pitch=(1.0, 1.12, 1.26, 1.41, 1.59, 1.78))
     place(st.audio["glitch"], zoom, s + s2n(0.006), 0.8, pan=0.2)
-    place(st.audio["boom"], ins.boom(110.0, 43.6, 0.04, 0.35, 1.2, 1.5, 150.0), s, 0.6)
+    place(st.audio["boom"], ins.boom(110.0, 43.6, 0.04, 0.35, 1.2, 1.5, 150.0), s, 0.8)
     place(st.audio["impair"], ins.noise_burst(0.4, 602, 4000.0, 12000.0, 0.02), s, 0.7)
 
     # 8.5-9.0 s: reverse cymbal into the groove (voice gap)
@@ -476,7 +476,7 @@ def render_fx(st: Stems):
 
     # 15.0 s STEP 5 (data reaches the attacker): darker and heavier - distorted boom, sub drop, downlifter
     s = at(CUE["step5"])
-    place(st.audio["boom"], fx.dist_impact(1500, dur=2.0, f_start=120.0, f_end=36.0, tau_p=0.06, tau_a=0.55,
+    place(st.audio["boom"], fx.dist_impact(1500, dur=1.4, f_start=120.0, f_end=36.0, tau_p=0.06, tau_a=0.45,
                                            drive=2.2, hold=10, bits=6), s, 0.8)
     place(st.audio["boom"], fx.sub_drop(1.0, mtof(n2m("C2")), mtof(n2m("C1")), 0.45), s + s2n(0.05), 0.45)
     place(st.audio["downlift"], ins.downlifter(1.0, 1501, f0=7000.0, f1=150.0, tau=0.5), s, 1.0)
@@ -488,7 +488,8 @@ def render_fx(st: Stems):
 
     # 16.0-17.0 s: tape-stop (tape_stop()) then the suck-back: reverse swell + noise riser + tonal riser on Bb
     dur = 0.72
-    nr = apply_fades(ins.noise_riser(dur, 1600, f0=400.0, f1=8000.0, curve=1.8, q=1.4, air=0.3), 40.0, 15.0)
+    nr = apply_fades(lp(ins.noise_riser(dur, 1600, f0=400.0, f1=8000.0, curve=1.8, q=1.4, air=0.12), 10000.0, 2),
+                     40.0, 15.0)
     place(st.audio["riser"], nr, at(CUE["shield"]) - len(nr) - s2n(0.05), 0.9)
     tr = apply_fades(ins.tone_riser(dur, 1601, m0=n2m("Bb3"), m1=n2m("Bb5"), curve=1.5), 40.0, 15.0)
     tr = lp(tr, 1800.0, 2)
@@ -500,7 +501,7 @@ def render_fx(st: Stems):
     # 17.0 s SHIELD: bright, protective, resolving (pad bloom, stab, flourish, sparkles in the score)
     impact(st, CUE["shield"], dict(f_start=105.0, f_end=38.9, tau_p=0.07, tau_a=0.7, dur=2.4, drive=1.2,
                                    snap=120.0), 0.75, 0.5, 0.22, seed=1700, thud_gain=0.5, air_lo=3000.0)
-    place(st.audio["shimmer"], ins.shimmer(nm(("Eb6", "G6", "Bb6", "D7", "F7")), 3.0, 1701, attack=0.01, tau=1.0),
+    place(st.audio["shimmer"], ins.shimmer(nm(("Eb7", "G7", "Bb7", "D8")), 2.0, 1701, attack=0.01, tau=0.45),
           at(CUE["shield"]), 1.0)
     place(st.audio["bloom"], fx.shield_bloom(1702), at(CUE["shield"]), 1.0)
 
@@ -512,7 +513,8 @@ def render_fx(st: Stems):
 
     # 23.5-24.0 s BUILD: noise riser + reverse swell on Bb (the roll is in the score)
     dur = 0.46
-    nr = apply_fades(ins.noise_riser(dur, 2350, f0=600.0, f1=9000.0, curve=1.6, q=1.3, air=0.35), 30.0, 12.0)
+    nr = apply_fades(lp(ins.noise_riser(dur, 2350, f0=600.0, f1=9000.0, curve=1.6, q=1.3, air=0.15), 10000.0, 2),
+                     30.0, 12.0)
     place(st.audio["riser"], nr, at(CUE["destroy"]) - len(nr) - s2n(0.04), 0.9)
     sw = ins.reverse_swell(0.5, 2351, midis=nm(("Bb5", "D6", "F6")), noise_gain=0.8, tone_gain=1.0, hp_hz=350.0,
                            lp_hz=9000.0, rt_scale=1.0)
@@ -521,7 +523,9 @@ def render_fx(st: Stems):
     # 24.0 s DESTROY: big impact + glass / digital shatter + crushed stutter + downlifter
     s = at(CUE["destroy"])
     impact(st, CUE["destroy"], dict(f_start=140.0, f_end=41.0, tau_p=0.06, tau_a=0.75, dur=2.4, drive=1.6,
-                                    snap=170.0), 0.95, 0.75, 0.25, seed=2400, thud_gain=0.75)
+                                    snap=170.0), 1.1, 0.8, 0.25, seed=2400, thud_gain=0.8)
+    place(st.audio["boom"], fx.dist_impact(2403, dur=1.8, f_start=170.0, f_end=41.0, tau_p=0.05, tau_a=0.5, drive=2.0,
+                                           hold=8, bits=6), s, 0.55)
     sh = fx.shatter(2401, dur=1.2, tokens=nm(("Bb6", "F7", "D7", "Bb7", "F7", "D8", "Bb7", "F8", "D7", "Bb8")))
     place(st.audio["shatter"], sh, s, 1.0)
     stt = fx.stutter(sh, grain_s=0.02, pattern=(0.0, 0.0, 0.0, 0.0, 0.7, 0.0, 0.5, 0.0, 0.4, 0.3, 0.2),
@@ -532,8 +536,8 @@ def render_fx(st: Stems):
     # 25.0 s TITLE: strong resolved hit on Eb + shimmer (bell chord, stab, glitter in the score)
     s = at(CUE["title"])
     impact(st, CUE["title"], dict(f_start=120.0, f_end=38.9, tau_p=0.06, tau_a=0.8, dur=2.6, drive=1.3,
-                                  snap=150.0), 0.8, 0.7, 0.14, seed=2500, thud_gain=0.55, air_lo=3500.0)
-    place(st.audio["shimmer"], ins.shimmer(nm(("Eb7", "G7", "Bb7", "Eb8", "G8")), 2.4, 2501, attack=0.008, tau=0.6),
+                                  snap=150.0), 0.6, 0.7, 0.14, seed=2500, thud_gain=0.45, air_lo=3500.0)
+    place(st.audio["shimmer"], ins.shimmer(nm(("Eb7", "G7", "Bb7", "Eb8", "G8")), 1.6, 2501, attack=0.008, tau=0.35),
           s, 0.9)
 
     # 28.0 s QUESTION: the ping is in the score (bells); a breath of air under it
@@ -585,7 +589,8 @@ def kick_ducking(ev):
 
 
 PRE_DIPS = (("tap", -10.0, 0.045), ("message", -6.0, 0.03), ("how", -5.0, 0.03), ("shield", -12.0, 0.06),
-            ("destroy", -10.0, 0.04), ("title", -5.0, 0.03))
+            ("tip1", -5.0, 0.03), ("tip2", -3.0, 0.025), ("tip3", -3.0, 0.025), ("destroy", -10.0, 0.04),
+            ("title", -5.0, 0.03))
 
 
 def pre_cue_dips():

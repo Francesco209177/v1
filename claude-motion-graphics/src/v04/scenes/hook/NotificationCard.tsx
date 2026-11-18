@@ -41,9 +41,9 @@ export const NotificationCard: React.FC<{f: number; alarm: number}> = ({f, alarm
 				width: LS.cardW,
 				height: h,
 				borderRadius: 28,
-				background: `linear-gradient(180deg, rgba(36,42,44,0.94) 0%, rgba(22,26,28,0.96) 100%)`,
+				background: `linear-gradient(180deg, rgba(${Math.round(36 + 14 * red)},${Math.round(42 - 26 * red)},${Math.round(44 - 26 * red)},0.95) 0%, rgba(${Math.round(22 + 6 * red)},${Math.round(26 - 18 * red)},${Math.round(28 - 18 * red)},0.97) 100%)`,
 				border: `1.5px solid ${a4(red > 0.02 ? C4.redBright : C4.white, 0.14 + 0.5 * arrive + 0.45 * red)}`,
-				boxShadow: `0 18px 50px rgba(0,0,0,0.55), 0 0 ${30 + 40 * arrive}px ${a4(C4.white, 0.1 * arrive)}, inset 0 1px 0 rgba(255,255,255,0.09)`,
+				boxShadow: `0 18px 50px rgba(0,0,0,0.55), 0 0 ${30 + 40 * arrive}px ${a4(C4.white, 0.1 * arrive)}, 0 0 ${40 * red}px ${a4(C4.red, 0.45 * red)}, inset 0 1px 0 rgba(255,255,255,0.09)`,
 				fontFamily: FONTS.body,
 				color: C4.white,
 			}}

@@ -105,7 +105,7 @@ const Ripple: React.FC<{f: number}> = ({f}) => {
  * poi al tocco (60) l'allarme rosso che si propaga dal punto di contatto, il simbolo di avviso e il rumore esadecimale.
  */
 export const LockScreen: React.FC<{f: number}> = ({f}) => {
-	const wake = prog(f, H.notif, 4, ease.outCubic);
+	const wake = prog(f, H.notif - 1, 3, ease.outCubic); // a 6 lo schermo è già acceso
 	const dim = 0.42 * (1 - wake);
 	const wakeFlash = f >= H.notif ? Math.exp(-(f - H.notif) / 4) : 0;
 	const al = alarmP(f);
@@ -152,28 +152,29 @@ export const LockScreen: React.FC<{f: number}> = ({f}) => {
 			>
 				09:41
 			</div>
-			<NotificationCard f={f} alarm={al} />
-			{/* indicatore home */}
-			<div style={{position: 'absolute', left: S.w / 2 - 70, top: S.h - 26, width: 140, height: 5, borderRadius: 3, background: a4(C4.white, 0.55)}} />
-			{/* schermo spento → acceso */}
-			{dim > 0.003 ? <div style={{position: 'absolute', inset: 0, background: `rgba(0,0,0,${dim})`}} /> : null}
-			{wakeFlash > 0.01 ? (
-				<div style={{position: 'absolute', inset: 0, background: `radial-gradient(90% 30% at 50% 0%, rgba(235,242,238,${0.22 * wakeFlash}) 0%, rgba(235,242,238,0) 100%)`}} />
-			) : null}
-			{/* allarme: onda rossa dal punto di contatto */}
+			{/* allarme: onda rossa dal punto di contatto (sotto la notifica, che resta leggibile) */}
 			{sweepOn ? (
 				<div style={{position: 'absolute', inset: 0, clipPath: `circle(${sweepR}px at ${TAP_POINT.x}px ${TAP_POINT.y}px)`}}>
 					<div
 						style={{
 							position: 'absolute',
 							inset: 0,
-							mixBlendMode: 'screen',
-							background: `radial-gradient(90% 60% at 50% 30%, ${a4(C4.red, 0.62)} 0%, ${a4(C4.red, 0.42)} 45%, ${a4(C4.redDeep, 0.7)} 100%)`,
+							background: `radial-gradient(85% 42% at 50% ${(LS.clockCY / S.h) * 100}%, rgba(186,26,33,0.92) 0%, rgba(96,11,15,0.94) 55%, rgba(30,4,6,0.96) 100%)`,
 						}}
 					/>
-					<HexStream f={f} opacity={0.16 + 0.1 * warnBeat} />
-					<div style={{position: 'absolute', inset: 0, backgroundImage: 'repeating-linear-gradient(0deg, rgba(0,0,0,0) 0px, rgba(0,0,0,0) 5px, rgba(0,0,0,0.22) 5px, rgba(0,0,0,0.22) 7px)', backgroundPosition: `0 ${(f * 2) % 7}px`}} />
+					<HexStream f={f} opacity={0.075 + 0.05 * warnBeat} />
+					<div style={{position: 'absolute', inset: 0, backgroundImage: 'repeating-linear-gradient(0deg, rgba(0,0,0,0) 0px, rgba(0,0,0,0) 5px, rgba(0,0,0,0.28) 5px, rgba(0,0,0,0.28) 7px)', backgroundPosition: `0 ${(f * 2) % 7}px`}} />
+					{/* fascia di scansione che scende */}
+					<div style={{position: 'absolute', left: 0, right: 0, top: ((f - H.tap) * 38) % (S.h + 200) - 100, height: 90, background: `linear-gradient(180deg, ${a4(C4.redBright, 0)} 0%, ${a4(C4.redBright, 0.14)} 80%, ${a4(C4.redHot, 0.3)} 100%)`}} />
 				</div>
+			) : null}
+			<NotificationCard f={f} alarm={al} />
+			{/* indicatore home */}
+			<div style={{position: 'absolute', left: S.w / 2 - 70, top: S.h - 26, width: 140, height: 5, borderRadius: 3, background: a4(sweepOn ? C4.redHot : C4.white, 0.55)}} />
+			{/* schermo spento → acceso */}
+			{dim > 0.003 ? <div style={{position: 'absolute', inset: 0, background: `rgba(0,0,0,${dim})`}} /> : null}
+			{wakeFlash > 0.01 ? (
+				<div style={{position: 'absolute', inset: 0, background: `radial-gradient(90% 30% at 50% 0%, rgba(235,242,238,${0.22 * wakeFlash}) 0%, rgba(235,242,238,0) 100%)`}} />
 			) : null}
 			{/* fronte d'onda luminoso */}
 			{sweepOn && sweepT < 1 ? (
@@ -201,7 +202,7 @@ export const LockScreen: React.FC<{f: number}> = ({f}) => {
 			) : null}
 			<Ripple f={f} />
 			{/* bagliore generale dell'allarme sul vetro */}
-			{al > 0.01 ? <div style={{position: 'absolute', inset: 0, boxShadow: `inset 0 0 ${80 + 40 * warnBeat}px ${a4(C4.red, 0.55 * al)}`}} /> : null}
+			{al > 0.01 ? <div style={{position: 'absolute', inset: 0, boxShadow: `inset 0 0 90px rgba(0,0,0,${0.55 * al}), inset 0 0 ${26 + 30 * warnBeat}px ${a4(C4.redBright, (0.45 + 0.3 * warnBeat) * al)}`}} /> : null}
 		</>
 	);
 };

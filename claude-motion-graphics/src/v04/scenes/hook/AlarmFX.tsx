@@ -81,7 +81,7 @@ export const RedVeil: React.FC<{f: number}> = ({f}) => {
 		<AbsoluteFill
 			style={{
 				pointerEvents: 'none',
-				background: `radial-gradient(85% 60% at 50% 42%, ${a4(C4.red, 0.42 * k)} 0%, ${a4(C4.redDeep, 0.62 * k)} 65%, rgba(30,4,6,${0.8 * k}) 100%)`,
+				background: `radial-gradient(85% 60% at 50% 42%, ${a4(C4.red, 0.5 * k)} 0%, ${a4(C4.redDeep, 0.7 * k)} 65%, rgba(30,4,6,${0.85 * k}) 100%)`,
 			}}
 		/>
 	);

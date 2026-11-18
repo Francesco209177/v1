@@ -388,7 +388,7 @@ def confirm_chime(m1: int, m2: int, seed: int = 1750, gap_s: float = 0.065, dur:
     out = np.zeros((n, 2))
     tick = hp(rng.standard_normal(n), 6000.0, 2) * np.exp(-t / 0.0007) * _attack(t, 0.0001)
     out += np.stack([tick, np.roll(tick, 11)], axis=1) * 0.45
-    for k, (m, tau1, tau2, g, p) in enumerate(((m1, 0.03, 0.08, 0.7, -0.15), (m2, 0.06, 0.32, 1.0, 0.15))):
+    for k, (m, tau1, tau2, g, p) in enumerate(((m1, 0.03, 0.07, 0.7, -0.15), (m2, 0.045, 0.19, 1.0, 0.15))):
         a = s2n(k * gap_s)
         L = n - a
         tt = tarr(L)
@@ -396,7 +396,7 @@ def confirm_chime(m1: int, m2: int, seed: int = 1750, gap_s: float = 0.065, dur:
         idx = 0.7 * (0.15 + 0.85 * np.exp(-tt / 0.03))
         y = np.sin(TWO_PI * f * tt + idx * np.sin(TWO_PI * 2.0 * f * tt + rng.random()))
         if k == 1:
-            y += 0.22 * np.sin(TWO_PI * 2.0 * f * tt + rng.random()) * np.exp(-tt / 0.2)
+            y += 0.22 * np.sin(TWO_PI * 2.0 * f * tt + rng.random()) * np.exp(-tt / 0.12)
         y *= _attack(tt, 0.0008) * (0.6 * np.exp(-tt / tau1) + 0.4 * np.exp(-tt / tau2)) * g
         out[a:] += _pan_st(y, p)
     body = sine(180.0 + 120.0 * np.exp(-t / 0.003), n) * np.exp(-t / 0.018) * _attack(t, 0.0005)

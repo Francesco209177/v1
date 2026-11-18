@@ -195,10 +195,10 @@ export const Browser: React.FC<BrowserState> = (s) => {
 			{/* scheletro durante il caricamento */}
 			{skel > 0.01 ? (
 				<div style={{position: 'absolute', inset: 0, opacity: skel}}>
-					{skelBlock(300, 152, 76, 76, 20)}
-					{skelBlock(392, 172, 168, 38)}
-					{skelBlock(190, 266, 480, 40)}
-					{skelBlock(250, 324, 360, 26)}
+					{skelBlock(300, 166, 76, 76, 20)}
+					{skelBlock(392, 186, 168, 38)}
+					{skelBlock(190, 274, 480, 40)}
+					{skelBlock(250, 334, 360, 26)}
 					{skelBlock(FORM.x, FORM.emailY, FORM.w, FORM.h, 14)}
 					{skelBlock(FORM.x, FORM.pwY, FORM.w, FORM.h, 14)}
 					{skelBlock(FORM.x, FORM.btnY, FORM.w, FORM.btnH, 16)}
@@ -207,14 +207,14 @@ export const Browser: React.FC<BrowserState> = (s) => {
 			{/* pagina falsa */}
 			{pageOn ? (
 				<>
-					<div style={{position: 'absolute', left: 0, width: BW, top: 150, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 18, ...logo, opacity: logo.opacity * H}}>
+					<div style={{position: 'absolute', left: 0, width: BW, top: 166, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 18, ...logo, opacity: logo.opacity * clamp(1 - (1 - H) * 2.6)}}>
 						<OrbyxIcon size={76} />
 						<div style={{fontFamily: FONTS.display, fontWeight: 600, fontSize: 52, letterSpacing: '-0.01em'}}>{V4_FAKE.service}</div>
 					</div>
-					<div style={{position: 'absolute', left: 0, width: BW, top: 256, textAlign: 'center', fontFamily: FONTS.display, fontWeight: 600, fontSize: 46, ...title, opacity: title.opacity * (0.35 + 0.65 * H)}}>
+					<div style={{position: 'absolute', left: 0, width: BW, top: 266, textAlign: 'center', fontFamily: FONTS.display, fontWeight: 600, fontSize: 46, ...title, opacity: title.opacity * (0.35 + 0.65 * H)}}>
 						Accedi al tuo account
 					</div>
-					<div style={{position: 'absolute', left: 0, width: BW, top: 320, textAlign: 'center', fontSize: 28, color: C4.gray, ...sub, opacity: sub.opacity * H}}>
+					<div style={{position: 'absolute', left: 0, width: BW, top: 328, textAlign: 'center', fontSize: 28, color: C4.gray, ...sub, opacity: sub.opacity * H}}>
 						Sessione scaduta: accedi di nuovo.
 					</div>
 					<Field
@@ -279,12 +279,12 @@ export const Browser: React.FC<BrowserState> = (s) => {
 			{/* etichetta "pagina falsa", appesa sotto il dominio */}
 			{tagS > 0.01 ? (
 				<div style={{position: 'absolute', left: 120, top: BAR - 6, opacity: clamp(tagS * 2), transform: `scale(${0.7 + 0.3 * tagS})`, transformOrigin: '20px 0px'}}>
-					<div style={{position: 'absolute', left: 18, top: 0, width: 2, height: 16, background: C4.redBright}} />
+					<div style={{position: 'absolute', left: 18, top: 0, width: 2, height: 10, background: C4.redBright}} />
 					<div
 						style={{
 							position: 'absolute',
 							left: 0,
-							top: 14,
+							top: 8,
 							display: 'flex',
 							alignItems: 'center',
 							gap: 10,

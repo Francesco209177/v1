@@ -6,7 +6,7 @@ import {Phone, PHONE_SCREEN} from '../components/Phone';
 import {a4, C4} from '../theme';
 import {V4_FAKE} from '../timeline';
 import {ATK, Attacker} from './how/Attacker';
-import {BH, Browser, BW, EMAIL_TXT, PW_TXT} from './how/Browser';
+import {BAR, BH, Browser, BW, EMAIL_TXT, PW_TXT} from './how/Browser';
 import {DataChip, DataStream, Path} from './how/DataStream';
 import {Glitch} from './how/Glitch';
 import {LockScreen, TAP_PHONE, TouchPoint} from './how/LockScreen';
@@ -15,22 +15,47 @@ import {ATK_C, Cam, camAt, camSpeed, SC, T, toScreen, WIN_C} from './how/timing'
 
 /** Scala del telefono al momento del tocco (per calcolare il punto toccato sullo schermo). */
 const PHONE_S_TAP = 0.8;
+/** Passo 2: zoom sulla barra dell'indirizzo e sua posizione verticale sullo schermo. */
+const ADDR_Z = 1.24;
+const ADDR_Y = 516;
 const TAP: Vec2 = {x: SC.x + (TAP_PHONE.x - PHONE_SCREEN.w / 2) * PHONE_S_TAP, y: SC.y + (TAP_PHONE.y - PHONE_SCREEN.h / 2) * PHONE_S_TAP};
 
-/** Punto della finestra (coordinate locali) → mondo. */
-const winWorld = (p: Vec2): Vec2 => ({x: WIN_C.x + p.x - BW / 2, y: WIN_C.y + p.y - BH / 2});
+/**
+ * Trasformazione della finestra del browser al frame f: centro sullo schermo, scala, opacità.
+ * Passo 2: si apre dal punto toccato già "inquadrata" sulla barra dell'indirizzo (zoom); sul cue 90 la camera
+ * arretra e mostra la pagina intera; dal cue 180 si allontana e si spegne.
+ */
+const winAt = (f: number, cam: Cam): {x: number; y: number; s: number; op: number; em: number; back: number; leave: number} => {
+	const em = prog(f, T.tap, T.emerge, ease.outExpo);
+	const back = prog(f, T.page - 7, 7, ease.inOutCubic);
+	const leave = prog(f, T.steal + 1, 11, ease.inOutSine);
+	const wc = toScreen(cam, WIN_C.x, WIN_C.y);
+	const barFrame = {x: SC.x, y: ADDR_Y + (BH / 2 - BAR / 2) * ADDR_Z};
+	return {
+		x: lerp(TAP.x, lerp(barFrame.x, wc.x, back), em),
+		y: lerp(TAP.y, lerp(barFrame.y, wc.y, back), em) - 90 * leave,
+		s: cam.z * lerp(lerp(0.08, ADDR_Z, em), 1, back) * (1 + 0.03 * hit(f, T.page, 8)) * (1 - 0.24 * leave),
+		op: clamp(em * 4) * (1 - 0.85 * leave),
+		em,
+		back,
+		leave,
+	};
+};
 
-/** Stato di un pacchetto (0 = email, 1 = password) al frame f: posizione, scala, progresso di volo. */
-const chipAt = (f: number, k: 0 | 1, cam: Cam): {pos: Vec2; path: Path; fly: number; lift: number; scale: number} => {
-	const camS = camAt(T.steal);
-	const a0 = toScreen(camS, winWorld(k === 0 ? EMAIL_TXT : PW_TXT).x, winWorld(k === 0 ? EMAIL_TXT : PW_TXT).y);
+/** Stato di un pacchetto (0 = email, 1 = password) al frame f: parte dal campo (che sale con la pagina) e,
+ *  girando largo attorno alla sagoma, scende nel suo slot del pannello dell'attaccante. */
+const chipAt = (f: number, k: 0 | 1): {pos: Vec2; path: Path; fly: number; lift: number; scale: number} => {
+	const cam = camAt(f);
+	const w = winAt(f, cam);
+	const src = k === 0 ? EMAIL_TXT : PW_TXT;
+	const a0 = {x: w.x + (src.x - BW / 2) * w.s, y: w.y + (src.y - BH / 2) * w.s};
 	const b = toScreen(cam, ATK_C.x, ATK_C.y + (k === 0 ? ATK.slot1 : ATK.slot2));
 	const lift = prog(f, T.steal, 4, ease.outCubic);
-	const fly = prog(f, T.steal + 2 + 2 * k, 13, ease.inOutCubic);
+	const fly = prog(f, T.steal + 2 + 3 * k, 14, ease.inOutSine);
 	const a = {x: a0.x, y: a0.y - 30 * lift - 16 * k * lift};
-	const c = {x: a.x + (k === 0 ? 360 : -320), y: lerp(a.y, b.y, 0.55)};
+	const c = {x: SC.x + (k === 0 ? 470 : -470), y: b.y - 140};
 	const path = {a, c, b};
-	return {pos: bezier2(a, c, b, fly), path, fly, lift, scale: lerp(camS.z, cam.z, fly) * (1 + 0.1 * lift * (1 - fly))};
+	return {pos: bezier2(a, c, b, fly), path, fly, lift, scale: lerp(w.s, cam.z, fly) * (1 + 0.1 * lift * (1 - fly))};
 };
 
 /**
@@ -52,30 +77,24 @@ export const V4How: React.FC = () => {
 	const ring = clamp(hit(f, 0, 16) + 0.55 * hit(f, 15, 10) + hit(f, T.tap, 10));
 	const phoneOut = prog(f, T.tap, 14, ease.inCubic);
 	const phoneS = lerp(0.76, PHONE_S_TAP, prog(f, 0, T.tap, ease.outQuad)) * (1 - 0.42 * phoneOut);
-	const phoneOp = 1 - prog(f, T.tap + 2, 12, ease.inQuad);
+	const phoneOp = 1 - prog(f, T.tap, 6, ease.outQuad);
 	const tapPress = prog(f, T.tap - 1, 2) * (1 - prog(f, T.tap + 3, 8));
 
-	// dito: entra, si posa, preme sul cue 45, poi svanisce
+	// dito: entra, si posa, preme sul cue 45, poi si solleva
 	const tIn = prog(f, T.touchIn, 16, ease.inOutCubic);
 	const touch = {
 		x: lerp(930, TAP.x + 8, tIn),
 		y: lerp(1330, TAP.y + 6, tIn),
 		scale: lerp(1.35, 1.08, tIn) - 0.28 * prog(f, T.tap - 2, 2) * (1 - prog(f, T.tap + 2, 6)),
-		opacity: prog(f, T.touchIn, 6) * (1 - prog(f, T.tap + 4, 9)),
+		opacity: prog(f, T.touchIn, 6) * (1 - prog(f, T.tap + 1, 6)),
 	};
 
-	// ---------- 2 · la finestra si apre dal punto toccato ----------
-	const em = prog(f, T.tap, T.emerge, ease.outExpo);
-	const punch = prog(f, T.page - 5, 6, ease.outBack);
-	const leave = prog(f, T.travelStart, 14, ease.inCubic);
+	// ---------- 2–4 · la finestra del browser ----------
+	const win = winAt(f, cam);
+	const {em, back, leave} = win;
 	const push = prog(f, T.pushStart, T.pushEnd - T.pushStart, ease.inOutCubic);
-	const wc = toScreen(cam, WIN_C.x, WIN_C.y);
-	const winX = lerp(TAP.x, wc.x, em);
-	const winY = lerp(TAP.y, wc.y, em) - 60 * leave;
-	const winS = cam.z * (lerp(0.08, 0.9, em) + 0.1 * punch) * (1 - 0.2 * leave);
-	const winOp = clamp(em * 4) * (1 - 0.82 * leave);
-	const winRotX = lerp(26, 3, em) - 2 * punch + 8 * leave;
-	const winRotY = -3 + 1.2 * Math.sin(f / 40) - 1.5 * punch;
+	const winRotX = lerp(26, 4, em) - 2.5 * back + 10 * leave;
+	const winRotY = -3 + 1.2 * Math.sin(f / 40) - 1.5 * back;
 	const winBlur = (f < T.tap + 8 ? 7 * (1 - em) : 0) + clamp((speed - 35) / 28, 0, 5);
 	const glitch = (f >= T.page && f < T.page + 8 ? 0.9 * hit(f, T.page, 6) : 0) + (f >= T.steal && f < T.steal + 9 ? hit(f, T.steal, 7) : 0);
 
@@ -85,17 +104,17 @@ export const V4How: React.FC = () => {
 	const load = f < T.loadStart ? 0 : 0.18 * prog(f, T.loadStart, 5) + 0.5 * prog(f, 57, 18, ease.inOutSine) + 0.32 * prog(f, 78, T.loadEnd - 78, ease.inCubic);
 
 	// ---------- 5 · i dati volano all'attaccante ----------
-	const c0 = chipAt(f, 0, cam);
-	const c1 = chipAt(f, 1, cam);
-	const p0 = chipAt(f - 1, 0, camAt(f - 1)).pos;
-	const p1 = chipAt(f - 1, 1, camAt(f - 1)).pos;
+	const c0 = chipAt(f, 0);
+	const c1 = chipAt(f, 1);
+	const p0 = chipAt(f - 1, 0).pos;
+	const p1 = chipAt(f - 1, 1).pos;
 	const v0 = {x: c0.pos.x - p0.x, y: c0.pos.y - p0.y};
 	const v1 = {x: c1.pos.x - p1.x, y: c1.pos.y - p1.y};
 	const ac = toScreen(cam, ATK_C.x, ATK_C.y);
 	const atkShow = prog(f, T.travelStart + 1, 8);
 	const atkHit = clamp(hit(f, T.travelEnd, 14) + 0.7 * hit(f, T.pulse, 12));
 	const dark = prog(f, 190, 16, ease.inOutSine);
-	const docked = (f >= T.travelEnd ? 0.5 : 0) + (f >= T.travelEnd + 2 ? 0.5 : 0);
+	const docked = (f >= T.travelEnd + 1 ? 0.5 : 0) + (f >= T.travelEnd + 4 ? 0.5 : 0);
 	const shake = hit(f, T.steal, 7);
 	const stealFlash = hit(f, T.steal, 9);
 
@@ -132,7 +151,7 @@ export const V4How: React.FC = () => {
 						<div style={{filter: phoneOut > 0.05 ? `blur(${6 * phoneOut}px)` : undefined}}>
 							<Phone
 								x={SC.x}
-								y={SC.y - 160 * phoneOut}
+								y={SC.y + 40 * phoneOut}
 								scale={phoneS}
 								rotX={5 + 12 * phoneOut}
 								rotY={lerp(-8, -4, prog(f, 0, T.tap, ease.inOutSine)) - 10 * phoneOut}
@@ -168,9 +187,9 @@ export const V4How: React.FC = () => {
 						);
 					})}
 					{/* finestra del browser: caricamento → pagina falsa → modulo */}
-					{f >= T.tap && winOp > 0.01 ? (
-						<div style={{position: 'absolute', left: winX, top: winY, width: 0, height: 0, perspective: 2400, opacity: winOp, filter: winBlur > 0.3 ? `blur(${winBlur}px)` : undefined}}>
-							<div style={{position: 'absolute', left: -BW / 2, top: -BH / 2, width: BW, height: BH, transform: `scale(${winS}) rotateX(${winRotX}deg) rotateY(${winRotY}deg)`}}>
+					{f >= T.tap && win.op > 0.01 ? (
+						<div style={{position: 'absolute', left: win.x, top: win.y, width: 0, height: 0, perspective: 2400, opacity: win.op, filter: winBlur > 0.3 ? `blur(${winBlur}px)` : undefined}}>
+							<div style={{position: 'absolute', left: -BW / 2, top: -BH / 2, width: BW, height: BH, transform: `scale(${win.s}) rotateX(${winRotX}deg) rotateY(${winRotY}deg)`}}>
 								<Glitch amount={glitch} seed={f < T.steal ? 3 : 9} w={BW} h={BH}>
 									<Browser
 										f={f}
@@ -201,8 +220,8 @@ export const V4How: React.FC = () => {
 					{/* pacchetti: email e password (solo puntini) */}
 					{f >= T.steal
 						? ([
-								[c0, v0, 'email', V4_FAKE.email, T.travelEnd],
-								[c1, v1, 'pw', '••••••••', T.travelEnd + 2],
+								[c0, v0, 'email', V4_FAKE.email, T.travelEnd + 1],
+								[c1, v1, 'pw', '••••••••', T.travelEnd + 4],
 							] as const).map(([c, v, kind, text, at]) => (
 								<DataChip
 									key={kind}

@@ -77,16 +77,19 @@ export const DataStream: React.FC<{frame: number; paths: Path[]; p: number[]; fa
 					[5, 0.28],
 					[2, 0.65],
 				] as const) {
-					ctx.beginPath();
-					for (let i = 0; i <= N; i++) {
-						const q = bezier2(path.a, path.c, path.b, (i / N) * head);
-						if (i === 0) ctx.moveTo(q.x, q.y);
-						else ctx.lineTo(q.x, q.y);
-					}
-					ctx.strokeStyle = `rgba(240,53,59,${a * fade * line})`;
 					ctx.lineWidth = w;
 					ctx.lineCap = 'round';
-					ctx.stroke();
+					let prev = bezier2(path.a, path.c, path.b, 0);
+					for (let i = 1; i <= N; i++) {
+						const q = bezier2(path.a, path.c, path.b, (i / N) * head);
+						const ramp = 0.15 + 0.85 * (i / N); // la coda sfuma, la testa brilla
+						ctx.beginPath();
+						ctx.moveTo(prev.x, prev.y);
+						ctx.lineTo(q.x, q.y);
+						ctx.strokeStyle = `rgba(240,53,59,${a * ramp * fade * line})`;
+						ctx.stroke();
+						prev = q;
+					}
 				}
 				// particelle che inseguono il pacchetto
 				for (let i = 0; i < 46; i++) {

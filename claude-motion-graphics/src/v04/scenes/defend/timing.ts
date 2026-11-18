@@ -24,15 +24,17 @@ export const D = {
 export const STACK = {
 	left: 80,
 	width: 920,
-	top: 598,
 	gap: 16,
 	rowH: 96, // card compatta (solo icona + titolo + spunta)
 	pad: 28,
 } as const;
 
-/** Pose dello scudo nella scena. */
+/** Area utile per il gruppo scudo + checklist, centrato in verticale man mano che la pila cresce. */
+export const ZONE = {top: 236, bottom: 1236} as const;
+
+/** Pose dello scudo nella scena (la "testata" segue il centraggio del gruppo: vedi V4Defend). */
 export const SHIELD_POSE = {
 	intro: {x: 540, y: 520, s: 1},
-	head: {x: 540, y: 394, s: 0.56},
-	wind: {x: 540, y: 352, s: 0.62},
+	headS: 0.58,
+	wind: {x: 540, y: 352, s: 0.64},
 } as const;

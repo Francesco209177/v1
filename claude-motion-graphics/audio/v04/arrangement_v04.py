@@ -195,7 +195,7 @@ def build(seed: int = 2404):
     t, k = 2.5, 0
     while t < 8.99:
         if all(abs(t - c) > 0.05 for c in (3.5, 6.0)):
-            ev["tick"].append((t, "tick" if k % 2 == 0 else "tock", hum(0.5 if k % 2 == 0 else 0.36),
+            ev["tick"].append((t, "tick" if k % 2 == 0 else "tock", hum(0.4 if k % 2 == 0 else 0.28),
                                0.25 if k % 2 == 0 else -0.25))
         t += 0.25
         k += 1
@@ -246,7 +246,7 @@ def build(seed: int = 2404):
     # ------------------------------------------------------------------ finale 24-29 s
     ev["kick"].append((48, "big", 1.0))
     ev["crash"].append((48, "big", 0.8))
-    ev["kick"].append((50, "big", 0.95))
+    ev["kick"].append((50, "big", 0.8))
     ev["crash"].append((50, "small", 0.6))
     for b in range(51, 56):
         ev["kick"].append((b, "soft", hum(0.62, 0.03)))

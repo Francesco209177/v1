@@ -35,8 +35,8 @@ export const Stepper: React.FC<{f: number; abs: number}> = ({f, abs}) => {
 	const step = STEPS[idx];
 	const full = `${step.n} · ${step.text}`;
 	const resolved = Math.floor(full.length * prog(f, cue, 7, ease.linear)) + (f >= cue + 7 ? 99 : 0);
-	const enter = prog(f, cue, 8, ease.outCubic);
-	const exit = prog(f, next - 4, 4, ease.inCubic);
+	const enter = prog(f, cue - 1, 7, ease.outCubic);
+	const exit = prog(f, next - 4, 3, ease.inCubic);
 	const chars = full.split('').map((ch, i) => {
 		if (i < resolved || ch === ' ' || ch === '·') return ch;
 		return GLYPHS[Math.floor(hash(i * 13 + idx, f) * GLYPHS.length)];
@@ -74,7 +74,7 @@ export const Stepper: React.FC<{f: number; abs: number}> = ({f, abs}) => {
 			) : null}
 			{/* nodi */}
 			{NX.map((x, i) => {
-				const pop = prog(f, i * 2, 9, ease.outBack);
+				const pop = prog(f, i * 2 - 2, 9, ease.outBack);
 				const done = i < idx;
 				const active = i === idx;
 				const h = hit(f, CUE[i], 9);

@@ -68,8 +68,8 @@ const basePose = (f: number): PhonePose => {
 	const s = shake(f);
 	return {
 		x: 540 + Math.sin(f / 26) * 6 + s.dx,
-		y: 772 - 10 * push + Math.cos(f / 31) * 4 + s.dy,
-		scale: lerp(1.235, 1.345, push),
+		y: 776 - 8 * push + Math.cos(f / 31) * 4 + s.dy,
+		scale: lerp(1.25, 1.36, push),
 		rotX: lerp(9, 4.5, push),
 		rotY: lerp(-13, -6.5, push),
 		rotZ: lerp(-2.2, -0.8, push) + s.dr,
@@ -86,7 +86,7 @@ export const phonePose = (f: number): PhonePose => {
 	if (d <= 0) return b;
 	const b0 = basePose(H.diveFrom);
 	const c0 = projectPhone(b0, CARD_CENTER.x, CARD_CENTER.y);
-	const scale = lerp(b.scale, 5.6, d);
+	const scale = lerp(b.scale, 6.4, d);
 	const rotX = lerp(b.rotX, 0, d);
 	const rotY = lerp(b.rotY, 0, d);
 	const rotZ = lerp(b.rotZ, 0, d);
@@ -131,8 +131,8 @@ const fingerDist = (f: number): number => {
 	if (f < H.hover) return lerp(1080, 118, ease.outCubic(invLerp(H.fingerIn, H.hover, f)));
 	if (f < H.press) return lerp(118, 142, ease.inOutSine(invLerp(H.hover, H.press, f))); // anticipazione: si ritrae appena
 	if (f < H.tap) return lerp(142, 0, ease.inQuart(invLerp(H.press, H.tap, f))); // pressione decisa
-	if (f < H.tap + 4) return -4 * ease.outCubic(invLerp(H.tap, H.tap + 2, f));
-	return lerp(-4, 1100, ease.inCubic(invLerp(H.tap + 4, H.tap + 18, f)));
+	if (f < H.tap + 2) return -4 * ease.outCubic(invLerp(H.tap, H.tap + 2, f));
+	return lerp(-4, 1100, ease.inQuad(invLerp(H.tap + 2, H.tap + 11, f))); // si ritira: lascia la scena all'allarme
 };
 
 export type FingerState = {x: number; y: number; angle: number; h: number; prox: number; press: number; opacity: number};
@@ -153,6 +153,6 @@ export const fingerState = (f: number, pose: PhonePose): FingerState => {
 		h: clamp(d / 170),
 		prox: clamp(1 - Math.max(0, d) / 330) * (f < H.tap + 6 ? 1 : 0.4),
 		press: f >= H.tap && f < H.tap + 5 ? 1 - (f - H.tap) / 5 : 0,
-		opacity: f < H.fingerIn ? 0 : 1 - clamp((f - (H.tap + 12)) / 6),
+		opacity: f < H.fingerIn ? 0 : 1 - clamp((f - (H.tap + 4)) / 6),
 	};
 };
