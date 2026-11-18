@@ -87,7 +87,7 @@ export const drawParticleElement = (ctx: CanvasRenderingContext2D, f: number): v
 				p.size * z * spriteK * (k === 0 ? 1 : 0.8) * (1 + 0.25 * lit),
 				p.hot && lit > 0.5 ? COLORS.orangeBright : COLORS.orange,
 				pose.alpha * tw * z * fade * (0.62 + 0.38 * lit),
-				p.hot ? '#FFFFFF' : COLORS.orangeHot,
+				p.hot ? COLORS.white : COLORS.orangeHot,
 			);
 		}
 	}
