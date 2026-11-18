@@ -241,7 +241,7 @@ export const Shot3Scene: React.FC<{state: Shot3State}> = ({state}) => {
 			<pointLight position={rimPos} intensity={light.rimIntensity} color={COLORS.orangeBright} />
 			<pointLight position={[3.4, -1.2, -2.6]} intensity={light.rimIntensity * 0.45} color={COLORS.orange} />
 
-			<Floor floor={floor} />
+			
 
 			{/* eroe: nodo torico laccato arancione */}
 			{hero.scale > 0.001 ? (

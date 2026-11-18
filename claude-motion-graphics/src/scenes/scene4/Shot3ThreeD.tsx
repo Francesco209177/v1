@@ -65,7 +65,7 @@ export const Shot3ThreeD: React.FC = () => {
 					width={STAGE.w}
 					height={STAGE.h}
 					dpr={1}
-					gl={{antialias: false, alpha: true, powerPreference: 'default'}}
+					gl={{antialias: true, alpha: true, powerPreference: 'default'}}
 					camera={{fov: 34, near: 0.1, far: 60, position: [0, 1.5, 9]}}
 					style={{position: 'absolute', left: 0, top: 0}}
 				>
