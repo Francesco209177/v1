@@ -671,12 +671,93 @@ button.frag:hover{transform:translateY(-3px)}
 .dp-seals{font-size:.95rem;color:var(--muted)} .dp-seals b{color:var(--brass)}
 .seal.gold .s-wax{fill:#D4A537}
 .star{color:var(--brass)}
+/* ===== dialoghi ===== */
+.dlg-back{position:fixed;inset:0;z-index:69;background:rgba(0,0,0,.45);animation:fadeBk .3s both}
+@keyframes fadeBk{from{opacity:0}}
+.dlg{position:fixed;left:0;right:0;bottom:0;z-index:70;display:flex;justify-content:center;padding:0 max(16px,env(safe-area-inset-left,0px)) max(18px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-right,0px));cursor:pointer}
+.dlg.out{animation:dlgOut .25s both}
+.dlg-box{width:min(880px,100%);display:grid;grid-template-columns:118px minmax(0,1fr);gap:18px;align-items:center;background:var(--surface);border:2px solid var(--brass);border-radius:14px;padding:16px 18px;box-shadow:0 24px 48px -16px rgba(0,0,0,.75);animation:dlgIn .45s cubic-bezier(.2,.9,.3,1.2) both}
+.dlg-box.gino{border-color:#5B7BC0}
+@keyframes dlgIn{from{opacity:0;transform:translateY(40px) scale(.97)}}
+@keyframes dlgOut{to{opacity:0;transform:translateY(30px)}}
+.dlg-por{width:118px;height:118px;border-radius:50%;overflow:hidden;box-shadow:0 0 0 3px var(--brass)}
+.dlg-box.gino .dlg-por{box-shadow:0 0 0 3px #5B7BC0}
+.dlg-por svg,.bub-por svg{width:100%;height:100%;display:block}
+.dlg-main{min-width:0}
+.dlg-name{margin:0 0 4px;font:700 .74rem var(--body);letter-spacing:.14em;text-transform:uppercase;color:var(--brass)}
+.dlg-box.gino .dlg-name{color:#8FA9E8}
+.dlg-text{margin:0;font-family:var(--display);font-size:1.28rem;line-height:1.4;min-height:3.6em}
+.dlg-row{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end;align-items:center;margin-top:10px;min-height:44px}
+.dlg-skip{font-size:.72rem;color:var(--muted);letter-spacing:.08em}
+.dlg-c{flex:1 1 200px}
+.dlg-c:disabled{opacity:.4;cursor:not-allowed}
+.talking .horn{transform-origin:78px 54px;animation:hornTalk .22s ease-in-out infinite alternate}
+@keyframes hornTalk{to{transform:scale(1.08) rotate(-3deg)}}
+.talking .mouth{transform-box:fill-box;transform-origin:center;animation:mouthTalk .16s ease-in-out infinite alternate}
+@keyframes mouthTalk{to{transform:translateY(2.5px) scaleY(.85)}}
+@media (max-width:560px){ .dlg-box{grid-template-columns:64px minmax(0,1fr);gap:12px;padding:12px} .dlg-por{width:64px;height:64px} .dlg-text{font-size:1.05rem;min-height:4.2em} }
+/* fumetti di reazione */
+.bub{pointer-events:none;position:fixed;left:max(16px,env(safe-area-inset-left,0px));bottom:max(18px,env(safe-area-inset-bottom,0px));z-index:68;display:flex;align-items:center;gap:10px;max-width:min(420px,calc(100vw - 32px));padding:8px 14px 8px 8px;background:var(--surface);border:2px solid var(--brass);border-radius:999px 18px 18px 999px;box-shadow:0 14px 28px -12px rgba(0,0,0,.7);animation:bubIn .4s cubic-bezier(.2,.9,.3,1.3) both}
+.bub.gino{border-color:#5B7BC0}
+.bub.out{animation:dlgOut .4s both}
+@keyframes bubIn{from{opacity:0;transform:translateX(-30px) scale(.9)}}
+.bub-por{width:48px;height:48px;border-radius:50%;overflow:hidden;flex:none}
+.bub-main{display:flex;flex-direction:column;font-size:.92rem;line-height:1.3}
+.bub-main b{font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--brass)}
+/* allarme */
+.alarm-l{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border:1px solid var(--line);border-radius:999px}
+.alarm-l small{font:600 .62rem var(--body);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-right:2px}
+.alarm-l i{width:11px;height:11px;border-radius:50%;background:#3A2626;box-shadow:inset 0 1px 2px rgba(0,0,0,.6)}
+.alarm-l i.on{background:#FF3B2F;box-shadow:0 0 10px 2px rgba(255,59,47,.85);animation:alBlink 1.1s infinite}
+@keyframes alBlink{50%{opacity:.45}}
+.alarm-l.flash{animation:shake .45s}
+/* borsa */
+.bagbtn.pulse{animation:sealsPulse .6s}
+.bag-back{position:fixed;inset:0;z-index:71;background:rgba(0,0,0,.35)}
+.bag{position:fixed;top:0;right:0;bottom:0;z-index:72;width:min(380px,100vw);overflow-y:auto;background:var(--surface);border-left:2px solid var(--brass);padding:20px max(18px,env(safe-area-inset-right,0px)) 24px 18px;display:flex;flex-direction:column;gap:14px;box-shadow:-20px 0 40px -20px rgba(0,0,0,.7);animation:bagIn .35s cubic-bezier(.2,.9,.3,1) both}
+.bag.out{animation:bagOut .25s both}
+@keyframes bagIn{from{transform:translateX(100%)}} @keyframes bagOut{to{transform:translateX(100%)}}
+.bag-h{display:flex;justify-content:space-between;align-items:center}
+.bag-h h2{font-size:1.5rem}
+.bag-item{display:grid;grid-template-columns:44px minmax(0,1fr);gap:12px;padding:12px;border:1px solid var(--line);border-radius:8px;background:var(--bg)}
+.bag-item p{font-size:.86rem;color:var(--muted);margin:2px 0 8px}
+.bag-item small{font:600 .72rem var(--mono);color:var(--brass)}
+.bag-item textarea{width:100%;min-width:0;font:400 .95rem var(--mono);padding:8px;border:1px solid var(--line);border-radius:4px;background:var(--surface);color:var(--ink);resize:vertical}
+.bag-n{font-size:.8rem;color:var(--muted)}
+.item-ico{width:40px;height:40px;display:grid;place-items:center;flex:none}
+.item-ico svg{width:100%;height:100%}
+.torch-note{position:relative;padding:12px 16px;border-radius:6px;background:radial-gradient(ellipse at 20% 50%,rgba(255,226,140,.28),transparent 70%),var(--tile);border:1px dashed var(--brass);font-family:var(--display);font-style:italic;font-size:1.08rem;max-width:62ch}
+.torch-note span{display:block;font:600 .66rem var(--body);font-style:normal;letter-spacing:.14em;text-transform:uppercase;color:var(--brass);margin-bottom:4px}
+.torch-note.new{animation:torchIn 1s ease-out both}
+@keyframes torchIn{from{opacity:0;filter:blur(6px);transform:scale(.97)}}
+.torch-fx{position:fixed;inset:0;z-index:66;pointer-events:none;background:radial-gradient(circle 200px at 50% 45%,rgba(255,236,170,.15),rgba(0,0,0,.9) 60%);background-size:260% 100%;animation:torchSweep 1.25s ease-in-out both}
+@keyframes torchSweep{0%{background-position:0% 50%;opacity:0}15%{opacity:1}80%{background-position:100% 50%;opacity:1}100%{background-position:100% 50%;opacity:0}}
+/* fuga finale */
+.chase{display:flex;flex-direction:column;gap:16px;max-width:920px}
+.ct{position:relative;height:210px;border-radius:12px;overflow:hidden;border:2px solid var(--line);background:linear-gradient(#0B110E 0 68%,#1B2420 68%)}
+.ct-lamps{position:absolute;inset:0 0 auto;height:30px;background:repeating-linear-gradient(90deg,transparent 0 110px,rgba(242,193,78,.5) 110px 118px,transparent 118px 220px);animation:floorRun 1.6s linear infinite}
+.ct-floor{position:absolute;left:0;right:0;bottom:0;height:32%;background:repeating-linear-gradient(90deg,rgba(255,255,255,.07) 0 44px,transparent 44px 88px);animation:floorRun .45s linear infinite}
+@keyframes floorRun{to{background-position:-88px 0}}
+.ct-door{position:absolute;right:2%;bottom:30%;width:76px;height:118px;border:3px solid #C99A3A;border-bottom:0;background:linear-gradient(#3B2A18,#24190D);display:flex;align-items:flex-end;justify-content:center;padding:0 4px 8px;text-align:center;font:600 .55rem var(--mono);letter-spacing:.06em;text-transform:uppercase;color:#E8C063}
+.ct-you{position:absolute;right:calc(2% + 96px);bottom:29%;width:44px;height:70px;animation:runBob .28s ease-in-out infinite alternate}
+.ct-gino{position:absolute;left:0;bottom:29%;width:52px;height:76px;animation:runBob .26s ease-in-out infinite alternate}
+.ct-you svg,.ct-gino svg{width:100%;height:100%;display:block;overflow:visible}
+.ct-cone{position:absolute;left:92%;top:30%;width:260px;height:90px;clip-path:polygon(0 42%,100% 0,100% 100%,0 58%);background:linear-gradient(90deg,rgba(255,230,150,.6),transparent);pointer-events:none}
+@keyframes runBob{to{transform:translateY(-6px)}}
+.ct-meter{display:flex;align-items:center;gap:12px;font-size:.78rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.ct-bar{flex:1;height:14px;border-radius:7px;background:var(--tile);overflow:hidden;box-shadow:inset 0 1px 3px rgba(0,0,0,.4)}
+.ct-bar i{display:block;height:100%;background:var(--accent);transition:background .3s}
+.ct-bar i.mid{background:#E8B03A} .ct-bar i.low{background:var(--danger);animation:alBlink .5s infinite}
+.ct-q{max-width:640px}
+.cq-n{font-size:.74rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--brass);margin:0}
+.cq-t{font-size:1.2rem;font-weight:600;margin:0}
+.cq-t.qnew{animation:torchIn .5s both}
 </style>
 
 <div class="wrap">
   <header class="status" id="status" hidden>
     <span class="brand">Banco Tartaglia · Caveau storico</span>
-    <span class="status-r"><span class="timer" id="timer"><small>Allarme tra</small><span id="clock">60:00</span></span><button type="button" class="seals" id="seals" hidden></button><span class="toggles"><button class="sound" id="sound" type="button">Suono: sì</button><button class="sound" id="animt" type="button">Animazioni: sì</button><button class="sound" id="darkt" type="button">Buio: sì</button></span></span>
+    <span class="status-r"><span class="timer" id="timer"><small>Allarme tra</small><span id="clock">60:00</span></span><span class="alarm-l" id="alarmL" hidden></span><button type="button" class="sound bagbtn" id="bagbtn" hidden>Borsa</button><button type="button" class="seals" id="seals" hidden></button><span class="toggles"><button class="sound" id="sound" type="button">Suono: sì</button><button class="sound" id="animt" type="button">Animazioni: sì</button><button class="sound" id="darkt" type="button">Buio: sì</button></span></span>
     <ol class="doors" id="doors" aria-label="Porte aperte"></ol>
   </header>
   <main id="app"></main>
@@ -688,6 +769,7 @@ button.frag:hover{transform:translateY(-3px)}
 <script>
 const ROOMS = [{"place":"Atrio","name":"L'atrio delle chiavi","story":"<p>Sul muro ci sono sei ganci in fila. Sul tavolo, sei chiavi tutte diverse. Accanto, un biglietto del direttore:</p>\n   <p class=\"note\">«La porta si sblocca solo se appendo le chiavi nell'ordine giusto. L'ordine non lo ricordo mai, ma so quanti ordini esistono. Quel numero è il codice.»</p>","q":"In quanti modi diversi si possono appendere le 6 chiavi ai 6 ganci, una per gancio?","hints":["Usi tutte le chiavi e conta solo l'ordine in cui le metti: sono permutazioni semplici.","Per il primo gancio hai 6 scelte, per il secondo 5, per il terzo 4… Moltiplica fino a 1."],"word":false,"h":1244732469,"x":"JWs4Bcnq383j/pilVLirMVkKiP3MmGm3itjpFutI+LvZWDdfg46E7WSq2UgpHBWLp/2f1UC2sBcSb0e+Me8gLR06CSpRApnQsBzY1alNAG2QH/VYOyLHP/5nTzp+XXAXGg/EmUxWWDlwdvNPvyH8eTMak6ItKAwOzlnwmONul+7ojBdsJGBAO1YBsOZyjIJy27bLyPyLUu5oh6cqoP1ecLzlq/785NoJqI8rPw13lLypldDjnEuI1pQzmFDuSx0ljNsfH0M2dfjOuROlHQ=="},{"place":"Galleria","name":"La galleria dei direttori","story":"<p>Otto ritratti di vecchi direttori ti fissano dalle pareti. Sul soffitto ci sono tre faretti: uno rosso, uno verde, uno blu. Ognuno va puntato su un ritratto diverso.</p>\n   <p class=\"note\">«Solo una disposizione dei tre colori accende il sensore. Quante ne dovrebbe provare un ladro, al peggio?»</p>","q":"In quanti modi puoi puntare i 3 faretti colorati su 3 ritratti diversi, scelti tra gli 8?","hints":["Scegli 3 ritratti su 8, ma rosso‑verde‑blu non è la stessa cosa di blu‑verde‑rosso: l'ordine conta e non ci sono ripetizioni. Sono disposizioni semplici.","Il faretto rosso ha 8 ritratti possibili, il verde 7, il blu 6."],"word":false,"h":2125366765,"x":"Wci1KpRT5uX9Ecc9kD4xbwqgVfJfxG+VfOcKrE22Je8dgSUwbbFcaUrJZCxKFEjVOXL/O4Hv3xoyBVkPcsgvniJ1XDnlstpSdXvRpgaY/f24H0cCTamdEgzmAylPxXZS0fqIwz6NFpoQLF8jftwkheFT3+CCxMbcgF0/RJTlSElT2tSluDSqvlBdz4NbSNdVNsLAmmItG89tueJxfaGBH9+mjNyZaWxUh3fUquoUiHyxAe3eiofNqLQ1c5RbRxMGGyTTDD18cToKCw=="},{"place":"Anticamera","name":"Il tastierino guasto","story":"<p>La terza porta ha un tastierino numerico. Solo cinque tasti funzionano ancora: <b>1, 3, 4, 7, 9</b>. Gli altri sono scollegati da anni.</p>\n   <p class=\"note\">«Il codice ha quattro cifre. Non ho mai avuto paura di ripetere la stessa cifra, anche quattro volte.»</p>","q":"Quanti codici di 4 cifre si possono digitare usando solo i 5 tasti funzionanti?","hints":["L'ordine conta e la stessa cifra può tornare più volte: sono disposizioni con ripetizione.","Ognuna delle 4 posizioni ha sempre 5 scelte, indipendenti l'una dall'altra."],"word":false,"h":2132309239,"x":"im+ev8x9Tx7t6nuPXufJ0gJ2m6/Vz/7MVE7M5Dh5WfNYD3nzhMxRpCx3lT2Y1MlKtn8dJn3k2y4KAKmSlhCZCxEEF5nBIhJYLQfaZVYqZLQurYdjuZzfoXFZYGirnJsSQSLc+oHYFn/KwD/tGddj9geGzKKiYK04PFgoLnrKqnfYr6VO57FyAX/B3iiG45LKSoXyvLsuj10jyDtnwlIZiUyR/3XhMS5H1D+Hn3+3BRArNIacwuiArEeNjGOQQUwyN+ZYofKz1nUYSgaPPZuWRjVAFe7QUu9pQlyZTfhRwvpmED7jY6XCdUk="},{"place":"Archivio","name":"L'insegna caduta","story":"<p>In archivio l'insegna d'ottone si è staccata dal muro. Per terra ci sono le sue nove lettere: <b>T A R T A G L I A</b>.</p>\n   <p class=\"note\">«Rimettile in fila come vuoi, anche senza senso. Conta le parole diverse che puoi leggere: è il codice.»</p>","q":"Quanti anagrammi, anche privi di significato, ha la parola TARTAGLIA?","hints":["Sono permutazioni di 9 lettere, ma alcune lettere sono uguali: scambiare due A tra loro non cambia la parola. Permutazioni con ripetizione.","Conta le lettere uguali: la A compare 3 volte, la T 2 volte. Dividi 9! per 3! e per 2!."],"word":false,"h":1013111380,"x":"cQZUL8A1LHwp8qZIb4TfRjGteR+1poML/tq/JA0AHYTHQ19rgGTSL+7IVkoJVDROCWl6RreDl2DhknzNy72BpOaQKPLUd8xsD3H7OTXpcAb++ktPahcjPWtqqo087oxSm5ECCsizvl8PNOf5ZIyqruE7Tl8hq2lnZE9pJeZp4R2ts8qgBf3vG3nRTHk6NiygLsTLjMnqhDdKnOMN1v2BmdS4TKjT+E+CL5mrYnN30h18FgXJdTEhwITJFxcL2FcXYT8xWWQ5hd9ibQ=="},{"place":"Sala cassette","name":"Le cassette di sicurezza","story":"<p>Dieci cassette di sicurezza, numerate da 1 a 10. Il meccanismo scatta solo se si girano nello stesso istante le chiavi di quattro cassette precise.</p>\n   <p class=\"note\">«Quali quattro? Questo è il segreto. Quanti gruppi di quattro esistono, invece, è il codice.»</p>","q":"In quanti modi si possono scegliere 4 cassette tra le 10?","hints":["Le chiavi si girano insieme: scegliere le cassette 2, 5, 7, 9 o 9, 7, 5, 2 è la stessa cosa. L'ordine non conta: sono combinazioni semplici.","Parti dalle disposizioni 10·9·8·7 e dividi per i 4! ordini di ogni gruppo."],"word":false,"h":992213701,"x":"5gDqgk3NHlHbJwz7TnDi68lX7Y4wic2E+C7wdtI3QOExJ000Uy2jVwoQ/R44WhW5mn394CLuUd77Dna6fH5lcOiq6GTrCB/vkbaj8ircVCMrrIRKfXESLrKVS2fKkZQlN05deOweRydQX0YN1dkCJNIb0tz3RD5fbvcMQKQqwMWPcajk5I3sHjisIn32umfWO6ZQiA3si9nzoEm5OLr6wsslPHhwPS8QUsrRXdDNff/DNMrFsyxTUEDRJvhVznnBWpnwZM+sX2U="},{"place":"Sala del triangolo","name":"Il pavimento di Tartaglia","story":"<p>Il pavimento è un grande triangolo di piastrelle. Su ognuna è inciso un numero: in quanti modi la si può raggiungere partendo dalla cima e scendendo, a ogni passo, di una riga in diagonale, a sinistra o a destra.</p>\n   <p>Le quattro righe più basse sono consumate dai passi. Una sola piastrella è dorata.</p>","q":"Quale numero era inciso sulla piastrella dorata?","hints":["Guarda le righe leggibili: ogni numero è la somma dei due che ha sopra. Puoi ricostruire le righe consumate una alla volta.","È il triangolo di Tartaglia: nella riga n, al posto k (contando da 0), c'è C(n,k). La piastrella dorata è nella riga 8 al posto 3."],"word":false,"h":433704656,"x":"+b+MqpYuggHemtemRMU7WkOfccYMM1i6C78WjABn59iosncVPWlos5YTegvshQibKkRKz1s49HHZPZS+A24gHzo3zR+HKrUEEC/kUfbfJkZF70ZkTRN/DW1jqqJwLulb3C5V8wuAIOa+zMwb10hiievf48557tpQ2FSwMJcnPWLccWVoKZ2Snp5Si0K7VVkZ0tlEDNGYNyLFVVz6nEFXzKmqxPicsw92V+pOx2dmtJW27OmF4adrTAo1Jt9HuGcV68PKJhu1Qc04kWWlIIAxbC54W55jDgfnum9KGFI/yfn743X8KIQzheYvJURNbJCzhp43pw=="},{"place":"Sala di controllo","name":"Il turno di notte","story":"<p>Sul tabellone del turno di notte ci sono i nomi di 6 guardie e 4 tecnici. La penultima porta si apre con il numero di squadre che il direttore poteva formare.</p>\n   <p class=\"note\">«Una squadra è fatta di quattro persone. Mai, per nessun motivo, una squadra senza almeno un tecnico.»</p>","q":"Quante squadre di 4 persone con almeno un tecnico si possono formare?","hints":["«Almeno uno» si conta bene al contrario: tutte le squadre possibili meno quelle vietate.","Tutte le squadre: C(10,4). Quelle senza tecnici sono fatte solo di guardie: C(6,4)."],"word":false,"h":2690217309,"x":"FZYNXOJNQ9/qv+itjA3PMiIz4gZkJIp06VZjXP7ZmnmsndTb0QV5EtwK/8YFVZw5dTB8rljFF+HN4NIZyzDFjGYTNhLPw/f2QpPvH2IAg/5yTMeRh9q+0G0Hb2B93hYPBzltZbOCG3xjtJh9whT+1AXk2ykCtl3ZpvxHRiYp6PTi12ZOSLgv8ayAEuvdKesDmblg9naVNODJrx2kzKcmygjVo1jrvBmZclYaZCZwz226T240TSGK5bK817OptrR7+QFVg+K/nkYu9JYZo4BVXeHE+vIrqy1IvCchnl27LxiivWrZx5265oTgILHy9grOtz9//Jo/RQlsx11m6w=="},{"place":"Porta blindata","name":"La porta blindata","story":"<p>L'ultima porta. Una ruota a dieci cifre, da 0 a 9, e cinque finestrelle per il codice. Inciso nell'acciaio:</p>\n   <p class=\"note\">«Cinque cifre, tutte diverse. La prima è dispari, l'ultima è pari. Il numero dei codici possibili apre la porta, e ti dice quanto sarebbe stato sciocco tirare a caso.»</p>","q":"Quanti codici di 5 cifre tutte diverse cominciano con una cifra dispari e finiscono con una cifra pari?","hints":["Parti dalle posizioni vincolate: scegli prima la prima cifra e l'ultima, poi riempi le tre centrali con le cifre rimaste.","Prima cifra: 5 scelte (1, 3, 5, 7, 9). Ultima: 5 scelte (0, 2, 4, 6, 8). Per le tre centrali restano 8 cifre, senza ripetizioni e in ordine."],"word":false,"h":3189898625,"x":"2y838iLtJ85uUvS61+LGKcSHWnImWHCF1eazAvS5otjqj3WWytOdzr8PGPWkHR2FcNJDS4AztQidXsE097cV5ql/bwjyePYMHrNNWikk1873XvT9H5oL4WAzyUIgMj4YFoKmkUoA0CXNjdflmh4ULncG3o0HOVtxBMurykpR7vSpmsfHvFzm5TUs8ncm7MGHU7I4qI6ZQa5UwAjdPZOQLzL8F8W9nojCZqxmiseuTocMUqqb9yW4nH6gdcoOxBLGBLCi5+2C2+jnf4yRN6ewZDHtL6FZ/Q/fJNilLqkM08qMjucO7LKmZqRYUkdaGdwNp6ebp7agx9+fgHkNWs0K/h+MzNEbYSml2V8XpIzsfgXexc54Chyv2GRbpi2jlBkVCsmNLGtb43uerg=="},{"place":"Ufficio del direttore","name":"La cassaforte del direttore","story":"<p>La porta blindata si apre sull'ufficio del direttore. Il cancello verso la strada è comandato da una cassaforte a lettere, e sul tavolo c'è l'ultimo biglietto:</p>\n   <p class=\"note\">«Ogni mia serratura ti ha lasciato una lettera. Mettile in fila dal codice più piccolo al più grande: leggerai la parola che apre il cancello.»</p>","q":"Quale parola apre la cassaforte del direttore?","hints":["Ogni lettera porta scritto il codice della porta da cui viene. Mettile in ordine dal codice più piccolo al più grande.","Si parte dalla E del 56 e si finisce con la E del 30.240. La parola descrive quello che stai per fare."],"word":true,"h":1286609876,"x":"tp/sdA66hzngbZJJ2eBFED+imdRBPMCEkOx/XHYJFMDmrE10MlvOAIjZ+ULjYCTVCcbs87tilNQwnLf37aCBW3PnXrFLQH6ry+qpmK0wVuixbO5YxNOu76w/lfH56QlusL+xpBhoBm+H6SstY0dIdIPXR0CzgzmxvlO8LnceDRemQoHGvl3+DXAsEFeMCO1lLxSr5okwwRma8+ncY8wcXDZPMg5AtoyBU53kb/m/on/6/QaJlbXhU79MxKkqbxLP0Y1v0hbS0xiuRD2h7Y07y0rnqtdIqowHdq0g6bP9CPi7F0caScN9cryvGr7iqgghclV8hWl04pNdBGQsGdE="}];
 const SECRET = {"story":"<p>Dietro la porta segreta c'è lo studiolo privato del direttore. Su un forziere di ferro sono incise le stesse lettere dell'insegna: <b>T, A, R, T, A, G, L, I, A</b>. Accanto, un biglietto scritto più in piccolo degli altri:</p>\n   <p class=\"note\">«Per chi ha trovato tutti i miei sigilli. Il forziere si apre con il numero di parole che si possono scrivere con queste nove lettere tenendo le tre A sempre vicine, ma le due T mai vicine.»</p>","q":"Quanti anagrammi di TARTAGLIA hanno le tre A tutte vicine e le due T non vicine?","hints":["Incolla le tre A in un blocco unico: restano 7 oggetti da mettere in fila (il blocco, T, T, R, G, L, I), con le due T uguali tra loro.","Con le A vicine le file sono 7!/2! = 2520. Togli quelle in cui anche le due T sono vicine: blocco AAA, blocco TT, R, G, L, I sono 6 oggetti tutti diversi, cioè 6! = 720."],"h":3302213398,"x":"FOlQW3gGACiBkBdVbZnLSVpDMg8nEvPbjV2Ps8NG64F4Kr42L/hYG+GBiFd558+5hNqKW53bvuuvaWj3ocKIYkeRL0zmbQvBTjPrJjVGlsne/dVC4qQdzW7DVVkzPnYFbUuYb+iJNLaghZnj3Dz4JuzmGWZgLsvk0mK8eaWc35LvMohJ2r13dHzByzMdK+8z9mt3Y69oxG9VOkLhZc+CyXxSBKzBTWuyVRAPYVtHv0oLwyFAPOBeuhPoTPZBXXiP5Tn5TT28FgjDCZk3XRmz9D8otV7vOEe19TgWeJK5Y33IfkRUEOZ1OqAoZxnYdSQL8pU/t13j6VlHHaNTG0F79QlwD3/tFY54fuyHpU+BgToN037H39BWesW4nKPrKAYA4XiB9+Kb1uorg2PBVz1rcv5JfpXsPAnymWmtP+4Zo1IGrYLf"};
+const CHASE = [{"q":"In quanti modi 4 amici si possono mettere in fila per una foto?","h":2430187854},{"q":"Quanti anagrammi, anche senza senso, ha la parola OSSO?","h":4247462949},{"q":"Cinque persone si stringono la mano, ognuna con tutte le altre una volta sola. Quante strette di mano?","h":1157669179},{"q":"Quanti numeri di due cifre diverse si possono scrivere con le cifre 1, 2, 3 e 4?","h":4063074428},{"q":"In quanti modi puoi scegliere 2 gusti di gelato su 6, se l'ordine non conta?","h":3246503574},{"q":"Quante parole di 3 lettere, anche senza senso, si scrivono usando solo A e B?","h":1426629559}];
 const KEY = 'caveau-tartaglia-v2';
 const TOTAL = 3600, HINT_COST = 120, ERR_COST = 30;
 const $ = id => document.getElementById(id);
@@ -703,7 +785,7 @@ function reveal(i,a){
   }catch(e){return {topic:'',formula:'',expl:''}}
 }
 
-function fresh(){return {started:null,penalty:0,room:0,answers:[],hints:{},errors:0,hintCount:0,finished:null,noTimer:false,team:'',recorded:false,recId:null,secrets:[],secretSolved:null,inSecret:false,secretHints:0}}
+function fresh(){return {started:null,penalty:0,room:0,answers:[],hints:{},errors:0,hintCount:0,finished:null,noTimer:false,team:'',recorded:false,recId:null,secrets:[],secretSolved:null,inSecret:false,secretHints:0,alarm:0,seenIntro:{},gino:null,inChase:false,chaseDone:false,chaseIntro:false,chaseQs:null,chaseProg:0,items:{notes:1},notes:'',torchSeen:{}}}
 function load(){try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&Array.isArray(s.answers))return Object.assign(fresh(),s)}catch(e){}return fresh()}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
 let S = load();
@@ -718,7 +800,7 @@ function mmss(sec){sec=Math.max(0,sec);return String(Math.floor(sec/60)).padStar
 function fmt(n){return String(n).replace(/\B(?=(\d{3})+(?!\d))/g,'.')}
 
 function tick(){
-  if(!S.started) return;
+  if(!S.started || dlgOpen) return;
   const r = remaining();
   if(S.noTimer){$('timer').hidden=true;return}
   $('timer').hidden=false;
@@ -795,7 +877,12 @@ const SFX = {
   tick:()=>tone(2600,0,.02,'square',.035),
   step:()=>{tone(80,0,.1,'sine',.18,50);noise(0,.04,.06,900)},
   fly:()=>tone(500,0,.5,'sine',.06,1500),
-  safe:()=>{for(let i=0;i<10;i++) tone(1900-i*90,i*.07,.03,'square',.04); noise(.75,.3,.3,200)}
+  safe:()=>{for(let i=0;i<10;i++) tone(1900-i*90,i*.07,.03,'square',.04); noise(.75,.3,.3,200)},
+  crackle:()=>{for(let i=0;i<6;i++) noise(i*.05+Math.random()*.03,.02,.12,2500)},
+  hey:()=>{tone(420,0,.08,'triangle',.06,520)},
+  blipD:()=>tone(240+Math.random()*60,0,.04,'sine',.03),
+  blipG:()=>tone(560+Math.random()*120,0,.035,'square',.018),
+  beat:()=>{tone(60,0,.12,'sine',.25,45);tone(55,.16,.1,'sine',.18,40)}
 };
 function sfx(n){ if(muted) return; try{ SFX[n] && SFX[n]() }catch(e){} }
 function soundLabel(){ const b=$('sound'); b.textContent = muted ? 'Suono: no' : 'Suono: sì'; b.setAttribute('aria-pressed', String(!muted)) }
@@ -1267,7 +1354,7 @@ function revealSecret(a){
 function viewSecret(){
   const sol=S.secretSolved, shown=S.secretHints||0, backLbl=S.room<8 ? 'Torna alla porta '+(S.room+1) : 'Torna alla cassaforte';
   let h=`<div class="room"><div class="col"><p class="eyebrow">Stanza segreta · Studiolo del direttore</p><h2>Il tesoro del direttore</h2>
-  <div class="story">${SECRET.story}</div>${scene('secret')}<p class="question">${SECRET.q}</p></div><div class="col side">`;
+  <div class="story">${SECRET.story}</div>${torchNote('s')}${scene('secret')}<p class="question">${SECRET.q}</p></div><div class="col side">`;
   if(sol){ const d=revealSecret(sol);
     h+=`<div class="solved"><p class="eyebrow">Forziere aperto · ${d.topic}</p><p class="code">${fmt(sol)}</p><p class="formula">${d.formula}</p><p>${d.expl}</p>
     <div class="frag-found"><span class="seal-c big">★</span><p><b>Regalo del direttore:</b> 3 minuti in più prima dell'allarme e il sigillo d'oro sul diploma.</p></div>
@@ -1291,7 +1378,7 @@ function bindSecret(){
   if(d){ let n=0; d.addEventListener('click',()=>{ restartAnim(d,'twist'); sfx('tick'); if(S.secrets.includes('dial')) return; if(++n>=3) findSecret('dial', d.getBoundingClientRect()) }) }
   const b=$('back-secret'); if(b) b.addEventListener('click', leaveSecret);
   const h=$('shint'); if(h) h.addEventListener('click',()=>{ if(busy) return; S.secretHints=(S.secretHints||0)+1; S.hintCount++; S.penalty+=HINT_COST; save(); sfx('hint'); floatText('−2:00',$('timer')); restartAnim($('timer'),'hit');
-    const v=($('code-s')||{}).value||''; render({anim:false}); if($('code-s')) $('code-s').value=v });
+    const v=($('code-s')||{}).value||''; render({anim:false}); if($('code-s')) $('code-s').value=v; dirSay('hint') });
   const f=$('slock');
   if(f){ const inp=$('code-s'), fb=$('sfb');
     inp.addEventListener('input',()=>{ sfx('key'); fb.textContent='' });
@@ -1303,14 +1390,231 @@ function bindSecret(){
         busy=true; S.secretSolved=a; S.penalty-=SECRET_BONUS; save(); f.classList.add('open'); sfx('win');
         const br=f.getBoundingClientRect(); fx.win(1, br.left+br.width/2, br.top+br.height/2); fx.rain(160);
         floatText('+3:00 · regalo del direttore',$('timer'),'good'); tick();
-        await wait(RM?0:900); busy=false; render({anim:false});
+        await wait(RM?0:900); busy=false; render({anim:false}); setTimeout(()=>dirSay('ok'),700);
       } else {
-        S.errors++; S.penalty+=ERR_COST; save(); tick(); sfx('bad'); floatText('−0:30',$('timer')); restartAnim($('timer'),'hit'); restartAnim(f,'shake');
+        S.errors++; S.penalty+=ERR_COST; save(); tick(); sfx('bad'); floatText('−0:30',$('timer')); if(!raiseAlarm()) dirSay('err'); restartAnim($('timer'),'hit'); restartAnim(f,'shake');
         fb.className='fb bad'; fb.textContent='Codice errato: il forziere non si apre. Hai perso 30 secondi.'; inp.select();
       } }) }
 }
 $('seals').addEventListener('click', showSeals);
 $('doors').addEventListener('click', e=>{ if(e.target.closest('#secret-btn')) enterSecret() });
+
+/* ===== personaggi, dialoghi, allarme, fuga finale, borsa ===== */
+const GRAMO_SVG = `<svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="58" fill="#2A1E10"/><rect x="20" y="80" width="62" height="26" rx="3" fill="#7A5634"/><rect x="20" y="80" width="62" height="5" fill="#94683F"/><ellipse cx="50" cy="80" rx="27" ry="5" fill="#111"/><ellipse cx="50" cy="80" rx="6" ry="1.6" fill="#C99A3A"/><path d="M66 78 L80 52" stroke="#C99A3A" stroke-width="4" stroke-linecap="round"/><g class="horn"><path d="M78 54 C90 44 98 26 102 14 C114 28 114 54 100 64 C94 62 86 58 78 54Z" fill="#E0B44E"/><path d="M84 52 C94 44 100 30 103 20" stroke="#9B7020" stroke-width="2" fill="none"/></g></svg>`;
+const GINO_SVG = `<svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="58" fill="#1E2A3A"/><path d="M20 120c4-26 20-38 40-38s36 12 40 38z" fill="#2B3F66"/><path d="M54 84h12l-6 14z" fill="#E8E2D2"/><rect x="52" y="78" width="16" height="10" fill="#E3B488"/><circle cx="60" cy="58" r="24" fill="#E8B98A"/><path d="M33 47c2-17 14-26 27-26s25 9 27 26z" fill="#22324F"/><rect x="29" y="44" width="62" height="8" rx="4" fill="#16223A"/><circle cx="60" cy="34" r="4.5" fill="#E0B44E"/><circle cx="51" cy="59" r="2.8" fill="#1A1A1A"/><circle cx="69" cy="59" r="2.8" fill="#1A1A1A"/><path d="M46 54l9-2M74 54l-9-2" stroke="#3A2A1A" stroke-width="2" stroke-linecap="round"/><g class="mouth"><path d="M46 69q14 8 28 0q-4 9-14 9t-14-9z" fill="#5A3A22"/></g></svg>`;
+const RUNNER_SVG = `<svg viewBox="0 0 44 70"><circle cx="24" cy="9" r="7" fill="#5FC49A"/><path d="M16 20q8-4 16 0l-3 22h-10z" fill="#5FC49A"/><path class="lg1" d="M20 42l-8 14l-6 2" stroke="#5FC49A" stroke-width="5" fill="none" stroke-linecap="round"/><path class="lg2" d="M27 42l6 13l7 1" stroke="#5FC49A" stroke-width="5" fill="none" stroke-linecap="round"/><path d="M17 24l-9 8M31 24l8 7" stroke="#5FC49A" stroke-width="4" stroke-linecap="round"/></svg>`;
+const GINO_RUN = `<svg viewBox="0 0 52 76"><circle cx="26" cy="13" r="8" fill="#E8B98A"/><path d="M17 9c1-7 5-10 9-10s8 3 9 10z" fill="#22324F"/><rect x="15" y="8" width="22" height="3.5" rx="1.5" fill="#16223A"/><path d="M16 24q10-5 20 0l-3 24h-14z" fill="#2B3F66"/><path d="M21 48l-7 15l-6 2" stroke="#2B3F66" stroke-width="6" fill="none" stroke-linecap="round"/><path d="M31 48l6 14l7 1" stroke="#2B3F66" stroke-width="6" fill="none" stroke-linecap="round"/><path d="M34 28l12 2" stroke="#2B3F66" stroke-width="5" stroke-linecap="round"/><rect x="44" y="26" width="8" height="6" rx="2" fill="#E0B44E"/></svg>`;
+const WHO = { dir:{name:'Il direttore Tartaglia · registrazione del 1898', short:'Il direttore', svg:GRAMO_SVG}, gino:{name:'Gino, il custode notturno', short:'Gino', svg:GINO_SVG} };
+const INTRO = [
+  ["*crrr* Prova, prova… Questa è una registrazione del direttore Niccolò Tartaglia, Brescia, 1898.","Se mi stai ascoltando, sei rimasto chiuso nel mio caveau. Peccato per te. Le mie chiavi non stanno mai nello stesso ordine due volte… o quasi."],
+  ["I miei predecessori ti guardano dalle cornici. Tre faretti e otto ritratti: scegli bene chi illuminare, e con quale colore."],
+  ["Il tastierino l'ha rotto il custode con il manico di una scopa. Restano cinque tasti. A me bastano."],
+  ["La mia insegna è caduta. Tre A e due T: le lettere uguali sono gemelle, nessuno sa distinguerle."],
+  [],
+  ["Questo pavimento l'ho disegnato io. Ogni piastrella sa quante strade la raggiungono dalla cima."],
+  ["Gino mi chiede sempre di non lasciarlo solo con le guardie. Accontentiamolo: in ogni squadra, almeno un tecnico."],
+  ["L'ultima porta. Cinque cifre, tutte diverse. Non provarle a caso: non ti basterebbe una notte."],
+  ["Se sei arrivato fin qui, meriti la mia cassaforte. Le lettere che hai raccolto, messe in ordine. Sai già quale ordine."]
+];
+const SECRET_INTRO = ["Hai trovato tutti i miei sigilli. Allora meriti il mio tesoro… se sai contare con i blocchi."];
+const DIR_LINES = {
+  err:["Mmh. No.","Sbagliato. Credo che Gino abbia sentito qualcosa…","Conta, non tirare a indovinare.","Quasi. Anzi no.","Il mio gatto avrebbe fatto meglio.","Riprova, e stavolta senza fretta."],
+  hint:["Un indizio? Ai miei tempi si contava a mano.","Va bene, ti aiuto. Ma me lo segno.","Debolezza registrata.","Ecco. Ma la prossima volta pensaci da solo."],
+  ok:["Bene. Molto bene.","Esatto: hai contato senza elencare.","Corretto. Sto quasi per ammirarti.","Sì! Questa me la segno.","Ottimo lavoro. Avanti."]
+};
+const TORCH = ["Graffiato sul muro: «Tutte le chiavi, tutti i ganci: conta solo l'ordine.»","Dietro una cornice: «Rosso sul ritratto 1 e verde sul 2 non è come verde sull'1 e rosso sul 2.»","Sotto il tastierino: «Ogni casella ha sempre gli stessi cinque tasti a disposizione.»","Sul retro dell'insegna: «Scambiare due A dà la stessa parola.»","Dentro una cassetta: «Le chiavi si girano insieme: l'ordine non esiste.»","Una freccia sul pavimento: «Ogni numero è la somma dei due sopra.»","Sul tabellone: «Contare chi non va bene è più facile.»","Sulla porta: «Prima le cifre con le regole, poi le altre.»","Sulla cassaforte: «Dal codice più piccolo al più grande.»"];
+const TORCH_S = "Sul forziere: «Prima tutte le A insieme, poi togli le file con le T insieme.»";
+let dlgOpen = false;
+function whenIdle(fn, delay){ const go=()=>{ if(busy||dlgOpen){ setTimeout(go,150); return } fn() }; setTimeout(go, delay||0) }
+function typeInto(el, text, done, who){
+  if(RM){ el.textContent=text; done&&done(); return ()=>{} }
+  let k=0; el.textContent='';
+  const iv=setInterval(()=>{ k++; el.textContent=text.slice(0,k); if(k%3===0) sfx(who==='gino'?'blipG':'blipD'); if(k>=text.length){ clearInterval(iv); done&&done() } }, 22);
+  return ()=>{ clearInterval(iv); el.textContent=text; done&&done() };
+}
+function say(lines, choices){
+  return new Promise(res=>{
+    if(!lines.length){ res(); return }
+    document.querySelectorAll('.bub').forEach(x=>x.remove());
+    dlgOpen=true; const t0=Date.now();
+    const back=document.createElement('div'); back.className='dlg-back';
+    const wrap=document.createElement('div'); wrap.className='dlg'; wrap.setAttribute('role','dialog'); wrap.setAttribute('aria-modal','true');
+    document.body.append(back, wrap);
+    let i=0, skip=null, finished=false;
+    const close=v=>{ dlgOpen=false; S.penalty-=Math.round((Date.now()-t0)/1000); save(); back.remove(); wrap.classList.add('out'); setTimeout(()=>wrap.remove(),250); document.removeEventListener('keydown',kd,true); tick(); res(v) };
+    const advance=()=>{ if(!finished){ skip&&skip(); return } if(i<lines.length-1){ i++; show() } else if(!(choices&&choices.length)) close() };
+    const show=()=>{ const L=lines[i], W=WHO[L.who], last=i===lines.length-1;
+      wrap.innerHTML=`<div class="dlg-box ${L.who}"><div class="dlg-por talking" aria-hidden="true">${W.svg}</div><div class="dlg-main"><p class="dlg-name">${W.name}</p><p class="dlg-text" aria-live="polite"></p><div class="dlg-row"><span class="dlg-skip">Clic per continuare</span></div></div></div>`;
+      const tx=wrap.querySelector('.dlg-text'), row=wrap.querySelector('.dlg-row'), por=wrap.querySelector('.dlg-por');
+      finished=false; sfx(L.who==='dir'?'crackle':'hey');
+      skip=typeInto(tx, L.text, ()=>{ finished=true; por.classList.remove('talking');
+        if(last && choices && choices.length){
+          row.innerHTML=choices.map((c,k)=>`<button type="button" class="btn dlg-c" data-k="${k}"${c.disabled?' disabled':''}>${c.label}</button>`).join('');
+          row.querySelectorAll('[data-k]').forEach(b=>b.addEventListener('click',e=>{ e.stopPropagation(); sfx('click'); close(choices[+b.dataset.k].value) }));
+          const f=row.querySelector('button:not([disabled])'); f&&f.focus();
+        } else {
+          row.innerHTML=`<button type="button" class="btn dlg-next">${last?'Chiudi':'Avanti ▸'}</button>`;
+          const nb=row.querySelector('.dlg-next'); nb.addEventListener('click',e=>{ e.stopPropagation(); advance() }); nb.focus();
+        } }, L.who);
+    };
+    const kd=e=>{ if(e.key==='Escape' && !(choices&&choices.length)){ e.preventDefault(); e.stopPropagation(); close() } };
+    wrap.addEventListener('click',()=>advance());
+    document.addEventListener('keydown',kd,true);
+    show();
+  });
+}
+function bubble(who, text){
+  if(dlgOpen) return; const old=document.querySelector('.bub'); if(old) old.remove();
+  const b=document.createElement('div'); b.className='bub '+who; b.setAttribute('role','status');
+  b.innerHTML=`<span class="bub-por talking" aria-hidden="true">${WHO[who].svg}</span><span class="bub-main"><b>${WHO[who].short}</b><span class="bub-t"></span></span>`;
+  document.body.appendChild(b); sfx(who==='dir'?'crackle':'hey');
+  typeInto(b.querySelector('.bub-t'), text, ()=>{ const p=b.querySelector('.bub-por'); p&&p.classList.remove('talking') }, who);
+  setTimeout(()=>{ b.classList.add('out'); setTimeout(()=>b.remove(),400) }, 5200);
+}
+function dirSay(kind){ const L=DIR_LINES[kind]; if(L) bubble('dir', L[Math.floor(Math.random()*L.length)]) }
+function roomIntro(i){
+  if(!S.started || S.inSecret || S.inChase || S.room!==i || S.answers[i]!=null || S.finished) return;
+  S.seenIntro=S.seenIntro||{}; if(S.seenIntro[i]) return; S.seenIntro[i]=true; save();
+  if(i===4) return ginoMeet();
+  say(INTRO[i].map(t=>({who:'dir', text:t})));
+}
+function secretIntro(){ if(!S.inSecret || S.secretSolved) return; S.seenIntro=S.seenIntro||{}; if(S.seenIntro.s) return; S.seenIntro.s=true; save(); say(SECRET_INTRO.map(t=>({who:'dir',text:t}))) }
+async function ginoMeet(){
+  const hasSeal=(S.secrets||[]).length>0;
+  const v=await say([
+    {who:'gino', text:"Ehi, tu! Che ci fai nel caveau a quest'ora? Sono Gino, il custode di notte."},
+    {who:'gino', text:"Ho perso il mio mazzo di chiavi qui in mezzo alle cassette… Se non lo ritrovo, domani il direttore mi licenzia. Che fai?"}
+  ], [
+    {label:'Aiutalo a cercare le chiavi (−1 min)', value:'help'},
+    {label:'Nasconditi dietro le cassette', value:'hide'},
+    {label: hasSeal ? 'Mostragli un sigillo del direttore' : 'Mostragli un sigillo (non ne hai ancora)', value:'seal', disabled:!hasSeal}
+  ]);
+  S.gino=v; save();
+  if(v==='help'){ S.penalty+=60; save(); tick(); floatText('−1:00',$('timer')); giveItem('lens');
+    await say([{who:'gino', text:"Eccole, erano sotto la cassetta 7! Grazie, sei una brava persona. Tieni questa lente del direttore: ti mostra un indizio senza perdere tempo."},{who:'gino', text:"E se più tardi dovessi correrti dietro… partirò un po' più lontano. Promesso."}]) }
+  else if(v==='hide') await say([{who:'gino', text:"Mmh… mi pareva di aver sentito qualcuno. Sarà stato il gatto del direttore. Ma tengo gli occhi aperti!"}]);
+  else await say([{who:'gino', text:"Il sigillo del direttore! Allora sei uno dei suoi… Va bene, non ti ho visto. E se dovessi correrti dietro, correrò piano."}]);
+}
+function ginoLine(){ const t={help:"Ha aiutato Gino a ritrovare le chiavi.", hide:"È sfuggito a Gino nascondendosi tra le cassette.", seal:"Ha mostrato a Gino il sigillo del direttore."}[S.gino]; return t?`<p class="dp-seals">${t}</p>`:'' }
+
+/* livello d'allarme */
+function renderAlarm(){ const el=$('alarmL'); if(!el) return; const a=S.alarm||0; el.hidden=!S.started || !!S.finished;
+  el.innerHTML=`<small>Allarme</small>${[0,1,2].map(k=>`<i class="${k<a?'on':''}"></i>`).join('')}`; el.setAttribute('aria-label',`Allarme: ${a} spie accese su 3`) }
+function raiseAlarm(){
+  S.alarm=(S.alarm||0)+1; save(); renderAlarm(); restartAnim($('alarmL'),'flash');
+  if(S.alarm<3) return false;
+  sfx('alarm'); S.alarm=0; S.penalty+=60; save();
+  if(!RM){ const al=document.createElement('div'); al.className='alarm'; document.body.appendChild(al); setTimeout(()=>al.remove(),2600) }
+  setTimeout(()=>{ renderAlarm(); tick(); floatText('−1:00',$('timer'));
+    say([{who:'gino', text:"ALT! Chi va là?! … Ah, sei tu. Con tutti questi codici sbagliati hai fatto scattare l'allarme del caveau."},{who:'gino', text:"Per stavolta chiudo un occhio, ma ti tocca un minuto di predica. Rimetto l'allarme a zero: conta meglio!"}]) }, 700);
+  return true;
+}
+
+/* borsa */
+const ITEMS = { notes:{name:'Taccuino', desc:'Per scrivere i conti. Si salva da solo.'}, torch:{name:'Torcia', desc:'Illumina una scritta nascosta nella stanza in cui sei.'}, lens:{name:'Lente del direttore', desc:'Mostra il prossimo indizio senza perdere tempo.'} };
+const ITEM_ICO = {
+  notes:'<svg viewBox="0 0 32 32"><rect x="6" y="4" width="20" height="24" rx="2" fill="#E9DCC7"/><path d="M10 10h12M10 15h12M10 20h8" stroke="#7A5634" stroke-width="2"/><rect x="6" y="4" width="4" height="24" fill="#B0703A"/></svg>',
+  torch:'<svg viewBox="0 0 32 32"><path d="M4 12h14l6-5v18l-6-5H4z" fill="#C99A3A"/><path d="M24 9l6-4M24 16h7M24 23l6 4" stroke="#F2C14E" stroke-width="2" stroke-linecap="round"/></svg>',
+  lens:'<svg viewBox="0 0 32 32"><circle cx="13" cy="13" r="8" fill="none" stroke="#C99A3A" stroke-width="3.5"/><circle cx="13" cy="13" r="6" fill="#BFE3F2" opacity=".6"/><path d="M19 19l9 9" stroke="#7A5634" stroke-width="4" stroke-linecap="round"/></svg>'
+};
+function bagKey(){ return S.inSecret ? 's' : S.room }
+function inPlayableRoom(){ if(!S.started || S.finished || S.inChase) return false; if(S.inSecret) return !S.secretSolved; return S.room<ROOMS.length && S.answers[S.room]==null }
+function renderBag(){ const b=$('bagbtn'); if(!b) return; b.hidden=!S.started || !!S.finished; S.items=S.items||{notes:1}; b.textContent=`Borsa (${Object.keys(S.items).length})` }
+function giveItem(id){ S.items=S.items||{notes:1}; if(S.items[id]!=null) return; S.items[id]= id==='torch'?2:1; save(); renderBag(); restartAnim($('bagbtn'),'pulse'); sfx('coins');
+  toast(`<span class="item-ico">${ITEM_ICO[id]}</span><span><b>Nella borsa: ${ITEMS[id].name}.</b> ${ITEMS[id].desc}</span>`, 5200) }
+function closeBag(){ const p=document.querySelector('.bag'); if(p){ p.classList.add('out'); setTimeout(()=>p.remove(),250) } const bk=document.querySelector('.bag-back'); if(bk) bk.remove() }
+function openBag(){
+  if(document.querySelector('.bag')){ closeBag(); return }
+  const it=S.items||{notes:1}, key=bagKey(), can=inPlayableRoom(), torchSeen=(S.torchSeen||{})[key];
+  const hintsLeft = S.inSecret ? (S.secretHints||0)<SECRET.hints.length : can && (S.hints[S.room]||0)<ROOMS[S.room].hints.length;
+  const row=(id,extra,btn)=>`<div class="bag-item"><span class="item-ico">${ITEM_ICO[id]}</span><div><b>${ITEMS[id].name}</b>${extra?` <small>${extra}</small>`:''}<p>${ITEMS[id].desc}</p>${btn||''}</div></div>`;
+  let h=`<div class="bag-h"><h2>Borsa</h2><button type="button" class="btn-ghost" id="bag-x">Chiudi</button></div>`;
+  if(it.torch!=null) h+=row('torch', `batterie: ${it.torch}`, `<button type="button" class="btn" id="use-torch"${can&&it.torch>0&&!torchSeen?'':' disabled'}>Accendi qui</button>${torchSeen&&can?'<small class="bag-n">Qui l\'hai già usata.</small>':''}`);
+  if(it.lens!=null) h+=row('lens', `usi: ${it.lens}`, `<button type="button" class="btn" id="use-lens"${can&&it.lens>0&&hintsLeft?'':' disabled'}>Usa qui</button>`);
+  h+=row('notes','', `<textarea id="bag-notes" rows="6" placeholder="Scrivi qui i tuoi conti…">${esc(S.notes||'')}</textarea>`);
+  if(it.torch==null && it.lens==null) h+=`<p class="bag-n">Altri oggetti si trovano lungo il percorso…</p>`;
+  const bk=document.createElement('div'); bk.className='bag-back'; bk.addEventListener('click', closeBag);
+  const p=document.createElement('aside'); p.className='bag'; p.setAttribute('aria-label','Borsa'); p.innerHTML=h;
+  document.body.append(bk, p); sfx('swap');
+  $('bag-x').addEventListener('click', closeBag);
+  const ta=$('bag-notes'); ta.addEventListener('input',()=>{ S.notes=ta.value; save() }); ta.addEventListener('keydown',e=>e.stopPropagation());
+  const ut=$('use-torch'); if(ut) ut.addEventListener('click', useTorch);
+  const ul=$('use-lens'); if(ul) ul.addEventListener('click', useLens);
+}
+function torchNote(i){ const seen=(S.torchSeen||{})[i]; if(!seen) return ''; return `<p class="torch-note"><span>Alla luce della torcia</span>${i==='s'?TORCH_S:TORCH[i]}</p>` }
+function useTorch(){
+  if(!inPlayableRoom()) return; const key=bagKey(); S.torchSeen=S.torchSeen||{}; if(S.torchSeen[key] || !(S.items.torch>0)) return;
+  S.items.torch--; S.torchSeen[key]=true; save(); closeBag(); sfx('lamp');
+  if(!RM){ const fxl=document.createElement('div'); fxl.className='torch-fx'; document.body.appendChild(fxl); setTimeout(()=>fxl.remove(),1300) }
+  setTimeout(()=>{ const v=document.querySelector('#code-'+S.room+',#code-s'); const val=v?v.value:''; render({anim:false}); const v2=document.querySelector('#code-'+S.room+',#code-s'); if(v2) v2.value=val;
+    const n=document.querySelector('.torch-note'); if(n){ n.classList.add('new'); n.scrollIntoView({behavior:RM?'auto':'smooth',block:'center'}) } }, RM?0:650);
+}
+function useLens(){
+  if(!inPlayableRoom() || !(S.items.lens>0)) return;
+  if(S.inSecret){ if((S.secretHints||0)>=SECRET.hints.length) return; S.secretHints=(S.secretHints||0)+1 }
+  else { if((S.hints[S.room]||0)>=ROOMS[S.room].hints.length) return; S.hints[S.room]=(S.hints[S.room]||0)+1 }
+  S.items.lens--; save(); closeBag(); sfx('hint');
+  const v=document.querySelector('#code-'+S.room+',#code-s'); const val=v?v.value:''; render({anim:false}); const v2=document.querySelector('#code-'+S.room+',#code-s'); if(v2) v2.value=val;
+  const hs=document.querySelectorAll('.hint'), hh=hs[hs.length-1]; if(hh){ hh.classList.add('new'); typewrite(hh) }
+  bubble('dir','La mia lente! Te la presto solo stavolta.');
+}
+$('bagbtn').addEventListener('click', openBag);
+
+/* fuga finale */
+let CH=null;
+function stopChase(){ if(CH){ cancelAnimationFrame(CH.raf); CH.dead=true; CH=null } }
+function viewChase(){
+  if(!S.chaseQs){ const ids=[0,1,2,3,4,5]; for(let j=ids.length-1;j>0;j--){ const r=Math.floor(Math.random()*(j+1)); [ids[j],ids[r]]=[ids[r],ids[j]] } S.chaseQs=ids.slice(0,3); save() }
+  const qi=Math.min(S.chaseProg||0,2), q=CHASE[S.chaseQs[qi]];
+  return `<div class="chase"><p class="eyebrow">Fuga · Corridoio del caveau</p><h2>Gino ti ha scoperto!</h2>
+  <p class="story" style="max-width:62ch">Corri verso l'ufficio del direttore. Rispondi a tre domande lampo prima che Gino ti raggiunga: ogni risposta giusta ti fa guadagnare strada, ogni errore lo fa avvicinare.</p>
+  <div class="ct" aria-hidden="true"><div class="ct-lamps"></div><div class="ct-door"><span>Ufficio del direttore</span></div><div class="ct-gino" id="ct-gino"><span class="ct-cone"></span>${GINO_RUN}</div><div class="ct-you">${RUNNER_SVG}</div><div class="ct-floor"></div></div>
+  <div class="ct-meter"><span>Vantaggio su Gino</span><div class="ct-bar"><i id="ct-bar"></i></div></div>
+  <div class="ct-q lock"><p class="cq-n" id="cq-n">Domanda ${qi+1} di 3</p><p class="cq-t" id="cq-t">${q.q}</p>
+    <form id="cform" autocomplete="off" class="lock-row"><input id="cans" inputmode="numeric" placeholder="?" aria-label="Risposta"><button class="btn" type="submit">Rispondi</button></form>
+    <p class="fb" id="cfb" aria-live="polite"></p></div></div>`;
+}
+function startChase(){
+  stopChase(); if(!S.inChase) return;
+  const me={dead:false}; CH=me;
+  const begin=()=>{
+    if(me.dead) return; if(busy){ setTimeout(begin,120); return }
+    const speed=(100/38)*(S.gino==='seal'?0.7:1);
+    me.dist=S.gino==='help'?100:80; me.last=performance.now(); me.next=0;
+    const ge=$('ct-gino'), bar=$('ct-bar'), f=$('cform'), inp=$('cans'), fb=$('cfb'); if(!ge) return;
+    const draw=()=>{ const d=Math.max(0,me.dist); ge.style.left=`calc((98% - 192px) * ${(100-d)/100})`; bar.style.width=d+'%'; bar.className=d<30?'low':d<60?'mid':'' };
+    const loop=t=>{ if(me.dead) return; const dt=Math.min(.1,(t-me.last)/1000); me.last=t;
+      if(!dlgOpen){ me.dist-=speed*dt; if(t>me.next){ sfx('step'); if(me.dist<30) sfx('beat'); me.next=t+200+Math.max(0,me.dist)*8 } }
+      draw(); if(me.dist<=0){ caught(); return } me.raf=requestAnimationFrame(loop) };
+    f.addEventListener('submit', e=>{ e.preventDefault(); if(me.dead || dlgOpen) return;
+      const v=inp.value.replace(/\D/g,''); if(!v) return;
+      const qi=S.chaseProg||0, id=S.chaseQs[qi];
+      if(fnv('fuga|'+id+'|'+String(parseInt(v,10)))===CHASE[id].h){
+        sfx('good'); me.dist=Math.min(100,me.dist+40); S.chaseProg=qi+1; save(); fb.className='fb'; fb.textContent='Giusto! Guadagni strada.';
+        if(S.chaseProg>=3){ escaped(); return }
+        const q=CHASE[S.chaseQs[S.chaseProg]]; $('cq-n').textContent=`Domanda ${S.chaseProg+1} di 3`; const qt=$('cq-t'); qt.textContent=q.q; restartAnim(qt,'qnew'); inp.value=''; inp.focus();
+      } else { sfx('bad'); me.dist=Math.max(1,me.dist-15); S.errors++; save(); restartAnim(f,'shake'); fb.className='fb bad'; fb.textContent='No! Gino si avvicina…'; inp.select() }
+    });
+    draw(); inp.focus();
+    if(!S.chaseIntro){ S.chaseIntro=true; save();
+      say([{who:'gino', text: S.gino==='help' ? "Ah, sei tu! Mi hai aiutato… ti lascio un po' di vantaggio. Ma il lavoro è lavoro: FERMATI!" : S.gino==='seal' ? "Quel sigillo del direttore… va bene, corro piano. Ma corro!" : "Ti ho visto, sai? Altro che gatto. FERMATI!"}]).then(()=>{ const i2=$('cans'); i2&&i2.focus() }) }
+    me.raf=requestAnimationFrame(loop);
+  };
+  begin();
+}
+function caught(){
+  stopChase(); S.penalty+=120; save(); tick(); sfx('alarm'); floatText('−2:00',$('timer'));
+  say([{who:'gino', text:"PRESO! Ah-ha! Lo sapevo che eri tu."},{who:'gino', text:"…Va bene, va bene, non ti porto dal direttore. Ma ti costa due minuti di predica. Ricominciamo la corsa da dove eravamo: VIA!"}]).then(()=>{ if(S.inChase) render({anim:false}) });
+}
+function escaped(){
+  stopChase(); S.chaseDone=true; S.inChase=false; save(); sfx('win');
+  say([{who:'gino', text:"Accidenti, è entrato nell'ufficio del direttore! Lì dentro io non posso entrare…"}]).then(()=>transition('rings', missionCard(8), ()=>{ save(); render() }));
+}
+function afterRender(view, o){
+  if(o.anim===false) return;
+  if(view==='room') whenIdle(()=>roomIntro(S.room), RM?60:650);
+  if(view==='secret') whenIdle(secretIntro, RM?60:650);
+}
 
 function doors(){
   $('doors').innerHTML = ROOMS.map((_,i)=>{
@@ -1423,7 +1727,7 @@ function viewEnd(){
       <div class="stat"><b>${S.errors}</b><span>Codici sbagliati</span></div>
       <div class="stat"><b>${S.hintCount}</b><span>Indizi usati</span></div>
     </div>
-    <p class="dp-grade">Grado ottenuto: <b>${grade()}</b></p>${sealsLine()}
+    <p class="dp-grade">Grado ottenuto: <b>${grade()}</b></p>${sealsLine()}${ginoLine()}
     <div class="dp-sign"><span class="dp-date">Brescia, ${date}</span>${S.secretSolved?sealGold():''}${SEAL}<span class="dp-sig">N. Tartaglia<small>Il Direttore</small></span></div>
   </div></section>
   ${list.length ? boardHtml(list, S.recId, false) : ''}
@@ -1438,7 +1742,7 @@ function viewEnd(){
 function viewRoom(i){
   const r=ROOMS[i], ans=S.answers[i], shown=S.hints[i]||0;
   let h = `<div class="room"><div class="col"><p class="eyebrow">${i<8?'Porta '+(i+1)+' di 8':'Ultima prova'} · ${r.place}</p><h2>${r.name}</h2>
-    <div class="story">${r.story}</div>${scene(i)}
+    <div class="story">${r.story}</div>${torchNote(i)}${scene(i)}
     <p class="question">${r.q}</p></div><div class="col side">`;
   if(ans!=null){
     const d=reveal(i,ans), last=i===ROOMS.length-1, nextLbl=last?'Esci dal caveau':i===ROOMS.length-2?'Vai alla cassaforte':'Vai alla porta '+(i+2);
@@ -1479,10 +1783,11 @@ function render(o){
   o=o||{}; const anim=o.anim!==false && !RM;
   const app=$('app'), inGame=!!S.started; let view='room';
   $('status').hidden=!inGame; $('foot').hidden=!inGame;
-  timedOutShown=false;
+  timedOutShown=false; stopChase(); closeBag();
   if(!inGame){app.innerHTML=viewIntro()}
   else if(S.room>=ROOMS.length){recordResult();app.innerHTML=viewEnd();view='end'}
   else if(remaining()<=0 && !S.finished && !S.noTimer){timedOutShown=true;app.innerHTML=viewTimeout();view='timeout'}
+  else if(S.inChase){app.innerHTML=viewChase();view='chase'}
   else if(S.inSecret){app.innerHTML=viewSecret();view='secret'}
   else{app.innerHTML=viewRoom(S.room)}
   if(inGame){
@@ -1495,9 +1800,11 @@ function render(o){
   if(anim){ app.dataset.ent=String(S.started && S.room<ROOMS.length ? S.room%4 : 0); void app.offsetWidth; app.classList.add('enter'); let d=0;
     app.querySelectorAll(':scope>:not(.room), .col>*').forEach(el=>el.style.setProperty('--d',d++)) }
   if(view==='end' && o.anim!==false) celebrate();
-  renderSeals();
+  renderSeals(); renderAlarm(); renderBag();
   if(view==='timeout' && o.anim!==false){ sfx('alarm'); if(!RM){ const al=document.createElement('div'); al.className='alarm'; document.body.appendChild(al); setTimeout(()=>al.remove(),3400) } }
   bind();
+  if(view==='chase') startChase();
+  afterRender(view, o);
 }
 
 function restart(){S=fresh();confirmReset=false;save();render();window.scrollTo(0,0)}
@@ -1518,11 +1825,14 @@ function bind(){
   on('reset',()=>{confirmReset=true;render()});
   on('reset-no',()=>{confirmReset=false;render()});
   on('reset-yes',()=>transition('shutter', restartCard(), restart));
-  on('next',()=>{ const n=S.room+1; transition(n>=ROOMS.length?'light':ROUTE[n], missionCard(n), ()=>{S.room++;save();render()}) });
+  on('next',()=>{ const n=S.room+1;
+    if(n===8 && !S.chaseDone){ transition('cols', card('Allarme!','La fuga',"Gino ti ha scoperto: rispondi prima che ti raggiunga."), ()=>{ S.room=8; S.inChase=true; save(); render() }); return }
+    transition(n>=ROOMS.length?'light':ROUTE[n], missionCard(n), ()=>{S.room++;save();render()}) });
   on('hint',()=>{
     S.hints[S.room]=(S.hints[S.room]||0)+1;S.hintCount++;S.penalty+=HINT_COST;
     const v=$('code-'+S.room).value;save();sfx('hint');floatText('−2:00',$('timer'));restartAnim($('timer'),'hit');render({anim:false});$('code-'+S.room)&&($('code-'+S.room).value=v);
     const hs=document.querySelectorAll('.hint'), h=hs[hs.length-1]; if(h){h.classList.add('new');typewrite(h)}
+    dirSay('hint');
   });
   const form=$('lock');
   if(form){
@@ -1548,9 +1858,11 @@ function bind(){
         const sv=document.querySelector('.solved'); if(sv && !RM){ sv.classList.add('flip'); ROOMS[room].word ? scramble(sv.querySelector('.code'), a, 1300) : countUp(sv.querySelector('.code'), +a, fmt, 1000) }
         flyFrag(room);
         restartAnim($('doors').children[room],'just');
+        setTimeout(()=>dirSay('ok'),900); if(room===1) setTimeout(()=>giveItem('torch'),2600);
       }else{
         S.errors++;S.penalty+=ERR_COST;save();tick();
         const sfd=document.querySelector('.safe'); if(sfd) restartAnim(sfd,'denied');
+        if(!raiseAlarm()) dirSay('err');
         sfx('bad'); floatText('−0:30',$('timer')); restartAnim($('timer'),'hit'); restartAnim(form,'bad');
         fb.className='fb bad';fb.textContent='Codice errato: la serratura non si muove. Hai perso 30 secondi.';
         form.classList.remove('shake');void form.offsetWidth;form.classList.add('shake');
