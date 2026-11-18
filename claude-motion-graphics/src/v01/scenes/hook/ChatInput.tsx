@@ -23,7 +23,7 @@ export const ChatInput: React.FC<{f: number; chrome: number; cheap: boolean}> = 
 	const beat = f > TYPE_END ? 0 : 0.18 * beatPulse(abs, 5);
 	const glowK = (1 + beat + 0.8 * send) * chrome;
 	const active = clamp((f - TYPE_START) / 3);
-	const placeholder = 1 - clamp((f - TYPE_START + 1) / 2);
+	const placeholder = f >= TYPE_START ? 0 : 1; // sparisce al primo tasto, come in un campo reale
 	const caret = caretOn(f);
 	const textTop = top + FIELD.padTop;
 	const onLine2 = n > BREAK + 1;

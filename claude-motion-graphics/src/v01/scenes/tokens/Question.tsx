@@ -1,6 +1,6 @@
 import React from 'react';
 import {useAbsFrame} from '../../../lib/frame';
-import {beatPulse, clamp, ease, lerp} from '../../../lib/math';
+import {beatPulse, clamp, ease, hash, lerp} from '../../../lib/math';
 import {alpha, COLORS, FONTS} from '../../../theme';
 import {SIZE, SLOTS, T} from './layout';
 import {charAt, charX, layerXf, popAt, scanBeam, slotPos, toScreen} from './motion';
@@ -60,9 +60,11 @@ export const Question: React.FC = () => {
 								if (age < 0 || ch === ' ') return <span key={j}>{' '}</span>;
 								const on = clamp(age / 3);
 								const fresh = Math.exp(-age / 5);
-								const sx = toScreen(abs, {x: charX(s.i, j), y: s.y}).x;
+								const sx = toScreen(abs, {x: charX(s.i, j), y: s.py}).x;
 								const lit = beam.a * Math.exp(-Math.pow((sx - beam.x) / 46, 2));
-								const hot = clamp(fresh + lit);
+								// scintillio sparso: qualche carattere si accende per un istante (materia "viva")
+								const tw = Math.pow(0.5 + 0.5 * Math.sin(abs / 6 + hash(s.i * 17 + j, 57) * 6.283), 6);
+								const hot = clamp(fresh + lit + 0.35 * tw);
 								const g = 1 + beat + 1.2 * lit;
 								return (
 									<span
@@ -70,7 +72,7 @@ export const Question: React.FC = () => {
 										style={{
 											opacity: on,
 											color: mixHot(hot),
-											textShadow: `0 0 ${12 * g}px ${alpha(COLORS.orange, 0.55 + 0.3 * hot)}, 0 0 ${34 * g}px ${alpha(COLORS.orange, 0.28 + 0.2 * hot)}`,
+											textShadow: `0 0 ${10 * g}px ${alpha(COLORS.orangeBright, 0.7 + 0.3 * hot)}, 0 0 ${30 * g}px ${alpha(COLORS.orange, 0.45 + 0.2 * hot)}, 0 0 ${70 * g}px ${alpha(COLORS.orange, 0.22)}`,
 										}}
 									>
 										{ch}

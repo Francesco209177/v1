@@ -23,6 +23,8 @@ export const ROWS: number[][] = [
 	[4, 5, 6],
 	[7, 8, 9, 10],
 ];
+/** Righe a frase intera (compatte) e a token separati (spazio per gli ID). */
+export const ROW_YP = [612, 722, 832];
 export const ROW_Y = [548, 722, 896];
 export const CENTER = {x: 540, y: 722} as const;
 
@@ -35,6 +37,8 @@ export type TokenSlot = {
 	px: number;
 	/** Centro del blocco quando la frase è spezzata. */
 	sx: number;
+	/** y della riga: frase intera / token separati. */
+	py: number;
 	y: number;
 	/** Confine sinistro (x) del token nella frase intera: lì nasce la crepa di luce. */
 	leftEdge: number;
@@ -61,6 +65,7 @@ export const SLOTS: TokenSlot[] = (() => {
 				row: r,
 				px: pLeft + (off + t.length / 2) * CW,
 				sx: sLeft + widths[k] / 2,
+				py: ROW_YP[r],
 				y: ROW_Y[r],
 				leftEdge: pLeft + off * CW,
 				first: k === 0,

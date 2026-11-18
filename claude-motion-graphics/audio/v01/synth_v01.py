@@ -107,6 +107,7 @@ MIX = {
     "vector":   (-16.0, 0.00, {"hall": 0.20}, "fx"),
     "probs":    (-18.5, 0.00, {"hall": 0.25}, "fx"),
     "token":    (-19.0, 0.00, {"room": 0.15}, "fx"),
+    "sweep":    (-24.0, 0.00, {"hall": 0.30}, "fx"),
     "typing":   (-24.5, 0.00, {"room": 0.10}, "fx"),
     "send":     (-19.0, 0.00, {"hall": 0.30}, "fx"),
     "sparkle":  (-21.0, 0.00, {"hall": 0.40}, "fx"),
@@ -432,6 +433,9 @@ def render_fx(st: Stems):
                                  snap=150.0), 0.36, 0.45, 0.06, seed=2000, thud_gain=0.3)
     place(st.audio["mech"], fx.tone(mtof(n2m("D8")), 0.25, 0.05, glide_semis=5.0, h2=0.1, h3=0.0), s + s2n(0.03),
           0.22, pan=0.2)
+
+    # 22.0 s (frame 660): light blade over the finished answer (AnswerArea sweep, frames 658-674)
+    place(st.audio["sweep"], fx.light_sweep(), s2n(arr.SWEEP_FRAME / 30.0), 1.0)
 
     # 22.5-23.0 s FILL: reverse swell (tonal D add9 + noise) into the training reveal
     sw = ins.reverse_swell(0.5, 2250, midis=nm(("D5", "A5", "E6", "F#6")), noise_gain=0.8, tone_gain=1.0,

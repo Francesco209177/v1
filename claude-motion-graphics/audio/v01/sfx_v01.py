@@ -261,6 +261,33 @@ def token_tick(midi: int, accent: bool = False, seed: int = 0):
     return _norm(apply_fades(y, 0.0, 20.0))
 
 
+def light_sweep(seed: int = 2200, dur: float = 0.467, midis=(110, 114, 117)):
+    """Light blade over the finished answer (frames 660-674): a soft airy 'shine' rising 3.5 -> 11 kHz and
+    travelling L -> R, with a small edge on its first sample and three glints (D8 F#8 A8) as it passes the
+    tokens; peak ~0.2 s in (stereo, peak 1)."""
+    rng = np.random.default_rng(seed)
+    tail = 0.3
+    n = s2n(dur + tail)
+    t = tarr(n)
+    u = np.clip(t / dur, 0.0, 1.0)
+    w = stereo_noise(rng, n, 0.5, 0.7)
+    sh = sweep_filter(w, 3500.0 * (11000.0 / 3500.0) ** u, "bp", q=1.6, per_oct=5.0)
+    bell = np.sin(np.pi * np.clip(t / (dur + 0.05), 0.0, 1.0)) ** 2
+    env = _attack(t, 0.003) * (0.35 * np.exp(-t / 0.03) + 0.65 * bell)
+    pan = -0.7 + 1.4 * u
+    sh[:, 0] *= env * np.cos((pan + 1.0) * np.pi / 4.0) * 1.4142
+    sh[:, 1] *= env * np.sin((pan + 1.0) * np.pi / 4.0) * 1.4142
+    out = sh
+    for k, (t0, m) in enumerate(zip((0.07, 0.2, 0.33), midis)):
+        a = s2n(t0)
+        L = s2n(0.25)
+        tt = tarr(L)
+        f = mtof(m)
+        z = (np.sin(TWO_PI * f * tt) + 0.15 * np.sin(TWO_PI * 2.0 * f * tt)) * _attack(tt, 0.001) * np.exp(-tt / 0.06)
+        out[a:a + L] += _pan_st(z, (-0.5, 0.0, 0.5)[k]) * 0.35
+    return _norm(apply_fades(out, 0.0, tail * 900.0))
+
+
 def select_lock(seed: int = 1750):
     """'Pick': the most probable token is chosen - a crisp detent click, a bolt 'clunk' 26 ms later
     and a short bright confirm tone (E7 + octave) (stereo, peak 1)."""

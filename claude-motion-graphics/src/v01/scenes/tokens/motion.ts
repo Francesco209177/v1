@@ -1,5 +1,5 @@
 import {clamp, ease, hash, invLerp, lerp} from '../../../lib/math';
-import {CENTER, CW, SLOTS, T} from './layout';
+import {CENTER, CW, ROW_Y, ROW_YP, SLOTS, T} from './layout';
 
 /**
  * Trasformazione dello strato dei token (attorno a CENTER): la frase arriva dalla profondità (prosecuzione
@@ -40,7 +40,7 @@ export const slotPos = (i: number, abs: number): Pt & {rot: number} => {
 	const kick = Math.sin(Math.PI * clamp(p * 1.15));
 	return {
 		x: lerp(s.px, s.sx, p),
-		y: s.y + (hash(i, 31) - 0.5) * 18 * kick,
+		y: lerp(s.py, s.y, ease.outCubic(clamp((abs - (T.split - 1)) / 12))) + (hash(i, 31) - 0.5) * 18 * kick,
 		rot: (hash(i, 32) - 0.5) * 6 * kick,
 	};
 };
@@ -53,6 +53,9 @@ export const charX = (i: number, j: number): number => {
 
 /** Istante di comparsa (ricomposizione) di ogni carattere: sparso, come pixel che tornano al loro posto. */
 export const charAt = (i: number, j: number): number => T.start + 2 + hash(i * 17 + j, 53) * 14;
+
+/** y della riga r con la frase che si apre in verticale allo split. */
+export const rowY = (r: number, abs: number): number => lerp(ROW_YP[r], ROW_Y[r], ease.outCubic(clamp((abs - (T.split - 1)) / 12)));
 
 /** Posizione del raggio di scansione (x) e sua intensità. */
 export const scanBeam = (abs: number): {x: number; a: number} => {

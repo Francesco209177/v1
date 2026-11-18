@@ -4,8 +4,8 @@
     python3 audio/v01/analyze_v01.py [path.wav] [--score] [--png] [--vo]
 
 Prints: format / sample count, peak, true peak, integrated loudness, DC offset, edge silence,
-per-second loudness, the onset offset (ms) of every cue (and of every 8th-note token tick
-18-22 s and the typing run), how much each accent stands out from the neighbouring beats,
+per-second loudness, the onset offset (ms) of every cue (and of every answer-token landing tick
+and the typing run), how much each accent stands out from the neighbouring beats,
 per-section loudness + spectral balance + stereo, the share of energy in the 1-4 kHz voice band
 per section and inside / outside the voice-over windows, a click scan and narrow resonances
 in 1.5-6 kHz.
@@ -41,7 +41,7 @@ CUES = [("typeStart / first key", 0.2, True), ("questionDone / send", 1.5, True)
         ("groove / attention scene", 9.0, True), ("vectors / data blips", 10.0, True),
         ("attention / chord swell", 12.0, True), ("build / riser", 15.0, False), ("predict / impact", 16.0, True),
         ("pick / select-lock", 17.5, True), ("tokens / first tick", 18.0, True), ("loop / accent", 20.0, True),
-        ("fill / roll", 22.5, True), ("training / big impact", 23.0, True), ("title / resolved hit", 26.0, True),
+        ("sweep / answer (f660)", 22.0, False), ("fill / roll", 22.5, True), ("training / big impact", 23.0, True), ("title / resolved hit", 26.0, True),
         ("caveat / detuned ping", 28.0, True)]
 SECTIONS = [("hook", 0.0, 2.0), ("dive", 2.0, 3.0), ("inside", 3.0, 6.0), ("tokens", 6.0, 9.0),
             ("attention", 9.0, 15.0), ("build", 15.0, 16.0), ("predict", 16.0, 22.5), ("fill", 22.5, 23.0),
@@ -180,16 +180,23 @@ def main():
               f"{hl:6.1f}dB  {prom:+5.1f}/{prom_h:+5.1f} dB  {tag}")
     print(f"   all hard cues: {'PASS' if allok else 'FAIL'}")
 
-    # token ticks (8ths 18-22 s) and the typing run (0.2-1.42 s), HF onsets only
+    # token ticks: one per answer-token landing (src/v01/scenes/predict/data.ts landAt), HF onsets only
+    import arrangement_v01
+    h4 = signal.sosfilt(signal.butter(4, 4000, "high", fs=sr, output="sos"), mono)
+    e4, _ = frame_energy(h4, sr)
+    s4 = onset_strength(e4, hop, sr)
     offs = []
-    for k in range(16):
-        c = 18.0 + 0.25 * k
-        w = (tt >= c - 0.02) & (tt <= c + 0.02)
-        j = np.flatnonzero(w)[np.argmax(sh[w])]
-        offs.append(((tt[j] - c) * 1000, sh[j]))
-    print("   token ticks 18.0-21.75 s (8ths, HF onset ms / rise dB): "
-          + " ".join(f"{o:+.1f}/{r:.0f}" for o, r in offs))
-    print(f"   token ticks: max |offset| {max(abs(o) for o, _ in offs):.1f} ms, min rise {min(r for _, r in offs):.1f} dB")
+    print("   token landings (frame -> s): tick onset in the >4 kHz band (offset / rise) | >1.5 kHz rise")
+    for fr in arrangement_v01.land_frames():
+        c = fr / 30.0
+        w = (tt >= c - 0.015) & (tt <= c + 0.015)
+        j = np.flatnonzero(w)[np.argmax(s4[w])]
+        k = np.flatnonzero(w)[np.argmax(sh[w])]
+        offs.append(((tt[j] - c) * 1000, s4[j]))
+        print(f"      frame {fr}  {c:8.4f} s  tick at {tt[j]:8.4f} s  {(tt[j] - c) * 1000:+5.1f} ms  {s4[j]:5.1f} dB"
+              f"  | {sh[k]:5.1f} dB")
+    print(f"   token ticks: max |offset| {max(abs(o) for o, _ in offs):.1f} ms, min rise (>4 kHz) "
+          f"{min(r for _, r in offs):.1f} dB")
     ty = signal.find_peaks(sh[(tt >= 0.15) & (tt < 1.47)], height=6.0, distance=int(0.02 * sr / hop))[0]
     print(f"   typing run 0.15-1.47 s: {len(ty)} HF onsets >= 6 dB (43 keys typed)")
 

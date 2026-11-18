@@ -16,8 +16,9 @@ Cue sheet (src/v01/timeline.ts)                       beat   time
   build        (short riser 15-16 s)                  30     15.0 s
   predict      (impact + rising probability blips)    32     16.0 s
   pick         (select / lock accent)                 35     17.5 s
-  tokens       (8th-note token ticks 18-22 s)         36     18.0 s
+  tokens       (a tick on each token landing, 18-21.63 s) 36  18.0 s  (frames 540 585 607 ... 649)
   loop         (token-loop accent)                    40     20.0 s
+  sweep        (light sweep over the answer)          44     22.0 s  (frame 660)
   fill         (small fill 22.5-23 s)                 45     22.5 s
   training     (big warm impact + data stream)        46     23.0 s
   title        ("NON PENSA. PREVEDE.": resolved hit)  52     26.0 s
@@ -124,6 +125,20 @@ LEAD_PHRASES = [
 
 QUESTION = "Come fa ChatGPT a sapere tutte queste cose?"     # src/v01/timeline.ts V1_QUESTION
 
+# PREDICT scene (src/v01/scenes/predict/data.ts, final): scene starts at frame 480; PICK frames are relative.
+PREDICT_START = 480
+PICK = (45, 90, 120, 127, 134, 141, 148, 155, 162)
+SWEEP_FRAME = 660                 # AnswerArea: light blade over the finished answer, prog(f, 178, 16) = 658-674
+LAND_NOTES = ("E8", "G8", "D8", "E8", "F#8", "G8", "A8", "B8", "G8")      # rises with the answer, ends on the root
+LAND_VELS = (0.85, 0.85, 0.84, 0.76, 0.78, 0.8, 0.82, 0.84, 1.0)
+LAND_PANS = (-0.2, 0.2, -0.35, 0.35, -0.2, 0.2, -0.1, 0.1, 0.0)
+
+
+def land_frames():
+    """Absolute frame on which each chosen answer token lands: landAt(s) = PICK[s] + LIFT(s) + FLY(s), with
+    LIFT/FLY = 3/12 for the first two (slow) tokens and 1/6 for the others (src/v01/scenes/predict/data.ts)."""
+    return [PREDICT_START + p + (3 + 12 if s < 2 else 1 + 6) for s, p in enumerate(PICK)]
+
 
 def _hash(i: int, j: int = 0) -> float:
     """Exact port of src/lib/math.ts hash() (32-bit Math.imul arithmetic)."""
@@ -229,7 +244,10 @@ def build(seed: int = 2401):
         u = i / (len(roll) - 1)
         ev["roll"].append((b, 0.25 + 0.6 * u ** 1.3, True, 7.0 * u))
 
-    # 16-22.5 s: predict / pick / loop (snaps on 2 and 4; the open hats give way to the token ticks at 18 s)
+    # 16-22.5 s: predict / pick / loop (snaps on 2 and 4). From 20.0 s the answer tokens land every 7 frames
+    # (off the 16th grid): the hats and shaker step aside there so the picture-locked token ticks read cleanly.
+    # Velocities are always drawn so the seeded stream of the later sections does not move.
+    rng_h = np.random.default_rng(seed + 7)
     for b in range(32, 46):
         accent = b in (32, 35, 40)
         if b < 45:
@@ -238,14 +256,20 @@ def build(seed: int = 2401):
             ev["kick"].append((b, "big", 0.95))            # 22.5 s: the fill starts on a solid hit
         if b < 36:
             ev["hat_o"].append((b + 0.5, hum(0.76)))
+        elif b < 40:
+            ev["hat_o"].append((b + 0.5, float(0.7 * (1.0 + rng_h.uniform(-0.07, 0.07)))))
         if b < 44:
-            ev["hat_c"].append((b + 0.25, hum(0.34)))
-            ev["hat_c"].append((b + 0.75, hum(0.3)))
+            v1, v2 = hum(0.34), hum(0.3)
+            if b < 40:
+                ev["hat_c"].append((b + 0.25, v1))
+                ev["hat_c"].append((b + 0.75, v2))
         elif b == 44:
             ev["hat_c"].append((b + 0.25, hum(0.26)))       # 44.75 left empty: the fill hit lands clean
         if 36 <= b < 44:
-            for k, v in ((1, 0.28), (3, 0.34)):             # e / a only: the 8ths belong to the token ticks
-                ev["shaker"].append((b + k / 4, hum(v, 0.12)))
+            for k, v in ((1, 0.28), (3, 0.34)):
+                v = hum(v, 0.12)
+                if b < 40:
+                    ev["shaker"].append((b + k / 4, v))
         if (b % 2 == 1 and b < 45) or b == 45:
             ev["snap"].append((b, hum(0.78) if b < 45 else 0.85))
     ev["crash"] += [(32, "big", 0.62), (35, "small", 0.5), (40, "small", 0.55)]
@@ -405,15 +429,15 @@ def build(seed: int = 2401):
         ev["probs"].append((32.0 + i * 0.125, n2m(nm), 1.0 if i == 0 else 0.92 - 0.035 * i, 0.08 + 0.03 * i,
                             -0.6 + 1.2 * i / (len(probs) - 1)))
 
-    # 18-22 s: the answer grows one token at a time - an 8th-note tick per token, accent at 20.0 s
-    tick_notes = {"Cmaj7": ("E8", "G8", "B8", "G8"), "G": ("D8", "G8", "B8", "F#8")}
-    for i in range(16):
-        b = 36.0 + 0.5 * i
-        ch = chord_at(b)
-        m = n2m(tick_notes[ch][i % 4])
-        accent = b == CUE_BEATS["loop"]
-        v = 1.0 if accent else hum(0.55 + 0.012 * i + (0.08 if i % 2 == 0 else 0.0), 0.06)
-        ev["token"].append((b, m, v, accent, (-0.35, 0.35)[i % 2] * (0.4 + 0.6 * (i % 4 > 1))))
+    # 18-22 s: the answer grows one token at a time - one tick on the exact frame each chosen token LANDS in the
+    # answer box (land_frames(), ported from src/v01/scenes/predict/data.ts), rising through the chord as the
+    # answer grows; the last one (answer complete) is the long accent version. The 20.0 s loop accent stays
+    # (the "dagli" pick: no landing there). rng.uniform(size=15) keeps the seeded stream of later sections.
+    rng.uniform(-0.06, 0.06, 15)
+    lf = land_frames()
+    for s_, (fr, nm_, v, pan) in enumerate(zip(lf, LAND_NOTES, LAND_VELS, LAND_PANS)):
+        ev["token"].append((fr / 15.0, n2m(nm_), v, s_ == len(lf) - 1, pan))
+    ev["token"].append((float(CUE_BEATS["loop"]), n2m("D8"), 1.0, True, 0.0))
 
     # ------------------------------------------------- typing (hook): one tick per frame on which characters
     # appear (src/v01/scenes/hook/timing.ts CHAR_AT, mirrored below); the final "?" is the send accent at 1.5 s

@@ -3,7 +3,7 @@ import {useAbsFrame} from '../../../lib/frame';
 import {clamp, ease, hash, invLerp} from '../../../lib/math';
 import {alpha, COLORS, FONTS} from '../../../theme';
 import {ROW_Y, T} from './layout';
-import {layerXf} from './motion';
+import {layerXf, rowY} from './motion';
 
 const OLD = 'LA TUA DOMANDA';
 const NEW = 'TOKEN = PEZZO DI TESTO';
@@ -23,7 +23,7 @@ export const Labels: React.FC = () => {
 	const inA = ease.outCubic(invLerp(122, 134, abs));
 	const out = ease.inCubic(invLerp(214, 222, abs));
 	const op = inA * (1 - out);
-	const y = 548 - 128 + L.dy;
+	const y = rowY(0, abs) - 124 + L.dy;
 	const decoding = abs >= DECODE;
 	const len = decoding ? NEW.length : OLD.length;
 	const chars: React.ReactNode[] = [];

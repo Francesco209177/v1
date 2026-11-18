@@ -6,14 +6,14 @@ import {COLORS} from '../../../theme';
 import {tokenWidth} from '../../components/TokenChip';
 import {VP} from '../hook/timing';
 import {GAP, SIZE, SLOTS, T} from './layout';
-import {charAt, charX, departAt, FLIGHT, layerXf, scanBeam, splitP, toScreen} from './motion';
+import {charAt, charX, departAt, FLIGHT, layerXf, rowY, scanBeam, splitP, toScreen} from './motion';
 import {flightPos, flightU, PATHS} from './flight';
 import {HOP, netState, projectNet} from './net';
 
 /** Confini interni alle righe (tra due token consecutivi): lì si aprono le crepe di luce. */
 const BOUNDS = SLOTS.filter((s) => !s.first).map((s) => {
 	const a = SLOTS[s.i - 1];
-	return {a: a.i, b: s.i, y: s.y, packed: s.leftEdge, spread: a.sx + tokenWidth(a.text, SIZE) / 2 + GAP / 2};
+	return {a: a.i, b: s.i, row: s.row, packed: s.leftEdge, spread: a.sx + tokenWidth(a.text, SIZE) / 2 + GAP / 2};
 });
 
 /**
@@ -35,7 +35,7 @@ export const TokenLight: React.FC<{abs: number}> = ({abs}) => {
 					const t0 = charAt(s.i, j);
 					const d = abs - t0;
 					if (d < -7 || d > 6) continue;
-					const c = toScreen(abs, {x: charX(s.i, j), y: s.y});
+					const c = toScreen(abs, {x: charX(s.i, j), y: s.py});
 					if (d < 0) {
 						// in arrivo: dalla periferia verso il carattere
 						const e = ease.inQuad(1 - -d / 7);
@@ -66,8 +66,8 @@ export const TokenLight: React.FC<{abs: number}> = ({abs}) => {
 
 		// 2 · raggio del tokenizer + tacche sui confini
 		const beam = scanBeam(abs);
-		const top = toScreen(abs, {x: 0, y: SLOTS[0].y - 70}).y;
-		const bot = toScreen(abs, {x: 0, y: SLOTS[10].y + 70}).y;
+		const top = toScreen(abs, {x: 0, y: SLOTS[0].py - 70}).y;
+		const bot = toScreen(abs, {x: 0, y: SLOTS[10].py + 70}).y;
 		if (beam.a > 0.01) {
 			const g = ctx.createLinearGradient(0, top - 60, 0, bot + 60);
 			g.addColorStop(0, withAlpha(COLORS.orangeHot, 0));
@@ -85,7 +85,7 @@ export const TokenLight: React.FC<{abs: number}> = ({abs}) => {
 		const p = splitP(abs);
 		if (abs >= T.scan && abs < T.split + 26) {
 			for (const b of BOUNDS) {
-				const c = toScreen(abs, {x: lerp(b.packed, b.spread, p), y: b.y});
+				const c = toScreen(abs, {x: lerp(b.packed, b.spread, p), y: rowY(b.row, abs)});
 				// tacca lasciata dal raggio, poi crepa piena sul cue
 				const tick = abs < T.split ? clamp((beam.x - c.x) / 24) * 0.55 : 0;
 				const crack = abs >= T.split ? Math.exp(-(abs - T.split) / 4.5) : 0;
