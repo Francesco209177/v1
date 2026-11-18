@@ -59,6 +59,7 @@ TP_CEILING_DB = -1.9         # limiter ceiling on the 4x oversampled signal (spe
 FADE_START_S = 29.0
 SILENT_FROM_S = 29.94
 CUE = arr.CUE_BEATS
+SFX = arr.SFX_NOTES
 TAPE_STOP_S = 16.0
 TAPE_STOP_LEN = 0.42
 
@@ -110,12 +111,12 @@ MIX = {
     "lead":     (-12.5, 0.10, {"hall": 0.30}, "music"),
     "flourish": (-15.0, 0.00, {"hall": 0.30}, "music"),
     "bell":     (-15.0, 0.00, {"hall": 0.25, "big": 0.08}, "music"),
-    "ping":     (-15.0, 0.00, {"hall": 0.30, "big": 0.15}, "music"),
+    "ping":     (-16.5, 0.00, {"hall": 0.30, "big": 0.15}, "music"),
     "stab":     (-15.0, 0.00, {"hall": 0.25}, "music"),
     "sting":    (-12.0, 0.00, {"hall": 0.25, "big": 0.10}, "music"),
     "tick":     (-19.0, 0.00, {"room": 0.15}, "fx"),
     "notif":    (-14.0, 0.00, {"hall": 0.20}, "fx"),
-    "chime":    (-12.0, 0.00, {"hall": 0.25}, "fx"),
+    "chime":    (-13.5, 0.00, {"hall": 0.22}, "fx"),
     "sparkle":  (-21.0, 0.00, {"hall": 0.40}, "fx"),
     "boom":     (-9.5, 0.00, {}, "fx"),
     "tap":      (-12.0, 0.00, {"room": 0.15}, "fx"),
@@ -268,12 +269,11 @@ def render_hook_pulse(st: Stems):
     u = t / (t1 - t0)
     rng = np.random.default_rng(4410)
     x = np.zeros((n, 2))
-    for m, g, p in ((36, 1.0, 0.0), (48, 0.55, -0.4), (43, 0.45, 0.4)):
+    for m, g, p in zip((n2m(name) for name in SFX["hook_pulse"][1]), (1.0, 0.55, 0.45), (0.0, -0.4, 0.4)):
         for cents in (-6.0, 6.0):
             s = saw(mtof(m) * 2.0 ** (cents / 1200.0), n, rng.random())
             x += to_stereo(s * g, p * np.sign(cents))
     gate = np.zeros(n)
-    tt = t + t0
     step = 0.125
     k0 = int(np.ceil(0.25 / step))
     for k in range(k0, int(t1 / step)):
@@ -306,7 +306,8 @@ def render_pulse(ev, st: Stems):
 
 
 def render_alarm(st: Stems):
-    x = fx.alarm_pulse(2.0, 230)
+    g4, c5, ab4 = (n2m(x) for x in SFX["alarm"][1])
+    x = fx.alarm_pulse(2.0, 230, a=(g4, c5), b=(ab4, c5))
     x = voice_pocket(x, -5.0, 2400.0, 0.6)
     place(st.audio["alarm"], x, at(CUE["tap"]), 1.0)
 
@@ -418,7 +419,7 @@ def render_fx(st: Stems):
     nm = lambda names: [n2m(x) for x in names]  # noqa: E731
 
     # 0.2 s NOTIFICATION: crisp ping (the drone starts in render_harmony)
-    place(st.audio["notif"], fx.notif_ping(40), s2n(arr.CUE_T["notification"]), 1.0)
+    place(st.audio["notif"], fx.notif_ping(40, nm(SFX["notification"][1])), s2n(arr.CUE_T["notification"]), 1.0)
     place(st.audio["boom"], ins.thud(41, fc=380.0, tau=0.02), s2n(arr.CUE_T["notification"]), 0.25)
 
     # 2.0 s TAP -> RED ALARM: glass tap + distorted sub impact + crushed stutter (+ the alarm swell)
@@ -437,7 +438,7 @@ def render_fx(st: Stems):
     place(st.audio["downlift"], ins.downlifter(1.4, 213, f0=6000.0, f1=500.0), s, 0.5)
 
     # 3.5 s MESSAGE: short dark reverse swell into a low impact + 3D swoosh
-    sw = ins.reverse_swell(0.4, 349, midis=nm(("Ab3", "Eb4")), noise_gain=0.6, tone_gain=0.7, hp_hz=300.0,
+    sw = ins.reverse_swell(0.4, 349, midis=nm(SFX["message_swell"][1]), noise_gain=0.6, tone_gain=0.7, hp_hz=300.0,
                            lp_hz=4500.0)
     place(st.audio["swell"], sw, ends_at(sw, CUE["message"]) - s2n(0.018), 0.35)
     impact(st, CUE["message"], dict(f_start=95.0, f_end=38.0, tau_p=0.06, tau_a=0.6, dur=2.0, drive=1.6,
@@ -446,7 +447,7 @@ def render_fx(st: Stems):
 
     # 6.0 s REVEAL: the detuned sting is in the score; here: a crushed stutter of it + a digital 'zoom'
     s = at(CUE["reveal"])
-    sting = fx.reveal_sting(nm(("F2", "C3", "Ab3", "G4", "Ab4")), 600)
+    sting = fx.reveal_sting(nm(arr.REVEAL_STING), 600)
     stt = fx.stutter(sting, grain_s=0.022, pattern=(0.0, 0.0, 0.9, 0.0, 0.7, 0.0, 0.55, 0.45, 0.35, 0.25, 0.15),
                      step_s=0.03125, hold=7, bits=5, hp_hz=3500.0)
     place(st.audio["glitch"], stt, s, 1.0)
@@ -491,23 +492,25 @@ def render_fx(st: Stems):
     nr = apply_fades(lp(ins.noise_riser(dur, 1600, f0=400.0, f1=8000.0, curve=1.8, q=1.4, air=0.12), 10000.0, 2),
                      40.0, 15.0)
     place(st.audio["riser"], nr, at(CUE["shield"]) - len(nr) - s2n(0.05), 0.9)
-    tr = apply_fades(ins.tone_riser(dur, 1601, m0=n2m("Bb3"), m1=n2m("Bb5"), curve=1.5), 40.0, 15.0)
+    m0, m1 = nm(SFX["suck_riser"][1])
+    tr = apply_fades(ins.tone_riser(dur, 1601, m0=m0, m1=m1, curve=1.5), 40.0, 15.0)
     tr = lp(tr, 1800.0, 2)
     place(st.audio["riser"], tr, at(CUE["shield"]) - len(tr) - s2n(0.05), 0.4)
-    sw = ins.reverse_swell(0.7, 1602, midis=nm(("Bb4", "F5", "D6")), noise_gain=0.7, tone_gain=1.0, hp_hz=350.0,
+    sw = ins.reverse_swell(0.7, 1602, midis=nm(SFX["suck_swell"][1]), noise_gain=0.7, tone_gain=1.0, hp_hz=350.0,
                            lp_hz=9000.0, rt_scale=1.0)
     place(st.audio["swell"], sw, ends_at(sw, CUE["shield"]) - s2n(0.05), 0.55)
 
     # 17.0 s SHIELD: bright, protective, resolving (pad bloom, stab, flourish, sparkles in the score)
     impact(st, CUE["shield"], dict(f_start=105.0, f_end=38.9, tau_p=0.07, tau_a=0.7, dur=2.4, drive=1.2,
                                    snap=120.0), 0.75, 0.5, 0.22, seed=1700, thud_gain=0.5, air_lo=3000.0)
-    place(st.audio["shimmer"], ins.shimmer(nm(("Eb7", "G7", "Bb7", "D8")), 2.0, 1701, attack=0.01, tau=0.45),
+    place(st.audio["shimmer"], ins.shimmer(nm(SFX["shield_shimmer"][1]), 2.0, 1701, attack=0.01, tau=0.45),
           at(CUE["shield"]), 1.0)
     place(st.audio["bloom"], fx.shield_bloom(1702), at(CUE["shield"]), 1.0)
 
     # 17.5 / 19.0 / 21.0 s TIPS: clean confirm chimes rising Eb6 -> F6 -> G6, with a little low body
-    for i, (b, (m1, m2)) in enumerate(zip(arr.TIP_BEATS, (("Bb5", "Eb6"), ("Bb5", "F6"), ("C6", "G6")))):
-        place(st.audio["chime"], fx.confirm_chime(n2m(m1), n2m(m2), 1750 + i), at(b), 1.0)
+    for i, b in enumerate(arr.TIP_BEATS):
+        m1, m2 = nm(SFX[f"tip{i + 1}"][1])
+        place(st.audio["chime"], fx.confirm_chime(m1, m2, 1750 + i), at(b), 1.0)
         place(st.audio["boom"], ins.boom(120.0, 52.0, 0.03, 0.12, 0.6, 1.1, 120.0), at(b), 0.28)
         place(st.audio["impair"], ins.noise_burst(0.3, 1760 + i, 5000.0, 12000.0, 0.025), at(b), 0.35)
 
@@ -516,7 +519,7 @@ def render_fx(st: Stems):
     nr = apply_fades(lp(ins.noise_riser(dur, 2350, f0=600.0, f1=9000.0, curve=1.6, q=1.3, air=0.15), 10000.0, 2),
                      30.0, 12.0)
     place(st.audio["riser"], nr, at(CUE["destroy"]) - len(nr) - s2n(0.04), 0.9)
-    sw = ins.reverse_swell(0.5, 2351, midis=nm(("Bb5", "D6", "F6")), noise_gain=0.8, tone_gain=1.0, hp_hz=350.0,
+    sw = ins.reverse_swell(0.5, 2351, midis=nm(SFX["build_swell"][1]), noise_gain=0.8, tone_gain=1.0, hp_hz=350.0,
                            lp_hz=9000.0, rt_scale=1.0)
     place(st.audio["swell"], sw, ends_at(sw, CUE["destroy"]) - s2n(0.04), 0.55)
 
@@ -526,7 +529,7 @@ def render_fx(st: Stems):
                                     snap=170.0), 1.1, 0.8, 0.25, seed=2400, thud_gain=0.8)
     place(st.audio["boom"], fx.dist_impact(2403, dur=1.8, f_start=170.0, f_end=41.0, tau_p=0.05, tau_a=0.5, drive=2.0,
                                            hold=8, bits=6), s, 0.55)
-    sh = fx.shatter(2401, dur=1.2, tokens=nm(("Bb6", "F7", "D7", "Bb7", "F7", "D8", "Bb7", "F8", "D7", "Bb8")))
+    sh = fx.shatter(2401, dur=1.2, tokens=nm(SFX["shatter"][1]))
     place(st.audio["shatter"], sh, s, 1.0)
     stt = fx.stutter(sh, grain_s=0.02, pattern=(0.0, 0.0, 0.0, 0.0, 0.7, 0.0, 0.5, 0.0, 0.4, 0.3, 0.2),
                      step_s=0.03125, hold=5, bits=5, hp_hz=4000.0)
@@ -537,7 +540,7 @@ def render_fx(st: Stems):
     s = at(CUE["title"])
     impact(st, CUE["title"], dict(f_start=120.0, f_end=38.9, tau_p=0.06, tau_a=0.8, dur=2.6, drive=1.3,
                                   snap=150.0), 0.6, 0.7, 0.14, seed=2500, thud_gain=0.45, air_lo=3500.0)
-    place(st.audio["shimmer"], ins.shimmer(nm(("Eb7", "G7", "Bb7", "Eb8", "G8")), 1.6, 2501, attack=0.008, tau=0.35),
+    place(st.audio["shimmer"], ins.shimmer(nm(SFX["title_shimmer"][1]), 1.6, 2501, attack=0.008, tau=0.35),
           s, 0.9)
 
     # 28.0 s QUESTION: the ping is in the score (bells); a breath of air under it

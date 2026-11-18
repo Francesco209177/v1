@@ -170,7 +170,20 @@ export const Browser: React.FC<BrowserState> = (s) => {
 				>
 					<IconWarn size={28} color={C4.redBright} />
 					<span>
-						<span style={{color: C4.redBright, textShadow: `0 0 14px ${a4(C4.red, 0.55 + 0.3 * s.alert)}`}}>{domain.slice(0, nDom)}</span>
+						<span style={{color: C4.redBright, textShadow: `0 0 14px ${a4(C4.red, 0.55 + 0.3 * s.alert)}`}}>
+							{/* lo "0" al posto della "o": il carattere sosia si accende insieme all'etichetta */}
+							<span
+								style={{
+									color: tagS > 0.3 ? C4.white : C4.redBright,
+									borderRadius: 6,
+									background: a4(C4.red, 0.45 * clamp(tagS)),
+									boxShadow: `0 0 0 2px ${a4(C4.redHot, 0.9 * clamp(tagS))}`,
+								}}
+							>
+								{domain.slice(0, Math.min(1, nDom))}
+							</span>
+							{domain.slice(1, nDom)}
+						</span>
 						<span style={{color: a4(C4.red, 0.6)}}>{nDom < domain.length && s.addr > 0 ? scr : ''}</span>
 						<span style={{color: C4.grayDim, opacity: pathOn}}>{V4_FAKE.phishPath}</span>
 					</span>

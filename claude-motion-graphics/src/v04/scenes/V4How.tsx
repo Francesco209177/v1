@@ -83,8 +83,8 @@ export const V4How: React.FC = () => {
 	// dito: entra, si posa, preme sul cue 45, poi si solleva
 	const tIn = prog(f, T.touchIn, 16, ease.inOutCubic);
 	const touch = {
-		x: lerp(930, TAP.x + 8, tIn),
-		y: lerp(1330, TAP.y + 6, tIn),
+		x: lerp(1010, TAP.x + 8, tIn),
+		y: lerp(1170, TAP.y + 6, tIn),
 		scale: lerp(1.35, 1.08, tIn) - 0.28 * prog(f, T.tap - 2, 2) * (1 - prog(f, T.tap + 2, 6)),
 		opacity: prog(f, T.touchIn, 6) * (1 - prog(f, T.tap + 1, 6)),
 	};

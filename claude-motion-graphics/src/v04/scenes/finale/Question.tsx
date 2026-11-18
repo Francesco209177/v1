@@ -5,7 +5,7 @@ import {FONTS} from '../../../theme';
 import {a4, C4, glow4} from '../../theme';
 import {F, FL} from './timing';
 
-const SIZE = 122;
+const SIZE = 134;
 type QLine = {words: {t: string; accent?: boolean}[]};
 const QLINES: QLine[] = [{words: [{t: 'Tu'}, {t: 'avresti'}]}, {words: [{t: 'riconosciuto'}]}, {words: [{t: 'la'}, {t: 'truffa?', accent: true}]}];
 

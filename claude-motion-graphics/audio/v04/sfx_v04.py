@@ -165,7 +165,7 @@ def glitch_blip(midi: int, seed: int, dur: float = 0.03):
 # ----------------------------------------------------------------------------
 # 0.2 s NOTIFICATION, 2.0 s TAP / RED ALARM
 # ----------------------------------------------------------------------------
-def notif_ping(seed: int = 40):
+def notif_ping(seed: int = 40, midis=(87, 94)):
     """Original phone-notification-like ping: a crisp glass tick and two quick glassy FM tones
     rising a fifth (Eb6 -> Bb6, 55 ms apart), the second ringing a little (stereo, peak 1)."""
     rng = np.random.default_rng(seed)
@@ -174,7 +174,7 @@ def notif_ping(seed: int = 40):
     tick = hp(rng.standard_normal(n), 5500.0, 2) * np.exp(-t / 0.0005) * _attack(t, 0.0001)
     out = np.zeros((n, 2))
     out += np.stack([tick, np.roll(tick, 7)], axis=1) * 0.55
-    for t0, m, tau1, tau2, g, p in ((0.0, 87, 0.035, 0.09, 0.75, -0.12), (0.055, 94, 0.07, 0.38, 1.0, 0.12)):
+    for t0, m, tau1, tau2, g, p in ((0.0, midis[0], 0.035, 0.09, 0.75, -0.12), (0.055, midis[1], 0.07, 0.26, 1.0, 0.12)):
         a = s2n(t0)
         k = n - a
         tt = tarr(k)

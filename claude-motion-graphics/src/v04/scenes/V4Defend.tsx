@@ -45,7 +45,7 @@ const layout = (f: number) => {
 const shieldPose = (f: number, headY: number): Pose => {
 	const pop = 0.84 + 0.16 * ease.outBack(clamp((f + 1) / 9));
 	let p = mixPose({...SHIELD_POSE.intro, s: pop}, {x: 540, y: headY, s: SHIELD_POSE.headS}, ease.inOutCubic(clamp((f - 6) / 12)));
-	const pk = CHECKS.reduce((n, c) => n + hit(f, c, 8), 0) + 1.5 * hit(f, D.all, 10) + 0.8 * hit(f, D.absorb + 12, 8);
+	const pk = CHECKS.reduce((n, c) => n + hit(f, c, 8), 0) + 1.5 * hit(f, D.all, 10) + 0.8 * hit(f, D.absorb + 10, 8);
 	p = {...p, s: p.s * (1 + 0.06 * pk)};
 	p = mixPose(p, SHIELD_POSE.wind, ease.inOutCubic(clamp((f - (D.strike - 12)) / 12)));
 	const st = clamp((f - D.strike) / (D.end - D.strike));
@@ -114,7 +114,7 @@ export const V4Defend: React.FC = () => {
 	const pose = shieldPose(f, L.shieldY);
 	const checksDone = CHECKS.reduce((n, c) => n + ease.outCubic(clamp((f - c) / 8)), 0);
 	const fill = 0.25 * ease.outCubic(clamp((f - 2) / 10)) + 0.25 * checksDone;
-	const pulse = hit(f, D.shield, 14) + CHECKS.reduce((n, c) => n + hit(f, c, 10), 0) + 1.3 * hit(f, D.all, 12) + 0.8 * hit(f, D.absorb + 12, 10);
+	const pulse = hit(f, D.shield, 14) + CHECKS.reduce((n, c) => n + hit(f, c, 10), 0) + 1.3 * hit(f, D.all, 12) + 0.8 * hit(f, D.absorb + 10, 10);
 	const charge = clamp((f - (D.strike - 12)) / 18);
 	const scan = f < 18 ? (f - 1) / 14 : [...CHECKS, D.all].reduce((s, c) => (f >= c && f < c + 10 ? (f - c) / 9 : s), -1);
 	const allGlow = hit(f, D.all, 14);
@@ -127,11 +127,11 @@ export const V4Defend: React.FC = () => {
 		{at: D.all, x: 540, y: headY, power: 0.75, dur: 30, maxR: 1300},
 	];
 
-	const absorb = (i: number): number => clamp((f - (D.absorb + i * 3)) / 9);
+	const absorb = (i: number): number => clamp((f - (D.absorb + i * 2)) / 8);
 	const to = {x: 540, y: headY};
 
 	// luce di scansione a tutto schermo sul cue dello scudo
-	const sweep = prog(f, 0, 24, ease.inOutSine);
+	const sweep = prog(f, 0, 22, ease.outQuad);
 	return (
 		<AbsoluteFill>
 			<HexField f={f} cx={pose.x} cy={pose.y} base={0.1 + 0.05 * pulse} radius={340} waves={waves} />
@@ -141,11 +141,11 @@ export const V4Defend: React.FC = () => {
 						position: 'absolute',
 						left: 0,
 						width: 1080,
-						top: lerp(120, 1500, sweep) - 260,
+						top: lerp(330, 1560, sweep) - 260,
 						height: 260,
 						background: `linear-gradient(180deg, ${a4(C4.green, 0)} 0%, ${a4(C4.green, 0.07)} 70%, ${a4(C4.greenBright, 0.5)} 98%, ${a4(C4.greenHot, 0)} 100%)`,
 						mixBlendMode: 'screen',
-						opacity: 1 - sweep * 0.6,
+						opacity: clamp(sweep * 8) * (1 - sweep * 0.6),
 					}}
 				/>
 			) : null}

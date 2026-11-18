@@ -41,7 +41,7 @@ const Brackets: React.FC<{pad: number; opacity: number; pulse: number}> = ({pad,
  */
 export const Threat: React.FC<{f: number}> = ({f}) => {
 	if (f < D.threat - 1) return null;
-	const enter = prog(f, D.threat, 13, ease.outQuart);
+	const enter = prog(f, D.threat, 11, ease.outQuart);
 	const rotX = 28 * (1 - enter);
 	const dy = (1 - enter) * 420;
 	const lock = prog(f, D.lock - 7, 7, ease.inOutCubic);

@@ -108,10 +108,10 @@ export const Title: React.FC<{f: number}> = ({f}) => {
 			) : null}
 			{/* flare orizzontale sul primo colpo */}
 			{flare > 0.02 ? (
-				<div style={{position: 'absolute', left: -100, width: 1280, top: 772 - 5, height: 10, background: `linear-gradient(90deg, ${a4(C4.green, 0)}, ${a4(C4.greenHot, 0.85 * flare)}, ${a4(C4.green, 0)})`, transform: `scaleX(${0.4 + 0.8 * (1 - flare)})`, mixBlendMode: 'screen'}} />
+				<div style={{position: 'absolute', left: -100, width: 1280, top: 846 - 4, height: 8, background: `linear-gradient(90deg, ${a4(C4.green, 0)}, ${a4(C4.greenHot, 0.85 * flare)}, ${a4(C4.green, 0)})`, transform: `scaleX(${0.4 + 0.8 * (1 - flare)})`, mixBlendMode: 'screen'}} />
 			) : null}
 			{pensa > 0.02 ? (
-				<div style={{position: 'absolute', left: -100, width: 1280, top: 1088 - 6, height: 12, background: `linear-gradient(90deg, ${a4(C4.green, 0)}, ${a4(C4.greenHot, 0.9 * pensa)}, ${a4(C4.green, 0)})`, transform: `scaleX(${0.4 + 0.9 * (1 - pensa)})`, mixBlendMode: 'screen'}} />
+				<div style={{position: 'absolute', left: -100, width: 1280, top: 1186 - 5, height: 10, background: `linear-gradient(90deg, ${a4(C4.green, 0)}, ${a4(C4.greenHot, 0.9 * pensa)}, ${a4(C4.green, 0)})`, transform: `scaleX(${0.4 + 0.9 * (1 - pensa)})`, mixBlendMode: 'screen'}} />
 			) : null}
 			{LINES.map((l, i) => (
 				<SlamLine key={i} f={f} line={l} />

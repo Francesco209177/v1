@@ -134,6 +134,26 @@ LEAD_PHRASES = [
 ]
 FLOURISH = (34.0, ("Bb4", "Eb5", "G5", "Bb5", "Eb6"), 0.09375)  # shield arpeggio, 17.0-17.19 s (gap)
 
+# Pitched sound design (rendered by synth_v04.render_fx from here), checked against the key / chord of
+# the beat given (for reversed swells: the chord they resolve into).
+SFX_NOTES = {
+    "notification": (0.4, ("Eb6", "Bb6")),                  # crisp ping: a rising fifth over Cm
+    "hook_pulse": (0.4, ("C2", "C3", "G2")),                # 16th-gated saw cluster, filter opening to 2.0 s
+    "alarm": (4.0, ("G4", "C5", "Ab4")),                    # dyads G4+C5 / Ab4+C5 on 8ths (Ab = upper neighbour)
+    "message_swell": (7.0, ("Ab3", "Eb4")),                 # reverse swell into the Ab chord
+    "suck_swell": (33.0, ("Bb4", "F5", "D6")),              # suck-back on Bb (V of Eb)
+    "suck_riser": (33.0, ("Bb3", "Bb5")),                   # tone riser gliding Bb3 -> Bb5
+    "shield_shimmer": (34.0, ("Eb7", "G7", "Bb7", "D8")),
+    "tip1": (35.0, ("Bb5", "Eb6")),                         # confirm chimes, the top note climbs Eb6 - F6 - G6
+    "tip2": (38.0, ("Bb5", "F6")),
+    "tip3": (42.0, ("C6", "G6")),
+    "build_swell": (48.0, ("Bb5", "D6", "F6")),             # reverse swell into the destroy (Bb)
+    "shatter": (48.0, ("Bb6", "F7", "D7", "Bb7", "F7", "D8", "Bb7", "F8", "D7", "Bb8")),
+    "title_shimmer": (50.0, ("Eb7", "G7", "Bb7", "Eb8", "G8")),
+}
+SFX_SCALE_ONLY = ("alarm", "suck_riser")                    # neighbour notes / glides: key check only
+REVEAL_STING = ("F2", "C3", "Ab3", "G4", "Ab4")             # 6.0 s: Fm with the 9th rubbing against Ab on top
+
 
 def chord_at(beat: float) -> str:
     for b0, b1, ch, _ in HARMONY:
@@ -350,7 +370,7 @@ def build(seed: int = 2404):
     for b, notes, v, bright in stabs:
         ev["stab"].append((b, [n2m(x) for x in notes], v, bright))
     # 6.0 s reveal: the sour sting over Fm (F + C + Ab, with the 9th G rubbing against Ab on top)
-    ev["sting"].append((12, [n2m(x) for x in ("F2", "C3", "Ab3", "G4", "Ab4")], 1.0))
+    ev["sting"].append((12, [n2m(x) for x in REVEAL_STING], 1.0))
 
     # ------------------------------------------------------------------ lead (voice gaps only) + flourish
     for b0, style, notes in LEAD_PHRASES:
@@ -472,6 +492,11 @@ def report(ev=None) -> bool:
         seg = segment_at(e[0])
         if e[2] != n2m(seg[3]):
             bad_chord.append(("sub", e[0] / 2, nn(e[2]), seg[2]))
+    print("\nPITCHED SOUND DESIGN")
+    for name, (b, names) in SFX_NOTES.items():
+        print(f"   {name:15s} {b / 2:5.2f}s over {chord_at(b):3s}: {' '.join(names)}")
+        for x in names:
+            check("sfx", b, n2m(x), chord_check=name not in SFX_SCALE_ONLY)
     lead_in_vo = [(round(e[0] / 2, 3), nn(e[2])) for e in ev["lead"] if in_vo(e[0] / 2)]
     lead_into_vo = [(round(e[0] / 2, 3), nn(e[2])) for e in ev["lead"]
                     if any(e[0] / 2 < a < (e[0] + e[1]) / 2 for a, _ in VO)]

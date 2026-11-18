@@ -21,6 +21,6 @@ export const FL = {
 	titleCenter: 950, // centro del blocco titolo (3 righe)
 	titleEnd: 536, // centro del titolo ridotto nel cartello finale
 	titleEndScale: 0.4,
-	questionY: [772, 900, 1028] as const,
+	questionY: [770, 906, 1042] as const,
 	noteY: 1186,
 } as const;

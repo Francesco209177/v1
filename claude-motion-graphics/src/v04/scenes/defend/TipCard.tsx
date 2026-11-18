@@ -121,6 +121,8 @@ export const TipCard: React.FC<{
 					fontSize: 24,
 					lineHeight: `${QUAL_LH}px`,
 					whiteSpace: 'pre-line',
+					paddingLeft: 29,
+					textIndent: -29,
 					color: C4.gray,
 					opacity: contentA,
 				}}

@@ -27,10 +27,10 @@ export const T = {
 export const WIN = {w: 880, h: 900} as const;
 export const L = {
 	btn: {x: 40, y: 598, w: 800, h: 88},
-	tip: {x: 205, y: 708, w: 470, h: 96},
+	tip: {x: 182, y: 708, w: 516, h: 96},
 	title: {x: 40, y: 376, w: 760, h: 58},
 	sender: {x: 150, y: 140},
-	cursorRest: {x: 528, y: 652},
+	cursorRest: {x: 592, y: 656},
 } as const;
 
 export const DEG = Math.PI / 180;
@@ -61,17 +61,17 @@ export const exitP = (a: number): number => ease.inCubic(invLerp(T.exit, T.exit 
 
 const REST = {x: 540, y: 738};
 const FOCUS = {x: WIN.w / 2, y: 700}; // tra pulsante e indirizzo
-const FOCUS_SCREEN = {x: 540, y: 790};
+const FOCUS_SCREEN = {x: 540, y: 812};
 const ZOOM = 1.75;
 
 /** Posa della finestra e-mail nel frame assoluto a. */
 export const winPose = (a: number): WinPose => {
 	// arrivo dalla profondità: ancora in moto a 105, poi rimbalzo d'impatto
 	const u = invLerp(T.start - 1, T.message, a);
-	const e = 0.55 * ease.outCubic(u) + 0.45 * u;
+	const e = 0.4 * ease.outCubic(u) + 0.6 * u;
 	const t = a - T.message;
 	const settle = t >= 0 ? 0.04 * Math.exp(-t / 3.5) * Math.cos(t * 0.55) : 0;
-	let scale = a < T.message ? lerp(0.3, 1.04, e) : 1 + settle;
+	let scale = a < T.message ? lerp(0.22, 1.04, e) : 1 + settle;
 	let rotX = a < T.message ? lerp(38, 7, e) : 7;
 	let rotY = a < T.message ? lerp(-34, -11, e) : -11;
 	let x = a < T.message ? lerp(610, REST.x, e) : REST.x;

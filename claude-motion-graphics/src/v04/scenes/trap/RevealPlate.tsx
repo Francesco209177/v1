@@ -9,17 +9,20 @@ import {PhishDomain} from './Addr';
 import {T} from './timing';
 
 /** Targa dell'indirizzo (coordinate di schermo a riposo). */
-const P = {cx: 540, cy: 660, w: 900, h: 232} as const;
+const P = {cx: 540, cy: 700, w: 940, h: 236} as const;
 const PL = P.cx - P.w / 2;
 const PT = P.cy - P.h / 2;
 /** Metriche del mono: avanzamento 0,6 em. */
 const URL_X = 30;
 const HTTP_FS = 34;
-const DOM_FS = 50;
+const DOM_FS = 54;
 const DOM_X = URL_X + 8 * 0.6 * HTTP_FS; // inizio del dominio (locale)
-const ZERO = {x: DOM_X + 0.3 * DOM_FS, y: 106}; // centro dello zero (locale)
+const ZERO = {x: DOM_X + 0.3 * DOM_FS, y: 108}; // centro dello zero (locale)
 const DOM_W = V4_FAKE.phishDomain.length * 0.6 * DOM_FS;
-const UNDER_Y = 136; // sottolineatura (locale)
+const UNDER_Y = 140; // sottolineatura (locale)
+/** Righe delle note (schermo). */
+const N1_Y = PT - 132;
+const N2_Y = PT + P.h + 70;
 
 const Body: React.FC<{a: number}> = ({a}) => {
 	const zk = prog(a, T.reveal, 6, ease.outCubic);
@@ -39,7 +42,7 @@ const Body: React.FC<{a: number}> = ({a}) => {
 					<PhishDomain k={zk} />
 				</span>
 			</div>
-			<div style={{position: 'absolute', left: URL_X, top: 150, fontFamily: FONTS.mono, fontSize: 32, color: C4.gray, whiteSpace: 'nowrap'}}>{V4_FAKE.phishPath}</div>
+			<div style={{position: 'absolute', left: URL_X, top: 156, fontFamily: FONTS.mono, fontSize: 32, color: C4.gray, whiteSpace: 'nowrap'}}>{V4_FAKE.phishPath}</div>
 			{/* sottolineatura rossa del dominio */}
 			{under > 0.001 ? (
 				<div style={{position: 'absolute', left: DOM_X, top: UNDER_Y, width: DOM_W, height: 4, borderRadius: 2, background: C4.redBright, transformOrigin: '0 50%', transform: `scaleX(${under})`, boxShadow: `0 0 14px ${a4(C4.red, 0.9)}`}} />
@@ -120,20 +123,20 @@ export const RevealPlate: React.FC<{a: number; from: {x: number; y: number}; bac
 			</AbsoluteFill>
 			{/* nota 1: lo zero al posto della "o" */}
 			{lead1 > 0.001 && n1 > 0.001 ? (
-				<div style={{position: 'absolute', left: zx - 1.5, top: 492, width: 3, height: (PT + ZERO.y - 44 - 492) * lead1, background: C4.redBright, opacity: n1, boxShadow: `0 0 10px ${a4(C4.red, 0.8)}`}} />
+				<div style={{position: 'absolute', left: zx - 1.5, top: N1_Y + 54, width: 3, height: (PT + ZERO.y - 44 - (N1_Y + 54)) * lead1, background: C4.redBright, opacity: n1, boxShadow: `0 0 10px ${a4(C4.red, 0.8)}`}} />
 			) : null}
 			{n1 > 0.001 ? (
-				<div style={{position: 'absolute', left: zx - 13, top: 436, opacity: n1, transform: `translateY(${(1 - n1) * 14}px)`, fontFamily: FONTS.body, fontWeight: 600, fontSize: 36, color: C4.white, whiteSpace: 'nowrap', textShadow: '0 2px 16px rgba(0,0,0,0.8)'}}>
+				<div style={{position: 'absolute', left: zx - 13, top: N1_Y, opacity: n1, transform: `translateY(${(1 - n1) * 14}px)`, fontFamily: FONTS.body, fontWeight: 600, fontSize: 36, color: C4.white, whiteSpace: 'nowrap', textShadow: '0 2px 16px rgba(0,0,0,0.8)'}}>
 					<span style={{fontFamily: FONTS.mono, color: C4.redBright}}>0</span>
 					<span style={{color: C4.redHot}}> (zero)</span> al posto della «<span style={{fontFamily: FONTS.mono}}>o</span>»
 				</div>
 			) : null}
 			{/* nota 2: dominio diverso */}
 			{lead2 > 0.001 && n2 > 0.001 ? (
-				<div style={{position: 'absolute', left: domCx - 1.5, top: PT + UNDER_Y + 10, width: 3, height: (812 - (PT + UNDER_Y + 10) - 8) * lead2, background: C4.redBright, opacity: n2, boxShadow: `0 0 10px ${a4(C4.red, 0.8)}`}} />
+				<div style={{position: 'absolute', left: domCx - 1.5, top: PT + UNDER_Y + 10, width: 3, height: (N2_Y - (PT + UNDER_Y + 10) - 8) * lead2, background: C4.redBright, opacity: n2, boxShadow: `0 0 10px ${a4(C4.red, 0.8)}`}} />
 			) : null}
 			{n2 > 0.001 ? (
-				<div style={{position: 'absolute', left: domCx, top: 812, opacity: n2, transform: `translateX(-50%) translateY(${(1 - n2) * -12}px)`, fontFamily: FONTS.body, fontWeight: 600, fontSize: 34, color: C4.white, whiteSpace: 'nowrap', textShadow: '0 2px 16px rgba(0,0,0,0.8)'}}>
+				<div style={{position: 'absolute', left: domCx, top: N2_Y, opacity: n2, transform: `translateX(-50%) translateY(${(1 - n2) * -12}px)`, fontFamily: FONTS.body, fontWeight: 600, fontSize: 34, color: C4.white, whiteSpace: 'nowrap', textShadow: '0 2px 16px rgba(0,0,0,0.8)'}}>
 					dominio diverso da <span style={{fontFamily: FONTS.mono, fontWeight: 500, color: C4.greenBright}}>orbyx.example</span>
 				</div>
 			) : null}

@@ -6,7 +6,7 @@ import {a4, C4} from '../../theme';
 import {V4_FAKE} from '../../timeline';
 import {WarnGlyph} from '../hook/glyphs';
 import {PhishDomain} from './Addr';
-import {L, PERSP, revealP, T, WIN, type WinPose} from './timing';
+import {L, PERSP, revealP, T, WIN, type WinPose, zoomP} from './timing';
 
 const MONO_LABEL: React.CSSProperties = {fontFamily: FONTS.mono, fontSize: 25, letterSpacing: '0.14em', textTransform: 'uppercase'};
 
@@ -96,7 +96,8 @@ export const MailWindow: React.FC<{a: number; pose: WinPose}> = ({a, pose}) => {
 	const fU = prog(a, T.flagUrgency, 8, ease.outBack);
 	const fS = prog(a, T.flagSender, 8, ease.outBack);
 	const fUb = prog(a, T.flagUrgency - 1, 9, ease.outCubic);
-	const dim = 0.7 * revealP(a);
+	const dim = 0.86 * revealP(a);
+	const zf = zoomP(a); // messa a fuoco: il resto della finestra si scurisce
 	const warnEdge = Math.max(dock, fUb);
 	return (
 		<div style={{position: 'absolute', left: pose.x, top: pose.y, width: 0, height: 0, perspective: PERSP, opacity: pose.opacity}}>
@@ -147,7 +148,7 @@ export const MailWindow: React.FC<{a: number; pose: WinPose}> = ({a, pose}) => {
 						</svg>
 						Posta in arrivo
 					</div>
-					<div style={{position: 'absolute', right: 38, top: 21, ...MONO_LABEL, letterSpacing: '0.06em', color: C4.grayDim}}>09:41</div>
+					<div style={{position: 'absolute', right: 38, top: 21, ...MONO_LABEL, letterSpacing: '0.06em', color: C4.grayDim, opacity: 1 - clamp(fS * 3)}}>09:41</div>
 					{/* intestazione: mittente e oggetto */}
 					<div style={{position: 'absolute', left: 40, top: 98, ...MONO_LABEL, letterSpacing: '0.04em', textTransform: 'none', color: C4.gray}}>Da:</div>
 					<div style={{position: 'absolute', left: 176, top: 88, display: 'flex', alignItems: 'center', gap: 12}}>
@@ -236,11 +237,13 @@ export const MailWindow: React.FC<{a: number; pose: WinPose}> = ({a, pose}) => {
 							}}
 						>
 							<div style={{position: 'absolute', left: L.cursorRest.x - L.tip.x - 10, top: -9, width: 16, height: 16, background: '#0A0D0E', borderLeft: `1.5px solid ${a4(dock > 0.01 ? C4.red : C4.white, 0.2 + 0.5 * dock)}`, borderTop: `1.5px solid ${a4(dock > 0.01 ? C4.red : C4.white, 0.2 + 0.5 * dock)}`, transform: 'rotate(45deg)'}} />
-							<div>
-								https://
-								<PhishDomain k={dock} color={dock > 0.02 ? C4.redBright : C4.white} />
+							<div style={{opacity: 1 - revealP(a)}}>
+								<div>
+									https://
+									<PhishDomain k={dock} color={dock > 0.02 ? C4.redBright : C4.white} />
+								</div>
+								<div style={{color: C4.gray}}>{V4_FAKE.phishPath}</div>
 							</div>
-							<div style={{color: C4.gray}}>{V4_FAKE.phishPath}</div>
 						</div>
 					) : null}
 					<Brackets x={L.tip.x - 16} y={L.tip.y - 16} w={L.tip.w + 32} h={L.tip.h + 32} k={lock} color={lockRed > 0.5 ? C4.redBright : C4.white} />
@@ -250,7 +253,7 @@ export const MailWindow: React.FC<{a: number; pose: WinPose}> = ({a, pose}) => {
 					<Flag k={fU} style={{right: 40, top: 290}}>
 						URGENZA
 					</Flag>
-					<Flag k={fS} style={{right: 40, top: 89}}>
+					<Flag k={fS} style={{right: 34, top: 11}}>
 						MITTENTE SOSPETTO
 					</Flag>
 					{/* riflesso che attraversa il vetro all'impatto */}
@@ -266,6 +269,9 @@ export const MailWindow: React.FC<{a: number; pose: WinPose}> = ({a, pose}) => {
 								background: 'linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.10) 50%, rgba(255,255,255,0) 100%)',
 							}}
 						/>
+					) : null}
+					{zf > 0.01 ? (
+						<div style={{position: 'absolute', inset: 0, background: `radial-gradient(62% 22% at 50% 78%, rgba(4,5,6,0) 0%, rgba(4,5,6,0) 55%, rgba(4,5,6,${0.72 * zf}) 100%)`}} />
 					) : null}
 					<Cursor x={cx} y={cy} opacity={cOp} />
 					{/* la finestra si scurisce quando la targa è in primo piano */}

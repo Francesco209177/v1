@@ -10,8 +10,9 @@ balance + stereo, the share of energy in the 1-4 kHz voice band inside / outside
 windows (final narration), a click scan and narrow resonances in 1.5-6 kHz.
 --score  also prints the note / chord names per bar and the in-key check (arrangement_v04.report()).
 --png    also renders spectrogram + waveform PNGs into out/audio/v04/ with ffmpeg.
---vo     also places the (scratch) narration clips of public/v04/vo at the final voice windows and
-         reports the voice-to-music ratio in 1-4 kHz with the music ducked 8 dB.
+--vo     also places the final narration clips (public/v04/vo_enea, ElevenLabs take; falls back to the
+         scratch clips of public/v04/vo) at the voice windows and reports the voice-to-music ratio in
+         1-4 kHz with the music ducked 8 dB.
 """
 from __future__ import annotations
 
@@ -342,9 +343,11 @@ def main():
 
 
 def vo_check(x, sr, music_band):
-    """Stand-in narration: the scratch clips of public/v04/vo placed at the final windows' starts,
+    """Narration check: the final clips (public/v04/vo_enea, placed untrimmed at the window starts, as
+    audio/v04_plan_enea.json does) or, if missing, the scratch clips of public/v04/vo (trimmed);
     voice at -16 LUFS, music at its own level ducked 8 dB; voice-to-music ratio in 1-4 kHz per line."""
-    vdir = os.path.join(ROOT, "public", "v04", "vo")
+    final = os.path.isdir(os.path.join(ROOT, "public", "v04", "vo_enea"))
+    vdir = os.path.join(ROOT, "public", "v04", "vo_enea" if final else "vo")
     n = len(x)
     voice = np.zeros(n)
     for fn, (t0, _) in zip(VO_FILES, VO):
@@ -359,9 +362,10 @@ def vo_check(x, sr, music_band):
             v = v.mean(axis=1)
         if vsr != sr:
             v = signal.resample_poly(v, sr, vsr)
-        e = np.abs(v)
-        idx = np.flatnonzero(e > e.max() * 10 ** (-45 / 20))
-        v = v[max(0, idx[0] - int(0.015 * sr)): idx[-1] + int(0.015 * sr)]
+        if not final:
+            e = np.abs(v)
+            idx = np.flatnonzero(e > e.max() * 10 ** (-45 / 20))
+            v = v[max(0, idx[0] - int(0.015 * sr)): idx[-1] + int(0.015 * sr)]
         a = int(t0 * sr)
         m = min(len(v), n - a)
         voice[a:a + m] += v[:m]
@@ -369,7 +373,8 @@ def vo_check(x, sr, music_band):
     voice *= 10 ** ((-16.0 - vl) / 20)
     vband = signal.sosfilt(signal.butter(4, [1000, 4000], "band", fs=sr, output="sos"), voice)
     duck = 10 ** (-8 / 20)
-    print("\nVO CHECK (scratch narration clips placed at the FINAL windows; voice -16 LUFS, music ducked 8 dB)")
+    print(f"\nVO CHECK ({'final narration public/v04/vo_enea' if final else 'scratch clips public/v04/vo'} at the "
+          f"final windows; voice -16 LUFS, music ducked 8 dB)")
     rows = []
     for a, b in VO:
         sa, sb_ = int(a * sr), int(b * sr)
