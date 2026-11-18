@@ -16,7 +16,7 @@ const SIZE = 118;
 export const Question: React.FC<{f: number}> = ({f}) => {
 	const abs = useAbsFrame();
 	const d = f - R.question;
-	if (d < -3) return null;
+	if (d < -8) return null;
 	const flash = hit(f, R.question, 14);
 	const pulse = beatPulse(abs, 4);
 	const H = SIZE * 1.3;
@@ -57,7 +57,7 @@ export const Question: React.FC<{f: number}> = ({f}) => {
 				}}
 			>
 				{WORDS.map((w, i) => {
-					const p = prog(d, -2 + i * 3, 12, ease.outQuint);
+					const p = prog(d, -7 + i * 3, 12, ease.outQuint);
 					const last = i === WORDS.length - 1;
 					return (
 						<span key={i} style={{display: 'inline-block', overflow: p < 1 ? 'hidden' : 'visible', height: H, padding: '0 0.04em', margin: '0 -0.04em'}}>

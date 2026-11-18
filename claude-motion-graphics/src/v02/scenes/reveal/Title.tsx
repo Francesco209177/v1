@@ -6,13 +6,13 @@ import {LAYOUT, R} from './timing';
 
 type Line = {words: string[]; accent: string; size: number; y: number; at: number};
 const LINES: Line[] = [
-	{words: ['LA', 'TUA', 'AI.'], accent: 'TUA', size: 150, y: LAYOUT.titleY1, at: R.title},
+	{words: ['LA', 'TUA', 'AI.'], accent: 'TUA', size: 158, y: LAYOUT.titleY1, at: R.title},
 	{words: ['SUL', 'TUO', 'COMPUTER.'], accent: 'TUO', size: 79, y: LAYOUT.titleY2, at: R.title + 4},
 ];
 const CENTER = (LAYOUT.titleY1 + LAYOUT.titleY2) / 2;
 
 /** Progresso del passaggio alla domanda finale: il titolo sale, si rimpicciolisce e si attenua. */
-export const takeover = (f: number): number => ease.inOutCubic(clamp((f - (R.question - 5)) / 20));
+export const takeover = (f: number): number => ease.inOutCubic(clamp((f - (R.question - 16)) / 16));
 
 /** Una riga del titolo: lettere che salgono da una maschera (1 frame di sfalsamento), tracking che si apre piano, lama di luce. */
 const TitleLine: React.FC<{f: number; line: Line}> = ({f, line}) => {
@@ -37,8 +37,8 @@ const TitleLine: React.FC<{f: number; line: Line}> = ({f, line}) => {
 								style={{
 									display: 'inline-block',
 									transform: overlay ? undefined : `translateY(${(1 - p) * H * 0.95}px) rotate(${(1 - p) * 6}deg)`,
-									color: overlay ? COLORS.white : isAccent ? COLORS.orange : COLORS.white,
-									textShadow: overlay ? textGlow(COLORS.orangeHot, 0.9) : isAccent ? textGlow(COLORS.orange, 0.8) : '0 4px 30px rgba(0,0,0,0.6)',
+									color: overlay ? COLORS.orangeHot : isAccent ? COLORS.orange : COLORS.white,
+									textShadow: overlay ? `0 0 6px ${COLORS.white}, ${textGlow(COLORS.orangeBright, 1.6)}` : isAccent ? textGlow(COLORS.orange, 0.8) : '0 4px 30px rgba(0,0,0,0.6)',
 								}}
 							>
 								{ch}
@@ -139,10 +139,8 @@ export const Footnote: React.FC<{f: number}> = ({f}) => {
 	const typed = Math.floor(clamp(d / 22) * total);
 	let left = typed;
 	const y = lerp(LAYOUT.noteY, LAYOUT.endNoteY, q);
-	const line = prog(d, 0, 14, ease.outQuart);
 	return (
 		<div style={{position: 'absolute', left: 0, width: WIDTH, top: y, transform: 'translateY(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4}}>
-			<div style={{width: 64 * line, height: 2, marginBottom: 10, background: alpha(COLORS.orange, 0.7)}} />
 			{NOTE.map((t, i) => {
 				const s = t.slice(0, Math.max(0, left));
 				left -= t.length;

@@ -5,7 +5,8 @@ import {clamp, ease, invLerp} from '../../lib/math';
 import {Laptop} from '../components/Laptop';
 import {ChatScreen} from './hook/ChatScreen';
 import {DiveVeil, WarpStreaks} from './hook/DiveFX';
-import {hookPose, zoomSpeed} from './hook/pose';
+import {hookPose, PROXY_FROM, zoomSpeed} from './hook/pose';
+import {ScreenProxy} from './hook/ScreenProxy';
 import {TextPixels} from './hook/TextPixels';
 import {linkLed, plugOut, UNPLUG} from './hook/timing';
 import {OfflineBadge, UnplugFX} from './hook/UnplugFX';
@@ -26,16 +27,21 @@ export const V2Hook: React.FC = () => {
 		<AbsoluteFill>
 			<div style={{position: 'absolute', inset: 0, filter: blur > 0.3 ? `blur(${blur}px)` : undefined}}>
 				<Laptop {...pose} screenGlow={glow} plugOut={plugOut(f)} spark={spark} linkLed={linkLed(f)}>
-					<ChatScreen f={f} />
+					{f < PROXY_FROM ? <ChatScreen f={f} /> : null}
 				</Laptop>
+				{f >= PROXY_FROM ? (
+					<ScreenProxy pose={pose}>
+						<ChatScreen f={f} />
+					</ScreenProxy>
+				) : null}
 			</div>
 			<UnplugFX f={f} />
 			<OfflineBadge f={f} />
 			<TextPixels f={f} />
-			<DiveVeil abs={abs} />
-			<WarpStreaks abs={abs} />
 			{/* vignettatura extra durante il tuffo: concentra lo sguardo al centro */}
 			<AbsoluteFill style={{pointerEvents: 'none', background: `radial-gradient(75% 60% at 50% 35%, rgba(5,5,5,0) 55%, rgba(5,5,5,${0.5 * clamp(invLerp(88, 98, f))}) 100%)`}} />
+			<DiveVeil abs={abs} />
+			<WarpStreaks abs={abs} />
 		</AbsoluteFill>
 	);
 };

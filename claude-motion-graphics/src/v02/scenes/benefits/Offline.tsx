@@ -1,5 +1,5 @@
 import React from 'react';
-import {clamp, ease, hit, prog} from '../../../lib/math';
+import {clamp, ease, hit, lerp, prog} from '../../../lib/math';
 import {alpha, COLORS, FONTS} from '../../../theme';
 import {Keyword} from './Keyword';
 import {CX, SLASH} from './layout';
@@ -38,14 +38,18 @@ const ChatBubble: React.FC<{f: number}> = ({f}) => {
 	const done = typed >= LINES.join('').length;
 	const caretOn = Math.floor(f / 6) % 2 === 0 || !done;
 	const thinking = f < TYPE_AT;
+	// la bolla nasce compatta (solo i tre puntini) e si allarga/alza mentre la risposta arriva
+	const line2At = TYPE_AT + LINES[0].length / CPS;
+	const w = lerp(132, BUBBLE.w, prog(f, TYPE_AT - 1, 8, ease.outCubic));
+	const h = lerp(82, BUBBLE.h, prog(f, line2At - 1, 6, ease.outCubic));
 	return (
 		<div
 			style={{
 				position: 'absolute',
 				left: BUBBLE.x,
-				top: BUBBLE.y,
-				width: BUBBLE.w,
-				height: BUBBLE.h,
+				top: BUBBLE.y + BUBBLE.h - h,
+				width: w,
+				height: h,
 				transformOrigin: '0% 100%',
 				transform: `scale(${0.4 + 0.6 * pop})`,
 				opacity: clamp(pop * 2),
@@ -60,7 +64,7 @@ const ChatBubble: React.FC<{f: number}> = ({f}) => {
 					boxShadow: `inset 0 0 0 1.5px ${alpha(COLORS.orange, 0.45)}, 0 0 40px ${alpha(COLORS.orange, 0.18)}, 0 18px 40px rgba(0,0,0,0.5)`,
 				}}
 			/>
-			<div style={{position: 'absolute', left: 26, top: 20, right: 20, fontFamily: FONTS.body, fontWeight: 500, fontSize: 30, lineHeight: '42px', color: COLORS.white}}>
+			<div style={{position: 'absolute', left: 26, top: 20, width: w - 40, height: h - 40, overflow: 'hidden', whiteSpace: 'nowrap', fontFamily: FONTS.body, fontWeight: 500, fontSize: 30, lineHeight: '42px', color: COLORS.white}}>
 				{thinking ? (
 					<div style={{display: 'flex', gap: 12, height: 42, alignItems: 'center'}}>
 						{[0, 1, 2].map((i) => {

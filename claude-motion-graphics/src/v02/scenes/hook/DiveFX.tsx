@@ -15,14 +15,18 @@ const PEAK = 104.5;
  * Velo di luce: prima un nucleo incandescente che si allarga fino a riempire il quadro (picco tra 104 e 105),
  * poi la luce si dissolve e si richiude verso il centro, dove nasce la rete neurale.
  */
-export const diveVeil = (abs: number): {a: number; r: number} => {
+export const diveVeil = (abs: number): {a: number; r: number; heat: number} => {
 	if (abs < PEAK) {
 		const t = clamp((abs - 92) / (PEAK - 92));
-		return {a: t <= 0 ? 0 : Math.min(0.97, 0.3 + 0.75 * t), r: 160 + 2300 * t ** 2.2};
+		return {a: t <= 0 ? 0 : Math.min(0.97, 0.3 + 0.75 * t), r: 160 + 2300 * t ** 2.2, heat: 1};
 	}
+	// la luce si condensa in un nucleo al centro (i bordi tornano scuri per primi), poi si spegne nella rete
 	const d = abs - PEAK;
-	return {a: 0.97 * Math.exp(-d / 6.5), r: 2460 - 1900 * (1 - Math.exp(-d / 6))};
+	const fade = clamp((d - 6) / 14);
+	return {a: 0.97 * (1 - fade * fade * (3 - 2 * fade)), r: 140 + 2320 * Math.exp(-d / 3.6), heat: Math.exp(-d / 10)};
 };
+
+const mixRgb = (a: number[], b: number[], t: number): string => a.map((v, i) => Math.round(v + (b[i] - v) * t)).join(',');
 
 /** Avanzamento cumulativo del volo (0..1): accelera fino al taglio, poi rallenta e si posa. */
 const travel = (abs: number): number => {
@@ -31,15 +35,17 @@ const travel = (abs: number): number => {
 };
 
 export const DiveVeil: React.FC<{abs: number}> = ({abs}) => {
-	const {a, r} = diveVeil(abs);
+	const {a, r, heat} = diveVeil(abs);
 	if (a < 0.004) return null;
+	const core = mixRgb([240, 147, 111], [255, 246, 238], heat);
+	const mid = mixRgb([217, 119, 87], [255, 214, 190], heat);
 	return (
 		<div
 			style={{
 				position: 'absolute',
 				inset: 0,
 				pointerEvents: 'none',
-				background: `radial-gradient(circle ${Math.round(r)}px at ${DIVE_CENTER.x}px ${DIVE_CENTER.y}px, rgba(255,246,238,${a}) 0%, rgba(255,214,190,${0.96 * a}) 30%, rgba(240,147,111,${0.85 * a}) 62%, rgba(217,119,87,${0.5 * a}) 82%, rgba(217,119,87,0) 100%)`,
+				background: `radial-gradient(circle ${Math.round(r)}px at ${DIVE_CENTER.x}px ${DIVE_CENTER.y}px, rgba(${core},${a}) 0%, rgba(${mid},${0.93 * a}) 25%, rgba(240,147,111,${0.72 * a}) 55%, rgba(217,119,87,${0.32 * a}) 78%, rgba(217,119,87,0) 100%)`,
 			}}
 		/>
 	);

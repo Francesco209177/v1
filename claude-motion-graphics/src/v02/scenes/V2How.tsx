@@ -11,7 +11,7 @@ import {CollapseLight} from './how/CollapseLight';
 import {BOX} from './how/layout';
 import {NoteCard} from './how/NoteCard';
 import {AnswerBubble, LoadStatus, PromptChip} from './how/PromptAnswer';
-import {camAt, diagramLevel, HUB, loadP, NET_K, outP, popIn, procP, T} from './how/timing';
+import {camAt, diagramLevel, HUB, loadP, NET_K, outP, popIn, procP, pullP, T} from './how/timing';
 
 const gb = (v: number): string => v.toFixed(1).replace('.', ',');
 
@@ -32,7 +32,7 @@ export const V2How: React.FC = () => {
 	const energy = prog(f, T.cardIn, T.collapse - T.cardIn, ease.inQuad);
 
 	// --- la rete neurale: identica alla posa del taglio su f = 0 ---
-	const pull = prog(f, 0, T.pullEnd, ease.inOutCubic);
+	const pull = pullP(f);
 	const loaded = hit(f, T.loadEnd, 14);
 	const answerHit = hit(f, T.answer, 14);
 	const netOpacity =
@@ -66,7 +66,7 @@ export const V2How: React.FC = () => {
 		const wave2 = Math.max(0, Math.sin(c * -0.3 + r * 0.7 - f * 0.41 + 1.3));
 		const spark = hash(c * 13 + r, Math.floor(f / 2)) > 0.86 ? 0.6 : 0;
 		const loadGlow = 0.12 * prog(f, 56, 30) * hash(c, r + 7);
-		return clamp(0.05 + loadGlow + pp * (0.12 + 0.75 * wave ** 3 + 0.4 * wave2 ** 4 + spark) + 0.7 * answerHit);
+		return clamp(0.05 + loadGlow + pp * (0.16 + 0.75 * wave ** 2 + 0.45 * wave2 ** 3 + spark) + 0.7 * answerHit);
 	};
 	const vram = prog(f, 56, T.loadEnd - 56, ease.inOutSine);
 	const boardOpacity = lvl * (1 - out);
@@ -122,15 +122,15 @@ export const V2How: React.FC = () => {
 				<CPU {...BOX.cpu} pop={showCpu} on={1} cores={cores} heat={cpuHeat} />
 				<GPU {...BOX.gpu} pop={showGpu} on={1} cell={gpuCell} heat={gpuHeat} vram={vram} />
 
-				<ChipLabel x={BOX.ssd.x} y={282} text="SSD" sub="Modello 8B · 4,7 GB" on={prog(f, T.popTop + 4, 8)} hot={read} />
+				<ChipLabel x={BOX.ssd.x} y={282} text="SSD" sub="Modello 8B · 4,7 GB" on={prog(f, T.popTop + 7, 8)} hot={read} />
 				<ChipLabel
 					x={BOX.ram.x}
 					y={282}
 					text={`RAM · ${gb(usedGB)} / 16 GB`}
-					on={prog(f, T.popTop + 7, 8)}
+					on={prog(f, T.popTop + 9, 8)}
 					hot={clamp(0.8 * prog(f, T.loadStart, 8) * (1 - prog(f, T.loadEnd, 12)) + access * 0.6)}
 				/>
-				<RamMeter x={BOX.ram.x} y={330} used={usedGB} on={prog(f, T.popTop + 9, 8)} />
+				<RamMeter x={BOX.ram.x} y={330} used={usedGB} on={prog(f, T.popTop + 11, 8)} />
 				<ChipLabel x={BOX.cpu.x} y={BOX.gpu.y + BOX.gpu.h / 2 + 24} text="CPU" on={prog(f, T.popBottom + 4, 8)} hot={pp} />
 				<ChipLabel x={BOX.gpu.x} y={BOX.gpu.y + BOX.gpu.h / 2 + 24} text="GPU" on={prog(f, T.popBottom + 7, 8)} hot={pp} />
 			</div>

@@ -6,7 +6,7 @@ import {V2_NET_AT_270} from '../../timeline';
  * Atti: pull-back → caricamento (SSD → RAM) → elaborazione (CPU/GPU) → risposta (150) → nota hardware → collasso.
  */
 export const T = {
-	pullEnd: 38, //       la camera si allontana: la rete diventa il cuore del diagramma
+	pullEnd: 36, //       la camera si allontana: la rete diventa il cuore del diagramma
 	popTop: 15, //        SSD + RAM (beat)
 	popBottom: 30, //     CPU + GPU (beat)
 	loadStart: 40, //     i pesi fluiscono dall'SSD alla RAM
@@ -16,7 +16,7 @@ export const T = {
 	promptSend: 120, //   la richiesta entra nella rete, CPU/GPU si accendono (beat)
 	answer: 150, //       RISPOSTA (cue assoluto 420)
 	cardIn: 163, //       nota di accuratezza
-	rowsIn: 182, //       confronto dimensioni modello
+	rowsIn: 180, //       confronto dimensioni modello (beat, abs 450)
 	collapse: 227, //     tutto collassa in un punto di luce
 	end: 239,
 } as const;
@@ -33,9 +33,16 @@ export const DROP = 60;
 
 export type Cam = {s: number; tx: number; ty: number};
 
+/** Pull-back: parte da fermo (continuità col taglio), accelera subito e si posa morbido. */
+export const pullP = (f: number): number => {
+	const t = clamp(f / T.pullEnd);
+	const k = clamp(t / 0.25);
+	return ease.outCubic(t) * k * k * (3 - 2 * k);
+};
+
 /** Camera del diagramma: pull-back iniziale, lenta deriva, arretramento sulla nota, collasso finale. */
 export const camAt = (f: number): Cam => {
-	const pull = prog(f, 0, T.pullEnd, ease.inOutCubic);
+	const pull = pullP(f);
 	let s = lerp(S0, S_END, pull);
 	// lenta spinta in avanti durante caricamento/elaborazione (mai statico)
 	s *= 1 + 0.02 * prog(f, T.pullEnd, T.answer - T.pullEnd, ease.inOutSine);

@@ -12,9 +12,9 @@ export const DIVE_CENTER = {x: 540, y: 620} as const;
 const P0: LaptopPose = {...V2_LAPTOP_HOME};
 // gru verso l'alto sulla porta: camera alta (rotX < 0) per leggere connettore e cavo sulla scrivania
 const PORT: LaptopPose = {x: 230, y: 480, scale: 1.3, rotX: -22, rotY: -32};
-const SCREEN: LaptopPose = {x: 530, y: 690, scale: 1.2, rotX: 6, rotY: -13};
-const PUSH: LaptopPose = {x: 540, y: 680, scale: 1.28, rotX: 4, rotY: -9};
-const PRE: LaptopPose = {x: 540, y: 676, scale: 1.2, rotX: 3, rotY: -6};
+const SCREEN: LaptopPose = {x: 530, y: 662, scale: 1.2, rotX: 6, rotY: -13};
+const PUSH: LaptopPose = {x: 540, y: 652, scale: 1.28, rotX: 4, rotY: -9};
+const PRE: LaptopPose = {x: 540, y: 648, scale: 1.2, rotX: 2, rotY: -4};
 const DIVE: LaptopPose = {x: DIVE_CENTER.x, y: DIVE_CENTER.y, scale: 7.5, rotX: 0, rotY: 0};
 
 const mix = (a: LaptopPose, b: LaptopPose, t: number): LaptopPose => ({
@@ -24,6 +24,12 @@ const mix = (a: LaptopPose, b: LaptopPose, t: number): LaptopPose => ({
 	rotX: lerp(a.rotX, b.rotX, t),
 	rotY: lerp(a.rotY, b.rotY, t),
 });
+
+/**
+ * Da questo frame in poi il coperchio viene disegnato in 2D (ScreenProxy): il rendering CSS 3D di Chrome
+ * ritaglia il coperchio quando la scala diventa molto grande.
+ */
+export const PROXY_FROM = 92;
 
 /** Camera del HOOK: avvicinamento alla porta, strappo, ritorno sullo schermo, tuffo dentro. */
 export const hookPose = (f: number): LaptopPose => {
@@ -41,6 +47,9 @@ export const hookPose = (f: number): LaptopPose => {
 		const s = Math.exp(lerp(Math.log(p.scale), Math.log(DIVE.scale), ease.inQuad(d)));
 		p = {...mix(p, DIVE, r), scale: s};
 	}
+	// rotazioni ESATTAMENTE nulle da PROXY_FROM: lo schermo diventa un piano 2D (vedi ScreenProxy)
+	const flat = 1 - ease.inOutCubic(invLerp(84, PROXY_FROM, f));
+	p = {...p, rotX: p.rotX * flat, rotY: p.rotY * flat};
 	// scossa della camera allo strappo
 	const k = f >= 30 ? Math.exp(-(f - 30) / 3.2) : 0;
 	return {...p, x: p.x + 9 * k * Math.sin((f - 30) * 2.7 + 0.6), y: p.y + 6 * k * Math.cos((f - 30) * 3.4)};

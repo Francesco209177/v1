@@ -143,8 +143,8 @@ export const Drive: React.FC<{L: number}> = ({L}) => {
 						{/* conferma */}
 						{done ? (
 							<div style={{position: 'absolute', left: 0, top: 0, height: 44, display: 'flex', alignItems: 'center', gap: 14, opacity: lab, transform: `translateY(${(1 - lab) * 10}px)`}}>
-								<Check p={clamp((L - LOADED) / 10)} />
-								<div style={{...MONO, fontSize: 28, fontWeight: 700, color: COLORS.white, textShadow: `0 0 18px ${alpha(COLORS.orange, 0.7)}`, clipPath: `inset(0 ${100 - lab * 100}% 0 0)`}}>Installato in locale</div>
+								<Check p={clamp((L - LOADED) / 10)} size={40} />
+								<div style={{...MONO, fontSize: 31, fontWeight: 700, color: COLORS.white, textShadow: `0 0 18px ${alpha(COLORS.orange, 0.7)}`, clipPath: `inset(0 ${100 - lab * 100}% 0 0)`}}>Installato in locale</div>
 							</div>
 						) : null}
 					</div>

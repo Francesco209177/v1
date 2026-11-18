@@ -11,13 +11,13 @@ export const R = {
 
 /** Layout verticale: titolo (prima della domanda) e cartello finale. */
 export const LAYOUT = {
-	titleY1: 1036,
-	titleY2: 1138,
-	noteY: 1206,
+	titleY1: 1022,
+	titleY2: 1128,
+	noteY: 1214,
 	// cartello finale
-	endTitleY: 872,
-	questionY: 1040,
-	endNoteY: 1196,
+	endTitleY: 896,
+	questionY: 1062,
+	endNoteY: 1212,
 } as const;
 
 /**
@@ -32,11 +32,11 @@ export const laptopPose = (f: number) => {
 	const q = ease.inOutCubic(clamp((f - (R.question - 6)) / 26));
 	const orbit = f / R.end;
 	return {
-		x: H.x + 10 * Math.sin(f / 70),
-		y: lerp(lerp(700, H.y, pull), 522, rise) - 74 * q,
+		x: H.x - 18 * ease.inOutCubic(clamp(f / 60)) + 8 * Math.sin(f / 70),
+		y: lerp(lerp(700, H.y, pull), 522, rise) - 84 * q,
 		/** zoom 2D della camera (fuori dal contesto 3D) × scala del laptop. */
 		zoom: lerp(2.15 / H.scale, 1, pull),
-		scale: H.scale * lerp(1, 0.885, rise) * lerp(1, 0.9, q) * (1 - 0.02 * orbit),
+		scale: H.scale * lerp(1, 0.885, rise) * lerp(1, 0.93, q) * (1 - 0.02 * orbit),
 		rotX: lerp(4, H.rotX, pull) - 2 * orbit,
 		rotY: lerp(-3, H.rotY, pull) + 6 * orbit,
 	};

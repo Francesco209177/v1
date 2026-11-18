@@ -10,17 +10,18 @@ import {Cam, HUB, T} from './timing';
  * poi tutto si raccoglie in un punto di luce sul quale parte il CutFlash globale (510).
  */
 export const CollapseLight: React.FC<{f: number; cam: Cam}> = ({f, cam}) => {
-	const from = T.collapse - 16;
+	const from = T.collapse - 18;
 	if (f < from) return null;
 	const draw = (ctx: CanvasRenderingContext2D): void => {
 		ctx.globalCompositeOperation = 'lighter';
 		ctx.lineCap = 'round';
 		const c = {x: HUB.x + cam.tx, y: HUB.y + cam.ty};
 		// scie convergenti, sempre più fitte
-		const N = 64;
+		const N = 110;
 		for (let i = 0; i < N; i++) {
-			const start = from + hash(i, 1) * (T.end - from - 5);
-			const life = 7 + hash(i, 2) * 7;
+			// partenze sempre più fitte verso il taglio
+			const start = from + Math.sqrt(hash(i, 1)) * (T.end - from - 4);
+			const life = 6 + hash(i, 2) * 6;
 			const q = (f - start) / life;
 			if (q < 0 || q > 1) continue;
 			const a = hash(i, 3) * TAU;
@@ -37,7 +38,7 @@ export const CollapseLight: React.FC<{f: number; cam: Cam}> = ({f, cam}) => {
 			g.addColorStop(0, withAlpha(COLORS.orange, 0));
 			g.addColorStop(1, withAlpha(COLORS.orangeHot, 0.8 * al));
 			ctx.strokeStyle = g;
-			ctx.lineWidth = 2 + 1.5 * hash(i, 5);
+			ctx.lineWidth = 1.6 + 1.6 * hash(i, 5) + 1.5 * p;
 			ctx.beginPath();
 			ctx.moveTo(xb, yb);
 			ctx.lineTo(x, y);

@@ -166,6 +166,25 @@ export const Circuit: React.FC<{frame: number; abs: number; cam: Cam}> = ({frame
 					drawGlow(ctx, HUB.x + Math.cos(ha) * RING_R, HUB.y + Math.sin(ha) * RING_R, 7, COLORS.orangeBright, 1, COLORS.white);
 				}
 			}
+			// elaborazione: due archi luminosi che girano attorno al modello
+			const pr = procLevel(f) * (1 - prog(f, T.cardIn, 10));
+			if (pr > 0.01) {
+				const spin = (f - T.promptSend) * 0.16 + 0.02 * Math.max(0, f - T.promptSend) ** 2 * 0.1;
+				for (let j = 0; j < 2; j++) {
+					const a = a0 + spin + j * Math.PI;
+					ctx.strokeStyle = withAlpha(COLORS.orangeHot, 0.85 * pr * lvl);
+					ctx.lineWidth = 5;
+					ctx.beginPath();
+					ctx.arc(HUB.x, HUB.y, RING_R + 6, a, a + 0.55);
+					ctx.stroke();
+					ctx.strokeStyle = withAlpha(COLORS.orange, 0.18 * pr * lvl);
+					ctx.lineWidth = 20;
+					ctx.beginPath();
+					ctx.arc(HUB.x, HUB.y, RING_R + 6, a - 0.1, a + 0.6);
+					ctx.stroke();
+					drawGlow(ctx, HUB.x + Math.cos(a + 0.55) * (RING_R + 6), HUB.y + Math.sin(a + 0.55) * (RING_R + 6), 6, COLORS.orangeBright, pr * lvl, COLORS.white);
+				}
+			}
 			// tacche che ruotano lentamente
 			const ticks = 60;
 			const rot = abs / 240;

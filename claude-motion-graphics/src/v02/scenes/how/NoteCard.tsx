@@ -31,7 +31,7 @@ export const NoteCard: React.FC<{f: number; abs: number}> = ({f, abs}) => {
 	const antic = prog(f, T.collapse - 3, 5, ease.outCubic) * (1 - outP); // piccolo respiro prima del collasso
 	const energy = prog(f, NOTE_ROWS_AT, T.collapse - NOTE_ROWS_AT, ease.inQuad);
 	const beat = beatPulse(abs, 5) * (0.3 + 0.7 * energy);
-	const sweep = ((f - T.cardIn) / 36) % 1;
+	const sweep = (((f - T.cardIn) / 36) * (1 + 0.6 * energy)) % 1;
 
 	let wi = 0;
 	return (
@@ -54,7 +54,7 @@ export const NoteCard: React.FC<{f: number; abs: number}> = ({f, abs}) => {
 					position: 'absolute',
 					inset: 0,
 					borderRadius: 32,
-					background: `linear-gradient(180deg, ${alpha(COLORS.surface2, 0.92)} 0%, ${alpha(COLORS.bgSoft, 0.95)} 100%)`,
+					background: `linear-gradient(180deg, ${alpha(COLORS.surface2, 0.96)} 0%, ${alpha(COLORS.bgSoft, 0.97)} 100%)`,
 					border: `1px solid ${alpha(COLORS.orange, 0.3 + 0.45 * beat)}`,
 					boxShadow: `0 30px 80px rgba(0,0,0,0.7), 0 0 ${40 + 70 * beat}px ${alpha(COLORS.orange, 0.12 + 0.28 * beat)}, inset 0 1px 0 rgba(255,255,255,0.07)`,
 				}}
