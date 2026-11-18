@@ -69,7 +69,7 @@ export const Shot3ThreeD: React.FC = () => {
 					camera={{fov: 34, near: 0.1, far: 60, position: [0, 1.5, 9]}}
 					style={{position: 'absolute', left: 0, top: 0}}
 				>
-					<Shot3Scene state={state} />
+					{null}
 				</ThreeCanvas>
 				</div>
 			</div>

@@ -40,4 +40,4 @@ export const projectWindow = (f: number, lx: number, ly: number): Vec2 & {k: num
 };
 
 /** X (schermo) del fronte della spazzata di luce che cancella la finestra. */
-export const sweepX = (f: number): number => -340 + 1760 * ease.inOutQuad(invLerp(T.sweepStart, T.sweepEnd, f));
+export const sweepX = (f: number): number => -340 + 1760 * ease.inOutSine(invLerp(T.sweepStart, T.sweepEnd, f));

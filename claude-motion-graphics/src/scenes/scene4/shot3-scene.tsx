@@ -244,7 +244,7 @@ export const Shot3Scene: React.FC<{state: Shot3State}> = ({state}) => {
 			<Floor floor={floor} />
 
 			{/* eroe: nodo torico laccato arancione */}
-			{hero.scale > 99 ? (
+			{hero.scale > 0.001 ? (
 				<mesh rotation={hero.rotation} scale={hero.scale}>
 					<torusKnotGeometry args={[1.04, 0.32, 240, 32, 2, 3]} />
 					<meshPhysicalMaterial
