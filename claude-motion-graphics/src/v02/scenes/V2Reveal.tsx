@@ -46,7 +46,7 @@ export const V2Reveal: React.FC = () => {
 				}}
 			/>
 			<Embers f={f} layer="back" push={pull * 0.5} />
-			{/* lo zoom della camera è un 2D esterno al contesto 3D (evita il ritaglio dei layer 3D molto grandi in Chrome) */}
+			{/* dolly della camera: zoom 2D esterno al contesto 3D del laptop */}
 			<div style={{position: 'absolute', inset: 0, transformOrigin: `${pose.x}px ${pose.y}px`, transform: `scale(${pose.zoom})`}}>
 				{f < NEAR_UNTIL ? (
 					<LaptopNear x={pose.x} y={pose.y} scale={pose.scale} rotX={pose.rotX} rotY={pose.rotY} screenGlow={glow} plugOut={PLUG_OUT} spark={0} linkLed={0}>
