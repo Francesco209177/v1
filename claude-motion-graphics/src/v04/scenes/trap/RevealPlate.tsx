@@ -9,7 +9,7 @@ import {PhishDomain} from './Addr';
 import {T} from './timing';
 
 /** Targa dell'indirizzo (coordinate di schermo a riposo). */
-const P = {cx: 540, cy: 700, w: 940, h: 236} as const;
+const P = {cx: 540, cy: 736, w: 940, h: 236} as const;
 const PL = P.cx - P.w / 2;
 const PT = P.cy - P.h / 2;
 /** Metriche del mono: avanzamento 0,6 em. */
@@ -29,7 +29,7 @@ const Body: React.FC<{a: number}> = ({a}) => {
 	const ring = prog(a, T.ring, 8, ease.inOutCubic);
 	const ringPulse = Math.exp(-Math.max(0, a - (T.ring + 8)) / 6) * (a >= T.ring + 8 ? 1 : 0);
 	const under = prog(a, T.underline, 7, ease.outCubic);
-	const C = 2 * Math.PI * 40;
+	const C = 2 * Math.PI * 36; // perimetro (circa) dell'ellisse
 	return (
 		<>
 			<div style={{position: 'absolute', right: 30, top: 22, display: 'flex', alignItems: 'center', gap: 10, fontFamily: FONTS.mono, fontSize: 24, letterSpacing: '0.14em', color: C4.redHot}}>
@@ -50,7 +50,7 @@ const Body: React.FC<{a: number}> = ({a}) => {
 			{/* cerchio attorno allo zero */}
 			{ring > 0.001 ? (
 				<svg width={120} height={120} viewBox="-60 -60 120 120" style={{position: 'absolute', left: ZERO.x - 60, top: ZERO.y - 60, overflow: 'visible', transform: `scale(${1 + 0.08 * ringPulse})`}}>
-					<circle r="40" fill="none" stroke={C4.redBright} strokeWidth="4" strokeDasharray={`${C * ring} ${C}`} transform="rotate(-100)" strokeLinecap="round" style={{filter: `drop-shadow(0 0 6px ${a4(C4.red, 0.9)})`}} />
+					<ellipse rx="31" ry="40" fill="none" stroke={C4.redBright} strokeWidth="4" strokeDasharray={`${C * ring} ${C}`} transform="rotate(-100)" strokeLinecap="round" style={{filter: `drop-shadow(0 0 6px ${a4(C4.red, 0.9)})`}} />
 				</svg>
 			) : null}
 		</>

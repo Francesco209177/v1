@@ -271,7 +271,7 @@ export const MailWindow: React.FC<{a: number; pose: WinPose}> = ({a, pose}) => {
 						/>
 					) : null}
 					{zf > 0.01 ? (
-						<div style={{position: 'absolute', inset: 0, background: `radial-gradient(62% 22% at 50% 78%, rgba(4,5,6,0) 0%, rgba(4,5,6,0) 55%, rgba(4,5,6,${0.72 * zf}) 100%)`}} />
+						<div style={{position: 'absolute', inset: 0, background: `radial-gradient(60% 19% at 50% 77%, rgba(4,5,6,0) 0%, rgba(4,5,6,0) 55%, rgba(4,5,6,${0.76 * zf}) 100%)`}} />
 					) : null}
 					<Cursor x={cx} y={cy} opacity={cOp} />
 					{/* la finestra si scurisce quando la targa è in primo piano */}

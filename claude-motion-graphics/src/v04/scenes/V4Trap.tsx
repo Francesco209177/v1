@@ -32,7 +32,7 @@ export const V4Trap: React.FC = () => {
 			<AbsoluteFill style={{filter: blur > 0.3 ? `blur(${blur.toFixed(2)}px)` : undefined}}>
 				<MailWindow a={a} pose={pose} />
 			</AbsoluteFill>
-			<Spotlight a={a} x={lerp(tipC.x, 540, rv)} y={lerp(tipC.y, 700, rv)} extra={0.6 * rv} />
+			<Spotlight a={a} x={lerp(tipC.x, 540, rv)} y={lerp(tipC.y, 736, rv)} extra={0.6 * rv} />
 			<RevealPlate a={a} from={from} back={back} />
 			<ExitWipe a={a} />
 			<IntroVeil a={a} />
