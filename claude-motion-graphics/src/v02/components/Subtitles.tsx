@@ -12,10 +12,11 @@ import {V2_SUB_Y, V2_VO} from '../timeline';
  */
 export type VoLine = {readonly start: number; readonly end: number; readonly text: string};
 
-export const Subtitles: React.FC<{hidden?: (absFrame: number) => boolean; lines?: readonly VoLine[]; y?: number}> = ({
+export const Subtitles: React.FC<{hidden?: (absFrame: number) => boolean; lines?: readonly VoLine[]; y?: number; accent?: string}> = ({
 	hidden,
 	lines = V2_VO,
 	y = V2_SUB_Y,
+	accent = COLORS.orange,
 }) => {
 	const f = useAbsFrame();
 	if (hidden?.(f)) return null;
@@ -69,7 +70,7 @@ export const Subtitles: React.FC<{hidden?: (absFrame: number) => boolean; lines?
 						style={{
 							position: 'relative',
 							color: lit > 0.5 ? COLORS.white : alpha(COLORS.white, 0.42),
-							textShadow: `0 2px 18px rgba(0,0,0,0.7)${lit > 0.5 ? `, 0 0 26px ${alpha(COLORS.orange, 0.25 * lit)}` : ''}`,
+							textShadow: `0 2px 18px rgba(0,0,0,0.7)${lit > 0.5 ? `, 0 0 26px ${alpha(accent, 0.25 * lit)}` : ''}`,
 						}}
 					>
 						{w}
