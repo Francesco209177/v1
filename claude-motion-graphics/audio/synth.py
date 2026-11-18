@@ -374,7 +374,7 @@ def render_fx(st: Stems):
 
     # 23.5-24 s: reverse cymbal into scene 5
     rc = ins.reverse_swell(0.55, 90, noise_gain=1.0, tone_gain=0.0, hp_hz=2500.0, lp_hz=11000.0)
-    place(st.audio["swell"], rc, ends_at(rc, CUE["outroStart"]), 0.3)
+    place(st.audio["swell"], rc, ends_at(rc, CUE["outroStart"]) - s2n(0.015), 0.3)
 
     # 24 s IMPACT 4 + downlifter, then the 24-26 s REVERSE SWELL into the final hit
     impact(st, CUE["outroStart"], dict(f_start=110.0, f_end=45.0, tau_p=0.06, tau_a=0.65, dur=2.0, drive=1.3,
@@ -441,7 +441,7 @@ def mix_down(st: Stems, ev):
     main = sweep_filter(main, build_highpass_curve(), "hp", q=0.75, per_oct=5.0)
     mix = main + exempt
     # suck-back: the last 8th before the drop is silent, the drop lands in a vacuum
-    gap = duck_gaps(N, [(sec(CUE["drop"] - 0.5), sec(CUE["drop"]), 18.0, 4.0)])
+    gap = duck_gaps(N, [(sec(CUE["drop"] - 0.5), sec(CUE["drop"]), 18.0, 0.0)])
     return mix * gap[:, None]
 
 
@@ -534,8 +534,23 @@ def render(verbose: bool = True):
     return out, gr, env, st
 
 
+def stem_report(st: Stems):
+    """Loudness of every stem (after its fader) per section, to balance the mix by numbers."""
+    secs = [("intro", 0, 2.5), ("sc2", 4, 9), ("sc3", 9, 14), ("build", 14, 15.75), ("drop", 16, 24),
+            ("brkdn", 24, 26), ("final", 26, 29)]
+    print(f"{'stem':9s}" + "".join(f"{n:>8s}" for n, _, _ in secs) + "   <120Hz share")
+    for name, x in st.audio.items():
+        y = x * st.cfg[name]["gain"]
+        vals = [lufs_window(y, a, b) for _, a, b in secs]
+        e = np.sum(y ** 2) + 1e-20
+        low = np.sum(lp(y, 120.0, 4) ** 2) / e
+        print(f"{name:9s}" + "".join(f"{v:8.1f}" if v > -60 else f"{'':8s}" for v in vals) + f"   {low * 100:5.1f}%")
+
+
 def main():
-    out, gr, env, _ = render()
+    out, gr, env, st = render()
+    if "--stems" in sys.argv:
+        stem_report(st)
     pcm = to_int16(out, env)
     os.makedirs(os.path.dirname(OUT_WAV), exist_ok=True)
     wavfile.write(OUT_WAV, SR, pcm)

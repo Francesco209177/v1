@@ -17,7 +17,7 @@ const CUTS = [
 
 const grab = (frame, crop) => {
 	const vf = `select=eq(n\\,${frame})${crop ? `,crop=${crop}` : ''},format=gray`;
-	return execFileSync('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-i', file, '-vf', vf, '-fps_mode', 'vfr', '-frames:v', '1', '-f', 'rawvideo', '-']);
+	return execFileSync('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-i', file, '-vf', vf, '-fps_mode', 'vfr', '-frames:v', '1', '-f', 'rawvideo', '-'], {maxBuffer: 64 * 1024 * 1024});
 };
 const diff = (a, b) => {
 	let s = 0;

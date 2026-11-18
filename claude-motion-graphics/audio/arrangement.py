@@ -171,6 +171,8 @@ def build(seed: int = 2026):
     for b, v in ((47.25, 0.5), (47.5, 0.62), (47.625, 0.56), (47.75, 0.78), (47.875, 0.92)):
         ev["snare"].append((b, v, True))                     # fill into 24.0 s
     ev["crash"].append((48, "big", 0.62))
+    ev["kick"].append((48, "big", 1.0))                      # impact 4 (24.0 s)
+    ev["kick"].append((52, "big", 0.9))                      # final hit (26.0 s)
 
     # ------------------------------------------------------------- harmony
     for b0, b1, ch, bass in HARMONY:
