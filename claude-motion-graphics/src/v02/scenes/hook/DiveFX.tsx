@@ -18,12 +18,24 @@ const PEAK = 104.5;
 export const diveVeil = (abs: number): {a: number; r: number; heat: number} => {
 	if (abs < PEAK) {
 		const t = clamp((abs - 92) / (PEAK - 92));
-		return {a: t <= 0 ? 0 : Math.min(0.97, 0.3 + 0.75 * t), r: 160 + 2300 * t ** 2.2, heat: 1};
+		return {a: t <= 0 ? 0 : Math.min(0.66, 0.26 + 0.52 * t), r: 160 + 2300 * t ** 2.2, heat: 1};
 	}
 	// la luce si condensa in un nucleo al centro (i bordi tornano scuri per primi), poi si spegne nella rete
 	const d = abs - PEAK;
 	const fade = clamp((d - 6) / 14);
-	return {a: 0.97 * (1 - fade * fade * (3 - 2 * fade)), r: 140 + 2320 * Math.exp(-d / 3.6), heat: Math.exp(-d / 10)};
+	return {a: 0.66 * (1 - fade * fade * (3 - 2 * fade)), r: 140 + 2320 * Math.exp(-d / 3.6), heat: Math.exp(-d / 10)};
+};
+
+/** Molti punti di sfumatura con caduta morbida: niente anelli di banding sui gradienti grandi. */
+const stops = (core: string, mid: string, a: number): string => {
+	const out: string[] = [];
+	for (let i = 0; i <= 12; i++) {
+		const u = i / 12;
+		const k = Math.pow(1 - u, 1.6) * (1 - 0.15 * u);
+		const col = u < 0.3 ? core : u < 0.6 ? mid : '217,119,87';
+		out.push(`rgba(${col},${(a * k).toFixed(4)}) ${(u * 100).toFixed(1)}%`);
+	}
+	return out.join(', ');
 };
 
 const mixRgb = (a: number[], b: number[], t: number): string => a.map((v, i) => Math.round(v + (b[i] - v) * t)).join(',');
@@ -37,15 +49,16 @@ const travel = (abs: number): number => {
 export const DiveVeil: React.FC<{abs: number}> = ({abs}) => {
 	const {a, r, heat} = diveVeil(abs);
 	if (a < 0.004) return null;
-	const core = mixRgb([240, 147, 111], [255, 246, 238], heat);
-	const mid = mixRgb([217, 119, 87], [255, 214, 190], heat);
+	// picco caldo (arancio chiaro), mai bianco pieno: i sottotitoli restano leggibili
+	const core = mixRgb([240, 147, 111], [252, 186, 150], heat);
+	const mid = mixRgb([217, 119, 87], [238, 140, 104], heat);
 	return (
 		<div
 			style={{
 				position: 'absolute',
 				inset: 0,
 				pointerEvents: 'none',
-				background: `radial-gradient(circle ${Math.round(r)}px at ${DIVE_CENTER.x}px ${DIVE_CENTER.y}px, rgba(${core},${a}) 0%, rgba(${mid},${0.93 * a}) 25%, rgba(240,147,111,${0.72 * a}) 55%, rgba(217,119,87,${0.32 * a}) 78%, rgba(217,119,87,0) 100%)`,
+				background: `radial-gradient(circle ${Math.round(r)}px at ${DIVE_CENTER.x}px ${DIVE_CENTER.y}px, ${stops(core, mid, a)})`,
 			}}
 		/>
 	);
