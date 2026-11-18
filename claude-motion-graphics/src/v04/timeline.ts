@@ -37,16 +37,16 @@ export const V4_CUES = {
 	question: 840, //     28,0 s · "Tu avresti riconosciuto la truffa?"
 } as const;
 
-/** Voce narrante (secondi; fine misurata sulle clip). Testi = sottotitoli. File in public/v04/vo/. */
+/** Voce narrante definitiva (ElevenLabs "Enea"; secondi). Testi = sottotitoli. Clip in public/v04/vo_enea/. */
 export const V4_VO = [
-	{file: 'vo_01', start: 0.15, end: 2.89, text: 'Un solo clic potrebbe bastare per perdere il tuo account.'},
-	{file: 'vo_02', start: 3.4, end: 7.13, text: 'Il phishing sfrutta messaggi falsi per convincerti a consegnare i tuoi dati.'},
-	{file: 'vo_03', start: 9.3, end: 13.67, text: 'Ti porta su un sito contraffatto, dove inserisci password e informazioni personali.'},
-	{file: 'vo_04a', start: 17.3, end: 18.62, text: 'Controlla sempre i link,'},
-	{file: 'vo_04b', start: 19.0, end: 20.35, text: 'evita quelli sospetti,'},
-	{file: 'vo_04c', start: 20.75, end: 22.8, text: "e attiva l'autenticazione a più fattori."},
-	{file: 'vo_05', start: 24.6, end: 27.44, text: 'Perché la tua sicurezza può dipendere da un solo secondo.'},
-	{file: 'vo_06', start: 27.95, end: 29.84, text: 'Tu avresti riconosciuto la truffa?'},
+	{file: 'vo_01', start: 0.05, end: 3.39, text: 'Un solo clic potrebbe bastare per perdere il tuo account.'},
+	{file: 'vo_02', start: 3.5, end: 7.62, text: 'Il phishing sfrutta messaggi falsi per convincerti a consegnare i tuoi dati.'},
+	{file: 'vo_03', start: 9.3, end: 13.85, text: 'Ti porta su un sito contraffatto, dove inserisci password e informazioni personali.'},
+	{file: 'vo_04a', start: 17.2, end: 19.01, text: 'Controlla sempre i link,'},
+	{file: 'vo_04b', start: 19.1, end: 20.41, text: 'evita quelli sospetti,'},
+	{file: 'vo_04c', start: 20.75, end: 22.95, text: "e attiva l'autenticazione a più fattori."},
+	{file: 'vo_05', start: 24.4, end: 27.52, text: 'Perché la tua sicurezza può dipendere da un solo secondo.'},
+	{file: 'vo_06', start: 27.85, end: 29.8, text: 'Tu avresti riconosciuto la truffa?'},
 ] as const;
 
 export const V4_SUB_Y = 1390;

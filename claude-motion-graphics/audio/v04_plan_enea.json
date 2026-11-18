@@ -1,0 +1,70 @@
+{
+  "_doc": [
+    "Video 04: voce definitiva ElevenLabs 'Enea' (eleven_v4), ripresa unica divisa con audio/split_vo.py in public/v04/vo_enea/.",
+    "python3 audio/mix_final.py --plan audio/v04_plan_enea.json --dir public/v04/vo_enea"
+  ],
+  "voice": {
+    "language": "it",
+    "gain_db": 0.0,
+    "lines": [
+      {
+        "file": "vo_01.wav",
+        "text": "Un solo clic potrebbe bastare per perdere il tuo account.",
+        "start": 0.05,
+        "end_by": 3.45
+      },
+      {
+        "file": "vo_02.wav",
+        "text": "Il phishing sfrutta messaggi falsi per convincerti a consegnare i tuoi dati.",
+        "start": 3.5,
+        "end_by": 8.8
+      },
+      {
+        "file": "vo_03.wav",
+        "text": "Ti porta su un sito contraffatto, dove inserisci password e informazioni personali.",
+        "start": 9.3,
+        "end_by": 16.4
+      },
+      {
+        "file": "vo_04a.wav",
+        "text": "Controlla sempre i link,",
+        "start": 17.2,
+        "end_by": 19.05
+      },
+      {
+        "file": "vo_04b.wav",
+        "text": "evita quelli sospetti,",
+        "start": 19.1,
+        "end_by": 20.65
+      },
+      {
+        "file": "vo_04c.wav",
+        "text": "e attiva l'autenticazione a più fattori.",
+        "start": 20.75,
+        "end_by": 23.6
+      },
+      {
+        "file": "vo_05.wav",
+        "text": "Perché la tua sicurezza può dipendere da un solo secondo.",
+        "start": 24.4,
+        "end_by": 27.75
+      },
+      {
+        "file": "vo_06.wav",
+        "text": "Tu avresti riconosciuto la truffa?",
+        "start": 27.85,
+        "end_by": 29.88
+      }
+    ]
+  },
+  "sfx": [],
+  "mix": {
+    "bed": "public/v04/music.wav",
+    "out": "public/v04/audio_final.wav",
+    "duck_db": 8.0,
+    "duck_attack_ms": 50,
+    "duck_release_ms": 260,
+    "target_lufs": -14.0,
+    "true_peak_db": -1.5
+  }
+}

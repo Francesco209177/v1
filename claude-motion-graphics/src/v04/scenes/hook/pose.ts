@@ -91,11 +91,16 @@ export const phonePose = (f: number): PhonePose => {
 	const rotY = lerp(b.rotY, 0, d);
 	const rotZ = lerp(b.rotZ, 0, d);
 	// il centro della card scivola verso il centro del quadro mentre la scala cresce
+	const offX = CARD_CENTER.x - PHONE_SCREEN.w / 2;
+	const offY = CARD_CENTER.y - PHONE_SCREEN.h / 2;
+	// correzione della prospettiva iniziale (svanisce col tuffo): nessun salto al frame di partenza
+	const corrX = c0.x - (b0.x + offX * b0.scale);
+	const corrY = c0.y - (b0.y + offY * b0.scale);
 	const cx = lerp(c0.x, 540, ease.outCubic(d));
 	const cy = lerp(c0.y, 760, ease.outCubic(d));
 	return {
-		x: cx - (CARD_CENTER.x - PHONE_SCREEN.w / 2) * scale + b.x - b0.x,
-		y: cy - (CARD_CENTER.y - PHONE_SCREEN.h / 2) * scale + b.y - b0.y,
+		x: cx - offX * scale - corrX * (1 - d) + b.x - b0.x,
+		y: cy - offY * scale - corrY * (1 - d) + b.y - b0.y,
 		scale,
 		rotX,
 		rotY,
