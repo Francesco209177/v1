@@ -6,7 +6,7 @@ import {COLORS} from '../../../theme';
 import {tokenWidth} from '../../components/TokenChip';
 import {VP} from '../hook/timing';
 import {GAP, SIZE, SLOTS, T} from './layout';
-import {charAt, charX, departAt, FLIGHT, layerXf, rowY, scanBeam, splitP, toScreen} from './motion';
+import {charAt, charX, departAt, FLIGHT, layerXf, rowY, scanBeam, slotPos, splitP, toScreen} from './motion';
 import {flightPos, flightU, PATHS} from './flight';
 import {HOP, netState, projectNet} from './net';
 
@@ -124,6 +124,32 @@ export const TokenLight: React.FC<{abs: number}> = ({abs}) => {
 						drawGlow(ctx, x, y, 2.6, COLORS.orangeHot, fa, COLORS.white);
 					}
 				}
+			}
+		}
+
+		// 2b · sotto-parole: una staffa sottile unisce "Chat"+"GPT" e "sap"+"ere" (erano una parola sola)
+		const sub = ease.outCubic(clamp((abs - 198) / 8)) * (1 - ease.inCubic(invLerp(215, 223, abs)));
+		if (sub > 0.01) {
+			for (const [a, b] of [
+				[2, 3],
+				[5, 6],
+			]) {
+				const A = toScreen(abs, slotPos(a, abs));
+				const B = toScreen(abs, slotPos(b, abs));
+				const x0 = A.x - (tokenWidth(SLOTS[a].text, SIZE) / 2 - 10) * L.s;
+				const x1 = B.x + (tokenWidth(SLOTS[b].text, SIZE) / 2 - 10) * L.s;
+				const y = A.y + (SIZE * 0.775 + 7) * L.s;
+				const mid = (x0 + x1) / 2;
+				const half = ((x1 - x0) / 2) * sub;
+				ctx.strokeStyle = withAlpha(COLORS.orangeBright, 0.85 * sub);
+				ctx.lineWidth = 2.5;
+				ctx.beginPath();
+				ctx.moveTo(mid - half, y - 7 * sub);
+				ctx.lineTo(mid - half, y);
+				ctx.lineTo(mid + half, y);
+				ctx.lineTo(mid + half, y - 7 * sub);
+				ctx.stroke();
+				drawGlow(ctx, mid, y, 5, COLORS.orangeBright, 0.5 * sub, COLORS.orangeHot);
 			}
 		}
 

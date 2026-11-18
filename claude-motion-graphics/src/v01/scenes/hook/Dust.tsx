@@ -8,7 +8,7 @@ import {VP} from './timing';
 /**
  * Pulviscolo 3D che scorre verso la camera, condiviso da HOOK e TOKENS (funzione del frame ASSOLUTO:
  * continuo sul taglio 89|90). Veloce nel tuffo dentro lo schermo, poi deriva lenta, di nuovo veloce
- * quando i token entrano nella rete; spento entro 258.
+ * quando i token entrano nella rete; spento entro 264.
  */
 const speed = (a: number): number => {
 	if (a < 72) return 0;

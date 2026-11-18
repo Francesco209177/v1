@@ -1,6 +1,6 @@
 import React from 'react';
 import {useAbsFrame} from '../../../lib/frame';
-import {clamp, ease, hash, invLerp, lerp} from '../../../lib/math';
+import {clamp, ease, hash, hit, invLerp, lerp} from '../../../lib/math';
 import {TokenChip} from '../../components/TokenChip';
 import {SIZE, SLOTS, SUBWORD, T} from './layout';
 import {flightPos, flightU} from './flight';
@@ -40,7 +40,8 @@ export const Chips: React.FC = () => {
 				const e = flightU(s.i, abs);
 				const age = abs - t0;
 				const pop = 1 + 0.1 * Math.exp(-age / 2.5);
-				const glow = 1 + 1.8 * Math.exp(-age / 4) + 0.5 * ant;
+				// lampo di partenza sul cue 225 (tutti insieme), poi il volo in fila
+				const glow = 1 + 1.8 * Math.exp(-age / 4) + 0.5 * ant + 1.1 * hit(abs, T.intoNet, 6);
 				const p = slotPos(s.i, abs);
 				let c: Pt = toScreen(abs, p);
 				let sc = L.s * pop;

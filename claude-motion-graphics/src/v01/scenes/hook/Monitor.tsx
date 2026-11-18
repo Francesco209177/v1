@@ -33,7 +33,7 @@ export const Monitor: React.FC<{f: number; s: number}> = ({f, s}) => {
 						width: MON.w,
 						height: MON.h,
 						borderRadius: MON.r,
-						boxShadow: `0 50px 140px rgba(0,0,0,0.85), 0 0 120px ${alpha(COLORS.orange, 0.07)}`,
+						boxShadow: `0 50px 140px rgba(0,0,0,0.85), 0 0 140px ${alpha(COLORS.orange, 0.11)}, 0 0 40px ${alpha(COLORS.orange, 0.06)}`,
 					}}
 				/>
 			) : null}
@@ -167,7 +167,7 @@ export const Monitor: React.FC<{f: number; s: number}> = ({f, s}) => {
 							left: `${sheen * 100}%`,
 							width: 260,
 							transform: 'translateX(-50%) rotate(18deg)',
-							background: 'linear-gradient(90deg, rgba(255,240,228,0) 0%, rgba(255,240,228,0.045) 50%, rgba(255,240,228,0) 100%)',
+							background: 'linear-gradient(90deg, rgba(255,240,228,0) 0%, rgba(255,240,228,0.07) 50%, rgba(255,240,228,0) 100%)',
 						}}
 					/>
 				) : null}
