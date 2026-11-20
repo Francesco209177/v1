@@ -998,7 +998,7 @@ function renderSolutions(){
     <p class="m-p">I sei biglietti servono tutti: togliendone uno qualsiasi restano almeno due sequenze possibili. L'ordine in cui si trovano non conta, alla fine resta sempre e solo la sequenza qui sopra. Il ragionamento completo: la seconda è blu (I) e la quinta è rossa (III). L'altra blu non può stare in prima o in terza, perché sarebbe vicina alla seconda (VI), né in quarta (V): va in sesta. Per prima, terza e quarta restano due gialle e una rossa. La rossa non può stare in quarta, accanto a quella in quinta (II); le gialle non possono stare in terza e quarta insieme, perché sarebbero vicine (IV). Quindi: prima gialla, terza rossa, quarta gialla.</p>`)}
 
   ${sec('m-fine','Fine della partita',`<ul class="m-list">
-    <li><b>Vernissage.</b> La porta si apre, un lampo bianco, e la squadra «inaugura» la sua opera: un quadro astratto con le tele della sequenza, generato dal nome della squadra e dal tempo (ogni squadra ne ottiene uno diverso), svelato da un telo tra i flash dei fotografi.</li>
+    <li><b>Inaugurazione.</b> La porta si apre, un lampo bianco, e la squadra inaugura la sua opera: un quadro astratto con le tele della sequenza, generato dal nome della squadra e dal tempo (ogni squadra ne ottiene uno diverso), svelato da un telo tra i flash dei fotografi.</li>
     <li><b>La didascalia</b> accanto al quadro riporta il nome della squadra come autore, l'ora di uscita, le risposte sbagliate e le schede del catalogo usate.</li>
     <li><b>Il vostro risultato</b> mostra il conto: tempo impiegato + 1 minuto per ogni errore + 3 minuti per ogni scheda = tempo finale, e la posizione in classifica.</li>
     <li><b>Le sale, in breve:</b> un riepilogo di tutte le formule, utile da proiettare per la correzione.</li>
@@ -1167,10 +1167,10 @@ function viewEnd(){
   const sec=elapsed(), d=new Date(S.finished||Date.now()), yr=d.getFullYear(), inv=`GS-${yr}-${String((fnv(S.team||'x')%900)+100)}`;
   const recap=D.rooms.map((r,i)=>{ const x=reveal(i,S.solved[i]); return `<div><span class="rn">${ROMAN[i]}</span><span>${esc(x.topic)}</span><span class="frm">${x.formula}</span><span class="ans">${fmt(S.solved[i])}</span></div>` }).join('');
   return `<p class="cap">Fuori dalla Galleria Specchi · ${clockText(sec)}</p>
-  <h1 class="p-title" style="font-size:clamp(2.2rem,6vw,4.4rem);margin:8px 0 26px"><span><b style="--k:0">Vernissage</b></span></h1>
+  <h1 class="p-title" style="font-size:clamp(1.6rem,7.4vw,4.4rem);margin:8px 0 26px"><span><b style="--k:0">Inaugurazione</b></span></h1>
   <div class="vernissage"><div class="opera">${artwork()}<div class="velo${RM?'':' off'}"${RM?' hidden':''}></div></div>
   <div class="didascalia"><p class="d-artist">${esc(S.team||'Visitatori senza nome')}</p><p class="d-title">Senza titolo (due per colore), ${yr}</p>
-  <p class="d-meta">Calcolo combinatorio su tela · sei pannelli, ${ALLSEQ.length} disposizioni possibili, una sola giusta</p>
+  <p class="d-meta">Calcolo combinatorio su tela · sei pannelli, ${ALLSEQ.length} sequenze possibili, una sola giusta</p>
   <p class="d-inv">Inv. ${inv}</p>
   <div class="stats">${S.noClock?'':`<div class="stat"><b>${clockText(sec)}</b><span>Ora di uscita</span></div>`}<div class="stat"><b>${S.errors}</b><span>Risposte sbagliate</span></div><div class="stat"><b>${S.hintCount}</b><span>Schede del catalogo</span></div></div></div></div>
   <h2 class="section-t">La sequenza del curatore</h2><div class="seq">${[...(S.seq||'')].map(c=>`<i class="cv ${c}"></i>`).join('')}</div>
