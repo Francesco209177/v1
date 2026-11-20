@@ -868,7 +868,13 @@ function reveal(i,a){
 }
 
 function fresh(){return {started:null,penalty:0,room:0,answers:[],hints:{},errors:0,hintCount:0,finished:null,noTimer:false,team:'',recorded:false,recId:null,secrets:[],secretSolved:null,inSecret:false,secretHints:0,alarm:0,seenIntro:{},gino:null,inChase:false,chaseDone:false,chaseIntro:false,chaseQs:null,chaseProg:0,items:{notes:1},notes:'',torchSeen:{}}}
-function load(){try{const s=JSON.parse(localStorage.getItem(SKEY));if(s&&Array.isArray(s.answers))return Object.assign(fresh(),s)}catch(e){}return fresh()}
+function sane(s){ /* codici salvati con una versione vecchia delle porte: quelle porte vanno rifatte */
+  let bad=-1;
+  s.answers=s.answers.slice(0,ROOMS.length).map((a,i)=>{ if(a==null) return null; if(check(i,String(a))) return a; if(bad<0) bad=i; return null });
+  if(bad>=0 && !s.finished){ s.room=Math.min(s.room,bad); if(s.room<ROOMS.length-1) s.inChase=false }
+  if(s.secretSolved!=null && fnv('tartaglia|segreta|'+s.secretSolved)!==SECRET.h) s.secretSolved=null;
+  return s }
+function load(){try{const s=JSON.parse(localStorage.getItem(SKEY));if(s&&Array.isArray(s.answers))return sane(Object.assign(fresh(),s))}catch(e){}return fresh()}
 function save(){try{localStorage.setItem(SKEY,JSON.stringify(S))}catch(e){}}
 let S = load();
 let confirmReset = false;
@@ -1100,7 +1106,7 @@ function keySvg(k){
 }
 const WHEEL_IN = `<circle cx="100" cy="100" r="94" fill="none" stroke="currentColor" stroke-width="5"/>${[0,1,2,3,4,5].map(k=>{const a=k*Math.PI/3,x=(100+62*Math.cos(a)).toFixed(1),y=(100+62*Math.sin(a)).toFixed(1);return `<line x1="100" y1="100" x2="${x}" y2="${y}" stroke="currentColor" stroke-width="10" stroke-linecap="round"/><circle cx="${x}" cy="${y}" r="13" fill="currentColor"/>`}).join('')}<circle cx="100" cy="100" r="26" fill="none" stroke="currentColor" stroke-width="10"/><circle cx="100" cy="100" r="9" fill="currentColor"/>`;
 const foot = (note, reset) => `<div class="sc-foot"><p class="sc-note">${note}</p>${reset?`<button type="button" class="sc-reset" data-a="reset">${reset}</button>`:''}</div>`;
-function frags(){ return [0,1,2,3,4,5,6,7].filter(i=>S.answers[i]!=null).map(i=>({i, ch:reveal(i,S.answers[i]).frag, code:S.answers[i]})) }
+function frags(){ return [0,1,2,3,4,5,6,7].filter(i=>S.answers[i]!=null).map(i=>({i, ch:reveal(i,S.answers[i]).frag, code:S.answers[i]})).filter(f=>f.ch) }
 
 const SCENES = [
  { /* 0 · chiavi e ganci */
