@@ -275,13 +275,22 @@ body.has-guide main{padding-bottom:120px}
 .jp.k7{background:repeating-linear-gradient(45deg,#151515 0 5px,#F2F1EA 5px 10px)}
 .jp.k8{background:radial-gradient(circle at 50% 36%,#2B2014 0 17%,transparent 18%),radial-gradient(ellipse 40% 34% at 50% 80%,#2B2014 0 98%,transparent 100%),linear-gradient(#7C8A5C,#A88B4E)}
 
+/* regole */
+.rule{display:inline-flex;align-items:center;gap:6px;font-size:.84rem;font-weight:600;padding:4px 10px;border-radius:999px;border:1px solid var(--line);background:var(--panel)}
+.rule.ok{color:var(--ok);border-color:currentColor} .rule.no{color:var(--bad);border-color:currentColor} .rule.na{color:var(--muted)}
+.jp-tag{position:absolute;left:0;right:0;bottom:-2px;font:700 .55rem var(--body);font-style:normal;text-transform:uppercase;letter-spacing:.06em;background:var(--bad);color:#fff;text-align:center;line-height:1.5}
+.pod-rule{font:600 .58rem var(--body);font-style:normal;color:var(--bad);text-transform:uppercase;letter-spacing:.06em}
+.ts.clash{box-shadow:0 0 0 3px var(--bad);animation:shake .35s}
+
 /* III · mosaico da 5 */
 .mosaic.m5{grid-template-columns:repeat(5,minmax(0,1fr));max-width:460px;width:100%;margin:0 auto;gap:6px}
 
 /* V · il prestito */
 .lwall{display:grid;grid-template-columns:repeat(9,minmax(0,1fr));gap:8px;padding:14px 4px 10px;border-bottom:2px solid var(--line)}
 .ls,.ls-gap{aspect-ratio:4/3;position:relative;min-width:0}
-.ls{border:3px solid #3A2E20;padding:0;transition:transform .15s;background:radial-gradient(circle at var(--sx) 26%,var(--sun) 0 9%,transparent 10%),linear-gradient(var(--sky) 0 var(--h),var(--gr) var(--h))}
+.ls{border:3px solid #3A2E20;padding:0;transition:transform .15s}
+.ls.m{background:radial-gradient(circle at var(--sx) 24%,var(--sun) 0 9%,transparent 10%),conic-gradient(from 135deg at 46% 30%,var(--c) 0 90deg,transparent 0),linear-gradient(var(--sky) 0 72%,#5E8C4A 72%)}
+.ls.s{background:radial-gradient(circle at var(--sx) 24%,var(--sun) 0 9%,transparent 10%),linear-gradient(var(--sky) 0 55%,transparent 55%),repeating-linear-gradient(0deg,rgba(255,255,255,.3) 0 1.5px,transparent 1.5px 6px),var(--c)}
 .ls:hover{transform:translateY(-4px)}
 .loan,.envelope{display:flex;flex-direction:column;align-items:center;gap:6px}
 .loan-l,.env-l{font-size:.7rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
@@ -301,8 +310,8 @@ body.has-guide main{padding-bottom:120px}
 .pc.A{background:linear-gradient(90deg,var(--red) 0 50%,#F2F1EA 50%)}
 .pc.B{background:radial-gradient(circle,var(--yellow) 0 35%,#1A1A1A 36%)}
 .pc.C{background:repeating-linear-gradient(0deg,#2E7D4F 0 6px,#F2F1EA 6px 12px)}
-.env-in{display:grid;grid-template-columns:repeat(4,58px);gap:10px;padding:16px 18px;background:linear-gradient(#E6D6B4,#D8C49A);border-radius:4px;box-shadow:inset 0 0 0 2px rgba(0,0,0,.08)}
-.env-in .pc{width:58px}
+.env-in{display:grid;grid-template-columns:repeat(6,minmax(0,58px));max-width:100%;gap:10px;padding:16px 18px;background:linear-gradient(#E6D6B4,#D8C49A);border-radius:4px;box-shadow:inset 0 0 0 2px rgba(0,0,0,.08)}
+.env-in .pc{width:100%}
 .env-in .pc:hover{transform:translateY(-4px)}
 .env-in .pc.drop{animation:pcDrop .5s cubic-bezier(.2,.9,.3,1.3)}
 @keyframes pcDrop{from{transform:translateY(-46px) rotate(-10deg);opacity:0}}
@@ -589,7 +598,7 @@ body.has-guide main{padding-bottom:120px}
 <div class="flash" id="flash"></div>
 
 <script>
-const D = {"rooms":[{"name":"La parete dei sette colori","genre":"Arte astratta","story":"<p>Una lunga parete bianca con sette cornici vuote. Nella cassa accanto ci sono sette tele monocrome, <b>tutte di colore diverso</b>: rossa, arancione, gialla, verde, azzurra, blu e viola.</p><div class=\"memo\">«Appendetele tutte, una per cornice, come volete. Il numero della sala è quante pareti diverse potrebbe vedere un visitatore.»<small>Il curatore</small></div>","q":"In quanti modi diversi si possono appendere le 7 tele, tutte di colore diverso, nelle 7 cornici?","hints":["Per la prima cornice puoi scegliere tra 7 tele. Appesa quella, per la seconda ne restano 6, per la terza 5, e così via.","Moltiplica tutte le scelte: 7·6·5·4·3·2·1, cioè 7!."],"label":"Collettivo Specchi, <i>Sette monocromi</i>, 2019 · acrilico su tela, 7 colori · Inv. GS-I-07","h":3072091597,"x":"eZea8pETHlhrG/uvuLsk0DdbUJKb/K7osZAJ7Lh78v0anuy4g8FNjJhiHgMZUnzH/S+VrCXNvPSgcfAF8ezn45KXeOXkGOuwLY/fXXZFPDpuDDQSAQsgU9HTjcSMdc0iO9Yj7EgTHTm/uShjRlbHE1F0O2orja47Mv3IYUUMq3Tot6Any1HAD/agBAam9VVuF64jHNQMci3/s1vr69P8U5Jy8I1ckAd3swrcrocRy4rSY1znQrjTOwnU52ggqufM0COTUsW0vdkOd4/96Qjj/knDpJoGA66VI0hp5McbLUqMNDzDESHzP3mARSwx0sOQB6POrflf6nHoZkyX3kCTQvbKA/qdweFcQv/Mv/VHL4gGB1Fj2urmZ+iStdmj2Ya0OfnMlV2M/yfXezQCZKg="},{"name":"Il premio della giuria","genre":"Sala del concorso","story":"<p>Stanotte la giuria doveva premiare il concorso di pittura. In gara ci sono <b>nove quadri</b>, numerati da 1 a 9, e i premi sono tre e tutti diversi: <b>oro, argento e bronzo</b>. Un quadro non può vincere due premi.</p><div class=\"memo\">«La giuria non si è ancora decisa. Il numero della sala è quanti podi diversi potremmo annunciare domani.»<small>Il presidente della giuria</small></div>","q":"In quanti modi diversi si possono assegnare oro, argento e bronzo ai 9 quadri in gara?","hints":["Per l'oro ci sono 9 candidati. Assegnato l'oro, per l'argento ne restano 8, per il bronzo 7.","L'ordine conta (vincere l'oro non è come vincere il bronzo) e nessun quadro vince due volte: D₉,₃ = 9·8·7."],"label":"Premio Galleria Specchi 2026, <i>Nove opere in gara</i> · tre premi: oro, argento, bronzo · Inv. GS-II-09","h":3175889596,"x":"vLeekS+ZQCPx9ETyusPyKfsbBDQOcpKa/o+lvmutSWb1gVQ5kVcpmSRa8P4sRABAlMP6nJE/0+LTyQbf3+3vbWP/hqGPn/tbWS1eQMe986F9QPLIMiaol/M1z2LV68WVzd43Wb/pBMl4YQoRPyuduT0emhUvxwARb4dTDgA30uIdyuZ0AIHtjTvsAu/0Z2tFwBsWDZqyED6h/QVsLC41kKbGj6DC2RDiP5l4qLALKvhNA9iIAekj+fftLxoBskIQXu0otgywSWx98Z2zbb4lR+k6R8qohbCnU6VLrz6AWk22B2DV6vaaVRZd91jGzeSWJZa+hjnRUk+6jlHiVA60Zzukhx4R/sm0cep34iJu2W/cCo/pzntTAI/U196Wm+oOAWrrSjFaDKNHW1Ds"},{"name":"Il mosaico del pavimento","genre":"Arte romana","story":"<p>Al centro della sala manca un pezzo di mosaico: una fila di <b>cinque tessere</b>. Il restauratore ha tre sacchi pieni di tessere <b>nere, bianche e dorate</b> e può usare ogni colore quante volte vuole.</p><div class=\"memo\">«Ogni notte provo un disegno nuovo per la fila. Il numero della sala è quanti disegni diversi posso fare.»<small>Dal taccuino del restauratore</small></div>","q":"Quanti disegni diversi si possono fare con una fila di 5 tessere, se ogni tessera può essere nera, bianca o dorata?","hints":["Per ogni posto hai 3 colori, e i colori si possono ripetere: usare il nero per la prima tessera non toglie il nero alle altre.","5 posti, 3 scelte per ogni posto: 3·3·3·3·3 = 3⁵."],"label":"Bottega romana, <i>Fascia a mosaico</i>, sec. II d.C. · marmo e pasta vitrea, 5 tessere · Inv. GS-III-05","h":4139710593,"x":"G47ueMQmHg77fGCy684L56Tek5HVihCpsqXKmkdQ3Y8i69yfS9bVmh71y5FX7xPpFSoQkE7Or7TtdciOBSHiCokzc8WgtBPqEVYaWWhrbO8sgvaVfq7XbivbMKBRDYL9gxKwDWt6PSu4fafedVIkt1amui9dgM1JrhYW3vAIXBXUnGWuw7M22O6EPT3403XilJvJMYrwmKoLdes1GzMJsNo/4PtKl3oh1tIinkjXFepYdlywpGNPaO2AG/63hqB+oIOjNkYk2dP19NTw1kpDhxWCHlGurHM+5KBIKDIyz7fgCAFQWwf+4Se44tvXx6bhwXSS+Ne+ICiOS/kNAbWzJGruFthXH8PoBwMpl/Avk9VvgQwJP6QhdEmEIxMAZZQ5wQ+c5i7Y5pI/+hcvDN5IwQQhcApMbaU0IZDV4hP9TSIF"},{"name":"La targhetta caduta","genre":"Ritratti","story":"<p>Nella sala dei ritratti c'è un dipinto senza nome. Le lettere adesive della sua targhetta si sono staccate e sono finite sul pavimento: <b>G, I, O, T, T, O</b>. Due O e due T sono identiche.</p><div class=\"memo\">«Il numero di questa sala è quante parole diverse si possono comporre con queste sei lettere, anche senza senso.»<small>Il curatore</small></div>","q":"Quante parole diverse di 6 lettere si possono formare usando tutte le lettere G, I, O, T, T, O?","hints":["Se le sei lettere fossero tutte diverse, gli ordini sarebbero 6! = 720. Ma scambiare le due O tra loro non cambia la parola, e lo stesso vale per le due T.","Ogni parola compare 2!·2! = 4 volte tra i 720 ordini: dividi 6! per 2! e per 2!."],"label":"Anonimo, <i>Ritratto senza nome</i>, sec. XIV · targhetta in vinile, 6 lettere · Inv. GS-IV-06","h":381198394,"x":"tUG1RBMpfLY3WlzmILbfxoU8vI1Ko4P2J+41Op4WU9tHrb5t2SEzjLle7SB752WajUpOevWx9M1crJ+JvEKA6cAi3gD41Wvs5C36EdAUhQNQgh4+G3m7KkIbjxGx2oDEv9IE5OV9eQ3Nftjfzh6MBEpZdm9XhpctuEje6Sv/8srNXifn1rTVzzeyZklMwt6WLL5fQ78/Q+s3AX65p3YLCrLvwsj7opVL5Kf8hcz7LyO+xXueGmbgxYwlK88OEFlq89Jj+cNF96KIcru0RVVDnvskBXB5+DsLCi/fChjGdUYLGWlzyUF1AZX4rcahLM1/fSWyPwKc+UBI/xrPgoCrg2ZVG/FfTXi5kSr0Nr+S8DyZPxI6NPwGMZx93g6G16S5ASvzTVTPVc/rrQ=="},{"name":"Il prestito","genre":"Sala dei paesaggi","story":"<p>Un museo di Parigi ha chiesto in prestito <b>4 dei 9 paesaggi</b> della sala per una mostra. I quadri partiranno tutti insieme nella stessa cassa: non importa in che ordine vengono scelti.</p><div class=\"memo\">«Devo decidere quali paesaggi mandare. Il numero della sala è quanti gruppi diversi potrei spedire.»<small>Il curatore</small></div>","q":"In quanti modi si possono scegliere i 4 paesaggi da prestare tra i 9 della sala?","hints":["Se l'ordine contasse, le scelte sarebbero 9·8·7·6 = 3024. Ma nella cassa l'ordine non conta: ogni gruppo di 4 quadri è stato contato più volte.","Ogni gruppo di 4 quadri si può ordinare in 4! = 24 modi: C₉,₄ = 3024 / 24."],"label":"Scuola di paesaggio, <i>Nove vedute</i>, sec. XIX · olio su tela, 9 opere · Inv. GS-V-09","h":396329015,"x":"KgbGUMBb6i/DXIdiG3Jza5tb5k0zxm4E97qT8ADbuwfrIRKvaKgwOeNP2YbhLDax0JvIIqgaALs07mA3cEyBO+4nXQ2l8FGIa2I41NJJRnBpSIW22cqjPXPWEUEYr2qlW3XP/C9fGE+3blC2hib1eceEBijxlig5ZZ68t6WGhSQ1j7/1avo4PFPdDmfh/7pludht1cfEi3innDjVqsGa/1Zp9BBHojU0UgffzG2B2YNfP4nnrOQghQ7vYrhxSwq7floDqHAbUtfHytsHXlZh/ysJBTUOQ2n10cmVE773XjuLcOA/zN3sWKdD0cfV/e1LNMCFol4JK6xMHKqmRMce+FWxdF89QbGX5Z/yt+Xa1ElnoPvjbUIudVNxt7aJ8y6pQ9ADakBfS9f6PV0eoyu8Dh2+Sop62QzH+ZQDTpwdyU1wSNbjsN7S4kWD9n6NHyCYWH5FLxvDskEIK23K/nwLXTqL95tZOQ=="},{"name":"Il bookshop","genre":"Negozio del museo","story":"<p>Vicino all'uscita c'è il bookshop. Le cartoline riproducono <b>5 quadri</b> della galleria e di ognuna ci sono pile intere. Il biglietto omaggio dà diritto a una busta con <b>4 cartoline</b>, anche uguali tra loro.</p><div class=\"memo\">«Nella busta l'ordine non conta: conta solo quante cartoline ci sono di ogni quadro. Il numero della sala è quante buste diverse si possono preparare.»<small>La commessa del bookshop</small></div>","q":"Quante buste diverse di 4 cartoline si possono fare con i 5 soggetti, se le cartoline si possono ripetere e l'ordine non conta?","hints":["Scrivi ogni busta con 4 pallini (le cartoline) e 4 stanghette che separano i 5 soggetti. Per esempio ●●|●||●| vuol dire: due del primo quadro, una del secondo, una del quarto.","Sono sempre 8 simboli e devi solo scegliere dove vanno i 4 pallini: C'₅,₄ = C₈,₄ = 8! / (4!·4!)."],"label":"Bookshop della Galleria Specchi · cartoline di 5 opere · busta omaggio da 4 · Rif. GS-VI-04","h":1026903574,"x":"ymeROSsANSTpRXtJl84qA9Zc5CQtZK8E5R5pyoJbSItp3AUjeDrBUz0Q+xq5VrIdd0eik4xBujTMtNNurQ+X0vCG6l6PfnsyWkjsE27RzPmsQVDB8vZnFb1KtRr9poXiAhDme9OiOEI86vVTfP59sG/kUxgr6R5fth8ilsP7zhtu89E5tT0wlE/Ddiz6EVElX97G7UsXLpsrhj/J6WywqHseVueLr15luWNRi/7tDvVYBJEC2tcIunNKPL7960Q+SW/nAI57IjTnK4Y3vCPsxjWr4Esm3UxF56lWRW80txTkA4bAX8P1f81d9mGP/Ktr0rnC6vYzqP6G5lPhvaQ4LgAHxvSnV8i4sMw8E57wPKKB3UFfFxEQ8Ggw/v04UZyEny4GesD49W8y5WOMYwp+nPQFt4xT2OQHHCn6+0f3JNHZFb1qkNK6jwNttr/SdH9We/rxASla8o/8MXBnnWKdOzFTsFEg1W5RBLwTIqdQ+JwnVA=="}],"door":{"d1":919310464,"d2":3024957900}};
+const D = {"rooms":[{"name":"La parete dei sette colori","genre":"Arte astratta","story":"<p>Una lunga parete bianca con sette cornici vuote. Nella cassa accanto ci sono sette tele monocrome, <b>tutte di colore diverso</b>: rossa, arancione, gialla, verde, azzurra, blu e viola.</p><div class=\"memo\">«Appendetele tutte, una per cornice. Una sola regola: la blu e l'azzurra non devono stare vicine, da lontano sembrano la stessa tela. Il numero della sala è quante pareti diverse rispettano la regola.»<small>Il curatore</small></div>","q":"In quanti modi si possono appendere le 7 tele, tutte di colore diverso, se la blu e l'azzurra non devono stare vicine?","hints":["Conta prima tutte le pareti, senza regola: 7!. Poi togli quelle sbagliate, cioè quelle in cui la blu e l'azzurra sono vicine.","Per contare le pareti sbagliate incolla la blu e l'azzurra in un blocco: restano 6 oggetti da ordinare (6!) e il blocco si può girare in 2 modi. Risultato: 7! − 2·6!."],"label":"Collettivo Specchi, <i>Sette monocromi</i>, 2019 · acrilico su tela, 7 colori · Inv. GS-I-07","h":1043809369,"x":"QGvtz1ZfOt2UlY6QY0Gay7kmepa7Zt09s4AhzRvDXWPF4LCZy7TdLAC3+Kw0Usyit5ERqQO8YOxBtshb4uZbEfmBXULpTLTfOJiYXRO1XtaQo+SrjLKziJ3JHUrrPEdbMJA5MAoJ1BT+WjVU8rwESDGsBUfn8LkUwVuMv7yL6V4hTMsqUlyV3qAf6jNMKDC0119EwJahkzfwYcJOvzmLWv1avDnuiReDZoUJhQA2TLd6wrNCbOnTOfOlnKJeR1jWRIH0OhwiWOSvWTK8WYup0JUtqIVgcY4E6VN5BjmBFPtOniPtr+5720dwhfErhLEf1SGi21synSI4KzAdElpti/TXCLFJyxU5Dq049DVjpYJIHND9+SWxbbiKI1R+58c7rD9ga5V5LpJ5KOwYK3B4Ticn7FSNIUr7c/mXf/EDIiLQSnSTm158DPzZ9ovNLdam2NQ17OnAEsGUzq8rzs4ZmtVf0Om6SAsZ5Dpy902C+Q=="},{"name":"Il premio della giuria","genre":"Sala del concorso","story":"<p>Stanotte la giuria doveva premiare il concorso di pittura. In gara ci sono <b>nove quadri</b>, numerati da 1 a 9, e i premi sono tre e tutti diversi: <b>oro, argento e bronzo</b>. Un quadro non può vincere due premi.</p><div class=\"memo\">«Attenzione: il quadro n. 7 è di mio nipote. Per evitare polemiche può vincere l'argento o il bronzo, ma mai l'oro. Il numero della sala è quanti podi diversi potremmo annunciare.»<small>Il presidente della giuria</small></div>","q":"In quanti modi si possono assegnare oro, argento e bronzo ai 9 quadri in gara, se il quadro n. 7 non può vincere l'oro?","hints":["L'ordine conta e nessun quadro vince due volte: sono disposizioni. Comincia dal premio con il vincolo: per l'oro i candidati sono solo 8.","Assegnato l'oro, il n. 7 torna in gara: per l'argento restano 8 quadri, per il bronzo 7. Quindi 8·8·7."],"label":"Premio Galleria Specchi 2026, <i>Nove opere in gara</i> · tre premi: oro, argento, bronzo · Inv. GS-II-09","h":3085786743,"x":"X6E64qj9NnkWhTQZ62MZxZMTfiZvQTFHZcz/SpaDeEwkoKKvO7wbEGC3HnwjYQuQ6fHG+gAUvqLuKONsauwCqvaDXBpX1eSt8C8zbV1j/Uv3rTBocHq2dvvlCuI9PFIbGSBD5mSj8x32udPfYgg4qzOB+M3GS/cryIFjowUAOSUc06uvd4UoCeLUmlTx1FfBZB5YPwqmvaFTPDW3orXcrJGrgxa0m5iSeI1b3lC9myLl/ID5APtCwOlkpPBH9XY6f1/AHKC6c5RnuulPzTwGljJVNet9K6EP5wZYMzu8/2+fm/E5vxGrgA6XyNLldz9H2ntDObQOeuf9yygZVnZjOYJevIbllEF0yPUh4EuLL5kKgrx6jcDFWGX5WPAgSRdgRDvWkGzZgIGpRxUuqVJO2bzrGjfcRkhPt3psJcoNGXhG2IPf+XZYUWFsp8Qq0XL9jAd2SZP7WTjUew9m9yZq3Kwizmzq7GXnzNO80PTHgi2348UAAi/AjrLy9MXzC85akqyK9RN2ENs="},{"name":"Il mosaico del pavimento","genre":"Arte romana","story":"<p>Al centro della sala manca un pezzo di mosaico: una fila di <b>cinque tessere</b>. Il restauratore ha tre sacchi pieni di tessere <b>nere, bianche e dorate</b> e può usare ogni colore quante volte vuole, con una sola regola.</p><div class=\"memo\">«Due tessere vicine non devono mai avere lo stesso colore, altrimenti il disegno si confonde. Il numero della sala è quanti disegni diversi posso fare.»<small>Dal taccuino del restauratore</small></div>","q":"Quante file diverse di 5 tessere nere, bianche o dorate si possono fare, se due tessere vicine non hanno mai lo stesso colore?","hints":["L'ordine conta e i colori si ripetono, ma non vicini. Riempi la fila da sinistra: la prima tessera può essere di 3 colori. E la seconda?","Ogni tessera dopo la prima ha 2 scelte: tutti i colori tranne quello della vicina a sinistra. Quindi 3·2·2·2·2."],"label":"Bottega romana, <i>Fascia a mosaico</i>, sec. II d.C. · marmo e pasta vitrea, 5 tessere · Inv. GS-III-05","h":3275322234,"x":"W0Gq+yI3yzMZ+tqaIf1NSja0b/bITisGmDi5u584evzy5YChWIP0xDvidpSVL5jK3zo+i9cEHf4R22rA3sNTIqbXcZlsaEWnv6V0dbW5somcHl3p4G/x/LeWu2+0CKOCOvZu16KqqP45x98ei5zQEcPd4GXQhm1Gy65aRsewSCTx1yhvkON3jO/+cjFsEgU9rnXC+EmFStwFlYRXjumE8uomuThthV5SC9SSmpUMP90zc6Ctlz1rcMcCS3AsoYDlIL1erm+gBYzFEy2JRQr0bsfNH91LGqxD5sA8rs8guomK4wkTMYHnu9l1BdPdeYFTusqjLhTzsUaP8v3dF5o29XI3O3fOr8cKBcjWoVq51R5SYVAF+JTGt4vwp3a7b8jLkfxjoJlBatQODfy1/cVI+fEeHaAbC8nFYoGGuGz0O37ha2tPgl9u6h7hDrgpmpBhLPuHRMFSkPnAFUhc+8O1xB+VGqFZG+qNXIw="},{"name":"La targhetta caduta","genre":"Ritratti","story":"<p>Nella sala dei ritratti c'è un dipinto senza nome. Le lettere adesive della sua targhetta si sono staccate e sono finite sul pavimento: <b>G, I, O, T, T, O</b>. Due O e due T sono identiche.</p><div class=\"memo\">«Il numero di questa sala è quante parole diverse si possono comporre con queste sei lettere, anche senza senso, purché le due T non stiano vicine.»<small>Il curatore</small></div>","q":"Quante parole di 6 lettere si possono formare con G, I, O, T, T, O, se le due T non devono stare vicine?","hints":["Tutte le parole, senza regola, sono 6!/(2!·2!) = 180, perché scambiare due lettere uguali non cambia la parola. Ora togli quelle con le due T vicine.","Per le parole con le T vicine incolla TT in un blocco: restano G, I, O, O e il blocco, cioè 5 oggetti con due O uguali: 5!/2! = 60. Risultato: 180 − 60."],"label":"Anonimo, <i>Ritratto senza nome</i>, sec. XIV · targhetta in vinile, 6 lettere · Inv. GS-IV-06","h":2057283008,"x":"+Vv+cPahfI7SGVaGsRWVhVNkq1/1vhU5vU5TKIaPRXF+4delLuvCHEL/9mXEqqDyAUUwkuW4fjD5Pd65rFN/NCOjFn11AHxkTbXs3p8+76u/sMP6WF3I845An5AGZvF/g2V8EA2j0y7oidBWZf2zrr7dIWnPMbLZByKYgPCe1u/yzRCxdytVW6F0zmaBjFR9XBUIjfGCqkEJhh79m0r99J86yvbSloLKFLmsIChLphs6nv0OkaQn/OwfU+c0591/IaGCLlvAcFCzxJIEJC53flk8kmZzREsJy/wdPYJsPiCugXPzCe9J6vUNjazF6W3ng55HOGBp2LDdBmgIeghDcA8HExiGkF+BGsjNQYMvlsNifVCIqywE08N7J0V6vKYFl5v0i+AB7DTCachGy7Jvn8xMVjYIb7ii+vEbmupya4yYrN+85T//03zmoWSbPviUUJ0v8b2k+Wi78SYgby0XiMEaVTD3daKBW+3Jrg=="},{"name":"Il prestito","genre":"Sala dei paesaggi","story":"<p>Un museo di Parigi ha chiesto in prestito <b>4 dei 9 paesaggi</b> della sala, che sono <b>4 marine</b> e <b>5 vedute di montagna</b>. I quadri partiranno tutti insieme nella stessa cassa: non importa in che ordine vengono scelti.</p><div class=\"memo\">«Parigi vuole una mostra equilibrata: esattamente due marine e due montagne. Il numero della sala è quanti gruppi diversi potrei spedire.»<small>Il curatore</small></div>","q":"In quanti modi si possono scegliere 2 marine tra le 4 e 2 montagne tra le 5 da prestare a Parigi?","hints":["Sono due scelte separate e in nessuna delle due conta l'ordine: prima scegli le marine, poi le montagne.","Le marine si scelgono in C(4,2) = 6 modi, le montagne in C(5,2) = 10. Ogni coppia di marine può andare con ogni coppia di montagne: moltiplica."],"label":"Scuola di paesaggio, <i>Nove vedute</i>, sec. XIX · olio su tela, 4 marine e 5 montagne · Inv. GS-V-09","h":2956017646,"x":"q5XcVIFdjJ6DS+qIp03sbbLtB+oABV5JTtfFPl0UjxKCxxdjV7AdfJB1kwiGvBZCjYlSbPJEAJZcdNCB8Vb4cuLb+1nCR+H8l52oS/+dycETGgir9BD2Awz9glSkMwTJM5PqFxGviU1MPOPhB9sPkxeOu7bMNHlmkVZDMQ+IucRTW7dP59UFXBzQJzxgyWVpr4kQVcjEb6grwnpK+9WAKje6Se7FL0Kfm93GA0IbWEcme31KHxNkjfdVknJ0AbioqZsENTSP84yitTtG4TF0WDVjIrJjv42lgHrAsuEYZ0PaoMk19kOI4kNuD49soOkfJyHo8G3V+Ul+2sjlwyCdVicdhOv7BeouGdvOtd3UDZ5ulKkw00wkrOQyhIL9tdhZW0SPGQiifOJDGS/IUrf+g7D69m0p0lo9zIfZrpi7rJwWqtF+hxwhuZlLxVpwukz+HMvlrprE/z1oKvgGbi1CP/Ox4KeZP0A="},{"name":"Il bookshop","genre":"Negozio del museo","story":"<p>Vicino all'uscita c'è il bookshop. Le cartoline riproducono <b>5 quadri</b> della galleria e di ognuna ci sono pile intere. Il biglietto omaggio dà diritto a una busta con <b>6 cartoline</b>, anche uguali tra loro.</p><div class=\"memo\">«La Gioconda è la più richiesta: in ogni busta ce ne deve essere almeno una. Per il resto l'ordine non conta, conta solo quante cartoline ci sono di ogni quadro. Il numero della sala è quante buste diverse si possono preparare.»<small>La commessa del bookshop</small></div>","q":"Quante buste diverse di 6 cartoline si possono fare con i 5 soggetti, anche ripetuti, se in ogni busta c'è almeno una Gioconda?","hints":["Metti subito una Gioconda nella busta: così la regola è rispettata. Restano 5 cartoline da scegliere liberamente tra i 5 soggetti, anche uguali e senza ordine.","Le 5 cartoline libere sono una combinazione con ripetizione: con le stelle e barre sono 5 pallini e 4 stanghette, cioè 9 simboli. C'₅,₅ = C₉,₅ = 9!/(5!·4!)."],"label":"Bookshop della Galleria Specchi · cartoline di 5 opere · busta omaggio da 6 · Rif. GS-VI-06","h":1832336880,"x":"aTQTLDWp434Ogj2SGe5alMrlzQN3W63n3MGmx8R8gnLucb1SNo2sao7aP+fduQDMGPFJJm1vh4m+oIYIiPz3FJTEPuF8YYTpnfOC7IGma1F+UwhKhKR20n/xOa1eBroeYKFbjG7YZyqWbejYtSFNey9I1vM6Hh1c9sVBLpCaRSsjIA/2vmCkmgHr5Qg1pts747WL2pp71WkcrDRCIKi3lL/csmL57IrCsRrwznRS6DyP9dHZ3wVwxnEbAYyc9720rqhkXeEqChCBcBgN+rZ9pdjrxvn3RkKUcRO6luQe3RUUdGLVu2cR4jfD3LOYlxAAe4PJMuSRZcDWsMfvPqpxrEmz3oFqzxhW+AObzqEdOhhXHx4im8g2paxgiLOQ6A/VDqXV7f2E0OtU+avW/v4VmEMfc4r/IWUL3c3iUrggFZD9aSb7XqLoAoTIEN8H3Y5pcGWgUttcejLtQGKX6tls/kIC1uyllURNn1LZjGLjidTguW4="}],"door":{"d1":919310464,"d2":3024957900}};
 const KEY = 'codice-dipinti-v2', GKEY = 'codice-dipinti-v1-firme';
 const TOTAL = 3600, ERR_COST = 60, HINT_COST = 180;
 const $ = id => document.getElementById(id);
@@ -737,9 +746,10 @@ function shuffle(a){ for(let j=a.length-1;j>0;j--){ const r=Math.floor(Math.rand
 
 const C7 = ['R','O','Y','G','A','B','V'], C7N = {R:'rossa',O:'arancione',Y:'gialla',G:'verde',A:'azzurra',B:'blu',V:'viola'};
 const MED = ['oro','argento','bronzo'];
-const LS = [['#8FC3E8','#4F8A3C','58%','72%','#FFE27A'],['#F2A65A','#6B4E2E','62%','30%','#FFF1B8'],['#1E2A55','#2C4A3A','64%','78%','#F4F1DC'],
- ['#BFE0F2','#2F6FA8','50%','24%','#FFE27A'],['#E9C46A','#9C6B30','66%','60%','#FFFFFF'],['#9BB7D4','#E8E4DA','55%','40%','#FFF6D0'],
- ['#F28C7A','#3E5F8A','52%','50%','#FFD36B'],['#CDE7C9','#5E8C4A','48%','82%','#FFE27A'],['#6E5A9E','#2E2A4A','60%','26%','#FFC2E2']];
+const LS = [['m','#8FC3E8','#6C7A89','75%','#FFE27A'],['s','#BFE0F2','#2F6FA8','25%','#FFE27A'],['m','#F2A65A','#6B4E2E','30%','#FFF1B8'],
+ ['m','#1E2A55','#3B4A6B','78%','#F4F1DC'],['s','#E9C46A','#3E6F9A','60%','#FFFFFF'],['m','#CDE7C9','#5E7F5A','82%','#FFE27A'],
+ ['s','#F28C7A','#3E5F8A','50%','#FFD36B'],['m','#9BB7D4','#E8E4DA','40%','#FFF6D0'],['s','#6E5A9E','#2E2A4A','26%','#FFC2E2']];
+const rule = (st, ok, no, na) => `<span class="rule ${st}">${st==='ok'?'✓ '+ok:st==='no'?'✗ '+no:na}</span>`;
 const PC = ['M','N','A','B','C'], PCN = {M:'La Gioconda',N:'Notte stellata',A:'Rosso e bianco',B:'Il sole',C:'Righe verdi'}, PCS = {M:'Gioconda',N:'Notte stellata',A:'Rosso e bianco',B:'Sole',C:'Righe verdi'};
 const scelte = n => `<b>${n}</b> ${n===1?'scelta':'scelte'}`;
 const chip = (a,on,t) => `<button type="button" class="chip${on?' on':''}" data-a="${a}" aria-pressed="${!!on}">${t}</button>`;
@@ -753,34 +763,36 @@ const SCENES = {
     return `<div class="wallrow">${s.fr.map((id,k)=>`<div class="fr">${id==null?'':cv(id,'off',k,s.last===id)}</div>`).join('')}</div>
     ${s.ch?`<div class="choices">${s.fr.map((_,k)=>`<span>${scelte(7-k)}</span>`).join('')}</div>`:''}
     <div class="crate">${crate.map(id=>cv(id,'on',id,false)).join('')||'<span class="empty">La cassa è vuota.</span>'}</div>
-    <div class="sc-bar">${chip('ch',s.ch,'Mostra le scelte')}<button type="button" class="chip" data-a="reset">Stacca tutte</button></div>
-    <p class="sc-note">${s.note||'Clicca le tele nella cassa per appenderle da sinistra. Pareti diverse viste: '+s.seen.size}</p>` },
+    <div class="sc-bar">${(()=>{ const a=s.fr.indexOf(4), b=s.fr.indexOf(5); return rule(a<0||b<0?'na':Math.abs(a-b)===1?'no':'ok','La blu e l\'azzurra non sono vicine','La blu e l\'azzurra sono vicine','Regola: blu e azzurra mai vicine') })()}${chip('ch',s.ch,'Mostra le scelte')}<button type="button" class="chip" data-a="reset">Stacca tutte</button></div>
+    <p class="sc-note">${s.note||'Clicca le tele nella cassa per appenderle da sinistra. Pareti valide viste: '+s.seen.size}</p>` },
   act:(s,a,v)=>{ s.last=null;
     if(a==='ch'){ s.ch=!s.ch; s.note=s.ch?'Sotto ogni cornice: tra quante tele puoi scegliere quando la riempi, da sinistra a destra.':''; return {sound:'flip'} }
     if(a==='reset'){ s.fr.fill(null); s.note=''; return {sound:'hang'} }
     if(a==='off'){ s.fr[+v]=null; s.note=''; return {sound:'flip'} }
     const k=s.fr.indexOf(null); if(k<0) return; s.fr[k]=+v; s.last=+v;
     if(s.fr.includes(null)){ s.note=''; return {sound:'hang'} }
+    if(Math.abs(s.fr.indexOf(4)-s.fr.indexOf(5))===1){ s.note='La blu e l\'azzurra sono vicine: da lontano sembrano una tela sola. Questa parete non vale.'; return {sound:'bad'} }
     const w=s.fr.join(''), isNew=!s.seen.has(w); s.seen.add(w);
     const pretty=s.fr.map(id=>`<span class="dot ${C7[id]}"></span>`).join(' ');
-    s.note = isNew ? `Parete nuova: ${pretty}. Pareti diverse viste: ${s.seen.size}.` : `Questa parete l'avevi già vista. Pareti diverse: ${s.seen.size}.`;
+    s.note = isNew ? `Parete valida: ${pretty}. Pareti valide viste: ${s.seen.size}.` : `Questa parete l'avevi già vista. Pareti valide: ${s.seen.size}.`;
     return {sound:'hang'} } },
 
  /* II · disposizioni semplici: il podio */
  1:{ init:()=>({pod:[null,null,null], ch:false, seen:new Set(), note:''}),
   view:s=>{
-    const pic=(id,a,v)=>`<button type="button" class="jp k${id}" data-a="${a}" data-v="${v}" data-id="j${id}" aria-label="Quadro numero ${id+1}${a==='off'?', '+MED[v]+': clicca per toglierlo':''}"><span>${id+1}</span></button>`;
-    const step=k=>`<div class="pod p${k}"><div class="pod-slot">${s.pod[k]==null?'':pic(s.pod[k],'off',k)}</div><div class="pod-b"><b>${k+1}°</b><small>${MED[k]}</small>${s.ch?`<em>${9-k} scelte</em>`:''}</div></div>`;
+    const pic=(id,a,v)=>`<button type="button" class="jp k${id}" data-a="${a}" data-v="${v}" data-id="j${id}" aria-label="Quadro numero ${id+1}${id===6?', del nipote del presidente':''}${a==='off'?', '+MED[v]+': clicca per toglierlo':''}"><span>${id+1}</span>${id===6?'<i class="jp-tag">nipote</i>':''}</button>`;
+    const step=k=>`<div class="pod p${k}"><div class="pod-slot">${s.pod[k]==null?'':pic(s.pod[k],'off',k)}</div><div class="pod-b"><b>${k+1}°</b><small>${MED[k]}</small>${k===0?'<i class="pod-rule">mai il n. 7</i>':''}</div></div>`;
     const entries=Array.from({length:9},(_,id)=>s.pod.includes(id)?`<div class="jp-gap"><span>${id+1}</span></div>`:pic(id,'on',id)).join('');
     return `<div class="podium">${step(1)}${step(0)}${step(2)}</div>
     <div class="entries">${entries}</div>
-    <div class="sc-bar">${chip('ch',s.ch,'Mostra le scelte')}<button type="button" class="chip" data-a="reset">Svuota il podio</button></div>
+    <div class="sc-bar">${rule(s.pod[0]==null?'na':'ok','Oro assegnato a un quadro ammesso','','Regola: il n. 7 non può vincere l\'oro')}<button type="button" class="chip" data-a="reset">Svuota il podio</button></div>
     <p class="sc-note">${s.note||'Clicca i quadri in gara: il primo che scegli vince l\'oro, poi l\'argento e il bronzo. Clicca un quadro sul podio per toglierlo. Podi diversi: '+s.seen.size}</p>` },
   act:(s,a,v)=>{
     if(a==='ch'){ s.ch=!s.ch; s.note=s.ch?'Sotto ogni gradino: tra quanti quadri puoi scegliere, assegnando i premi in ordine.':''; return {sound:'flip'} }
     if(a==='reset'){ s.pod=[null,null,null]; s.note=''; return {sound:'hang'} }
     if(a==='off'){ s.pod[+v]=null; s.note=''; return {sound:'flip'} }
     const k=s.pod.indexOf(null); if(k<0){ s.note='Il podio è pieno: togli un quadro o svuotalo.'; return {sound:'bad'} }
+    if(k===0 && +v===6){ s.note='Il quadro n. 7 non può vincere l\'oro: scegli un altro quadro per il primo premio.'; return {bad:'j6', sound:'bad'} }
     s.pod[k]=+v;
     if(s.pod.includes(null)){ s.note=''; return {sound:'hang'} }
     const w=s.pod.join('-'), grp=[...s.pod].sort().join('-'), isNew=!s.seen.has(w);
@@ -794,17 +806,17 @@ const SCENES = {
  2:{ init:()=>({t:Array(5).fill(null), ch:false, seen:new Set(), last:null, note:''}),
   view:s=>{ const NM={N:'nere',W:'bianche',G:'dorate'};
     return `<div class="palette">${['N','W','G'].map(c=>`<span class="pal ${c}"><i></i>${NM[c]}: sacco pieno</span>`).join('')}</div>
-    <div class="mosaic m5">${s.t.map((c,k)=>`<button type="button" class="ts${c?' '+c:''}${s.last===k?' flip':''}" data-a="t" data-v="${k}" data-id="t${k}" aria-label="Posto ${k+1}: ${c?{N:'nera',W:'bianca',G:'dorata'}[c]:'vuoto'}"></button>`).join('')}</div>
-    ${s.ch?`<div class="choices c5">${s.t.map(()=>`<span>${scelte(3)}</span>`).join('')}</div>`:''}
-    <div class="sc-bar">${chip('ch',s.ch,'Mostra le scelte')}<button type="button" class="chip" data-a="reset">Togli tutte le tessere</button></div>
-    <p class="sc-note">${s.note||'Clicca un posto per cambiare tessera: nera, bianca, dorata, vuoto. I sacchi non finiscono mai. Disegni diversi completati: '+s.seen.size}</p>` },
+    <div class="mosaic m5">${s.t.map((c,k)=>`<button type="button" class="ts${c?' '+c:''}${s.last===k?' flip':''}${c&&(c===s.t[k-1]||c===s.t[k+1])?' clash':''}" data-a="t" data-v="${k}" data-id="t${k}" aria-label="Posto ${k+1}: ${c?{N:'nera',W:'bianca',G:'dorata'}[c]:'vuoto'}"></button>`).join('')}</div>
+    <div class="sc-bar">${rule(s.t.some((c,k)=>c&&c===s.t[k+1])?'no':s.t.includes(null)?'na':'ok','Nessuna coppia di vicine uguali','Ci sono tessere vicine dello stesso colore','Regola: mai due tessere vicine dello stesso colore')}<button type="button" class="chip" data-a="reset">Togli tutte le tessere</button></div>
+    <p class="sc-note">${s.note||'Clicca un posto per cambiare tessera: nera, bianca, dorata, vuoto. I sacchi non finiscono mai. Disegni validi completati: '+s.seen.size}</p>` },
   act:(s,a,v)=>{
     if(a==='ch'){ s.ch=!s.ch; s.last=null; s.note=s.ch?'Sotto ogni posto: tra quanti colori puoi scegliere. Mettere una tessera nera non toglie il nero agli altri posti.':''; return {sound:'flip'} }
     if(a==='reset'){ s.t.fill(null); s.last=null; s.note=''; return {sound:'hang'} }
     const k=+v, order=[null,'N','W','G']; s.t[k]=order[(order.indexOf(s.t[k])+1)%4]; s.last=k;
     if(s.t.includes(null)){ s.note=''; return {sound:'flip'} }
+    if(s.t.some((c,i)=>c===s.t[i+1])){ s.note='Due tessere vicine hanno lo stesso colore: il restauratore non accetta questo disegno.'; return {sound:'bad'} }
     const w=s.t.join(''), isNew=!s.seen.has(w); s.seen.add(w);
-    s.note = isNew ? `Disegno completo! Disegni diversi: ${s.seen.size}.` : `Questo disegno l'avevi già fatto. Disegni diversi: ${s.seen.size}.`;
+    s.note = isNew ? `Disegno valido! Disegni validi: ${s.seen.size}.` : `Questo disegno l'avevi già fatto. Disegni validi: ${s.seen.size}.`;
     return {sound:isNew?'hang':'flip'} } },
 
  /* IV · permutazioni con ripetizione: anagrammi di GIOTTO */
@@ -822,32 +834,36 @@ const SCENES = {
     return `<div class="plaque"><span class="plaque-h">Didascalia</span><div class="plaque-slots">${s.slots.map((id,k)=>`<div class="pslot">${id==null?'':tile(id,'off',k)}</div>`).join('')}</div><span class="plaque-sub">Anonimo, sec. XIV</span></div>
     <div class="floor">${tray.map(id=>tile(id,'on',id)).join('')||'<span class="empty">Tutte le lettere sono sulla targhetta.</span>'}</div>
     ${tw}
-    <div class="sc-bar"><button type="button" class="chip${s.twins?' on':''}" data-a="twins" aria-pressed="${s.twins}">Distingui le copie</button><button type="button" class="chip" data-a="reset">Stacca tutte</button></div>
-    <p class="sc-note">${s.note||'Clicca le lettere per attaccarle alla targhetta. Parole diverse composte: '+s.seen.size}</p>` },
+    <div class="sc-bar">${full?rule(/TT/.test(s.slots.map(id=>GL[id]).join(''))?'no':'ok','Le due T non sono vicine','Le due T sono vicine',''):rule('na','','','Regola: le due T mai vicine')}<button type="button" class="chip${s.twins?' on':''}" data-a="twins" aria-pressed="${s.twins}">Distingui le copie</button><button type="button" class="chip" data-a="reset">Stacca tutte</button></div>
+    <p class="sc-note">${s.note||'Clicca le lettere per attaccarle alla targhetta. Parole valide composte: '+s.seen.size}</p>` },
   act:(s,a,v)=>{
     if(a==='twins'){ s.twins=!s.twins; s.note=s.twins?'Ora le due O e le due T hanno un numero: O₁, O₂, T₁, T₂.':''; return {sound:'flip'} }
     if(a==='reset'){ s.slots.fill(null); s.note=''; return {sound:'hang'} }
     if(a==='off'){ s.slots[+v]=null; s.note=''; return {sound:'flip'} }
     const k=s.slots.indexOf(null); if(k<0) return; s.slots[k]=+v;
     if(s.slots.includes(null)){ s.note=''; return {sound:'flip'} }
-    const w=s.slots.map(id=>GL[id]).join(''), isNew=!s.seen.has(w); s.seen.add(w);
-    s.note = (isNew ? `Hai composto <span class="q">${w}</span>. Parole diverse: ${s.seen.size}.` : `<span class="q">${w}</span> l'avevi già composta. Parole diverse: ${s.seen.size}.`) + (s.twins?'':' Prova ad attivare «Distingui le copie».');
+    const w=s.slots.map(id=>GL[id]).join('');
+    if(/TT/.test(w)){ s.note=`<span class="q">${w}</span>: le due T sono vicine, questa parola non vale.`; return {sound:'bad'} }
+    const isNew=!s.seen.has(w); s.seen.add(w);
+    s.note = (isNew ? `Hai composto <span class="q">${w}</span>. Parole valide: ${s.seen.size}.` : `<span class="q">${w}</span> l'avevi già composta. Parole valide: ${s.seen.size}.`) + (s.twins?'':' Prova ad attivare «Distingui le copie».');
     return {sound:isNew?'hang':'flip'} } },
 
  /* V · combinazioni semplici: il prestito */
  4:{ init:()=>({pick:[], seen:new Set(), orders:new Set(), note:''}),
   view:s=>{
-    const ls=(id,a)=>{ const [sky,gr,h,sx,sun]=LS[id]; return `<button type="button" class="ls" style="--sky:${sky};--gr:${gr};--h:${h};--sx:${sx};--sun:${sun}" data-a="${a}" data-v="${id}" data-id="l${id}" aria-label="Paesaggio numero ${id+1}${a==='off'?', nella cassa: clicca per riappenderlo':''}"><span>${id+1}</span></button>` };
+    const ls=(id,a)=>{ const [k,sky,c,sx,sun]=LS[id]; return `<button type="button" class="ls ${k}" style="--sky:${sky};--c:${c};--sx:${sx};--sun:${sun}" data-a="${a}" data-v="${id}" data-id="l${id}" aria-label="${k==='s'?'Marina':'Montagna'} numero ${id+1}${a==='off'?', nella cassa: clicca per riappenderla':''}"><span>${id+1}</span></button>` };
+    const ns=s.pick.filter(x=>LS[x][0]==='s').length, nm=s.pick.length-ns;
     const wall=LS.map((_,id)=>s.pick.includes(id)?`<div class="ls-gap"><span>${id+1}</span></div>`:ls(id,'on')).join('');
     const inBox=[...s.pick].sort((x,y)=>x-y);
     return `<div class="lwall">${wall}</div>
-    <div class="loan"><span class="loan-l">Cassa per Parigi · ${s.pick.length} di 4</span><div class="lbox">${inBox.map(id=>ls(id,'off')).join('')}${'<div class="box-slot"></div>'.repeat(4-inBox.length)}</div></div>
+    <div class="loan"><span class="loan-l">Cassa per Parigi · marine ${ns} di 2 · montagne ${nm} di 2</span><div class="lbox">${inBox.map(id=>ls(id,'off')).join('')}${'<div class="box-slot"></div>'.repeat(4-inBox.length)}</div></div>
     <div class="sc-bar"><button type="button" class="chip" data-a="reset">Svuota la cassa</button></div>
-    <p class="sc-note">${s.note||'Clicca 4 paesaggi per metterli nella cassa; nella cassa stanno sempre in ordine di numero. Clicca un paesaggio nella cassa per riappenderlo. Gruppi diversi trovati: '+s.seen.size}</p>` },
+    <p class="sc-note">${s.note||'Clicca 2 marine e 2 montagne per metterle nella cassa; nella cassa stanno sempre in ordine di numero. Clicca un paesaggio nella cassa per riappenderlo. Gruppi diversi trovati: '+s.seen.size}</p>` },
   act:(s,a,v)=>{ const id=+v;
     if(a==='reset'){ s.pick=[]; s.note=''; return {sound:'hang'} }
     if(a==='off'){ s.pick=s.pick.filter(x=>x!==id); s.note=''; return {sound:'flip'} }
     if(s.pick.length>=4){ s.note='La cassa è piena: togli un paesaggio o svuotala.'; return {sound:'bad'} }
+    const kind=LS[id][0]; if(s.pick.filter(x=>LS[x][0]===kind).length>=2){ s.note=kind==='s'?'Hai già 2 marine: Parigi ne vuole esattamente due.':'Hai già 2 montagne: Parigi ne vuole esattamente due.'; return {bad:'l'+id, sound:'bad'} }
     s.pick.push(id);
     if(s.pick.length<4){ s.note=''; return {sound:'hang'} }
     const ord=s.pick.join('-'), grp=[...s.pick].sort((x,y)=>x-y), key=grp.join('-'), isNew=!s.seen.has(key), newOrd=!s.orders.has(ord); s.seen.add(key); s.orders.add(ord);
@@ -862,20 +878,22 @@ const SCENES = {
     const cnt=PC.map(c=>s.env.filter(x=>x.c===c).length);
     const stacks=PC.map(c=>`<button type="button" class="stack" data-a="add" data-v="${c}" aria-label="Prendi una cartolina: ${PCN[c]}"><span class="pc ${c}"></span><span class="pc ${c}"></span><span class="pc ${c}"></span><small>${PCN[c]}</small></button>`).join('');
     const sorted=[...s.env].sort((x,y)=>PC.indexOf(x.c)-PC.indexOf(y.c)||x.id-y.id);
-    const env=sorted.map(x=>`<button type="button" class="pc ${x.c}${s.last===x.id?' drop':''}" data-a="off" data-v="${x.id}" data-id="e${x.id}" aria-label="Cartolina ${PCN[x.c]} nella busta: clicca per rimetterla nella pila"></button>`).join('')+'<div class="box-slot pc-slot"></div>'.repeat(4-sorted.length);
-    const sb=s.sb?`<div class="sb" role="img" aria-label="Stelle e barre: ${cnt.join(', ')}">${cnt.map(n=>`<span class="sb-g">${'<i class="st"></i>'.repeat(n)}</span>`).join('<i class="br"></i>')}</div><p class="sb-l">Un pallino per ogni cartolina e una stanghetta tra un soggetto e l'altro: sempre 4 pallini e 4 stanghette, cioè 8 simboli.</p>`:'';
+    const env=sorted.map(x=>`<button type="button" class="pc ${x.c}${s.last===x.id?' drop':''}" data-a="off" data-v="${x.id}" data-id="e${x.id}" aria-label="Cartolina ${PCN[x.c]} nella busta: clicca per rimetterla nella pila"></button>`).join('')+'<div class="box-slot pc-slot"></div>'.repeat(6-sorted.length);
+    const sb=s.sb?`<div class="sb" role="img" aria-label="Stelle e barre: ${cnt.join(', ')}">${cnt.map(n=>`<span class="sb-g">${'<i class="st"></i>'.repeat(n)}</span>`).join('<i class="br"></i>')}</div><p class="sb-l">Un pallino per ogni cartolina e una stanghetta tra un soggetto e l'altro: sempre 6 pallini e 4 stanghette.</p>`:'';
     return `<div class="stacks">${stacks}</div>
-    <div class="envelope"><span class="env-l">Busta omaggio · ${s.env.length} di 4</span><div class="env-in">${env}</div></div>${sb}
-    <div class="sc-bar">${chip('sb',s.sb,'Stelle e barre')}<button type="button" class="chip" data-a="reset">Svuota la busta</button></div>
+    <div class="envelope"><span class="env-l">Busta omaggio · ${s.env.length} di 6</span><div class="env-in">${env}</div></div>${sb}
+    <div class="sc-bar">${rule(cnt[0]?'ok':s.env.length<6?'na':'no','C\'è almeno una Gioconda','Manca la Gioconda','Regola: almeno una Gioconda')}${chip('sb',s.sb,'Stelle e barre')}<button type="button" class="chip" data-a="reset">Svuota la busta</button></div>
     <p class="sc-note">${s.note||'Clicca una pila per mettere una cartolina nella busta: puoi prenderne anche più di una dello stesso quadro. Nella busta le cartoline si mettono in ordine da sole. Buste diverse: '+s.seen.size}</p>` },
   act:(s,a,v)=>{ s.last=null;
     if(a==='sb'){ s.sb=!s.sb; s.note=''; return {sound:'flip'} }
     if(a==='reset'){ s.env=[]; s.note=''; return {sound:'hang'} }
     if(a==='off'){ s.env=s.env.filter(x=>x.id!==+v); s.note=''; return {sound:'flip'} }
-    if(s.env.length>=4){ s.note='La busta è piena: togli una cartolina o svuotala.'; return {sound:'bad'} }
+    if(s.env.length>=6){ s.note='La busta è piena: togli una cartolina o svuotala.'; return {sound:'bad'} }
     const id=s.n++; s.env.push({c:v, id}); s.last=id;
-    if(s.env.length<4){ s.note=''; return {sound:'hang'} }
-    const cnt=PC.map(c=>s.env.filter(x=>x.c===c).length), key=cnt.join(''), isNew=!s.seen.has(key); s.seen.add(key);
+    if(s.env.length<6){ s.note=''; return {sound:'hang'} }
+    const cnt=PC.map(c=>s.env.filter(x=>x.c===c).length), key=cnt.join('');
+    if(!cnt[0]){ s.note='Nella busta non c\'è nessuna Gioconda: la commessa non la accetta.'; return {sound:'bad'} }
+    const isNew=!s.seen.has(key); s.seen.add(key);
     const desc=cnt.map((n,k)=>n?`${n} × ${PCS[PC[k]]}`:'').filter(Boolean).join(', ');
     s.note = isNew ? `Busta nuova: ${desc}. Buste diverse: ${s.seen.size}.` : `Questa busta l'avevi già fatta: ${desc}. Buste diverse: ${s.seen.size}.`;
     return {sound:isNew?'hang':'flip'} } },
@@ -923,18 +941,18 @@ function mountScene(fig){
 }
 /* ===== guida e soluzioni per chi organizza ===== */
 const MANUAL_ROOMS = [
- { install:"Nella cassa ci sono 7 tele, tutte di colore diverso. Cliccandole si appendono nelle cornici da sinistra; cliccando una tela appesa torna nella cassa. «Mostra le scelte» scrive sotto ogni cornice tra quante tele si può scegliere quando la si riempie: 7, 6, 5 e così via fino a 1. A parete piena il gioco conta le pareti diverse viste.",
-   tip:"È il punto di partenza: oggetti tutti diversi, usati tutti, e l'ordine conta. Far notare che le scelte calano di uno a ogni cornice: da qui il fattoriale." },
- { install:"Nove quadri in gara, numerati da 1 a 9, e un podio. Cliccando un quadro va sul primo gradino libero: prima l'oro, poi l'argento, poi il bronzo; cliccando un quadro sul podio torna in gara. «Mostra le scelte» scrive 9, 8 e 7 sotto i gradini. Se si rifà un podio con gli stessi tre quadri ma con i premi scambiati, il gioco fa notare che è un podio diverso.",
-   tip:"Rispetto alla sala I non si usano tutti i quadri: se ne scelgono 3 su 9 e ci si ferma dopo tre fattori. Confrontare con la sala V: lì gli stessi quadri in un altro ordine sono lo stesso gruppo, qui no, perché i premi sono diversi." },
- { install:"Cinque posti vuoti nella fila di mosaico. Cliccando un posto la tessera cambia: nera, bianca, dorata, vuoto. I sacchi non finiscono mai, quindi lo stesso colore si può usare quante volte si vuole. «Mostra le scelte» scrive 3 sotto ogni posto. A fila completa il gioco conta i disegni diversi.",
-   tip:"Rispetto alla sala II le scelte non calano, perché i colori si possono ripetere. Per questo la formula è una potenza, 3⁵, e non un prodotto che scende." },
- { install:"Le sei lettere sono sul pavimento. Cliccandole si attaccano alla targhetta da sinistra; cliccando una lettera sulla targhetta torna a terra. Il pulsante «Distingui le copie» numera le lettere uguali (O₁, O₂, T₁, T₂): a targhetta piena compaiono le 4 scritture con le copie numerate che corrispondono alla stessa parola. Il gioco conta le parole diverse composte.",
-   tip:"Con le copie numerate le lettere sono tutte diverse, come le tele della sala I, e le parole sarebbero 6! = 720; ogni parola vera ne raggruppa 4 (2! modi per le O × 2! per le T). Per questo si divide." },
- { install:"Nove paesaggi appesi e una cassa da 4 posti. Cliccando un paesaggio lo si mette nella cassa, dove i quadri si sistemano sempre in ordine di numero; cliccandolo nella cassa torna al muro. Se si sceglie di nuovo lo stesso gruppo in un altro ordine, il gioco avvisa che per la cassa è lo stesso prestito. Conta i gruppi diversi trovati.",
-   tip:"Il collegamento con le disposizioni: le scelte ordinate sono 9·8·7·6 = 3024, ma ogni gruppo compare 4! = 24 volte. Dividendo si passa dalle disposizioni alle combinazioni: C₉,₄ = D₉,₄ / 4!." },
- { install:"Cinque pile di cartoline e una busta da 4. Cliccando una pila si mette una cartolina nella busta, anche più di una dello stesso quadro; cliccando una cartolina nella busta la si rimette a posto. Nella busta le cartoline si ordinano da sole, perché l'ordine non conta. «Stelle e barre» disegna la busta come pallini e stanghette. Il gioco conta le buste diverse.",
-   tip:"È la più difficile delle sei. Il metodo delle stelle e barre la trasforma in una combinazione semplice: 8 simboli, si scelgono i 4 posti dei pallini. In generale C'ₙ,ₖ = C(n+k−1, k)." }
+ { install:"Nella cassa ci sono 7 tele, tutte di colore diverso. Cliccandole si appendono nelle cornici da sinistra; cliccando una tela appesa torna nella cassa. Un'etichetta controlla la regola: la blu e l'azzurra non devono stare vicine. «Mostra le scelte» scrive sotto ogni cornice tra quante tele si può scegliere: 7, 6, 5 e così via. A parete piena il gioco conta solo le pareti valide.",
+   tip:"Due idee in una: il conteggio complementare (tutte le pareti meno quelle vietate) e il blocco per contare gli oggetti che stanno vicini. Il blocco blu-azzurra si può girare, perché le due tele sono diverse: per questo 2·6!." },
+ { install:"Nove quadri in gara, numerati da 1 a 9, e un podio. Cliccando un quadro va sul primo gradino libero: prima l'oro, poi l'argento, poi il bronzo; cliccando un quadro sul podio torna in gara. Il quadro n. 7 (etichetta «nipote») non può andare sull'oro e il gioco lo blocca. Se si rifà un podio con gli stessi tre quadri ma con i premi scambiati, il gioco fa notare che è un podio diverso.",
+   tip:"La regola dei vincoli: si comincia dal posto vincolato. Si può confrontare con il complementare, 9·8·7 − 8·7 = 448: stesso risultato per due strade diverse." },
+ { install:"Cinque posti vuoti nella fila di mosaico. Cliccando un posto la tessera cambia: nera, bianca, dorata, vuoto. I colori si possono ripetere, ma due tessere vicine dello stesso colore vengono cerchiate di rosso e la fila non vale. A fila completa il gioco conta i disegni validi.",
+   tip:"Disposizioni con ripetizione con un vincolo: le scelte non sono più sempre 3, ma 3, 2, 2, 2, 2. Senza la regola sarebbero 3⁵ = 243." },
+ { install:"Le sei lettere sono sul pavimento. Cliccandole si attaccano alla targhetta da sinistra; cliccando una lettera sulla targhetta torna a terra. Il pulsante «Distingui le copie» numera le lettere uguali (O₁, O₂, T₁, T₂) e mostra le 4 scritture che corrispondono alla stessa parola. Un'etichetta dice se le due T sono vicine: quelle parole non vengono contate.",
+   tip:"Il blocco TT non si gira, perché le due T sono uguali: per questo 5!/2! e non 2·5!/2!. È la differenza con la sala I, dove il blocco blu-azzurra si poteva girare." },
+ { install:"Nove paesaggi appesi, 4 marine e 5 montagne, e una cassa da 4 posti. Cliccando un paesaggio lo si mette nella cassa, dove i quadri si sistemano sempre in ordine di numero; cliccandolo nella cassa torna al muro. Il gioco non accetta più di 2 marine o di 2 montagne. Se si sceglie di nuovo lo stesso gruppo in un altro ordine, avvisa che è lo stesso prestito.",
+   tip:"Due combinazioni indipendenti che si moltiplicano. Errore tipico: rispondere C(9,4) = 126, che conta anche i gruppi non equilibrati." },
+ { install:"Cinque pile di cartoline e una busta da 6. Cliccando una pila si mette una cartolina nella busta, anche più di una dello stesso quadro; cliccandola nella busta la si rimette a posto. Un'etichetta controlla che ci sia almeno una Gioconda. «Stelle e barre» disegna la busta come pallini e stanghette. Il gioco conta le buste valide.",
+   tip:"Il trucco di «almeno uno»: si mette subito da parte la cartolina obbligatoria e si contano le altre liberamente. In generale C'ₙ,ₖ = C(n+k−1, k); qui n = 5 soggetti e k = 5 cartoline libere." }
 ];
 function renderSolutions(){
   const A=window.SOLUZIONI; A.answers.forEach((a,i)=>{ S.solved[i]=a }); S.doorOn=true;
@@ -955,15 +973,15 @@ function renderSolutions(){
     <div><b>6 + 1</b><span>Sei sale in ordine libero e la porta di sicurezza</span></div>
     <div><b>+1 min</b><span>Per ogni risposta sbagliata</span></div>
     <div><b>+3 min</b><span>Per ogni scheda del catalogo (2 per sala)</span></div></div>
-    <p class="m-p">Argomento: <b>calcolo combinatorio</b>, con un tipo diverso in ogni sala. Per riconoscerlo bastano due domande: l'ordine conta? Gli elementi si possono ripetere? La porta di sicurezza torna alle permutazioni con ripetizione. Ogni sala risolta lascia un biglietto con un indizio; con i sei biglietti si ricostruisce la sequenza di tele che apre l'uscita.</p>
-    <div class="table-wrap"><table class="m-table"><thead><tr><th>Sala</th><th>Tipo</th><th>Conta l'ordine?</th><th>Si ripete?</th><th class="r">Risposta</th></tr></thead><tbody>
-    <tr><td>I</td><td>Permutazioni semplici</td><td>Sì</td><td>No, si usano tutti</td><td class="r">7! = 5040</td></tr>
-    <tr><td>II</td><td>Disposizioni semplici</td><td>Sì</td><td>No</td><td class="r">D₉,₃ = 504</td></tr>
-    <tr><td>III</td><td>Disposizioni con ripetizione</td><td>Sì</td><td>Sì</td><td class="r">3⁵ = 243</td></tr>
-    <tr><td>IV</td><td>Permutazioni con ripetizione</td><td>Sì</td><td>Oggetti uguali</td><td class="r">180</td></tr>
-    <tr><td>V</td><td>Combinazioni semplici</td><td>No</td><td>No</td><td class="r">C₉,₄ = 126</td></tr>
-    <tr><td>VI</td><td>Combinazioni con ripetizione</td><td>No</td><td>Sì</td><td class="r">C'₅,₄ = 70</td></tr>
-    <tr><td>✕</td><td>Porta: permutazioni con ripetizione</td><td>Sì</td><td>Oggetti uguali</td><td class="r">90</td></tr></tbody></table></div>`)}
+    <p class="m-p">Argomento: <b>calcolo combinatorio</b>, con un tipo diverso in ogni sala. Per riconoscerlo bastano due domande: l'ordine conta? Gli elementi si possono ripetere? Ogni sala aggiunge poi un vincolo, livello quarta superiore, da gestire con una tecnica: complementare, blocco, posto vincolato, casi o «almeno uno». La porta di sicurezza torna alle permutazioni con ripetizione. Ogni sala risolta lascia un biglietto con un indizio; con i sei biglietti si ricostruisce la sequenza di tele che apre l'uscita.</p>
+    <div class="table-wrap"><table class="m-table"><thead><tr><th>Sala</th><th>Tipo</th><th>Conta l'ordine?</th><th>Si ripete?</th><th>Vincolo</th><th class="r">Risposta</th></tr></thead><tbody>
+    <tr><td>I</td><td>Permutazioni semplici</td><td>Sì</td><td>No, si usano tutti</td><td>Blu e azzurra mai vicine</td><td class="r">7! − 2·6! = 3600</td></tr>
+    <tr><td>II</td><td>Disposizioni semplici</td><td>Sì</td><td>No</td><td>Il n. 7 non vince l'oro</td><td class="r">8·8·7 = 448</td></tr>
+    <tr><td>III</td><td>Disposizioni con ripetizione</td><td>Sì</td><td>Sì</td><td>Mai due colori uguali vicini</td><td class="r">3·2⁴ = 48</td></tr>
+    <tr><td>IV</td><td>Permutazioni con ripetizione</td><td>Sì</td><td>Oggetti uguali</td><td>Le due T mai vicine</td><td class="r">180 − 60 = 120</td></tr>
+    <tr><td>V</td><td>Combinazioni semplici</td><td>No</td><td>No</td><td>2 marine e 2 montagne</td><td class="r">C₄,₂·C₅,₂ = 60</td></tr>
+    <tr><td>VI</td><td>Combinazioni con ripetizione</td><td>No</td><td>Sì</td><td>Almeno una Gioconda</td><td class="r">C'₅,₅ = 126</td></tr>
+    <tr><td>✕</td><td>Porta: permutazioni con ripetizione</td><td>Sì</td><td>Oggetti uguali</td><td>—</td><td class="r">90</td></tr></tbody></table></div>`)}
 
   ${sec('m-come','Come si gioca',`<ol class="m-steps">
     <li><b>Ingresso.</b> Si scrive il nome della squadra e si preme «Entra in galleria». Se sul computer hanno già giocato altre squadre, qui si vede il libro delle firme.</li>
@@ -1019,7 +1037,7 @@ function renderSolutions(){
     <li>Provate il gioco sul computer della classe il giorno prima, con proiettore e casse.</li>
     <li>Schermo intero con F11. Squadre da 3–4 persone, con carta, penna e calcolatrice.</li>
     <li>Se le squadre giocano una dopo l'altra sullo stesso computer, la classifica si riempie da sola. Se giocano su computer o telefoni diversi, fatevi mandare i codici risultato e incollateli tutti sul vostro computer: avrete la classifica di tutta la classe da proiettare.</li>
-    <li>Se una squadra è bloccata, prima di dare la risposta indicate l'installazione: «Mostra le scelte» (sale I, II e III), «Distingui le copie» (sala IV), «Stelle e barre» (sala VI).</li>
+    <li>Se una squadra è bloccata, prima di dare la risposta indicate l'installazione: «Mostra le scelte» (sala I), «Distingui le copie» (sala IV), «Stelle e barre» (sala VI), e fate leggere le etichette con la regola, che dicono subito se una prova è valida.</li>
     <li>Alla fine fate notare le coppie da confrontare: I e IV (oggetti diversi o uguali), II e III (senza o con ripetizione), II e V (l'ordine conta o no), V e VI (senza o con ripetizione).</li>
     <li>Alla fine proiettate «Le sale, in breve» per correggere insieme.</li>
     <li>Questo file contiene tutte le risposte: tenetelo per voi.</li></ul>`)}
