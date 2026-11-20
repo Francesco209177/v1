@@ -617,7 +617,10 @@ const CNAME = {R:'rossa', B:'blu', Y:'gialla'};
 
 /* stato della partita */
 function fresh(){ return {started:null, penalty:0, view:'intro', room:null, solved:{}, hints:{}, errors:0, hintCount:0, doorOn:false, finished:null, noClock:false, team:'', recorded:false, recId:null, at:0} }
-function load(){ try{ const s=JSON.parse(localStorage.getItem(KEY)); if(s && s.solved) return Object.assign(fresh(), s) }catch(e){} return fresh() }
+function load(){ try{ const s=JSON.parse(localStorage.getItem(KEY)); if(s && s.solved){
+    /* risposte salvate con una versione vecchia delle sale: quelle sale vanno rifatte */
+    if(s.view!=='end') for(const k of Object.keys(s.solved)) if(!(+k<D.rooms.length && check(+k, String(s.solved[k])))) delete s.solved[k];
+    return Object.assign(fresh(), s) } }catch(e){} return fresh() }
 function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)) }catch(e){} }
 let S = load(), busy = false, confirmReset = false, confirmClear = false;
 function elapsed(){ if(!S.started) return 0; return Math.floor(((S.finished||Date.now()) - S.started)/1000) + S.penalty }
