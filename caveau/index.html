@@ -783,6 +783,56 @@ button.frag:hover{transform:translateY(-3px)}
 .sbar .st{width:16px;height:16px;border-radius:50%;background:var(--brass);display:block}
 .sbar .br{width:4px;height:32px;background:var(--ink);display:block;border-radius:2px}
 @keyframes qnewIn{from{opacity:0;transform:translateY(6px)}}
+
+.sc-key.gold .ksvg *{stroke:#E8B830}
+.sc-key.gold .ksvg{filter:drop-shadow(0 0 5px rgba(242,193,78,.75))}
+.pt-tag{position:absolute;top:3px;left:50%;transform:translateX(-50%);font:600 .5rem var(--mono);letter-spacing:.05em;text-transform:uppercase;color:var(--brass);white-space:nowrap}
+.box .bx-link{position:absolute;right:-14px;top:46%;width:18px;height:7px;border-radius:4px;background:var(--brass);z-index:2;box-shadow:0 1px 2px rgba(0,0,0,.4)}
+/* manopola della combinazione */
+.dlock{display:flex;flex-direction:column;align-items:center;gap:12px}
+.dl-face{position:relative;width:min(230px,68vw);aspect-ratio:228/232}
+.dl-face.clunk{animation:dlClunk .25s ease-out}
+@keyframes dlClunk{40%{transform:scale(.96)}}
+.dl-dial{width:100%;height:100%;border-radius:50%;cursor:grab;touch-action:none;outline:none;-webkit-tap-highlight-color:transparent}
+.dl-dial:active{cursor:grabbing}
+.dl-dial:focus-visible .dl-bezel{stroke:var(--accent);stroke-width:5}
+.dlock.locked .dl-dial{cursor:default}
+.dl-svg{width:100%;height:100%;display:block;overflow:visible;filter:drop-shadow(0 12px 18px rgba(0,0,0,.45))}
+.dl-rot{will-change:transform}
+.dl-bezel{fill:#575D63;stroke:#2B2F33;stroke-width:2}
+.dl-ring{stroke:#6E747A;stroke-width:1.5}
+.tk-M{stroke:#1B1E21;stroke-width:2.8}
+.tk-m{stroke:#33383C;stroke-width:1.3}
+.tk-n{font:600 23px var(--body);fill:#1B1E21;text-anchor:middle;dominant-baseline:central}
+.dl-kbase{fill:#8F959B}
+.knurl{fill:#DCE0E3;stroke:#737980;stroke-width:.8}
+.dl-cap{stroke:#878D93;stroke-width:1}
+.dl-fixlbl{font:700 10.5px var(--body);letter-spacing:.2em;fill:#5B6167;text-anchor:middle;dominant-baseline:central;pointer-events:none}
+.dl-mark{stroke:#E0B44E;stroke-width:6;stroke-linecap:round}
+.dl-panel{display:flex;flex-direction:column;align-items:center;gap:10px;width:100%}
+.dl-row{display:flex;align-items:center;gap:12px}
+.dl-step{width:44px;height:40px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:1rem;border-radius:6px}
+.dl-step:hover{border-color:var(--brass)}
+.dl-now{display:flex;flex-direction:column;align-items:center;line-height:1;min-width:84px}
+.dl-now small{font-size:.62rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.dl-now b{font:700 2rem var(--mono);color:var(--ink)}
+.dl-now b.pop{animation:dlPop .18s ease-out}
+@keyframes dlPop{50%{transform:scale(1.25)}}
+.dl-combo{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+.dl-combo.shake{animation:shake .35s}
+.dl-slot{width:34px;height:44px;display:grid;place-items:center;border:1px dashed var(--line);border-radius:4px;font:700 1.45rem var(--mono);color:var(--ink);background:var(--bg)}
+.dl-slot.on{border-style:solid;border-color:var(--brass);background:var(--surface);box-shadow:inset 0 -3px 0 rgba(0,0,0,.12)}
+.dl-slot.new{animation:dlSlot .4s cubic-bezier(.2,.9,.3,1.4)}
+@keyframes dlSlot{from{transform:translateY(-16px) scale(.5);opacity:0}}
+.dl-acts{display:flex;gap:8px}
+.dl-acts button{background:transparent;border:1px solid var(--line);color:var(--muted);font-size:.78rem;padding:4px 10px;border-radius:4px}
+.dl-acts button:hover{color:var(--ink);border-color:var(--muted)}
+.dl-help{font-size:.78rem;line-height:1.35;color:var(--muted);text-align:center;margin:0;max-width:34ch}
+.dl-go{justify-content:center}
+.dl-go .btn{min-width:200px}
+.ct-q .dlock{flex-direction:row;flex-wrap:wrap;justify-content:center;align-items:center;gap:18px}
+.ct-q .dl-face{width:min(180px,56vw)}
+.ct-q .dl-panel{width:auto}
 </style>
 
 <div class="wrap">
@@ -798,7 +848,7 @@ button.frag:hover{transform:translateY(-3px)}
 <div class="tr" id="tr" hidden aria-hidden="true"></div>
 
 <script>
-const ROOMS = [{"place":"Atrio","name":"L'atrio delle chiavi","story":"<p>Sul muro ci sono sei ganci in fila. Sul tavolo, sei chiavi tutte diverse. Accanto, un biglietto del direttore:</p>\n   <p class=\"note\">«La porta si sblocca solo se appendo le chiavi nell'ordine giusto. L'ordine non lo ricordo mai, ma so quanti ordini esistono. Quel numero è il codice.»</p>","q":"In quanti modi diversi si possono appendere le 6 chiavi ai 6 ganci, una per gancio?","hints":["Usi tutte le chiavi e conta solo l'ordine in cui le metti: sono permutazioni semplici.","Per il primo gancio hai 6 scelte, per il secondo 5, per il terzo 4… Moltiplica fino a 1."],"word":false,"h":1244732469,"x":"JWs4Bcnq383j/pilVLirMVkKiP3MmGm3itjpFutI+LvZWDdfg46E7WSq2UgpHBWLp/2f1UC2sBcSb0e+Me8gLR06CSpRApnQsBzY1alNAG2QH/VYOyLHP/5nTzp+XXAXGg/EmUxWWDlwdvNPvyH8eTMak6ItKAwOzlnwmONul+7ojBdsJGBAO1YBsOZyjIJy27bLyPyLUu5oh6cqoP1ecLzlq/785NoJqI8rPw13lLypldDjnEuI1pQzmFDuSx0ljNsfH0M2dfjOuROlHQ=="},{"place":"Galleria","name":"La galleria dei direttori","story":"<p>Otto ritratti di vecchi direttori ti fissano dalle pareti. Sul soffitto ci sono tre faretti: uno rosso, uno verde, uno blu. Ognuno va puntato su un ritratto diverso.</p>\n   <p class=\"note\">«Solo una disposizione dei tre colori accende il sensore. Quante ne dovrebbe provare un ladro, al peggio?»</p>","q":"In quanti modi puoi puntare i 3 faretti colorati su 3 ritratti diversi, scelti tra gli 8?","hints":["Scegli 3 ritratti su 8, ma rosso‑verde‑blu non è la stessa cosa di blu‑verde‑rosso: l'ordine conta e non ci sono ripetizioni. Sono disposizioni semplici.","Il faretto rosso ha 8 ritratti possibili, il verde 7, il blu 6."],"word":false,"h":2125366765,"x":"Wci1KpRT5uX9Ecc9kD4xbwqgVfJfxG+VfOcKrE22Je8dgSUwbbFcaUrJZCxKFEjVOXL/O4Hv3xoyBVkPcsgvniJ1XDnlstpSdXvRpgaY/f24H0cCTamdEgzmAylPxXZS0fqIwz6NFpoQLF8jftwkheFT3+CCxMbcgF0/RJTlSElT2tSluDSqvlBdz4NbSNdVNsLAmmItG89tueJxfaGBH9+mjNyZaWxUh3fUquoUiHyxAe3eiofNqLQ1c5RbRxMGGyTTDD18cToKCw=="},{"place":"Anticamera","name":"Il tastierino guasto","story":"<p>La terza porta ha un tastierino numerico. Solo cinque tasti funzionano ancora: <b>1, 3, 4, 7, 9</b>. Gli altri sono scollegati da anni.</p>\n   <p class=\"note\">«Il codice ha quattro cifre. Non ho mai avuto paura di ripetere la stessa cifra, anche quattro volte.»</p>","q":"Quanti codici di 4 cifre si possono digitare usando solo i 5 tasti funzionanti?","hints":["L'ordine conta e la stessa cifra può tornare più volte: sono disposizioni con ripetizione.","Ognuna delle 4 posizioni ha sempre 5 scelte, indipendenti l'una dall'altra."],"word":false,"h":2132309239,"x":"im+ev8x9Tx7t6nuPXufJ0gJ2m6/Vz/7MVE7M5Dh5WfNYD3nzhMxRpCx3lT2Y1MlKtn8dJn3k2y4KAKmSlhCZCxEEF5nBIhJYLQfaZVYqZLQurYdjuZzfoXFZYGirnJsSQSLc+oHYFn/KwD/tGddj9geGzKKiYK04PFgoLnrKqnfYr6VO57FyAX/B3iiG45LKSoXyvLsuj10jyDtnwlIZiUyR/3XhMS5H1D+Hn3+3BRArNIacwuiArEeNjGOQQUwyN+ZYofKz1nUYSgaPPZuWRjVAFe7QUu9pQlyZTfhRwvpmED7jY6XCdUk="},{"place":"Archivio","name":"L'insegna caduta","story":"<p>In archivio l'insegna d'ottone si è staccata dal muro. Per terra ci sono le sue nove lettere: <b>T A R T A G L I A</b>.</p>\n   <p class=\"note\">«Rimettile in fila come vuoi, anche senza senso. Conta le parole diverse che puoi leggere: è il codice.»</p>","q":"Quanti anagrammi, anche privi di significato, ha la parola TARTAGLIA?","hints":["Sono permutazioni di 9 lettere, ma alcune lettere sono uguali: scambiare due A tra loro non cambia la parola. Permutazioni con ripetizione.","Conta le lettere uguali: la A compare 3 volte, la T 2 volte. Dividi 9! per 3! e per 2!."],"word":false,"h":1013111380,"x":"cQZUL8A1LHwp8qZIb4TfRjGteR+1poML/tq/JA0AHYTHQ19rgGTSL+7IVkoJVDROCWl6RreDl2DhknzNy72BpOaQKPLUd8xsD3H7OTXpcAb++ktPahcjPWtqqo087oxSm5ECCsizvl8PNOf5ZIyqruE7Tl8hq2lnZE9pJeZp4R2ts8qgBf3vG3nRTHk6NiygLsTLjMnqhDdKnOMN1v2BmdS4TKjT+E+CL5mrYnN30h18FgXJdTEhwITJFxcL2FcXYT8xWWQ5hd9ibQ=="},{"place":"Sala cassette","name":"Le cassette di sicurezza","story":"<p>Dieci cassette di sicurezza, numerate da 1 a 10. Il meccanismo scatta solo se si girano nello stesso istante le chiavi di quattro cassette precise.</p>\n   <p class=\"note\">«Quali quattro? Questo è il segreto. Quanti gruppi di quattro esistono, invece, è il codice.»</p>","q":"In quanti modi si possono scegliere 4 cassette tra le 10?","hints":["Le chiavi si girano insieme: scegliere le cassette 2, 5, 7, 9 o 9, 7, 5, 2 è la stessa cosa. L'ordine non conta: sono combinazioni semplici.","Parti dalle disposizioni 10·9·8·7 e dividi per i 4! ordini di ogni gruppo."],"word":false,"h":992213701,"x":"5gDqgk3NHlHbJwz7TnDi68lX7Y4wic2E+C7wdtI3QOExJ000Uy2jVwoQ/R44WhW5mn394CLuUd77Dna6fH5lcOiq6GTrCB/vkbaj8ircVCMrrIRKfXESLrKVS2fKkZQlN05deOweRydQX0YN1dkCJNIb0tz3RD5fbvcMQKQqwMWPcajk5I3sHjisIn32umfWO6ZQiA3si9nzoEm5OLr6wsslPHhwPS8QUsrRXdDNff/DNMrFsyxTUEDRJvhVznnBWpnwZM+sX2U="},{"place":"Sala del triangolo","name":"Il pavimento di Tartaglia","story":"<p>Il pavimento è un grande triangolo di piastrelle. Su ognuna è inciso un numero: in quanti modi la si può raggiungere partendo dalla cima e scendendo, a ogni passo, di una riga in diagonale, a sinistra o a destra.</p>\n   <p>Le quattro righe più basse sono consumate dai passi. Una sola piastrella è dorata.</p>","q":"Quale numero era inciso sulla piastrella dorata?","hints":["Guarda le righe leggibili: ogni numero è la somma dei due che ha sopra. Puoi ricostruire le righe consumate una alla volta.","È il triangolo di Tartaglia: nella riga n, al posto k (contando da 0), c'è C(n,k). La piastrella dorata è nella riga 8 al posto 3."],"word":false,"h":433704656,"x":"+b+MqpYuggHemtemRMU7WkOfccYMM1i6C78WjABn59iosncVPWlos5YTegvshQibKkRKz1s49HHZPZS+A24gHzo3zR+HKrUEEC/kUfbfJkZF70ZkTRN/DW1jqqJwLulb3C5V8wuAIOa+zMwb10hiievf48557tpQ2FSwMJcnPWLccWVoKZ2Snp5Si0K7VVkZ0tlEDNGYNyLFVVz6nEFXzKmqxPicsw92V+pOx2dmtJW27OmF4adrTAo1Jt9HuGcV68PKJhu1Qc04kWWlIIAxbC54W55jDgfnum9KGFI/yfn743X8KIQzheYvJURNbJCzhp43pw=="},{"place":"Tesoreria","name":"Il sacchetto delle monete","story":"<p>Nella tesoreria ci sono quattro vassoi pieni di monete antiche: <b>fiorini d'oro, scudi d'argento, grossi di bronzo e denari di rame</b>. Ogni notte il direttore paga Gino con un sacchetto di <b>6 monete</b>, scelte come vuole, anche tutte dello stesso tipo.</p>\n   <p class=\"note\">«Ogni notte un sacchetto diverso. Conta solo quante monete ci sono di ogni tipo, non l'ordine in cui le metto dentro. Quanti sacchetti diversi posso preparare?»</p>","q":"Quanti sacchetti diversi di 6 monete si possono preparare con i 4 tipi di moneta?","hints":["L'ordine non conta e i tipi si possono ripetere: è una combinazione con ripetizione. Scrivi un sacchetto con 6 pallini (le monete) e 3 stanghette che separano i 4 tipi: ●●|●●●||● vuol dire 2 d'oro, 3 d'argento, nessuna di bronzo, 1 di rame.","Sono sempre 9 simboli: basta scegliere dove vanno le 3 stanghette. C′(4,6) = C(9,3) = 9·8·7 / 3!."],"word":false,"h":502018584,"x":"I8k9i2zKO9BDsC+jhFCAr8i/pGOZ4PuIi8FZNkgcWzupA7tSHxqxQJi5laZZ7824FpA6IQpfLuhwsIG16vCGgTygSnoEzQ7RFS+d2ej9/JhwzHKl783gaIcOACb4dnwVO3ssFQLSGTsnXyb0gAf1NyLOvnACxSD5bieix1f7CN9DJwTjmp60jm/cvMiUGJgLBxPDHeYzwx5rDjU2CIw/u4n332dAxv0liLXX+X3htQqu9/iL5hjkLVXmXBNFv5ADeqokphi7zgx0aV5xXZizGItsn8HZ0B3fZISvWFdai6s9QLzRLvlV1To0n9rAxjxZtAYJ9k7SnOVab8o1aSoYrHl6iLkrFRZvzgQJkVXwZMHum6G8AL90i1nNZ6BzXja4iJpmuiR70e3EDve+OmDXyrZxoGhHgOR9+8EALLP8A95bad7BYeX422Gsi6RWa2l81oYSBdkJTVYqAabCqASA6C9u/mywVI1v3Ic/uGm9WdGUif13vcc0Q+TIhQu75hoqIzQQ4fwtZhiswKmXVVXHGv+B50lwIhcObtrbA5k="},{"place":"Porta blindata","name":"La porta blindata","story":"<p>L'ultima porta. Una ruota a dieci cifre, da 0 a 9, e cinque finestrelle per il codice. Inciso nell'acciaio:</p>\n   <p class=\"note\">«Cinque cifre, tutte diverse. La prima è dispari, l'ultima è pari. Il numero dei codici possibili apre la porta, e ti dice quanto sarebbe stato sciocco tirare a caso.»</p>","q":"Quanti codici di 5 cifre tutte diverse cominciano con una cifra dispari e finiscono con una cifra pari?","hints":["Parti dalle posizioni vincolate: scegli prima la prima cifra e l'ultima, poi riempi le tre centrali con le cifre rimaste.","Prima cifra: 5 scelte (1, 3, 5, 7, 9). Ultima: 5 scelte (0, 2, 4, 6, 8). Per le tre centrali restano 8 cifre, senza ripetizioni e in ordine."],"word":false,"h":3189898625,"x":"2y838iLtJ85uUvS61+LGKcSHWnImWHCF1eazAvS5otjqj3WWytOdzr8PGPWkHR2FcNJDS4AztQidXsE097cV5ql/bwjyePYMHrNNWikk1873XvT9H5oL4WAzyUIgMj4YFoKmkUoA0CXNjdflmh4ULncG3o0HOVtxBMurykpR7vSpmsfHvFzm5TUs8ncm7MGHU7I4qI6ZQa5UwAjdPZOQLzL8F8W9nojCZqxmiseuTocMUqqb9yW4nH6gdcoOxBLGBLCi5+2C2+jnf4yRN6ewZDHtL6FZ/Q/fJNilLqkM08qMjucO7LKmZqRYUkdaGdwNp6ebp7agx9+fgHkNWs0K/h+MzNEbYSml2V8XpIzsfgXexc54Chyv2GRbpi2jlBkVCsmNLGtb43uerg=="},{"place":"Ufficio del direttore","name":"La cassaforte del direttore","story":"<p>La porta blindata si apre sull'ufficio del direttore. Il cancello verso la strada è comandato da una cassaforte a lettere, e sul tavolo c'è l'ultimo biglietto:</p>\n   <p class=\"note\">«Ogni mia serratura ti ha lasciato una lettera. Mettile in fila dal codice più piccolo al più grande: leggerai la parola che apre il cancello.»</p>","q":"Quale parola apre la cassaforte del direttore?","hints":["Ogni lettera porta scritto il codice della porta da cui viene. Mettile in ordine dal codice più piccolo al più grande.","Si parte dalla E del 56 e si finisce con la E del 30.240. La parola descrive quello che stai per fare."],"word":true,"h":1286609876,"x":"tp/sdA66hzngbZJJ2eBFED+imdRBPMCEkOx/XHYJFMDmrE10MlvOAIjZ+ULjYCTVCcbs87tilNQwnLf37aCBW3PnXrFLQH6ry+qpmK0wVuixbO5YxNOu76w/lfH56QlusL+xpBhoBm+H6SstY0dIdIPXR0CzgzmxvlO8LnceDRemQoHGvl3+DXAsEFeMCO1lLxSr5okwwRma8+ncY8wcXDZPMg5AtoyBU53kb/m/on/6/QaJlbXhU79MxKkqbxLP0Y1v0hbS0xiuRD2h7Y07y0rnqtdIqowHdq0g6bP9CPi7F0caScN9cryvGr7iqgghclV8hWl04pNdBGQsGdE="}];
+const ROOMS = [{"place":"Atrio","name":"L'atrio delle chiavi","story":"<p>Sul muro ci sono sei ganci in fila. Sul tavolo, sei chiavi tutte diverse: una è <b>d'oro</b>, quella del direttore. Accanto, un biglietto:</p>\n   <p class=\"note\">«La porta si sblocca solo se appendo le chiavi nell'ordine giusto. Una cosa la ricordo: la mia chiave d'oro non sta mai su un gancio alle estremità. Quanti ordini restano? Quel numero è il codice.»</p>","q":"In quanti modi si possono appendere le 6 chiavi ai 6 ganci, se la chiave d'oro non può stare né sul primo né sull'ultimo gancio?","hints":["Usi tutte le chiavi e conta l'ordine: sono permutazioni. Comincia dalla chiave con il vincolo: quella d'oro può andare solo su uno dei 4 ganci centrali.","Sistemata la chiave d'oro, le altre 5 chiavi riempiono i 5 ganci rimasti in 5! modi. Moltiplica: 4·5!."],"word":false,"h":3318716058,"x":"3h7+mt0NWtDkTtpImIl2etHqYlNQJFe+pjfrPm6dzJAF68qN6J1Gp/zQGadYgddYRxo2eAcUlEnyQ/716SXaCH0yYOKswFLUxf8SalBotKTDDXoEtMghCGGX9ZM+KRB+ppAwc4zg7+T3YoIFQwhs/57CqqNzu4v2akFcK4/tuA7ft6LBljQB81l2TYV5yuuHuVAzGm+PzgHz6kwsulVPxSRJz01J2lFyKMKaY2LAc3xxwRwjxolvsmD2J8YR0AnsZp/37dFJ93XjbsvK+sL8Flfm6Rdth7GSRMRXk29/rgiP5JrWc/hIkOoJFsXY8VRt3Be4XL1Vgh1CuFmo/oJCFchoJLk+k3v7OTTJQo3Tx42avU150h0kA2liWUeFinNBokm7ayLArvczMl0qUd5ML3R9lw=="},{"place":"Galleria","name":"La galleria dei direttori","story":"<p>Otto ritratti di vecchi direttori ti fissano dalle pareti; il primo è il <b>fondatore</b> della banca. Sul soffitto ci sono tre faretti: uno rosso, uno verde, uno blu. Ognuno va puntato su un ritratto diverso.</p>\n   <p class=\"note\">«Il rosso sul fondatore? Mai, sembrerebbe arrabbiato. Solo una disposizione dei tre colori accende il sensore. Quante ne dovrebbe provare un ladro, al peggio?»</p>","q":"In quanti modi puoi puntare i 3 faretti colorati su 3 ritratti diversi tra gli 8, se il faretto rosso non può illuminare il fondatore?","hints":["L'ordine dei colori conta e un ritratto non riceve due faretti: sono disposizioni. Comincia dal faretto con il vincolo: il rosso ha solo 7 ritratti possibili.","Dopo il rosso, il verde può andare su uno dei 7 ritratti rimasti (fondatore compreso) e il blu su uno dei 6: 7·7·6."],"word":false,"h":1800377246,"x":"PXI4+mUnun9IPC/RHUnlKGvDhuefptAcgx4HDxSlYeqctHKblxVJyWOmVh1NbxaoaC+KIvrm7M6SWAGF29e/yT4ON/b09tyzHtiWYkV9oYHWNTVaAX8UXGF8s6VEiVPzE2DhRhXjgeyx59BBTwP7PDSkEabNAwnJiJGFsDhZuuOM0YHp213pmN4UmKJLzC/R2LsFBqJmRSMSV93/sVr3JZo2S5v/s9pbjb6h6gWdb/OCz3eg0D6GyUgvcZBqMsrDujEFDWtrpWX9pF4vPPZOpTbFirkhyDXIHtmN9yBrvdIpQY/mMxo/kFA7vFDAXEIb7v+nvRsEwNjO2JXhuPlUOOlsUbDmEndMJ8ofEnm0r8uXLh93MAs9XhQIquvw7wvAPzLGpxQx7O9zj8+TPp4="},{"place":"Anticamera","name":"Il tastierino guasto","story":"<p>La terza porta ha un tastierino numerico. Solo cinque tasti funzionano ancora: <b>1, 3, 4, 7, 9</b>. Gli altri sono scollegati da anni.</p>\n   <p class=\"note\">«Il codice ha quattro cifre e le cifre si possono ripetere. Il 7 è il mio numero fortunato: nel codice c'è sempre, almeno una volta.»</p>","q":"Quanti codici di 4 cifre, fatti con i 5 tasti funzionanti, contengono almeno un 7?","hints":["L'ordine conta e le cifre si ripetono: disposizioni con ripetizione. «Almeno un 7» si conta meglio al contrario: tutti i codici meno quelli senza nessun 7.","Tutti i codici: 5⁴. Quelli senza 7 usano solo 4 tasti: 4⁴. Fai la differenza."],"word":false,"h":875095140,"x":"3rvxb5E/y2b/MzMpcxV5ExHtUD17kJrOho7qtO6sMgUT9S/CEfautMZqgJ2uLPb7rkqUpGUpYgPA3uL9wrcu1N015bT/1n0Q97mCvcI5aEFHWaoL+245N1JfyrjMCTrks0h5Y1WfY5i4nyWTyUqxNRJhgF5DUqhThyQU8ZJH9t1UafeSROC5ugWx5k3SgXjZuoQcJs39l8gz+LPkleRM6+dygjNhgBJHa9yzBtrgoccAlepCPDcf5CC2o+9BIYpgRca4qu3oHCAO+GYcOKrIKvt73Nnpk7uufUb12S4JL58PLF/SeriYbVsoYSAH6v9Yr/p+gZhx4dhiz1F3sMAYOZIXV/vCwhi7nt+0vtkGvgUmQ8ey6RF2j0NkYYTRR7zTC7oNrC7Z+RqmPFpV4Oz29I2qYni2qjqzsIdl0KiFMkJDyUjlrlT/uAd0f8nJXpByC2amH+M/c+cjv7yBBUGCoA=="},{"place":"Archivio","name":"L'insegna caduta","story":"<p>In archivio l'insegna d'ottone si è staccata dal muro. Per terra ci sono le sue nove lettere: <b>T A R T A G L I A</b>.</p>\n   <p class=\"note\">«Rimettile in fila come vuoi, anche senza senso. Conta le parole diverse che puoi leggere: è il codice.»</p>","q":"Quanti anagrammi, anche privi di significato, ha la parola TARTAGLIA?","hints":["Sono permutazioni di 9 lettere, ma alcune lettere sono uguali: scambiare due A tra loro non cambia la parola. Permutazioni con ripetizione.","Conta le lettere uguali: la A compare 3 volte, la T 2 volte. Dividi 9! per 3! e per 2!."],"word":false,"h":1013111380,"x":"cQZUL8A1LHwp8qZIb4TfRjGteR+1poML/tq/JA0AHYTHQ19rgGTSL+7IVkoJVDROCWl6RreDl2DhknzNy72BpOaQKPLUd8xsD3H7OTXpcAb++ktPahcjPWtqqo087oxSm5ECCsizvl8PNOf5ZIyqruE7Tl8hq2lnZE9pJeZp4R2ts8qgBf3vG3nRTHk6NiygLsTLjMnqhDdKnOMN1v2BmdS4TKjT+E+CL5mrYnN30h18FgXJdTEhwITJFxcL2FcXYT8xWWQ5hd9ibQ=="},{"place":"Sala cassette","name":"Le cassette di sicurezza","story":"<p>Dieci cassette di sicurezza, numerate da 1 a 10. Il meccanismo scatta solo se si girano nello stesso istante le chiavi di quattro cassette precise. Le chiavi delle cassette <b>1 e 2</b> sono incastrate tra loro: si girano tutte e due insieme, oppure nessuna delle due.</p>\n   <p class=\"note\">«Quali quattro? Questo è il segreto. Quanti gruppi di quattro esistono, invece, è il codice.»</p>","q":"In quanti modi si possono scegliere 4 cassette tra le 10, se le cassette 1 e 2 vanno scelte tutte e due insieme oppure nessuna delle due?","hints":["L'ordine non conta: combinazioni. Dividi in due casi: o scegli le cassette 1 e 2 insieme, o non scegli nessuna delle due.","Con 1 e 2 dentro mancano 2 cassette, da scegliere tra le altre 8: C(8,2). Senza 1 e 2 ne scegli 4 tra le 8: C(8,4). Somma i due casi."],"word":false,"h":4018992367,"x":"xa7A3ttJdJcQmcgGcTGNbVFNcbyHT+zOkjq+zvfnMunqa/sfPeXDAsjl2kCWznBVOuuVVEKK84sqAk7/ftZmDyEFI5kdptlXGLfgUp2J4tv5oKFJzxkY7MscDUaVtQidx+UleIXbWkW3uUozNtoeXZU7NP+EkQh5X/cJoRB4LLW1tOT07GMsv79j41T61lkS/5sA3aTTyRXcFpeM/h2J1K9EeKT/vhGNdJVCi7kGgzqCjq2ZIPBE2ifdtDYz9THk4qY8iGnvycZG2uqJIk/FiCQ42QvHVR1KTSzXtL66geaiAgI1XPXUJNNUC3ffq1sFxJeNLnwXV3ATD/525Eha2wIc6pYGZqBYbaDNcX0LKQxzEP3tww=="},{"place":"Sala del triangolo","name":"Il pavimento di Tartaglia","story":"<p>Il pavimento è un grande triangolo di piastrelle. Su ognuna è inciso un numero: in quanti modi la si può raggiungere partendo dalla cima e scendendo, a ogni passo, di una riga in diagonale, a sinistra o a destra.</p>\n   <p>Le quattro righe più basse sono consumate dai passi. Una sola piastrella è dorata.</p>","q":"Quale numero era inciso sulla piastrella dorata?","hints":["Guarda le righe leggibili: ogni numero è la somma dei due che ha sopra. Puoi ricostruire le righe consumate una alla volta.","È il triangolo di Tartaglia: nella riga n, al posto k (contando da 0), c'è C(n,k). La piastrella dorata è nella riga 8 al posto 3."],"word":false,"h":433704656,"x":"+b+MqpYuggHemtemRMU7WkOfccYMM1i6C78WjABn59iosncVPWlos5YTegvshQibKkRKz1s49HHZPZS+A24gHzo3zR+HKrUEEC/kUfbfJkZF70ZkTRN/DW1jqqJwLulb3C5V8wuAIOa+zMwb10hiievf48557tpQ2FSwMJcnPWLccWVoKZ2Snp5Si0K7VVkZ0tlEDNGYNyLFVVz6nEFXzKmqxPicsw92V+pOx2dmtJW27OmF4adrTAo1Jt9HuGcV68PKJhu1Qc04kWWlIIAxbC54W55jDgfnum9KGFI/yfn743X8KIQzheYvJURNbJCzhp43pw=="},{"place":"Tesoreria","name":"Il sacchetto delle monete","story":"<p>Nella tesoreria ci sono quattro vassoi pieni di monete antiche: <b>fiorini d'oro, scudi d'argento, grossi di bronzo e denari di rame</b>. Ogni notte il direttore paga Gino con un sacchetto di <b>6 monete</b>, scelte come vuole, anche tutte dello stesso tipo.</p>\n   <p class=\"note\">«Ogni notte un sacchetto diverso. Conta solo quante monete ci sono di ogni tipo, non l'ordine in cui le metto dentro. Quanti sacchetti diversi posso preparare?»</p>","q":"Quanti sacchetti diversi di 6 monete si possono preparare con i 4 tipi di moneta?","hints":["L'ordine non conta e i tipi si possono ripetere: è una combinazione con ripetizione. Scrivi un sacchetto con 6 pallini (le monete) e 3 stanghette che separano i 4 tipi: ●●|●●●||● vuol dire 2 d'oro, 3 d'argento, nessuna di bronzo, 1 di rame.","Sono sempre 9 simboli: basta scegliere dove vanno le 3 stanghette. C′(4,6) = C(9,3) = 9·8·7 / 3!."],"word":false,"h":502018584,"x":"I8k9i2zKO9BDsC+jhFCAr8i/pGOZ4PuIi8FZNkgcWzupA7tSHxqxQJi5laZZ7824FpA6IQpfLuhwsIG16vCGgTygSnoEzQ7RFS+d2ej9/JhwzHKl783gaIcOACb4dnwVO3ssFQLSGTsnXyb0gAf1NyLOvnACxSD5bieix1f7CN9DJwTjmp60jm/cvMiUGJgLBxPDHeYzwx5rDjU2CIw/u4n332dAxv0liLXX+X3htQqu9/iL5hjkLVXmXBNFv5ADeqokphi7zgx0aV5xXZizGItsn8HZ0B3fZISvWFdai6s9QLzRLvlV1To0n9rAxjxZtAYJ9k7SnOVab8o1aSoYrHl6iLkrFRZvzgQJkVXwZMHum6G8AL90i1nNZ6BzXja4iJpmuiR70e3EDve+OmDXyrZxoGhHgOR9+8EALLP8A95bad7BYeX422Gsi6RWa2l81oYSBdkJTVYqAabCqASA6C9u/mywVI1v3Ic/uGm9WdGUif13vcc0Q+TIhQu75hoqIzQQ4fwtZhiswKmXVVXHGv+B50lwIhcObtrbA5k="},{"place":"Porta blindata","name":"La porta blindata","story":"<p>L'ultima porta. Una ruota a dieci cifre, da 0 a 9, e cinque finestrelle per il codice. Inciso nell'acciaio:</p>\n   <p class=\"note\">«Cinque cifre, tutte diverse. La prima è dispari, l'ultima è pari. Il numero dei codici possibili apre la porta, e ti dice quanto sarebbe stato sciocco tirare a caso.»</p>","q":"Quanti codici di 5 cifre tutte diverse cominciano con una cifra dispari e finiscono con una cifra pari?","hints":["Parti dalle posizioni vincolate: scegli prima la prima cifra e l'ultima, poi riempi le tre centrali con le cifre rimaste.","Prima cifra: 5 scelte (1, 3, 5, 7, 9). Ultima: 5 scelte (0, 2, 4, 6, 8). Per le tre centrali restano 8 cifre, senza ripetizioni e in ordine."],"word":false,"h":3189898625,"x":"2y838iLtJ85uUvS61+LGKcSHWnImWHCF1eazAvS5otjqj3WWytOdzr8PGPWkHR2FcNJDS4AztQidXsE097cV5ql/bwjyePYMHrNNWikk1873XvT9H5oL4WAzyUIgMj4YFoKmkUoA0CXNjdflmh4ULncG3o0HOVtxBMurykpR7vSpmsfHvFzm5TUs8ncm7MGHU7I4qI6ZQa5UwAjdPZOQLzL8F8W9nojCZqxmiseuTocMUqqb9yW4nH6gdcoOxBLGBLCi5+2C2+jnf4yRN6ewZDHtL6FZ/Q/fJNilLqkM08qMjucO7LKmZqRYUkdaGdwNp6ebp7agx9+fgHkNWs0K/h+MzNEbYSml2V8XpIzsfgXexc54Chyv2GRbpi2jlBkVCsmNLGtb43uerg=="},{"place":"Ufficio del direttore","name":"La cassaforte del direttore","story":"<p>La porta blindata si apre sull'ufficio del direttore. Il cancello verso la strada è comandato da una cassaforte a lettere, e sul tavolo c'è l'ultimo biglietto:</p>\n   <p class=\"note\">«Ogni mia serratura ti ha lasciato una lettera. Mettile in fila dal codice più piccolo al più grande: leggerai la parola che apre il cancello.»</p>","q":"Quale parola apre la cassaforte del direttore?","hints":["Ogni lettera porta scritto il codice della porta da cui viene. Mettile in ordine dal codice più piccolo al più grande.","Si parte dalla E del 56 e si finisce con la E del 30.240. La parola descrive quello che stai per fare."],"word":true,"h":1286609876,"x":"tp/sdA66hzngbZJJ2eBFED+imdRBPMCEkOx/XHYJFMDmrE10MlvOAIjZ+ULjYCTVCcbs87tilNQwnLf37aCBW3PnXrFLQH6ry+qpmK0wVuixbO5YxNOu76w/lfH56QlusL+xpBhoBm+H6SstY0dIdIPXR0CzgzmxvlO8LnceDRemQoHGvl3+DXAsEFeMCO1lLxSr5okwwRma8+ncY8wcXDZPMg5AtoyBU53kb/m/on/6/QaJlbXhU79MxKkqbxLP0Y1v0hbS0xiuRD2h7Y07y0rnqtdIqowHdq0g6bP9CPi7F0caScN9cryvGr7iqgghclV8hWl04pNdBGQsGdE="}];
 const SECRET = {"story":"<p>Dietro la porta segreta c'è lo studiolo privato del direttore. Su un forziere di ferro sono incise le stesse lettere dell'insegna: <b>T, A, R, T, A, G, L, I, A</b>. Accanto, un biglietto scritto più in piccolo degli altri:</p>\n   <p class=\"note\">«Per chi ha trovato tutti i miei sigilli. Il forziere si apre con il numero di parole che si possono scrivere con queste nove lettere tenendo le tre A sempre vicine, ma le due T mai vicine.»</p>","q":"Quanti anagrammi di TARTAGLIA hanno le tre A tutte vicine e le due T non vicine?","hints":["Incolla le tre A in un blocco unico: restano 7 oggetti da mettere in fila (il blocco, T, T, R, G, L, I), con le due T uguali tra loro.","Con le A vicine le file sono 7!/2! = 2520. Togli quelle in cui anche le due T sono vicine: blocco AAA, blocco TT, R, G, L, I sono 6 oggetti tutti diversi, cioè 6! = 720."],"h":3302213398,"x":"FOlQW3gGACiBkBdVbZnLSVpDMg8nEvPbjV2Ps8NG64F4Kr42L/hYG+GBiFd558+5hNqKW53bvuuvaWj3ocKIYkeRL0zmbQvBTjPrJjVGlsne/dVC4qQdzW7DVVkzPnYFbUuYb+iJNLaghZnj3Dz4JuzmGWZgLsvk0mK8eaWc35LvMohJ2r13dHzByzMdK+8z9mt3Y69oxG9VOkLhZc+CyXxSBKzBTWuyVRAPYVtHv0oLwyFAPOBeuhPoTPZBXXiP5Tn5TT28FgjDCZk3XRmz9D8otV7vOEe19TgWeJK5Y33IfkRUEOZ1OqAoZxnYdSQL8pU/t13j6VlHHaNTG0F79QlwD3/tFY54fuyHpU+BgToN037H39BWesW4nKPrKAYA4XiB9+Kb1uorg2PBVz1rcv5JfpXsPAnymWmtP+4Zo1IGrYLf"};
 const CHASE = [{"q":"In quanti modi 4 amici si possono mettere in fila per una foto?","h":2430187854},{"q":"Quanti anagrammi, anche senza senso, ha la parola OSSO?","h":4247462949},{"q":"Cinque persone si stringono la mano, ognuna con tutte le altre una volta sola. Quante strette di mano?","h":1157669179},{"q":"Quanti numeri di due cifre diverse si possono scrivere con le cifre 1, 2, 3 e 4?","h":4063074428},{"q":"Un cono con 3 palline di gelato scelte tra 4 gusti, anche dello stesso gusto: quanti coni diversi, se l'ordine delle palline non conta?","h":3431204478},{"q":"Quante parole di 3 lettere, anche senza senso, si scrivono usando solo A e B?","h":1426629559}];
 const KEY = 'caveau-tartaglia-v2', SKEY = 'caveau-tartaglia-v3';
@@ -991,11 +1041,11 @@ const TR = {
 };
 const ROUTE = ['ante','iris','tasti','wipe','drawer','tri','cols','wheel','rings'];
 const GOALS = [
-  "Sei chiavi, sei ganci e un solo ordine giusto. Scopri quanti ordini esistono.",
-  "Tre faretti colorati e otto ritratti. Conta tutti i modi di accenderli.",
-  "Funzionano solo cinque tasti. Quanti codici si possono ancora formare?",
+  "Sei chiavi, sei ganci, e la chiave d'oro mai agli estremi. Quanti ordini restano?",
+  "Tre faretti, otto ritratti e un fondatore che odia il rosso. Quante accensioni?",
+  "Cinque tasti funzionanti e un 7 che non manca mai. Quanti codici?",
   "Nove lettere d'ottone sparse per terra. Conta le parole che puoi comporre.",
-  "Dieci cassette e quattro chiavi da girare insieme. Quanti gruppi diversi?",
+  "Dieci cassette, quattro chiavi e due cassette incastrate. Quanti gruppi?",
   "Il pavimento è consumato. Ricostruisci il numero della piastrella dorata.",
   "Quattro tipi di monete e un sacchetto da sei. Quanti sacchetti diversi?",
   "L'ultima porta: cinque cifre diverse e due vincoli da rispettare.",
@@ -1057,24 +1107,25 @@ const SCENES = [
   init:()=>({hooks:Array(6).fill(null), tried:new Set(), note:''}),
   view:s=>{ const free=[0,1,2,3,4,5].filter(k=>!s.hooks.includes(k));
     return `<p class="sc-tip">Prova tu: clicca le chiavi per appenderle ai ganci, una dopo l'altra. Clicca una chiave appesa per staccarla.</p>
-    <div class="sc-hooks">${s.hooks.map((k,h)=>`<div class="hook"><span class="hook-ico" aria-hidden="true"></span>${k==null?'<span class="hook-empty"></span>':`<button type="button" class="sc-key hung" data-a="off" data-v="${h}" data-id="k${k}" aria-label="Stacca la chiave ${k+1} dal gancio ${h+1}">${keySvg(k)}</button>`}<span class="hook-n">${h+1}</span></div>`).join('')}${S.secrets.includes('hook')?'':'<button type="button" class="hk-secret" data-a="secret" data-secret="hook" aria-label="Un gancio in più, quasi invisibile"></button>'}</div>
-    <div class="sc-table">${free.map(k=>`<button type="button" class="sc-key" data-a="on" data-v="${k}" data-id="k${k}" aria-label="Appendi la chiave ${k+1}">${keySvg(k)}</button>`).join('')||'<span class="sc-empty">Tutte le chiavi sono appese.</span>'}</div>
-    ${foot(s.note||'Ordini diversi provati: '+s.tried.size,'Stacca tutte')}` },
+    <div class="sc-hooks">${s.hooks.map((k,h)=>`<div class="hook"><span class="hook-ico" aria-hidden="true"></span>${k==null?'<span class="hook-empty"></span>':`<button type="button" class="sc-key hung${k===0?' gold':''}" data-a="off" data-v="${h}" data-id="k${k}" aria-label="Stacca la chiave ${k===0?"d'oro":k+1} dal gancio ${h+1}">${keySvg(k)}</button>`}<span class="hook-n">${h+1}</span></div>`).join('')}${S.secrets.includes('hook')?'':'<button type="button" class="hk-secret" data-a="secret" data-secret="hook" aria-label="Un gancio in più, quasi invisibile"></button>'}</div>
+    <div class="sc-table">${free.map(k=>`<button type="button" class="sc-key${k===0?' gold':''}" data-a="on" data-v="${k}" data-id="k${k}" aria-label="Appendi la chiave ${k===0?"d'oro":k+1}">${keySvg(k)}</button>`).join('')||'<span class="sc-empty">Tutte le chiavi sono appese.</span>'}</div>
+    ${foot(s.note||'Ordini validi provati: '+s.tried.size,'Stacca tutte')}` },
   act:(s,a,v)=>{
     if(a==='secret') return {secret:'hook', sound:'clink'};
     if(a==='reset'){ s.hooks.fill(null); s.note=''; return {sound:'clink'} }
     if(a==='off'){ s.hooks[+v]=null; s.note=''; return {sound:'clink'} }
     const h=s.hooks.indexOf(null); if(h<0) return; s.hooks[h]=+v;
     if(s.hooks.includes(null)){ s.note=''; return {sound:'clink'} }
+    if(s.hooks[0]===0 || s.hooks[5]===0){ s.note='La chiave d\'oro è su un gancio alle estremità: il direttore non l\'avrebbe mai messa lì. Questo ordine non vale.'; return {sound:'buzz'} }
     const key=s.hooks.join(''), isNew=!s.tried.has(key); s.tried.add(key);
-    s.note = isNew ? `Ordine n. ${s.tried.size} provato. Basta scambiare due chiavi per averne uno nuovo: quanti ce ne saranno?` : `Questo ordine l'avevi già provato. Ordini diversi: ${s.tried.size}.`;
+    s.note = isNew ? `Ordine valido n. ${s.tried.size}. Basta scambiare due chiavi per averne un altro: quanti ce ne saranno?` : `Questo ordine l'avevi già provato. Ordini validi: ${s.tried.size}.`;
     return {sound:isNew?'ding':'click2'} } },
  { /* 1 · faretti e ritratti */
   init:()=>({lit:Array(8).fill(null), tried:new Set(), note:''}),
   view:s=>{ const at=c=>s.lit.indexOf(c);
     return `<p class="sc-tip">Prova tu: clicca un ritratto per puntargli il prossimo faretto libero (rosso, poi verde, poi blu). Clicca di nuovo per spegnerlo.</p>
     <div class="sc-lamps">${[0,1,2].map(c=>`<span class="lamp c${c}${at(c)>=0?' on':''}"><span class="lamp-ico"></span><span>${COLORS[c]}${at(c)>=0?' → ritratto '+(at(c)+1):''}</span></span>`).join('')}</div>
-    <div class="sc-portraits">${s.lit.map((c,p)=>`<button type="button" class="portrait${c!=null?' lit c'+c:''}" data-a="p" data-v="${p}" data-id="p${p}" aria-pressed="${c!=null}" aria-label="Ritratto ${p+1}${c!=null?', luce '+COLORS[c]:''}">${PERSON}<span class="pt-n">${p+1}</span></button>`).join('')}</div>
+    <div class="sc-portraits">${s.lit.map((c,p)=>`<button type="button" class="portrait${c!=null?' lit c'+c:''}" data-a="p" data-v="${p}" data-id="p${p}" aria-pressed="${c!=null}" aria-label="Ritratto ${p+1}${p===0?', il fondatore':''}${c!=null?', luce '+COLORS[c]:''}">${PERSON}<span class="pt-n">${p+1}</span>${p===0?'<span class="pt-tag">fondatore</span>':''}</button>`).join('')}</div>
     ${foot(s.note||'Accensioni diverse provate: '+s.tried.size,'Spegni tutto')}` },
   act:(s,a,v)=>{
     if(a==='reset'){ s.lit.fill(null); s.note=''; return {sound:'click2'} }
@@ -1082,6 +1133,7 @@ const SCENES = [
     if(s.lit[p]!=null){ s.lit[p]=null; s.note=''; return {sound:'click2'} }
     const c=[0,1,2].find(c=>!s.lit.includes(c));
     if(c==null){ s.note='I tre faretti sono già accesi: spegnine uno per spostarlo.'; return {bad:'p'+p, sound:'buzz'} }
+    if(c===0 && p===0){ s.note='Il faretto rosso non può illuminare il fondatore! Puntalo su un altro ritratto.'; return {bad:'p0', sound:'buzz'} }
     s.lit[p]=c;
     if(![0,1,2].every(c=>s.lit.includes(c))){ s.note=''; return {sound:'lamp'} }
     const cfg=[0,1,2].map(c=>s.lit.indexOf(c)).join('-'), set=cfg.split('-').sort().join();
@@ -1099,16 +1151,18 @@ const SCENES = [
       : `<button type="button" class="kp-key${WORK.includes(n)?'':' broken'}" data-a="${WORK.includes(n)?'k':'x'}" data-v="${n}" data-id="kp${n}"${WORK.includes(n)?'':` aria-label="Tasto ${n}, rotto"`}>${n}</button>`).join('');
     return `<p class="sc-tip">Prova tu: digita dei codici di 4 cifre. Funzionano solo i tasti con il bordo pieno.</p>
     <div class="kp"><div class="kp-display${s.digits.length===4?' full':''}" aria-label="Display">${[0,1,2,3].map(k=>`<span class="kp-cell">${s.digits[k]??''}</span>`).join('')}</div><div class="kp-keys">${keys}</div></div>
-    ${foot(s.note||'Codici diversi provati: '+s.tried.size,'')}` },
+    ${foot(s.note||'Codici validi provati: '+s.tried.size,'')}` },
   act:(s,a,v)=>{
     if(a==='x'){ s.note=`Il tasto ${v} è rotto: non risponde.`; return {bad:'kp'+v, sound:'buzz'} }
     if(a==='del'){ if(s.digits.length===4) s.digits=[]; else s.digits.pop(); s.note=''; return {sound:'beep'} }
     if(s.digits.length===4) s.digits=[];
     s.digits.push(+v);
     if(s.digits.length<4){ s.note=''; return {sound:'beep'} }
-    const code=s.digits.join(''), isNew=!s.tried.has(code), rep=new Set(s.digits).size<4; s.tried.add(code);
-    s.note = isNew ? `Codice ${s.digits.join(' ')} provato${rep?': le cifre ripetute sono ammesse!':'.'} Codici diversi: ${s.tried.size}.` : `Codice già provato. Codici diversi: ${s.tried.size}.`;
-    return {sound:isNew?'ding':'click2', secret:new Set(s.digits).size===1?'keys':null} } },
+    const code=s.digits.join(''), sec=new Set(s.digits).size===1?'keys':null;
+    if(!s.digits.includes(7)){ s.note=`Codice ${s.digits.join(' ')}: non c'è nessun 7, il direttore non l'avrebbe mai scelto.`; return {sound:'buzz', secret:sec} }
+    const isNew=!s.tried.has(code), rep=new Set(s.digits).size<4; s.tried.add(code);
+    s.note = isNew ? `Codice ${s.digits.join(' ')} valido${rep?': le cifre ripetute sono ammesse!':'.'} Codici validi: ${s.tried.size}.` : `Codice già provato. Codici validi: ${s.tried.size}.`;
+    return {sound:isNew?'ding':'click2', secret:sec} } },
  { /* 3 · lettere dell'insegna */
   init:()=>({items:[...'GATIARLTA'].map((ch,id)=>({ch,id})), sel:null, seen:new Set(['GATIARLTA']), note:''}),
   view:s=>`<p class="sc-tip">Prova tu: clicca due lettere per scambiarle di posto.</p>
@@ -1130,16 +1184,16 @@ const SCENES = [
   init:()=>({sel:[], groups:new Set(), orders:new Set(), just:null, note:''}),
   view:s=>`<p class="sc-tip">Prova tu: clicca quattro cassette per infilare le chiavi. Clicca di nuovo per toglierle.</p>
     <div class="sc-boxes">${[1,2,3,4,5,6,7,8,9,10].map(n=>{ const k=s.sel.indexOf(n);
-      return `<button type="button" class="box${k>=0?' sel':''}${s.just===n?' just':''}" data-a="b" data-v="${n}" data-id="b${n}" aria-pressed="${k>=0}" aria-label="Cassetta ${n}"><span class="bx-n">${n}</span><span class="bx-hole"></span>${k>=0?`<span class="bx-ord">${k+1}ª</span>`:''}</button>` }).join('')}</div>
+      return `<button type="button" class="box${k>=0?' sel':''}${s.just===n?' just':''}" data-a="b" data-v="${n}" data-id="b${n}" aria-pressed="${k>=0}" aria-label="Cassetta ${n}${n<=2?', incastrata con la '+(3-n):''}"><span class="bx-n">${n}</span><span class="bx-hole"></span>${n===1?'<span class="bx-link" aria-hidden="true"></span>':''}${k>=0?`<span class="bx-ord">${k+1}ª</span>`:''}</button>` }).join('')}</div>
     ${foot(s.note||'Gruppi diversi provati: '+s.groups.size,'Togli le chiavi')}`,
   act:(s,a,v)=>{
     s.just=null;
     if(a==='reset'){ s.sel=[]; s.note=''; return {sound:'click2'} }
-    const n=+v, k=s.sel.indexOf(n);
-    if(k>=0){ s.sel.splice(k,1); s.note=''; return {sound:'click2'} }
-    if(s.sel.length===4){ s.note="Hai solo quattro chiavi: togline una prima di sceglierne un'altra."; return {bad:'b'+n, sound:'buzz'} }
-    s.sel.push(n); s.just=n;
-    if(s.sel.length<4){ s.note=''; return {sound:'unlock'} }
+    const n=+v, k=s.sel.indexOf(n), pair=n<=2?[1,2]:[n];
+    if(k>=0){ s.sel=s.sel.filter(x=>!pair.includes(x)); s.note=n<=2?'Le chiavi delle cassette 1 e 2 sono incastrate: escono tutte e due insieme.':''; return {sound:'click2'} }
+    if(s.sel.length+pair.length>4){ s.note=n<=2?'Le cassette 1 e 2 si girano insieme: servono due chiavi libere.':"Hai solo quattro chiavi: togline una prima di sceglierne un'altra."; return {bad:'b'+n, sound:'buzz'} }
+    s.sel.push(...pair); s.just=n;
+    if(s.sel.length<4){ s.note=n<=2?'Le cassette 1 e 2 sono incastrate: hai girato tutte e due le chiavi.':''; return {sound:'unlock'} }
     const g=[...s.sel].sort((a,b)=>a-b).join(', '), ord=s.sel.join(','), isNew=!s.groups.has(g), sameOrder=s.orders.has(ord);
     s.groups.add(g); s.orders.add(ord);
     s.note = isNew ? `Gruppo {${g}} scelto. Gruppi diversi: ${s.groups.size}.`
@@ -1395,8 +1449,8 @@ function viewSecret(){
     <div class="frag-found"><span class="seal-c big">★</span><p><b>Regalo del direttore:</b> 3 minuti in più prima dell'allarme e il sigillo d'oro sul diploma.</p></div>
     <div class="row"><button class="btn" id="back-secret">${backLbl}</button></div></div>`;
   } else {
-    h+=`<form class="lock" id="slock" autocomplete="off"><div class="lock-head"><label for="code-s">Codice del forziere</label></div>
-      <div class="lock-row"><input id="code-s" inputmode="numeric" placeholder="0000" aria-describedby="sfb"><button class="btn" type="submit">Apri il forziere</button></div>
+    h+=`<form class="lock" id="slock" autocomplete="off"><div class="lock-head"><label>Combinazione del forziere</label></div>
+      ${dialLockHtml()}<input type="hidden" id="code-s"><div class="lock-row dl-go"><button class="btn" type="submit">Apri il forziere</button></div>
       <p class="fb" id="sfb" aria-live="polite"></p></form>
     <div class="hints">${SECRET.hints.slice(0,shown).map((t,k)=>`<p class="hint"><b>Indizio ${k+1}.</b> ${t}</p>`).join('')}
       ${shown<SECRET.hints.length?'<button class="btn-ghost" id="shint">Chiedi un indizio (−2 min)</button>':''}</div>
@@ -1416,19 +1470,19 @@ function bindSecret(){
     const v=($('code-s')||{}).value||''; render({anim:false}); if($('code-s')) $('code-s').value=v; dirSay('hint') });
   const f=$('slock');
   if(f){ const inp=$('code-s'), fb=$('sfb');
-    inp.addEventListener('input',()=>{ sfx('key'); fb.textContent='' });
+    mountDial(f.querySelector('.dlock'), inp, 's', {onChange:()=>{ fb.textContent='' }});
     f.addEventListener('submit', async e=>{ e.preventDefault(); if(busy) return;
       const v=inp.value.replace(/[\s.'’]/g,'');
-      if(!/^\d+$/.test(v)){ fb.className='fb bad'; fb.textContent='Scrivi un numero intero, senza altri simboli.'; return }
+      if(!/^\d+$/.test(v)){ fb.className='fb bad'; fb.textContent='Prima componi la combinazione: gira la manopola e fissa ogni cifra.'; return }
       const a=String(parseInt(v,10));
       if(fnv('tartaglia|segreta|'+a)===SECRET.h){
-        busy=true; S.secretSolved=a; S.penalty-=SECRET_BONUS; save(); f.classList.add('open'); sfx('win');
+        f._dl&&f._dl.lock(); delete DLV.s; busy=true; S.secretSolved=a; S.penalty-=SECRET_BONUS; save(); f.classList.add('open'); sfx('win');
         const br=f.getBoundingClientRect(); fx.win(1, br.left+br.width/2, br.top+br.height/2); fx.rain(160);
         floatText('+3:00 · regalo del direttore',$('timer'),'good'); tick();
         await wait(RM?0:900); busy=false; render({anim:false}); setTimeout(()=>dirSay('ok'),700);
       } else {
         S.errors++; S.penalty+=ERR_COST; save(); tick(); sfx('bad'); floatText('−0:30',$('timer')); if(!raiseAlarm()) dirSay('err'); restartAnim($('timer'),'hit'); restartAnim(f,'shake');
-        fb.className='fb bad'; fb.textContent='Codice errato: il forziere non si apre. Hai perso 30 secondi.'; inp.select();
+        fb.className='fb bad'; fb.textContent='Combinazione errata: il forziere non si apre. Hai perso 30 secondi.'; f._dl&&f._dl.reset(true);
       } }) }
 }
 $('seals').addEventListener('click', showSeals);
@@ -1441,9 +1495,9 @@ const RUNNER_SVG = `<svg viewBox="0 0 44 70"><circle cx="24" cy="9" r="7" fill="
 const GINO_RUN = `<svg viewBox="0 0 52 76"><circle cx="26" cy="13" r="8" fill="#E8B98A"/><path d="M17 9c1-7 5-10 9-10s8 3 9 10z" fill="#22324F"/><rect x="15" y="8" width="22" height="3.5" rx="1.5" fill="#16223A"/><path d="M16 24q10-5 20 0l-3 24h-14z" fill="#2B3F66"/><path d="M21 48l-7 15l-6 2" stroke="#2B3F66" stroke-width="6" fill="none" stroke-linecap="round"/><path d="M31 48l6 14l7 1" stroke="#2B3F66" stroke-width="6" fill="none" stroke-linecap="round"/><path d="M34 28l12 2" stroke="#2B3F66" stroke-width="5" stroke-linecap="round"/><rect x="44" y="26" width="8" height="6" rx="2" fill="#E0B44E"/></svg>`;
 const WHO = { dir:{name:'Il direttore Tartaglia · registrazione del 1898', short:'Il direttore', svg:GRAMO_SVG}, gino:{name:'Gino, il custode notturno', short:'Gino', svg:GINO_SVG} };
 const INTRO = [
-  ["*crrr* Prova, prova… Questa è una registrazione del direttore Niccolò Tartaglia, Brescia, 1898.","Se mi stai ascoltando, sei rimasto chiuso nel mio caveau. Peccato per te. Le mie chiavi non stanno mai nello stesso ordine due volte… o quasi."],
-  ["I miei predecessori ti guardano dalle cornici. Tre faretti e otto ritratti: scegli bene chi illuminare, e con quale colore."],
-  ["Il tastierino l'ha rotto il custode con il manico di una scopa. Restano cinque tasti. A me bastano."],
+  ["*crrr* Prova, prova… Questa è una registrazione del direttore Niccolò Tartaglia, Brescia, 1898.","Se mi stai ascoltando, sei rimasto chiuso nel mio caveau. Peccato per te. Le mie chiavi cambiano ordine ogni notte, ma la chiave d'oro non la metto mai agli estremi."],
+  ["I miei predecessori ti guardano dalle cornici. Il primo è il fondatore: il rosso non lo sopporta. Scegli bene chi illuminare, e con quale colore."],
+  ["Il tastierino l'ha rotto il custode con il manico di una scopa. Restano cinque tasti, e per fortuna c'è il 7: nei miei codici non manca mai."],
   ["La mia insegna è caduta. Tre A e due T: le lettere uguali sono gemelle, nessuno sa distinguerle."],
   [],
   ["Questo pavimento l'ho disegnato io. Ogni piastrella sa quante strade la raggiungono dalla cima."],
@@ -1457,7 +1511,7 @@ const DIR_LINES = {
   hint:["Un indizio? Ai miei tempi si contava a mano.","Va bene, ti aiuto. Ma me lo segno.","Debolezza registrata.","Ecco. Ma la prossima volta pensaci da solo."],
   ok:["Bene. Molto bene.","Esatto: hai contato senza elencare.","Corretto. Sto quasi per ammirarti.","Sì! Questa me la segno.","Ottimo lavoro. Avanti."]
 };
-const TORCH = ["Graffiato sul muro: «Tutte le chiavi, tutti i ganci: conta solo l'ordine.»","Dietro una cornice: «Rosso sul ritratto 1 e verde sul 2 non è come verde sull'1 e rosso sul 2.»","Sotto il tastierino: «Ogni casella ha sempre gli stessi cinque tasti a disposizione.»","Sul retro dell'insegna: «Scambiare due A dà la stessa parola.»","Dentro una cassetta: «Le chiavi si girano insieme: l'ordine non esiste.»","Una freccia sul pavimento: «Ogni numero è la somma dei due sopra.»","Sul fondo di un vassoio: «●●|●●●||● · sei monete, tre separatori.»","Sulla porta: «Prima le cifre con le regole, poi le altre.»","Sulla cassaforte: «Dal codice più piccolo al più grande.»"];
+const TORCH = ["Graffiato sul muro: «Prima la chiave d'oro, poi tutte le altre.»","Dietro una cornice: «Comincia dal rosso: è lui che ha la regola.»","Sotto il tastierino: «Tutti i codici, meno quelli senza 7.»","Sul retro dell'insegna: «Scambiare due A dà la stessa parola.»","Dentro una cassetta: «1 e 2: o tutte e due o nessuna. Sono due casi.»","Una freccia sul pavimento: «Ogni numero è la somma dei due sopra.»","Sul fondo di un vassoio: «●●|●●●||● · sei monete, tre separatori.»","Sulla porta: «Prima le cifre con le regole, poi le altre.»","Sulla cassaforte: «Dal codice più piccolo al più grande.»"];
 const TORCH_S = "Sul forziere: «Prima tutte le A insieme, poi togli le file con le T insieme.»";
 let dlgOpen = false;
 function whenIdle(fn, delay){ const go=()=>{ if(busy||dlgOpen){ setTimeout(go,150); return } fn() }; setTimeout(go, delay||0) }
@@ -1606,7 +1660,7 @@ function viewChase(){
   <div class="ct" aria-hidden="true"><div class="ct-lamps"></div><div class="ct-door"><span>Ufficio del direttore</span></div><div class="ct-gino" id="ct-gino"><span class="ct-cone"></span>${GINO_RUN}</div><div class="ct-you">${RUNNER_SVG}</div><div class="ct-floor"></div></div>
   <div class="ct-meter"><span>Vantaggio su Gino</span><div class="ct-bar"><i id="ct-bar"></i></div></div>
   <div class="ct-q lock"><p class="cq-n" id="cq-n">Domanda ${qi+1} di 3</p><p class="cq-t" id="cq-t">${q.q}</p>
-    <form id="cform" autocomplete="off" class="lock-row"><input id="cans" inputmode="numeric" placeholder="?" aria-label="Risposta"><button class="btn" type="submit">Rispondi</button></form>
+    <form id="cform" autocomplete="off">${dialLockHtml({help:false})}<input type="hidden" id="cans"><div class="lock-row dl-go"><button class="btn" type="submit">Rispondi</button></div></form>
     <p class="fb" id="cfb" aria-live="polite"></p></div></div>`;
 }
 function startChase(){
@@ -1614,9 +1668,10 @@ function startChase(){
   const me={dead:false}; CH=me;
   const begin=()=>{
     if(me.dead) return; if(busy){ setTimeout(begin,120); return }
-    const speed=(100/38)*(S.gino==='seal'?0.7:1);
+    const speed=(100/55)*(S.gino==='seal'?0.7:1);
     me.dist=S.gino==='help'?100:80; me.last=performance.now(); me.next=0;
     const ge=$('ct-gino'), bar=$('ct-bar'), f=$('cform'), inp=$('cans'), fb=$('cfb'); if(!ge) return;
+    delete DLV.c; const cdl=mountDial(f.querySelector('.dlock'), inp, 'c', {max:3, minSlots:2, onChange:()=>{ fb.textContent='' }});
     const draw=()=>{ const d=Math.max(0,me.dist); ge.style.left=`calc((98% - 192px) * ${(100-d)/100})`; bar.style.width=d+'%'; bar.className=d<30?'low':d<60?'mid':'' };
     const loop=t=>{ if(me.dead) return; const dt=Math.min(.1,(t-me.last)/1000); me.last=t;
       if(!dlgOpen){ me.dist-=speed*dt; if(t>me.next){ sfx('step'); if(me.dist<30) sfx('beat'); me.next=t+200+Math.max(0,me.dist)*8 } }
@@ -1627,12 +1682,12 @@ function startChase(){
       if(fnv('fuga|'+id+'|'+String(parseInt(v,10)))===CHASE[id].h){
         sfx('good'); me.dist=Math.min(100,me.dist+40); S.chaseProg=qi+1; save(); fb.className='fb'; fb.textContent='Giusto! Guadagni strada.';
         if(S.chaseProg>=3){ escaped(); return }
-        const q=CHASE[S.chaseQs[S.chaseProg]]; $('cq-n').textContent=`Domanda ${S.chaseProg+1} di 3`; const qt=$('cq-t'); qt.textContent=q.q; restartAnim(qt,'qnew'); inp.value=''; inp.focus();
-      } else { sfx('bad'); me.dist=Math.max(1,me.dist-15); S.errors++; save(); restartAnim(f,'shake'); fb.className='fb bad'; fb.textContent='No! Gino si avvicina…'; inp.select() }
+        const q=CHASE[S.chaseQs[S.chaseProg]]; $('cq-n').textContent=`Domanda ${S.chaseProg+1} di 3`; const qt=$('cq-t'); qt.textContent=q.q; restartAnim(qt,'qnew'); cdl.reset(false);
+      } else { sfx('bad'); me.dist=Math.max(1,me.dist-15); S.errors++; save(); restartAnim(f,'shake'); fb.className='fb bad'; fb.textContent='No! Gino si avvicina…'; cdl.reset(true) }
     });
-    draw(); inp.focus();
+    draw();
     if(!S.chaseIntro){ S.chaseIntro=true; save();
-      say([{who:'gino', text: S.gino==='help' ? "Ah, sei tu! Mi hai aiutato… ti lascio un po' di vantaggio. Ma il lavoro è lavoro: FERMATI!" : S.gino==='seal' ? "Quel sigillo del direttore… va bene, corro piano. Ma corro!" : "Ti ho visto, sai? Altro che gatto. FERMATI!"}]).then(()=>{ const i2=$('cans'); i2&&i2.focus() }) }
+      say([{who:'gino', text: S.gino==='help' ? "Ah, sei tu! Mi hai aiutato… ti lascio un po' di vantaggio. Ma il lavoro è lavoro: FERMATI!" : S.gino==='seal' ? "Quel sigillo del direttore… va bene, corro piano. Ma corro!" : "Ti ho visto, sai? Altro che gatto. FERMATI!"}]).then(()=>{ const d2=document.querySelector('#cform .dl-dial'); d2&&d2.focus({preventScroll:true}) }) }
     me.raf=requestAnimationFrame(loop);
   };
   begin();
@@ -1649,6 +1704,71 @@ function afterRender(view, o){
   if(o.anim===false) return;
   if(view==='room') whenIdle(()=>roomIntro(S.room), RM?60:650);
   if(view==='secret') whenIdle(secretIntro, RM?60:650);
+}
+
+/* ===== manopola della combinazione (al posto della tastiera) ===== */
+const DLV = {};
+function dialSvg(){
+  let ticks=''; for(let t=0;t<50;t++){ const M=t%5===0; ticks+=`<line x1="0" y1="-97" x2="0" y2="${M?-81:-89}" transform="rotate(${t*7.2})" class="${M?'tk-M':'tk-m'}"/>` }
+  const nums=[0,1,2,3,4,5,6,7,8,9].map(d=>`<text transform="rotate(${d*36}) translate(0,-65)" class="tk-n">${d}</text>`).join('');
+  let knurl=''; for(let k=0;k<40;k++) knurl+=`<rect x="-2.6" y="-51" width="5.2" height="12" rx="1" transform="rotate(${k*9})" class="knurl"/>`;
+  return `<svg class="dl-svg" viewBox="-114 -118 228 232" aria-hidden="true"><defs>
+    <radialGradient id="dlg-face" cx="35%" cy="28%" r="85%"><stop offset="0" stop-color="#F6F7F8"/><stop offset=".55" stop-color="#C4C8CC"/><stop offset="1" stop-color="#868C92"/></radialGradient>
+    <radialGradient id="dlg-cap" cx="38%" cy="32%" r="80%"><stop offset="0" stop-color="#FBFCFD"/><stop offset=".6" stop-color="#BCC1C6"/><stop offset="1" stop-color="#7A8086"/></radialGradient></defs>
+    <circle r="109" class="dl-bezel"/>
+    <g class="dl-rot"><circle r="99" fill="url(#dlg-face)" class="dl-ring"/>${ticks}${nums}<circle r="52" class="dl-kbase"/>${knurl}<circle r="38" fill="url(#dlg-cap)" class="dl-cap"/></g>
+    <text class="dl-fixlbl" y="1">FISSA</text>
+    <path d="M0 -116 L0 -97" class="dl-mark"/></svg>`;
+}
+function dialLockHtml(o){ o=o||{};
+  return `<div class="dlock">
+    <div class="dl-face"><div class="dl-dial" tabindex="0" role="slider" aria-label="Manopola della combinazione: frecce per girarla, Invio per fissare la cifra, Backspace per toglierla" aria-valuemin="0" aria-valuemax="9" aria-valuenow="0">${dialSvg()}</div></div>
+    <div class="dl-panel">
+      <div class="dl-row"><button type="button" class="dl-step" data-d="-1" aria-label="Gira indietro di una cifra">◀</button><span class="dl-now"><small>Sulla tacca</small><b class="dl-v">0</b></span><button type="button" class="dl-step" data-d="1" aria-label="Gira avanti di una cifra">▶</button></div>
+      <button type="button" class="btn-ghost dl-fix">Fissa la cifra</button>
+      <div class="dl-combo" aria-live="polite" aria-label="Combinazione composta"></div>
+      <div class="dl-acts"><button type="button" class="dl-undo">Togli l'ultima</button><button type="button" class="dl-clear">Azzera</button></div>
+      ${o.help===false?'':'<p class="dl-help">Gira la manopola (trascinala o clicca un numero), poi premi al centro per fissare la cifra. Una cifra alla volta, da sinistra.</p>'}
+    </div></div>`;
+}
+function mountDial(root, input, key, opts){
+  opts=opts||{}; if(!root) return null;
+  const dial=root.querySelector('.dl-dial'), rot=root.querySelector('.dl-rot'), vEl=root.querySelector('.dl-v'), combo=root.querySelector('.dl-combo'), face=root.querySelector('.dl-face');
+  const max=opts.max||6, minSlots=opts.minSlots||4;
+  let ang=0, last=0, lastTick=0, drag=null, locked=false;
+  let digits=String(input.value||DLV[key]||'').replace(/\D/g,'').split('').map(Number).slice(0,max);
+  const cur=()=>(((Math.round(-ang/36))%10)+10)%10;
+  const paint=ms=>{ rot.style.transition=ms?`transform ${ms}ms cubic-bezier(.25,1.15,.5,1)`:'none'; rot.style.transform=`rotate(${ang}deg)`;
+    const d=cur(); vEl.textContent=d; dial.setAttribute('aria-valuenow',d);
+    if(d!==last){ last=d; const t=performance.now(); if(t-lastTick>30){ sfx('tick'); lastTick=t } restartAnim(vEl,'pop') } };
+  const show=(fresh,silent)=>{ const n=Math.min(max, Math.max(minSlots, digits.length+1));
+    combo.innerHTML=Array.from({length:n},(_,k)=>`<span class="dl-slot${k<digits.length?' on':''}${fresh&&k===digits.length-1?' new':''}">${k<digits.length?digits[k]:''}</span>`).join('');
+    input.value=digits.join(''); DLV[key]=input.value; if(!silent&&opts.onChange) opts.onChange(input.value) };
+  const step=n=>{ if(locked) return; ang-=n*36; paint(320) };
+  const fix=()=>{ if(locked) return; if(digits.length>=max){ restartAnim(combo,'shake'); sfx('buzz'); return } digits.push(cur()); sfx('clink'); restartAnim(face,'clunk'); show(true) };
+  const undo=()=>{ if(locked||!digits.length) return; digits.pop(); sfx('click2'); show() };
+  const reset=spin=>{ digits=[]; show(false,true); if(spin && !RM){ ang=Math.round(ang/360)*360-720; paint(1100) } else { ang=0; paint(0) } };
+  const xy=e=>{ const r=dial.getBoundingClientRect(); return {dx:e.clientX-(r.left+r.width/2), dy:e.clientY-(r.top+r.height/2), R:r.width/2} };
+  const deg=p=>Math.atan2(p.dy,p.dx)*180/Math.PI;
+  dial.addEventListener('pointerdown',e=>{ if(locked || e.button>0) return; const p=xy(e); try{dial.setPointerCapture(e.pointerId)}catch(_){} drag={a:deg(p), x:e.clientX, y:e.clientY, moved:false}; rot.style.transition='none'; e.preventDefault(); dial.focus({preventScroll:true}) });
+  dial.addEventListener('pointermove',e=>{ if(!drag) return; const p=xy(e), a=deg(p); let d=a-drag.a; if(d>180) d-=360; if(d<-180) d+=360; drag.a=a;
+    if(Math.hypot(e.clientX-drag.x,e.clientY-drag.y)>5) drag.moved=true; if(drag.moved){ ang+=d; paint(0) } });
+  const end=e=>{ if(!drag) return; const moved=drag.moved; drag=null; const p=xy(e), dist=Math.hypot(p.dx,p.dy)/p.R;
+    if(!moved){ if(dist<.42){ fix(); return } if(dist<=1.05){ const th=deg(p)+90, d=((Math.round((th-ang)/36)%10)+10)%10; let delta=(((-d*36-ang)%360)+540)%360-180; ang+=delta } }
+    ang=Math.round(ang/36)*36; paint(380) };
+  dial.addEventListener('pointerup',end); dial.addEventListener('pointercancel',end);
+  dial.addEventListener('wheel',e=>{ e.preventDefault(); step(e.deltaY>0?1:-1) },{passive:false});
+  dial.addEventListener('keydown',e=>{ const k=e.key;
+    if(k==='ArrowRight'||k==='ArrowUp'){ step(1); e.preventDefault() } else if(k==='ArrowLeft'||k==='ArrowDown'){ step(-1); e.preventDefault() }
+    else if(k==='Enter'||k===' '){ fix(); e.preventDefault() } else if(k==='Backspace'||k==='Delete'){ undo(); e.preventDefault() } });
+  root.querySelectorAll('.dl-step').forEach(b=>b.addEventListener('click',()=>step(+b.dataset.d)));
+  root.querySelector('.dl-fix').addEventListener('click',fix);
+  root.querySelector('.dl-undo').addEventListener('click',undo);
+  root.querySelector('.dl-clear').addEventListener('click',()=>{ if(!locked){ sfx('click2'); reset(true) } });
+  paint(0); show();
+  const api={ reset, lock:()=>{ locked=true; root.classList.add('locked') }, set:str=>{ digits=String(str).replace(/\D/g,'').split('').map(Number).slice(0,max); show() }, get value(){ return input.value } };
+  if(input.form) input.form._dl=api;
+  return api;
 }
 
 function doors(){
@@ -1791,12 +1911,12 @@ function viewRoom(i){
     </div>`;
   }else{
     h+=`<form class="lock" id="lock" autocomplete="off">
-      <div class="lock-head"><label for="code-${i}">${r.word?'Parola della cassaforte':'Codice della serratura'}</label>
+      <div class="lock-head"><label${r.word?` for="code-${i}"`:''}>${r.word?'Parola della cassaforte':'Combinazione della serratura'}</label>
         <svg class="padlock" viewBox="0 -8 40 56" aria-hidden="true"><path class="shackle" d="M11 22V14a9 9 0 0 1 18 0v8"/><rect x="5" y="22" width="30" height="24" rx="3" class="pl-body"/><g class="pl-dial"><circle cx="20" cy="34" r="6"/><line x1="20" y1="34" x2="20" y2="29.5"/></g></svg></div>
-      <div class="lock-row">
-        <input id="code-${i}" ${r.word?'autocapitalize="characters" spellcheck="false" placeholder="PAROLA"':'inputmode="numeric" placeholder="0000"'} aria-describedby="fb">
+      ${r.word?`<div class="lock-row">
+        <input id="code-${i}" autocapitalize="characters" spellcheck="false" placeholder="PAROLA" aria-describedby="fb">
         <button class="btn" type="submit">Prova il codice</button>
-      </div>
+      </div>`:`${dialLockHtml()}<input type="hidden" id="code-${i}"><div class="lock-row dl-go"><button class="btn" type="submit">Gira la maniglia</button></div>`}
       <p class="fb" id="fb" aria-live="polite"></p>
     </form>
     <div class="hints">
@@ -1873,6 +1993,7 @@ function bind(){
   if(form){
     const input=$('code-'+S.room), fb=$('fb');
     let prevLen=0, rot=0;
+    if(!ROOMS[S.room].word) mountDial(form.querySelector('.dlock'), input, S.room, {onChange:()=>{ form.classList.remove('bad'); fb.textContent='' }});
     input.addEventListener('input',()=>{ const L=input.value.length; rot+=(L>=prevLen?1:-1)*47; prevLen=L;
       const dl=form.querySelector('.pl-dial'); if(dl) dl.style.transform=`rotate(${rot}deg)`;
       sfx('key'); input.classList.add('pop'); clearTimeout(input._t); input._t=setTimeout(()=>input.classList.remove('pop'),110);
@@ -1881,11 +2002,11 @@ function bind(){
       e.preventDefault(); if(busy) return;
       let a;
       if(ROOMS[S.room].word){ a=input.value.toUpperCase().replace(/[^A-Z]/g,''); if(!a){fb.className='fb bad';fb.textContent='Scrivi una parola, solo lettere.';return} }
-      else { const v=input.value.replace(/[\s.'’]/g,''); if(!/^\d+$/.test(v)){fb.className='fb bad';fb.textContent='Scrivi un numero intero, senza altri simboli.';return} a=String(parseInt(v,10)) }
+      else { const v=input.value.replace(/[\s.'’]/g,''); if(!/^\d+$/.test(v)){fb.className='fb bad';fb.textContent='Prima componi la combinazione: gira la manopola e fissa ogni cifra.';return} a=String(parseInt(v,10)) }
       if(check(S.room,a)){
         const room=S.room; S.answers[room]=a;
         if(room===ROOMS.length-1) S.finished=Date.now();
-        save(); busy=true; input.readOnly=true; form.classList.add('open'); sfx('good');
+        save(); busy=true; input.readOnly=true; form._dl&&form._dl.lock(); delete DLV[room]; form.classList.add('open'); sfx('good');
         const br=form.querySelector('button[type=submit]').getBoundingClientRect(); fx.win(room, br.left+br.width/2, br.top+br.height/2);
         const sfo=document.querySelector('.safe'); if(sfo && !RM){ sfo.classList.add('opening'); setTimeout(()=>sfx('safe'),80); setTimeout(()=>sfx('open'),1100) }
         await wait(RM?0:(sfo?2600:700)); busy=false;
@@ -1899,9 +2020,9 @@ function bind(){
         const sfd=document.querySelector('.safe'); if(sfd) restartAnim(sfd,'denied');
         if(!raiseAlarm()) dirSay('err');
         sfx('bad'); floatText('−0:30',$('timer')); restartAnim($('timer'),'hit'); restartAnim(form,'bad');
-        fb.className='fb bad';fb.textContent='Codice errato: la serratura non si muove. Hai perso 30 secondi.';
+        fb.className='fb bad';fb.textContent=form._dl?'Combinazione errata: la manopola torna a zero. Hai perso 30 secondi.':'Codice errato: la serratura non si muove. Hai perso 30 secondi.';
         form.classList.remove('shake');void form.offsetWidth;form.classList.add('shake');
-        input.select();
+        if(form._dl) form._dl.reset(true); else input.select();
       }
     });
   }
