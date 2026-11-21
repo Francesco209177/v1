@@ -366,9 +366,20 @@ class Vault:
             ]
         return sorted(out, key=lambda i: i.modified, reverse=True)
 
-    def update(self, item_id: str, *, data: bytes | None = None, name: str | None = None, meta: dict[str, Any] | None = None) -> Item:
+    def update(
+        self,
+        item_id: str,
+        *,
+        data: bytes | None = None,
+        name: str | None = None,
+        meta: dict[str, Any] | None = None,
+        mark_simulated: bool = False,
+    ) -> Item:
+        """``mark_simulated`` segna il file come SIMULATO (solo in quella direzione: non si torna indietro)."""
         with self._lock:
             item = self.item(item_id)
+            if mark_simulated:
+                item.origin = "simulato"
             if data is not None:
                 item.version += 1
                 _write_atomic(self.objects / item_id, crypto.seal(self._key("objects"), data, self._obj_aad(item_id, item.version)))
