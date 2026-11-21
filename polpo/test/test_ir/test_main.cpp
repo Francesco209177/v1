@@ -6,6 +6,7 @@
 
 #include "polpo/ir/ir_codec.h"
 #include "polpo/ir/ir_file.h"
+#include "polpo/ir/ir_library.h"
 
 using namespace polpo;
 
@@ -229,6 +230,43 @@ void test_protocol_names() {
     }
 }
 
+void test_library_codes_encode() {
+    TEST_ASSERT_TRUE(ir_library_size() > 20);
+    for (auto cat : {IrCategory::TV, IrCategory::Audio}) {
+        const auto buttons = ir_library_buttons(cat);
+        TEST_ASSERT_TRUE(!buttons.empty());
+        for (auto b : buttons) {
+            for (const auto& code : ir_library_lookup(cat, b)) {
+                const IrSignal sig = ir_library_signal(code);
+                std::string why;
+                TEST_ASSERT_TRUE_MESSAGE(ir_signal_validate(sig, why), sig.name.c_str());
+                IrTimings t;
+                TEST_ASSERT_TRUE_MESSAGE(ir_encode(sig, t), sig.name.c_str());
+            }
+        }
+    }
+    // Samsung "Accendi" = parola NEC-like 0xE0E040BF (MSB first del flusso): verifica sui primi bit.
+    auto power = ir_library_lookup(IrCategory::TV, IrButton::Power);
+    TEST_ASSERT_EQUAL_STRING("Samsung", power[0].brand);
+}
+
+void test_panasonic_power_matches_known_frame() {
+    // Il frame Panasonic "power" noto, scritto MSB-first, è 40 04 01 00 BC BD:
+    // trasmesso LSB-first per byte diventa 02 20 80 00 3D BD.
+    IrSignal s;
+    s.protocol = IrProtocol::Kaseikyo;
+    s.address = 0x200280;
+    s.command = 0x3D0;
+    IrTimings t;
+    TEST_ASSERT_TRUE(ir_encode(s, t));
+    const uint8_t expected[6] = {0x02, 0x20, 0x80, 0x00, 0x3D, 0xBD};
+    for (int bit = 0; bit < 48; ++bit) {
+        const bool one = (expected[bit / 8] >> (bit % 8)) & 1;
+        const uint32_t space = t.durations[2 + 2 * bit + 1];
+        TEST_ASSERT_EQUAL_UINT32(one ? 1296u : 432u, space);
+    }
+}
+
 int main() {
     UNITY_BEGIN();
     RUN_TEST(test_parse_sample);
@@ -244,5 +282,7 @@ int main() {
     RUN_TEST(test_decode_rejects_noise);
     RUN_TEST(test_split_for_rmt);
     RUN_TEST(test_protocol_names);
+    RUN_TEST(test_library_codes_encode);
+    RUN_TEST(test_panasonic_power_matches_known_frame);
     return UNITY_END();
 }

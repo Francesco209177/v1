@@ -24,9 +24,15 @@ def merge_bin(source, target, env):
             print("merge_bin: manca %s, salto" % path)
             return
 
-    esptool = os.path.join(env.PioPlatform().get_package_dir("tool-esptool") or "", "esptool.py")
+    # Il pacchetto tool-esptool di PlatformIO contiene un eseguibile "esptool" (5.x).
+    pkg = env.PioPlatform().get_package_dir("tool-esptool") or ""
     python = env.subst("$PYTHONEXE")
-    cmd = [python, esptool] if os.path.isfile(esptool) else [python, "-m", "esptool"]
+    if os.path.isfile(os.path.join(pkg, "esptool")):
+        cmd = [os.path.join(pkg, "esptool")]
+    elif os.path.isfile(os.path.join(pkg, "esptool.py")):
+        cmd = [python, os.path.join(pkg, "esptool.py")]
+    else:
+        cmd = [python, "-m", "esptool"]
     cmd += [
         "--chip", "esp32s3", "merge-bin",
         "-o", out,

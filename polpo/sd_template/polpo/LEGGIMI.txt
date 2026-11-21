@@ -1,0 +1,19 @@
+POLPO - cartella dei dati sulla microSD
+=======================================
+
+Questa cartella viene creata dal firmware Polpo al primo avvio.
+
+  ir/       telecomandi infrarossi (.ir, formato testo "IR signals file")
+  badusb/   script per la tastiera USB (.txt, sottoinsieme di DuckyScript)
+  rf433/    segnali radio a 433,92 MHz (.sub, codici fissi o RAW)
+  nfc/      letture di tag NFC (.nfc)
+  logs/     risultati delle scansioni Wi-Fi e Bluetooth (.csv)
+
+Puoi copiare qui file .ir scaricati da raccolte pubbliche di telecomandi:
+il Polpo li legge se usano i protocolli supportati (NEC, Samsung32, RC5,
+RC6, SIRC, Kaseikyo, RCA, Pioneer) o il tipo "raw".
+
+REGOLE
+- Usa il Polpo solo su dispositivi tuoi o con permesso scritto.
+- Non ritrasmettere codici di cancelli, allarmi o auto di altri.
+- Gli script BadUSB vanno eseguiti solo sul TUO computer.
