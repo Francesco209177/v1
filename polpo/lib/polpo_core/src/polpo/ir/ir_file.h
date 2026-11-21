@@ -20,6 +20,9 @@ bool ir_file_parse(const std::string& text, IrFile& out, std::string& err);
 
 std::string ir_file_serialize(const IrFile& file);
 
+// Un solo tasto, da accodare a un file esistente senza riscriverlo (inizia con una riga vuota).
+std::string ir_signal_block(const IrSignal& s);
+
 // Valida un segnale (campi entro i bit del protocollo, tempi RAW sensati).
 bool ir_signal_validate(const IrSignal& s, std::string& why);
 

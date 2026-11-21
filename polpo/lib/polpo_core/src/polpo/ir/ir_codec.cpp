@@ -234,6 +234,12 @@ bool ir_encode(const IrSignal& sig, IrTimings& out, bool toggle) {
     out = IrTimings{};
     if (sig.raw) {
         if (sig.timings.empty() || sig.timings.size() > kIrMaxRawTimings) return false;
+        uint64_t total = 0;
+        for (uint32_t t : sig.timings) {
+            if (t == 0 || t > kIrMaxRawTimingUs) return false;
+            total += t;
+        }
+        if (total > kIrMaxRawTotalUs) return false;
         out.frequency = sig.frequency;
         out.duty = sig.duty;
         out.durations = sig.timings;

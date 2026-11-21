@@ -127,7 +127,7 @@ private:
 
     bool room() {
         if (out_.actions.size() >= kDuckyMaxActions) {
-            if (!overflow_) error("script troppo lungo (max 8000 azioni)");
+            if (!overflow_) error("script troppo lungo (max 1200 azioni)");
             overflow_ = true;
             return false;
         }

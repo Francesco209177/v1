@@ -86,8 +86,8 @@ bool sub_parse(const std::string& text, SubFile& out, std::string& err) {
             }
         } else if (l.key == "Bit") {
             uint32_t b;
-            if (!parse_u32(l.value, b) || b == 0 || b > 64) {
-                err = "Bit non valido";
+            if (!parse_u32(l.value, b) || b == 0 || b > 32) {
+                err = "Bit non valido (da 1 a 32)";
                 return false;
             }
             out.code.bits = static_cast<uint8_t>(b);
@@ -184,6 +184,23 @@ PulseStats pulse_analyze(const std::vector<int32_t>& timings) {
     st.long_us = cl[b].mean();
     st.ratio = st.short_us ? static_cast<float>(st.long_us) / static_cast<float>(st.short_us) : 0.0f;
     return st;
+}
+
+uint64_t rcswitch_airtime_us(const RcCode& c, uint8_t repeats) {
+    // Stessi valori della tabella dei protocolli di rc-switch 2.6.4:
+    // {sincronismo alto, basso}, {zero alto, basso}, {uno alto, basso} in multipli dell'impulso.
+    static const uint8_t kP[kRcSwitchProtocols][6] = {
+        {1, 31, 1, 3, 3, 1},  {1, 10, 1, 2, 2, 1}, {30, 71, 4, 11, 9, 6}, {1, 6, 1, 3, 3, 1},
+        {6, 14, 1, 2, 2, 1},  {23, 1, 1, 2, 2, 1}, {2, 62, 1, 6, 6, 1},   {3, 130, 7, 16, 3, 16},
+        {130, 7, 16, 7, 16, 3}, {18, 1, 3, 1, 1, 3}, {36, 1, 1, 2, 2, 1},  {36, 1, 1, 2, 2, 1},
+    };
+    if (c.protocol < 1 || c.protocol > kRcSwitchProtocols || c.bits == 0 || c.bits > kRcMaxBits) return 0;
+    const uint8_t* p = kP[c.protocol - 1];
+    const uint32_t sync = p[0] + p[1];
+    const uint32_t zero = p[2] + p[3], one = p[4] + p[5];
+    const uint32_t per_bit = zero > one ? zero : one;  // stima prudente: il bit più lungo
+    const uint64_t frame = (static_cast<uint64_t>(per_bit) * c.bits + sync) * c.pulse_us;
+    return frame * repeats;
 }
 
 uint64_t rf_total_us(const std::vector<int32_t>& t) {

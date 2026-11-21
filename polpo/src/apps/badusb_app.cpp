@@ -3,6 +3,7 @@
 #include <Arduino.h>
 
 #include <cstdio>
+#include <memory>
 
 #include "apps/apps.h"
 #include "core/settings.h"
@@ -17,7 +18,8 @@ namespace {
 
 class RunScreen : public Screen {
 public:
-    RunScreen(std::string name, polpo::DuckyScript script, polpo::KbLayout layout)
+    using Script = std::shared_ptr<const polpo::DuckyScript>;
+    RunScreen(std::string name, Script script, polpo::KbLayout layout)
         : name_(std::move(name)), script_(std::move(script)), layout_(layout) {}
     void on_enter() override { start_ = millis(); }
     void on_event(const InputEvent& ev) override {
@@ -42,7 +44,7 @@ public:
         }
         if (state_ != State::Running || now < next_) return;
         // Un'azione per ciclo, così i tasti del Cardputer restano attivi per fermare lo script.
-        if (index_ >= script_.actions.size()) {
+        if (index_ >= script_->actions.size()) {
             state_ = State::Done;
             usb_kbd::release_all();
             sound::ok();
@@ -50,7 +52,7 @@ public:
             invalidate();
             return;
         }
-        const auto& a = script_.actions[index_];
+        const auto& a = script_->actions[index_];
         line_ = a.line;
         switch (a.type) {
             case polpo::DuckyActionType::Delay:
@@ -93,11 +95,11 @@ public:
             }
             case State::Running:
                 std::snprintf(b, sizeof b, "Riga %u di %u", static_cast<unsigned>(line_),
-                              static_cast<unsigned>(script_.line_count));
+                              static_cast<unsigned>(script_->line_count));
                 ui::text(6, ui::kContentY + 8, "In esecuzione sul computer collegato", ui::kFg);
                 ui::text(6, ui::kContentY + 28, b, ui::kAccent);
                 ui::progress(6, ui::kContentY + 50, ui::kW - 12, 12,
-                             script_.actions.empty() ? 1.0f : static_cast<float>(index_) / script_.actions.size());
+                             script_->actions.empty() ? 1.0f : static_cast<float>(index_) / script_->actions.size());
                 break;
             case State::Done:
                 ui::text(6, ui::kContentY + 8, stopped_ ? "Interrotto." : "Completato.", stopped_ ? ui::kWarn : ui::kOk);
@@ -109,7 +111,7 @@ public:
 private:
     enum class State { Countdown, Running, Done } state_ = State::Countdown;
     std::string name_;
-    polpo::DuckyScript script_;
+    Script script_;  // condiviso, mai copiato (memoria limitata)
     polpo::KbLayout layout_;
     uint32_t start_ = 0, next_ = 0;
     size_t index_ = 0;
@@ -122,7 +124,10 @@ void open_script(const std::string& path) {
     std::string src;
     if (!storage::read_text(path, src, polpo::kDuckyMaxBytes)) return show_error("File illeggibile o più grande di 32 KB.");
     const polpo::KbLayout layout = settings::get().layout;
-    polpo::DuckyScript s = polpo::ducky_parse(src, layout);
+    auto script = std::make_shared<polpo::DuckyScript>(polpo::ducky_parse(src, layout));
+    src.clear();
+    src.shrink_to_fit();
+    const polpo::DuckyScript& s = *script;
     const std::string name = storage::basename(path);
     if (!s.ok()) {
         std::string body = "Lo script ha " + std::to_string(s.errors.size()) + " errori e non verrà eseguito:\n";
@@ -139,10 +144,10 @@ void open_script(const std::string& path) {
                   static_cast<unsigned>(s.total_delay_ms / 1000), polpo::layout_name(layout));
     open<ConfirmScreen>(
         "Eseguire lo script?", b,
-        [name, s, layout](bool yes) {
+        [name, script, layout](bool yes) {
             if (!yes) return;
             if (!usb_kbd::connected()) return show_error("Il computer non vede il Polpo: collega il cavo USB-C dati.");
-            open<RunScreen>(name, s, layout);
+            open<RunScreen>(name, RunScreen::Script(script), layout);
         },
         "Esegui", "Annulla");
 }
@@ -164,12 +169,14 @@ void open_badusb_app() {
          }},
         {"Prova: scrivi \"Ciao\"", "", [] {
              if (!usb_kbd::connected()) return show_error("Collega il Cardputer al computer con un cavo USB dati.");
-             ask_confirm("Prova", "Il Polpo scriverà \"Ciao dal Polpo\" nella finestra attiva del computer.",
+             ask_confirm("Prova", "Il Polpo scriverà \"Ciao dal Polpo\" nella finestra attiva del computer, dopo il "
+                                  "solito conto alla rovescia annullabile.",
                          [](bool yes) {
                              if (!yes) return;
-                             delay(800);
-                             usb_kbd::type("Ciao dal Polpo", settings::get().layout);
-                             sound::ok();
+                             const auto layout = settings::get().layout;
+                             auto script = std::make_shared<polpo::DuckyScript>(
+                                 polpo::ducky_parse("STRING Ciao dal Polpo\n", layout));
+                             open<RunScreen>("prova", RunScreen::Script(script), layout);
                          });
          }},
         {"Comandi supportati", "", [] {
@@ -178,7 +185,7 @@ void open_badusb_app() {
                                   "REPEAT n\nENTER TAB ESC SPACE BACKSPACE DELETE INSERT\nHOME END PAGEUP PAGEDOWN\n"
                                   "UP DOWN LEFT RIGHT  F1-F12\nCAPSLOCK NUMLOCK PRINTSCREEN PAUSE MENU\n"
                                   "Combinazioni: GUI r, CTRL ALT DELETE, CTRL-SHIFT ESC, ALT F4\n"
-                                  "Limiti: 32 KB, 2000 righe, DELAY max 60 s.\nCon layout IT i caratteri ` e ~ "
+                                  "Limiti: 32 KB, 2000 righe, 1200 azioni, DELAY max 60 s.\nCon layout IT i caratteri ` e ~ "
                                   "non esistono e danno errore.");
          }},
     };

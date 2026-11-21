@@ -119,6 +119,8 @@ void remote_press(uint16_t usage) {
 void end() {
     if (!inited) return;
     if (NimBLEDevice::getScan()->isScanning()) NimBLEDevice::getScan()->stop();
+    delete hid;  // deinit() libera server e pubblicità, non l'oggetto HID
+    hid = nullptr;
     NimBLEDevice::deinit(true);
     inited = false;
     server = nullptr;  // liberati da deinit(true)

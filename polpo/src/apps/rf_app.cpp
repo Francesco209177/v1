@@ -60,9 +60,11 @@ public:
         polpo::RcCode c;
         if (!rf433::rx_poll(c)) return;
         // Ignora i duplicati consecutivi (un telecomando ripete il codice più volte).
+        int shift = 0;
         if (!codes_.empty() && codes_.front().value == c.value && codes_.front().bits == c.bits) {
             ++hits_.front();
         } else {
+            shift = codes_.empty() ? 0 : 1;  // il nuovo codice va in cima: la selezione scende di uno
             codes_.insert(codes_.begin(), c);
             hits_.insert(hits_.begin(), 1);
             if (codes_.size() > 30) {
@@ -71,11 +73,11 @@ public:
             }
             sound::click();
         }
-        rebuild();
+        rebuild(shift);
     }
 
 private:
-    void rebuild() {
+    void rebuild(int shift) {
         std::vector<MenuItem> items;
         for (size_t i = 0; i < codes_.size(); ++i) {
             char r[16];
@@ -83,7 +85,7 @@ private:
             const polpo::RcCode c = codes_[i];
             items.push_back({code_text(c), r, [c] { open_code_actions(c); }});
         }
-        const int sel = model_.selected;
+        const int sel = model_.selected + shift;
         set_items(items);
         model_.select(sel);
     }

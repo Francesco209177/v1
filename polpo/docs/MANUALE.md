@@ -86,9 +86,10 @@ In alternativa puoi usare la pagina `polpo/web/index.html` (pulsante unico, semp
 - **I miei telecomandi.** Apre i file `.ir` in `/polpo/ir/`.
   - Il formato è lo stesso delle grandi raccolte di telecomandi della community: puoi copiare lì i file scaricati.
   - Protocolli: NEC, NECext, NEC42, Samsung32, RC5, RC5X, RC6, SIRC (12/15/20), Kaseikyo, RCA, Pioneer e RAW.
+  - File al massimo di 48 KB: dividi i telecomandi molto grandi in più file. I segnali RAW possono durare al massimo 2 secondi.
 - **Impara un telecomando.** Serve la **IR Unit** sulla porta Grove: il Cardputer da solo non può ricevere infrarossi.
   - Punta il telecomando originale da 5–10 cm e premi un tasto.
-  - Il Polpo riconosce il protocollo o salva il segnale grezzo (RAW) in `/polpo/ir/imparati.ir`.
+  - Il Polpo riconosce il protocollo o salva il segnale grezzo (RAW) in `/polpo/ir/imparati.ir`. Ogni nuovo tasto viene aggiunto in fondo al file: quelli già salvati restano.
   - Con `t` provi il tasto, con `r` ascolti di nuovo.
 
 ### Radio 433 MHz
@@ -100,8 +101,8 @@ Collega **RF433R** (ricevitore) e/o **RF433T** (trasmettitore) alla porta Grove.
   - la forma d'onda;
   - la durata minima e massima;
   - il rapporto tra impulsi (1:3 indica un codice fisso).
-- **Segnali salvati.** File `.sub` in `/polpo/rf433/`. Sono compatibili con i file "Princeton" e RAW di altri strumenti, a 433,92 MHz.
-- **Limite di trasmissione.** Il Polpo trasmette al massimo l'8% del tempo in un'ora (la legge europea consente il 10% a 10 mW), e ogni invio dura al massimo 2 secondi.
+- **Segnali salvati.** File `.sub` in `/polpo/rf433/`. Sono compatibili con i file "Princeton" (fino a 32 bit) e RAW di altri strumenti, a 433,92 MHz.
+- **Limite di trasmissione.** Il Polpo trasmette al massimo l'8% del tempo in un'ora (la legge europea consente il 10% a 10 mW), e ogni invio dura al massimo 2 secondi. Il conteggio resta salvato anche se spegni e riaccendi.
 
 Cosa **non** fa:
 
@@ -139,6 +140,8 @@ Comandi supportati:
 - `STRING`, `STRINGLN`, `REPEAT`;
 - tasti speciali: `ENTER`, `TAB`, `ESC`, frecce, `F1`–`F12`;
 - combinazioni come `GUI r` o `CTRL ALT DELETE`.
+
+Limiti: 32 KB, 2000 righe e 1200 azioni (una riga `STRING` o un tasto = un'azione; `REPEAT` le moltiplica).
 
 Con il layout IT i caratteri `` ` `` e `~` non esistono: lo script viene rifiutato con il numero di riga.
 

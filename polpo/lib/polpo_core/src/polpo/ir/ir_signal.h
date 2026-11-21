@@ -40,7 +40,9 @@ const IrProtocolInfo& ir_protocol_info(IrProtocol p);
 IrProtocol ir_protocol_from_name(const std::string& name);
 constexpr int kIrProtocolCount = static_cast<int>(IrProtocol::Unknown);
 
-constexpr size_t kIrMaxRawTimings = 1024;  // limite del formato .ir
+constexpr size_t kIrMaxRawTimings = 1024;       // limite del formato .ir
+constexpr uint32_t kIrMaxRawTimingUs = 100000;  // un singolo tempo RAW: max 100 ms
+constexpr uint32_t kIrMaxRawTotalUs = 2000000;  // un segnale RAW: max 2 s
 
 struct IrSignal {
     std::string name;

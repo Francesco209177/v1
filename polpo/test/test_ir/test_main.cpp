@@ -267,6 +267,39 @@ void test_panasonic_power_matches_known_frame() {
     }
 }
 
+void test_raw_duration_caps() {
+    IrSignal s;
+    s.name = "lungo";
+    s.raw = true;
+    s.timings = {9000, 150000, 560};
+    std::string why;
+    TEST_ASSERT_FALSE(ir_signal_validate(s, why));
+    IrTimings t;
+    TEST_ASSERT_FALSE(ir_encode(s, t));
+    s.timings.assign(41, 60000);  // 2,46 s in totale
+    TEST_ASSERT_FALSE(ir_signal_validate(s, why));
+    s.timings.assign(21, 60000);  // 1,26 s
+    TEST_ASSERT_TRUE(ir_signal_validate(s, why));
+}
+
+void test_signal_block_appends_cleanly() {
+    IrFile f;
+    std::string err;
+    TEST_ASSERT_TRUE(ir_file_parse(kSample, f, err));
+    IrSignal extra;
+    extra.name = "Nuovo";
+    extra.protocol = IrProtocol::NEC;
+    extra.address = 0x10;
+    extra.command = 0x20;
+    // file senza a capo finale + blocco accodato
+    std::string text = std::string(kSample) + ir_signal_block(extra);
+    IrFile g;
+    TEST_ASSERT_TRUE(ir_file_parse(text, g, err));
+    TEST_ASSERT_EQUAL(f.signals.size() + 1, g.signals.size());
+    TEST_ASSERT_EQUAL_STRING("Nuovo", g.signals.back().name.c_str());
+    TEST_ASSERT_EQUAL_UINT32(0x20, g.signals.back().command);
+}
+
 int main() {
     UNITY_BEGIN();
     RUN_TEST(test_parse_sample);
@@ -284,5 +317,7 @@ int main() {
     RUN_TEST(test_protocol_names);
     RUN_TEST(test_library_codes_encode);
     RUN_TEST(test_panasonic_power_matches_known_frame);
+    RUN_TEST(test_raw_duration_caps);
+    RUN_TEST(test_signal_block_appends_cleanly);
     return UNITY_END();
 }

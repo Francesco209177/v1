@@ -68,7 +68,7 @@ void test_rejects_rolling_and_bad() {
     std::string err;
     const char* keeloq =
         "Filetype: Flipper SubGhz Key File\nVersion: 1\nFrequency: 433920000\n"
-        "Preset: FuriHalSubGhzPresetOok650Async\nProtocol: KeeLoq\nBit: 64\nKey: 01 02 03 04 05 06 07 08\n";
+        "Preset: FuriHalSubGhzPresetOok650Async\nProtocol: KeeLoq\nBit: 24\nKey: 00 00 00 00 00 06 07 08\n";
     TEST_ASSERT_FALSE(sub_parse(keeloq, g, err));
     TEST_ASSERT_TRUE(err.find("non supportato") != std::string::npos);
     const char* toolong =
@@ -129,6 +129,39 @@ void test_on_time() {
     TEST_ASSERT_FALSE(sub_raw_valid({1, 0, 1}));
 }
 
+void test_rcswitch_airtime() {
+    polpo::RcCode p1;
+    p1.protocol = 1;
+    p1.bits = 24;
+    p1.pulse_us = 350;
+    TEST_ASSERT_EQUAL_UINT64(448000, rcswitch_airtime_us(p1, 10));
+    polpo::RcCode p8;
+    p8.protocol = 8;
+    p8.bits = 24;
+    p8.pulse_us = 200;
+    TEST_ASSERT_EQUAL_UINT64(2740000, rcswitch_airtime_us(p8, 20));  // 2,74 s: oltre il limite di 2 s
+    p8.protocol = 13;
+    TEST_ASSERT_EQUAL_UINT64(0, rcswitch_airtime_us(p8, 1));
+    p1.bits = 33;
+    TEST_ASSERT_EQUAL_UINT64(0, rcswitch_airtime_us(p1, 1));
+}
+
+void test_bits_over_32_rejected() {
+    SubFile g;
+    std::string err;
+    const char* f =
+        "Filetype: Flipper SubGhz Key File\nVersion: 1\nFrequency: 433920000\n"
+        "Preset: x\nProtocol: Princeton\nBit: 40\nKey: 00 00 00 01 02 03 04 05\nTE: 350\n";
+    TEST_ASSERT_FALSE(sub_parse(f, g, err));
+}
+
+void test_budget_preload() {
+    TxBudget b(1000, 0.1f);
+    b.preload(0, 90);
+    TEST_ASSERT_FALSE(b.try_consume(10, 20));
+    TEST_ASSERT_TRUE(b.try_consume(1001, 20));
+}
+
 int main() {
     UNITY_BEGIN();
     RUN_TEST(test_princeton_serialize);
@@ -138,5 +171,8 @@ int main() {
     RUN_TEST(test_pulse_analyze_pt2262);
     RUN_TEST(test_tx_budget);
     RUN_TEST(test_on_time);
+    RUN_TEST(test_rcswitch_airtime);
+    RUN_TEST(test_bits_over_32_rejected);
+    RUN_TEST(test_budget_preload);
     return UNITY_END();
 }

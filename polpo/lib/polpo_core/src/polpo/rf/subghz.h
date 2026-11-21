@@ -46,6 +46,12 @@ struct PulseStats {
 // Analizza durate (segno ignorato) raggruppandole per lunghezza simile.
 PulseStats pulse_analyze(const std::vector<int32_t>& timings);
 
+// Tempo in aria (µs) di un codice rc-switch ripetuto `repeats` volte, calcolato dalla tabella
+// dei protocolli della libreria (sincronismo + bit più lungo). 0 se il protocollo non esiste.
+uint64_t rcswitch_airtime_us(const RcCode& code, uint8_t repeats);
+constexpr uint8_t kRcSwitchProtocols = 12;
+constexpr uint8_t kRcMaxBits = 32;  // rc-switch invia al massimo 32 bit
+
 // Durata totale (µs) e frazione di tempo con portante accesa: servono per il limite di duty-cycle.
 uint64_t rf_total_us(const std::vector<int32_t>& t);
 uint64_t rf_on_us(const std::vector<int32_t>& t);
@@ -58,6 +64,10 @@ public:
     bool try_consume(uint32_t now_ms, uint32_t on_ms);
     uint32_t used_ms(uint32_t now_ms);
     uint32_t limit_ms() const { return static_cast<uint32_t>(window_ms_ * fraction_); }
+    // Dopo un riavvio: il tempo già usato (salvato) si considera consumato all'istante `now_ms`.
+    void preload(uint32_t now_ms, uint32_t used_ms) {
+        if (used_ms) log_.push_back({now_ms, used_ms});
+    }
 
 private:
     struct Entry {

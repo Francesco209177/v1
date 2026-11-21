@@ -30,11 +30,18 @@ bool ir_signal_validate(const IrSignal& s, std::string& why) {
             why = "duty cycle non valido";
             return false;
         }
-        for (uint32_t t : s.timings)
-            if (t == 0 || t > 1000000) {
-                why = "tempo RAW fuori range";
+        uint64_t total = 0;
+        for (uint32_t t : s.timings) {
+            if (t == 0 || t > kIrMaxRawTimingUs) {
+                why = "tempo RAW fuori range (max 100 ms)";
                 return false;
             }
+            total += t;
+        }
+        if (total > kIrMaxRawTotalUs) {
+            why = "segnale RAW troppo lungo (max 2 s)";
+            return false;
+        }
         return true;
     }
     if (s.protocol == IrProtocol::Unknown) {
@@ -142,6 +149,14 @@ bool ir_file_parse(const std::string& text, IrFile& out, std::string& err) {
     }
     if (!bad) finish_signal(cur, open, out);
     return true;
+}
+
+std::string ir_signal_block(const IrSignal& s) {
+    IrFile one;
+    one.signals.push_back(s);
+    const std::string all = ir_file_serialize(one);
+    // Tutto dopo l'intestazione ("Filetype"/"Version"), preceduto da una riga vuota.
+    return "\n" + all.substr(all.find("#\n"));
 }
 
 std::string ir_file_serialize(const IrFile& file) {

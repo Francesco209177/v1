@@ -47,6 +47,7 @@ bool begin() {
     if (!grove::use_i2c(100000)) return false;
     if (!present()) return false;
     if (!reader) reader = new MFRC522_I2C(pins::kRfid2Addr, -1, &Wire);
+    reader->PCD_Reset();  // senza pin di reset la libreria salterebbe il reset software
     reader->PCD_Init();
     ready = true;
     return true;

@@ -115,19 +115,24 @@ private:
 };
 
 void open_remote_file(const std::string& path) {
-    std::string text;
-    if (!storage::read_text(path, text, 128 * 1024)) return show_error("Impossibile leggere il file (max 128 KB).");
+    // Senza PSRAM la memoria è poca: file al massimo 48 KB e una sola copia dei dati.
+    if (ESP.getMaxAllocHeap() < 60 * 1024) return show_error("Memoria insufficiente: torna al menu e riprova.");
     polpo::IrFile f;
     std::string err;
-    if (!polpo::ir_file_parse(text, f, err)) return show_error(err);
+    {
+        std::string text;
+        if (!storage::read_text(path, text, 48 * 1024))
+            return show_error("Impossibile leggere il file (max 48 KB). Dividi i telecomandi grandi in più file.");
+        if (!polpo::ir_file_parse(text, f, err)) return show_error(err);
+    }  // il testo viene liberato qui
+    std::string w;
     if (!f.warnings.empty()) {
-        std::string w = std::to_string(f.warnings.size()) + " tasti saltati:\n";
+        w = std::to_string(f.warnings.size()) + " tasti saltati:\n";
         for (size_t i = 0; i < f.warnings.size() && i < 4; ++i) w += "- " + f.warnings[i] + "\n";
-        open<RemoteScreen>(path, f);
-        show_message("Attenzione", w, ui::kWarn);
-        return;
+        f.warnings.clear();
     }
-    open<RemoteScreen>(path, f);
+    open<RemoteScreen>(path, std::move(f));
+    if (!w.empty()) show_message("Attenzione", w, ui::kWarn);
 }
 
 // ---------- Apprendimento con la IR Unit ----------
@@ -215,11 +220,16 @@ private:
         if (!storage::ok()) return show_error("Serve la microSD per salvare.");
         sig_.name = polpo::safe_filename(raw_name, 24);
         const std::string path = storage::join(storage::kIrDir, "imparati.ir");
-        polpo::IrFile f;
-        std::string text, err;
-        if (storage::read_text(path, text, 128 * 1024)) polpo::ir_file_parse(text, f, err);
-        f.signals.push_back(sig_);
-        if (!storage::write_text(path, polpo::ir_file_serialize(f))) return show_error("Scrittura su microSD non riuscita.");
+        // Si aggiunge in coda senza riscrivere il file: i tasti già salvati non si possono perdere.
+        bool ok;
+        if (storage::exists(path)) {
+            ok = storage::append_text(path, polpo::ir_signal_block(sig_));
+        } else {
+            polpo::IrFile f;
+            f.signals.push_back(sig_);
+            ok = storage::write_text(path, polpo::ir_file_serialize(f));
+        }
+        if (!ok) return show_error("Scrittura su microSD non riuscita.");
         settings::add_xp(2);
         sound::ok();
         show_message("Salvato", "Tasto \"" + sig_.name + "\" aggiunto a /polpo/ir/imparati.ir", ui::kOk);

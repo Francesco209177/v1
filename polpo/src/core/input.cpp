@@ -38,7 +38,9 @@ void Input::emit(uint8_t code, char shifted, bool repeat) {
     ev.alt = alt_;
     ev.opt = opt_;
     ev.repeat = repeat;
-    if (code >= 0x20 && code < 0x7F) ev.ch = shift_ ? shifted : static_cast<char>(code);
+    // Invio, Cancella e Tab hanno codici HID (0x28, 0x2A, 0x2B) che coincidono con '(' '*' '+'.
+    const bool special = code == KEY_ENTER || code == KEY_BACKSPACE || code == KEY_TAB;
+    if (!special && code >= 0x20 && code < 0x7F) ev.ch = shift_ ? shifted : static_cast<char>(code);
     if (queue_.size() < 32) queue_.push_back(ev);
 }
 

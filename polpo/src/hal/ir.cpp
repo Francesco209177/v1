@@ -41,7 +41,8 @@ void tx_end() {
 bool send(const polpo::IrTimings& t) {
     if (!tx_begin() || t.durations.empty()) return false;
     if (t.frequency != current_freq || t.duty != current_duty) {
-        if (!rmtSetCarrier(pins::kIrTx, true, true, t.frequency, t.duty)) return false;
+        // carrier_level=false: la portante modula il livello alto (gli impulsi), non le pause.
+        if (!rmtSetCarrier(pins::kIrTx, true, false, t.frequency, t.duty)) return false;
         current_freq = t.frequency;
         current_duty = t.duty;
     }

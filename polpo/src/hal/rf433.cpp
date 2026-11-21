@@ -1,6 +1,7 @@
 #include "hal/rf433.h"
 
 #include <Arduino.h>
+#include <Preferences.h>
 #include <RCSwitch.h>
 #include <soc/gpio_reg.h>
 
@@ -17,6 +18,28 @@ bool rx_on = false;
 bool tx_on = false;
 bool raw_on = false;
 polpo::TxBudget budget(3600000, 0.08f);
+bool budget_loaded = false;
+
+// Il tempo di trasmissione usato viene salvato: dopo un riavvio conta ancora per un'ora.
+void budget_load() {
+    if (budget_loaded) return;
+    budget_loaded = true;
+    Preferences p;
+    p.begin("polpo_rf", true);
+    const uint32_t used = p.getUInt("used", 0);
+    p.end();
+    budget.preload(millis(), used);
+}
+
+bool budget_take(uint32_t ms) {
+    budget_load();
+    if (!budget.try_consume(millis(), ms)) return false;
+    Preferences p;
+    p.begin("polpo_rf", false);
+    p.putUInt("used", budget.used_ms(millis()));
+    p.end();
+    return true;
+}
 
 // Buffer circolare dei fronti per la registrazione RAW (scritto da interrupt).
 constexpr size_t kRing = 2048;
@@ -39,7 +62,7 @@ void IRAM_ATTR on_edge() {
 }
 
 bool tx_ready() {
-    if (tx_on) return true;
+    // Sempre riconfigurato: un'altra app può aver rimesso il pin G2 in ingresso (porta Grove condivisa).
     grove::use_gpio();
     pinMode(pins::kRf433Tx, OUTPUT);
     digitalWrite(pins::kRf433Tx, LOW);
@@ -98,13 +121,15 @@ uint32_t raw_edge_count() { return edges; }
 
 size_t raw_snapshot(std::vector<int32_t>& out, size_t max) {
     out.clear();
+    // Memoria allocata prima di sospendere gli interrupt.
+    std::vector<int32_t> tmp(max < kRing ? max : kRing);
     noInterrupts();
     const uint32_t head = ring_head;
     const size_t n = head < kRing ? head : kRing;
-    const size_t take = n < max ? n : max;
-    std::vector<int32_t> tmp(take);
+    const size_t take = n < tmp.size() ? n : tmp.size();
     for (size_t i = 0; i < take; ++i) tmp[i] = ring[(head - take + i) % kRing];
     interrupts();
+    tmp.resize(take);
     // Si parte dal primo impulso positivo e si fondono valori consecutivi dello stesso segno.
     for (int32_t v : tmp) {
         if (out.empty()) {
@@ -121,12 +146,15 @@ size_t raw_snapshot(std::vector<int32_t>& out, size_t max) {
 }
 
 TxResult send_code(const polpo::RcCode& code, uint8_t repeats) {
-    if (code.protocol < 1 || code.protocol > 12 || code.bits == 0 || code.bits > 64)
-        return {false, "codice non valido"};
-    // Durata stimata: ~4 impulsi per bit + sincronismo (32 impulsi), per ripetizione.
-    const uint32_t ms = static_cast<uint32_t>(repeats) * (code.bits * 4u + 32u) * code.pulse_us / 1000u + 1;
-    if (ms > 2000) return {false, "trasmissione troppo lunga (max 2 s)"};
-    if (!budget.try_consume(millis(), ms)) return {false, "limite orario di trasmissione raggiunto: riprova più tardi"};
+    if (code.protocol < 1 || code.protocol > polpo::kRcSwitchProtocols || code.bits == 0 ||
+        code.bits > polpo::kRcMaxBits)
+        return {false, "codice non valido (protocollo 1-12, massimo 32 bit)"};
+    // Durata reale in aria calcolata dalla tabella dei protocolli di rc-switch.
+    const uint64_t us = polpo::rcswitch_airtime_us(code, repeats);
+    if (us == 0) return {false, "codice non valido"};
+    if (us > 2000000ull) return {false, "trasmissione troppo lunga (max 2 s): riduci le ripetizioni"};
+    const uint32_t ms = static_cast<uint32_t>(us / 1000) + 1;
+    if (!budget_take(ms)) return {false, "limite orario di trasmissione raggiunto: riprova più tardi"};
     rx_end();
     raw_end();
     tx_ready();
@@ -144,7 +172,7 @@ TxResult send_raw(const std::vector<int32_t>& t, uint8_t repeats) {
     const uint64_t total_us = once_us * repeats;
     if (total_us > 2000000ull) return {false, "trasmissione troppo lunga (max 2 s)"};
     const uint32_t ms = static_cast<uint32_t>(total_us / 1000) + 1;
-    if (!budget.try_consume(millis(), ms)) return {false, "limite orario di trasmissione raggiunto: riprova più tardi"};
+    if (!budget_take(ms)) return {false, "limite orario di trasmissione raggiunto: riprova più tardi"};
     rx_end();
     raw_end();
     grove::use_gpio();
@@ -187,7 +215,10 @@ TxResult send_raw(const std::vector<int32_t>& t, uint8_t repeats) {
     return ok ? TxResult{true, nullptr} : TxResult{false, "errore di trasmissione"};
 }
 
-uint32_t budget_used_ms() { return budget.used_ms(millis()); }
+uint32_t budget_used_ms() {
+    budget_load();
+    return budget.used_ms(millis());
+}
 uint32_t budget_limit_ms() { return budget.limit_ms(); }
 
 }  // namespace rf433

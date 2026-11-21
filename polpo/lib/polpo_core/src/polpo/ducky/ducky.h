@@ -39,7 +39,7 @@ struct DuckyScript {
 // Limiti di sicurezza.
 constexpr size_t kDuckyMaxBytes = 32 * 1024;
 constexpr uint16_t kDuckyMaxLines = 2000;
-constexpr size_t kDuckyMaxActions = 8000;
+constexpr size_t kDuckyMaxActions = 1200;  // ~50 KB di RAM al massimo
 constexpr uint32_t kDuckyMaxDelayMs = 60000;
 constexpr uint32_t kDuckyMaxRepeat = 500;
 

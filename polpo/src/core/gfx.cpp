@@ -89,6 +89,7 @@ static void wrap_lines(int w, const std::string& s, std::vector<std::string>& li
         word.clear();
     };
     for (char ch : s) {
+        if (ch == '\r') continue;  // file di testo Windows
         if (ch == '\n') {
             flush_word();
             lines.push_back(line);

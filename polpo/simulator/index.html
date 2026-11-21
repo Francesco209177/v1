@@ -650,7 +650,8 @@ function openNfc() {
 const SCRIPTS = {
   "ciao_windows.txt": { lines: 10, chars: 105, wait: 2, text: "Ciao! Questo testo l'ha scritto il Polpo.\nFunziona come una tastiera USB: nessun programma installato.\n", app: "Blocco note" },
   "ciao_mac.txt": { lines: 12, chars: 49, wait: 5, text: "Ciao! Questo testo l'ha scritto il Polpo.\n", app: "TextEdit" },
-  "ciao_linux.txt": { lines: 5, chars: 23, wait: 2, text: "$ echo \"Ciao dal Polpo!\"\nCiao dal Polpo!\n", app: "Terminale" }
+  "ciao_linux.txt": { lines: 5, chars: 23, wait: 2, text: "$ echo \"Ciao dal Polpo!\"\nCiao dal Polpo!\n", app: "Terminale" },
+  "prova": { lines: 1, chars: 14, wait: 0, text: "Ciao dal Polpo", app: "finestra attiva" }
 };
 class BadRun {
   constructor(name) { const s = SCRIPTS[name]; Object.assign(this, { name, s, state: "count", t0: performance.now(), pos: 0, interval: 120 }); pcEl.textContent = ""; pcState.textContent = "pronto"; }
@@ -680,8 +681,8 @@ function openBadUsb() {
   const build = () => m.setItems([
     { label: "Script dalla microSD", action: () => open(new Browser("Script BadUSB", "/polpo/badusb", ".txt", openScript)) },
     { label: "Layout tastiera", right: state.layout, action: () => { state.layout = state.layout === "IT" ? "US" : "IT"; build(); } },
-    { label: 'Prova: scrivi "Ciao"', action: () => open(new Confirm("Prova", 'Il Polpo scriverà "Ciao dal Polpo" nella finestra attiva del computer.', y => { if (y) { pcEl.textContent = "Ciao dal Polpo"; pcState.textContent = "prova"; hw("USB", 'digitato "Ciao dal Polpo"'); flash("led-usb", "on-usb", 500); } })) },
-    { label: "Comandi supportati", action: () => open(new TextView("DuckyScript", "REM commento\nDELAY ms\nDEFAULT_DELAY ms\nSTRING testo\nSTRINGLN testo (+Invio)\nREPEAT n\nENTER TAB ESC SPACE BACKSPACE DELETE INSERT\nHOME END PAGEUP PAGEDOWN\nUP DOWN LEFT RIGHT  F1-F12\nCAPSLOCK NUMLOCK PRINTSCREEN PAUSE MENU\nCombinazioni: GUI r, CTRL ALT DELETE, CTRL-SHIFT ESC, ALT F4\nLimiti: 32 KB, 2000 righe, DELAY max 60 s.\nCon layout IT i caratteri ` e ~ non esistono e danno errore.")) }
+    { label: 'Prova: scrivi "Ciao"', action: () => open(new Confirm("Prova", 'Il Polpo scriverà "Ciao dal Polpo" nella finestra attiva del computer, dopo il solito conto alla rovescia annullabile.', y => { if (y) open(new BadRun("prova")); })) },
+    { label: "Comandi supportati", action: () => open(new TextView("DuckyScript", "REM commento\nDELAY ms\nDEFAULT_DELAY ms\nSTRING testo\nSTRINGLN testo (+Invio)\nREPEAT n\nENTER TAB ESC SPACE BACKSPACE DELETE INSERT\nHOME END PAGEUP PAGEDOWN\nUP DOWN LEFT RIGHT  F1-F12\nCAPSLOCK NUMLOCK PRINTSCREEN PAUSE MENU\nCombinazioni: GUI r, CTRL ALT DELETE, CTRL-SHIFT ESC, ALT F4\nLimiti: 32 KB, 2000 righe, 1200 azioni, DELAY max 60 s.\nCon layout IT i caratteri ` e ~ non esistono e danno errore.")) }
   ]);
   build(); open(m);
 }
