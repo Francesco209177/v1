@@ -10,6 +10,7 @@ from ..core.activity import ActivityLog, Notifications
 from ..core.events import EventBus
 from ..core.hardware import HardwareState
 from ..core.settings import Settings
+from ..devices.bridge import BridgeManager
 from ..devices.manager import DeviceManager
 from ..paths import data_dir
 from ..security import crypto
@@ -29,6 +30,7 @@ class AppContext:
     data_dir: Path
     vault: Vault
     lab: LabMode
+    bridge: BridgeManager
     audit: AuditLog | None = None
 
     @classmethod
@@ -46,6 +48,7 @@ class AppContext:
         devices = DeviceManager(bus, settings, hardware, activity, notifications)
         vault = Vault(folder / "cassaforte", kdf_n)
         lab = LabMode(on_change=lambda on: bus.publish("lab.changed", enabled=on))
+        bridge = BridgeManager(bus, hardware, activity)
 
         hardware.on_change(lambda: bus.publish("hardware.changed"))
         activity.on_add(lambda e: bus.publish("activity.added", entry=e))
@@ -59,7 +62,7 @@ class AppContext:
             bus.publish("settings.changed", key=key, value=value)
 
         settings.on_change(on_setting)
-        return cls(settings, bus, hardware, activity, notifications, devices, folder, vault, lab)
+        return cls(settings, bus, hardware, activity, notifications, devices, folder, vault, lab, bridge)
 
     def on_unlocked(self) -> None:
         """Dopo l'apertura della cassaforte: collega il registro cifrato."""
@@ -78,4 +81,5 @@ class AppContext:
     def shutdown(self) -> None:
         self.lab.disable()
         self.devices.shutdown()
+        self.bridge.shutdown()
         self.vault.lock()

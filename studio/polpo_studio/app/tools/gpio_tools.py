@@ -31,6 +31,7 @@ from ...protocols import electronics as el
 from ..widgets import Note, label
 from . import common
 from .common import I2C_NAMES, ToolBase, button_row, sim_suffix
+from .bridge_panel import BridgePanel, bridge_req
 from .usb_tools import fill, table
 
 VOLTAGE_NOTE = T(
@@ -55,6 +56,7 @@ class GpioTools(ToolBase):
         self.tabs.addTab(self._boards_tab(), tr("Schede collegate", "Connected boards"))
         self.tabs.addTab(self._flash_tab(), tr("Programma ESP32", "Flash ESP32"))
         self.tabs.addTab(self._calc_tab(), tr("Calcolatori", "Calculators"))
+        self.tabs.addTab(self._bridge_tab(), tr("Polpo Bridge (sperimentale)", "Polpo Bridge (experimental)"))
         self.finish()
 
     # ---------------- Grove ----------------
@@ -386,3 +388,83 @@ class GpioTools(ToolBase):
         text = "  ·  ".join(parts)
         self.c_out.setText(text)
         return text
+
+    # ---------------- Polpo Bridge ----------------
+
+    def _bridge_tab(self) -> QWidget:
+        w = QWidget()
+        v = QVBoxLayout(w)
+        self.bpanel = BridgePanel(self)
+        v.addWidget(self.bpanel)
+        row = QHBoxLayout()
+        self.b_pin = QComboBox()
+        self.b_mode = QComboBox()
+        for m, name in (("input", tr("ingresso", "input")), ("input_pullup", tr("ingresso con pull-up", "input with pull-up")), ("output", tr("uscita", "output"))):
+            self.b_mode.addItem(name, m)
+        row.addWidget(label(tr("Pin", "Pin")))
+        row.addWidget(self.b_pin)
+        row.addWidget(self.b_mode)
+        v.addLayout(row)
+        row, _ = button_row(
+            (tr("Imposta modo", "Set mode"), self.b_set_mode),
+            (tr("Leggi", "Read"), self.b_read),
+            (tr("Uscita ALTA", "Output HIGH"), lambda: self.b_write(1)),
+            (tr("Uscita BASSA", "Output LOW"), lambda: self.b_write(0)),
+            (tr("Leggi ADC", "Read ADC"), self.b_adc),
+            (tr("Scansione I2C", "I2C scan"), self.b_i2c),
+        )
+        v.addLayout(row)
+        self.b_out = QPlainTextEdit()
+        self.b_out.setReadOnly(True)
+        v.addWidget(self.b_out)
+        self.bridge.event.connect(lambda topic, _p: self._b_pins() if topic == "bridge.state" else None)
+        return w
+
+    def _b_pins(self) -> None:
+        self.b_pin.clear()
+        info = self.ctx.bridge.info
+        for p in info.get("pins", []):
+            self.b_pin.addItem(str(p) + (" · ADC" if p in info.get("adc", []) else ""), p)
+
+    def _b_log(self, text: str) -> None:
+        self.b_out.appendPlainText(f"{common.stamp()}  {text}")
+
+    def b_set_mode(self) -> None:
+        pin, mode = self.b_pin.currentData(), self.b_mode.currentData()
+        if pin is None:
+            self.say(tr("Collega prima il Polpo Bridge.", "Connect the Polpo Bridge first."), True)
+            return
+        if mode == "output":
+            if not self.require_lab("gpio.output"):
+                return
+            if not common.confirm_sensitive(self, tr("Usare il pin come uscita?", "Use the pin as an output?"), tr("Pin {p}: controlla che non sia collegato a un'altra uscita o a 5 V su una scheda a 3,3 V.", "Pin {p}: make sure it is not wired to another output or to 5 V on a 3.3 V board.", p=pin)):
+                return
+        bridge_req(self, "pin.mode", {"pin": pin, "mode": mode}, lambda d: self._b_log(tr("pin {p}: {m}", "pin {p}: {m}", p=d.get("pin"), m=d.get("mode"))))
+
+    def b_read(self) -> None:
+        pin = self.b_pin.currentData()
+        bridge_req(self, "pin.read", {"pin": pin}, lambda d: self._b_log(tr("pin {p} = {v}", "pin {p} = {v}", p=pin, v=d.get("value"))))
+
+    def b_write(self, value: int) -> None:
+        if not self.require_lab("gpio.output"):
+            return
+        pin = self.b_pin.currentData()
+
+        def ok(d: dict) -> None:
+            self._b_log(tr("pin {p} ← {v}", "pin {p} ← {v}", p=pin, v=d.get("value")))
+            self.ctx.activity.add("gpio", tr("Bridge: pin {p} impostato a {v}", "Bridge: pin {p} set to {v}", p=pin, v=value), "avviso")
+
+        bridge_req(self, "pin.write", {"pin": pin, "value": value}, ok)
+
+    def b_adc(self) -> None:
+        pin = self.b_pin.currentData()
+
+        def ok(d: dict) -> None:
+            bits = int(d.get("bits", 10))
+            vref = 3.3 if bits == 12 else 5.0
+            self._b_log(tr("ADC pin {p}: {r} (≈ {v:.2f} V se il riferimento è {ref} V)", "ADC pin {p}: {r} (≈ {v:.2f} V if the reference is {ref} V)", p=pin, r=d.get("raw"), v=d.get("raw", 0) * vref / ((1 << bits) - 1), ref=vref))
+
+        bridge_req(self, "adc.read", {"pin": pin}, ok)
+
+    def b_i2c(self) -> None:
+        bridge_req(self, "i2c.scan", None, lambda d: self._b_log("I2C: " + (", ".join(f"0x{a:02X} {I2C_NAMES.get(a, '')}".strip() for a in d.get("devices", [])) or tr("nessun dispositivo", "no devices"))))
