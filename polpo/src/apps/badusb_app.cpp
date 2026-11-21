@@ -133,8 +133,8 @@ void open_script(const std::string& path) {
     }
     char b[220];
     std::snprintf(b, sizeof b,
-                  "%s\n%u righe, %u caratteri, attese totali %u s, layout %s.\n"
-                  "Esegui solo sul TUO computer. Collega il cavo USB e metti in primo piano la finestra giusta.",
+                  "%s: %u righe, %u caratteri, attese %u s, layout %s.\n"
+                  "Solo sul TUO computer, con la finestra giusta in primo piano.",
                   name.c_str(), static_cast<unsigned>(s.line_count), static_cast<unsigned>(s.total_chars),
                   static_cast<unsigned>(s.total_delay_ms / 1000), polpo::layout_name(layout));
     open<ConfirmScreen>(

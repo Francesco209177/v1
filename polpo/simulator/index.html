@@ -1,0 +1,898 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Simulatore Polpo</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: dispositivo a sinistra (schermo + tastiera Cardputer), pannello "hardware simulato" a destra; una colonna sotto 900px. */
+:root {
+  --bg: #eef1f4;
+  --surface: #ffffff;
+  --ink: #18202b;
+  --muted: #5b6676;
+  --line: #d5dbe3;
+  --accent: #e2583a;
+  --accent-soft: #fde4dc;
+  --ok: #1f8a4c;
+  --info: #1f6fae;
+  /* il dispositivo è un oggetto fisico: stessi colori in entrambi i temi */
+  --dev-body: #c9ced4;
+  --dev-edge: #a9b0b8;
+  --dev-key: #f4f5f6;
+  --dev-key-ink: #2a313a;
+  --dev-key-mod: #dde1e5;
+  --dev-bezel: #12161c;
+  --font-display: "Space Grotesk", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Inter", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f141b; --surface: #171e27; --ink: #e8edf2; --muted: #9aa6b5; --line: #2a3441;
+    --accent: #ff7a59; --accent-soft: #3a211b; --ok: #5fd48a; --info: #6cb8ff; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f141b; --surface: #171e27; --ink: #e8edf2; --muted: #9aa6b5; --line: #2a3441;
+  --accent: #ff7a59; --accent-soft: #3a211b; --ok: #5fd48a; --info: #6cb8ff; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 20px 40px;
+}
+.wrap { max-width: 1180px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+header.top { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 24px; }
+h1 { font-family: var(--font-display); font-weight: 700; font-size: clamp(26px, 4vw, 36px); margin: 0; letter-spacing: -0.01em; text-wrap: balance; }
+.lead { margin: 0; color: var(--muted); max-width: 62ch; }
+.tag { font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent); }
+.grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 340px); gap: 20px; align-items: start; }
+@media (max-width: 900px) { .grid { grid-template-columns: minmax(0, 1fr); } }
+
+/* ---- dispositivo ---- */
+.device {
+  background: linear-gradient(180deg, var(--dev-body), #bfc5cb); border: 1px solid var(--dev-edge); border-radius: 18px;
+  padding: 18px 18px 16px; max-width: 760px; width: 100%; margin: 0 auto; position: relative;
+  box-shadow: 0 1px 0 rgba(255,255,255,.6) inset, 0 10px 30px rgba(0,0,0,.18);
+}
+.device-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+.brand { font-family: var(--font-display); font-weight: 700; color: #59616b; font-size: 13px; letter-spacing: .12em; }
+.leds { display: flex; gap: 14px; align-items: center; font-family: var(--font-mono); font-size: 11px; color: #4b535d; }
+.led { width: 10px; height: 10px; border-radius: 50%; background: #8d949c; display: inline-block; vertical-align: -1px; margin-right: 5px; transition: background .08s, box-shadow .08s; }
+.led.on-ir { background: #b46bff; box-shadow: 0 0 10px 3px rgba(180,107,255,.8); }
+.led.on-rf { background: #ffb020; box-shadow: 0 0 10px 3px rgba(255,176,32,.8); }
+.led.on-usb { background: #36c46e; box-shadow: 0 0 8px 2px rgba(54,196,110,.7); }
+.screen-bezel { background: var(--dev-bezel); border-radius: 10px; padding: 10px; }
+canvas#screen { display: block; width: 100%; height: auto; aspect-ratio: 240 / 135; border-radius: 3px; background: #0a0e16; image-rendering: auto; outline: none; }
+canvas#screen:focus-visible { box-shadow: 0 0 0 3px var(--accent); }
+.g0 { position: absolute; right: -10px; top: 70px; width: 12px; height: 40px; border-radius: 4px; background: #8f969e; border: 1px solid #7a8189; cursor: pointer; padding: 0; }
+.g0:focus-visible { outline: 3px solid var(--accent); }
+
+.kbd { margin-top: 14px; display: grid; gap: 5px; }
+.row { display: grid; grid-template-columns: repeat(14, minmax(0, 1fr)); gap: 5px; }
+.key {
+  appearance: none; border: 1px solid #b7bdc4; border-bottom-width: 3px; border-radius: 6px; background: var(--dev-key); color: var(--dev-key-ink);
+  font-family: var(--font-mono); font-size: clamp(10px, 1.6vw, 14px); padding: 0; height: clamp(26px, 4.6vw, 40px); cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1; min-width: 0; touch-action: manipulation;
+}
+.key small { font-size: .62em; color: #e2583a; margin-top: 2px; }
+.key.mod { background: var(--dev-key-mod); font-size: clamp(8px, 1.2vw, 11px); }
+.key.held, .key:active { transform: translateY(1px); border-bottom-width: 2px; background: #ffe3da; }
+.key:focus-visible { outline: 3px solid var(--accent); outline-offset: 1px; }
+.hint { margin: 10px 2px 0; font-size: 12px; color: #4b535d; font-family: var(--font-mono); }
+
+/* ---- pannello ---- */
+aside { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; min-width: 0; }
+.card h2 { font-family: var(--font-display); font-size: 16px; margin: 0 0 8px; }
+.log { list-style: none; margin: 0; padding: 0; font-family: var(--font-mono); font-size: 12.5px; display: flex; flex-direction: column; gap: 6px; max-height: 260px; overflow: auto; }
+.log li { display: grid; grid-template-columns: auto 1fr; gap: 8px; align-items: baseline; }
+.log .chip { font-size: 10.5px; padding: 1px 6px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); letter-spacing: .04em; }
+.log .chip.usb { color: var(--ok); }
+.log .chip.ble, .log .chip.wifi { color: var(--info); }
+.log .empty { color: var(--muted); display: block; }
+.pc { background: #fbfbfc; color: #222; border: 1px solid var(--line); border-radius: 8px; font-family: var(--font-mono); font-size: 12.5px; min-height: 92px; padding: 8px 10px; white-space: pre-wrap; overflow-wrap: anywhere; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .pc { background: #0c1117; color: #dfe6ee; } }
+:root[data-theme="dark"] .pc { background: #0c1117; color: #dfe6ee; }
+.pc-title { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+dl.keys { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; margin: 0; font-size: 13.5px; }
+dl.keys dt { font-family: var(--font-mono); color: var(--accent); white-space: nowrap; }
+dl.keys dd { margin: 0; color: var(--muted); }
+.note { font-size: 13px; color: var(--muted); margin: 0; }
+.badge { display: inline-block; font-family: var(--font-mono); font-size: 11px; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); }
+@media (prefers-reduced-motion: reduce) { .led { transition: none; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <div class="tag">Firmware Polpo 0.1 · simulazione</div>
+      <h1>Simulatore Polpo</h1>
+    </div>
+    <p class="lead">Prova i menu del firmware prima di comprare l'hardware. Tutto ciò che leggi qui è <strong>simulato</strong>: nessun segnale vero viene ricevuto o trasmesso.</p>
+  </header>
+
+  <div class="grid">
+    <section aria-label="Dispositivo simulato">
+      <div class="device">
+        <div class="device-top">
+          <span class="brand">POLPO · CARDPUTER</span>
+          <span class="leds" aria-live="polite">
+            <span><i class="led" id="led-ir"></i>IR</span>
+            <span><i class="led" id="led-rf"></i>433</span>
+            <span><i class="led" id="led-usb"></i>USB</span>
+          </span>
+        </div>
+        <div class="screen-bezel">
+          <canvas id="screen" width="720" height="405" tabindex="0" aria-label="Schermo del Polpo. Usa le frecce, Invio ed Esc."></canvas>
+        </div>
+        <button class="g0" id="g0" type="button" title="Tasto G0 (indietro)" aria-label="Tasto G0, indietro"></button>
+        <div class="kbd" id="kbd" aria-label="Tastiera del Cardputer"></div>
+        <p class="hint">Frecce o ; . , / per muoverti · Invio = OK · Esc o ` = indietro</p>
+      </div>
+    </section>
+
+    <aside>
+      <div class="card">
+        <h2>Hardware simulato</h2>
+        <ul class="log" id="log" aria-live="polite"><li><span class="empty">Qui compare cosa farebbe il dispositivo vero: segnali IR, codici radio, tag NFC, tasti USB.</span></li></ul>
+      </div>
+      <div class="card">
+        <div class="pc-title"><span>Computer collegato via USB</span><span class="badge" id="pc-state">in attesa</span></div>
+        <div class="pc" id="pc" aria-live="polite"></div>
+      </div>
+      <div class="card">
+        <h2>Comandi</h2>
+        <dl class="keys">
+          <dt>↑ ↓ ← →</dt><dd>muoversi (sul Cardputer: ; . , /)</dd>
+          <dt>Invio</dt><dd>apre, conferma, invia</dd>
+          <dt>Esc · `</dt><dd>torna indietro</dd>
+          <dt>lettere</dt><dd>scorciatoie mostrate in basso sullo schermo</dd>
+        </dl>
+      </div>
+      <p class="note">I menu sono gli stessi del firmware vero; i dati (reti, tag, codici) sono esempi inventati. Usa il Polpo reale solo su dispositivi tuoi.</p>
+    </aside>
+  </div>
+</div>
+
+<script>
+(() => {
+"use strict";
+// ======================= schermo =======================
+const W = 240, H = 135, S = 3, HEADER = 16, FOOTER = 12, CY = HEADER, CH = H - HEADER - FOOTER, ROW = 15, ROWS = 7;
+const cv = document.getElementById("screen");
+const g = cv.getContext("2d");
+g.setTransform(S, 0, 0, S, 0, 0);
+const C = {
+  bg: "rgb(10,14,22)", panel: "rgb(24,31,44)", fg: "rgb(232,236,241)", dim: "rgb(132,144,160)",
+  accent: "rgb(255,122,89)", accent2: "rgb(92,200,255)", ok: "rgb(96,214,128)", warn: "rgb(255,196,64)",
+  err: "rgb(255,84,84)", sel: "rgb(58,38,40)"
+};
+const FONT = '10.5px "IBM Plex Mono", ui-monospace, monospace';
+const SMALL = '7px "IBM Plex Mono", ui-monospace, monospace';
+const BIG = '700 15px "Space Grotesk", system-ui, sans-serif';
+g.textBaseline = "top";
+const tw = (s, f = FONT) => { g.font = f; return g.measureText(s).width; };
+function text(x, y, s, col = C.fg, f = FONT) { g.font = f; g.fillStyle = col; g.fillText(s, x, y + 1); }
+function textR(xr, y, s, col = C.fg) { text(xr - tw(s), y, s, col); }
+function textC(y, s, col = C.fg, f = FONT) { text((W - tw(s, f)) / 2, y, s, col, f); }
+function ell(s, maxw) {
+  if (tw(s) <= maxw) return s;
+  const chars = [...s];
+  while (chars.length && tw(chars.join("") + "…") > maxw) chars.pop();
+  return chars.join("") + "…";
+}
+function lines(w, s) {
+  const out = [];
+  for (const para of String(s).split("\n")) {
+    let line = "";
+    for (const word of para.split(" ")) {
+      const cand = line ? line + " " + word : word;
+      if (tw(cand) <= w) { line = cand; continue; }
+      if (line) out.push(line);
+      line = word;
+      while (tw(line) > w && line.length > 1) {
+        let cut = line.length;
+        while (cut > 1 && tw(line.slice(0, cut)) > w) cut--;
+        out.push(line.slice(0, cut)); line = line.slice(cut);
+      }
+    }
+    out.push(line);
+  }
+  return out;
+}
+function wrap(x, y, w, s, col = C.fg, lh = 14, max = 99, skip = 0) {
+  const ls = lines(w, s);
+  ls.slice(skip, skip + max).forEach((l, i) => text(x, y + i * lh, l, col));
+  return ls.length;
+}
+function rr(x, y, w, h, r, col) { g.fillStyle = col; g.beginPath(); g.roundRect(x, y, w, h, r); g.fill(); }
+function header(title, accent = C.accent) {
+  g.fillStyle = C.panel; g.fillRect(0, 0, W, HEADER);
+  g.fillStyle = accent; g.fillRect(0, HEADER - 2, W, 2);
+  text(4, 2, ell(title, W - 40));
+  // batteria
+  g.strokeStyle = C.fg; g.lineWidth = 1; g.strokeRect(W - 25.5, 3.5, 20, 10);
+  g.fillStyle = C.fg; g.fillRect(W - 5, 6, 2, 4);
+  g.fillStyle = C.ok; g.fillRect(W - 24, 5, 13, 7);
+}
+function footer(h) {
+  g.fillStyle = C.panel; g.fillRect(0, H - FOOTER, W, FOOTER);
+  text(3, H - FOOTER + 1.5, h, C.dim, SMALL);
+}
+function row(i, sel, left, right = "", col = C.fg) {
+  const y = CY + i * ROW;
+  if (sel) { rr(1, y + 1, W - 8, ROW - 1, 3, C.sel); g.fillStyle = C.accent; g.fillRect(1, y + 2, 3, ROW - 3); }
+  const rw = right ? tw(right) + 6 : 0;
+  text(8, y + 2, ell(left, W - 16 - rw), sel ? C.fg : col);
+  if (right) textR(W - 10, y + 2, right, sel ? C.accent : C.dim);
+}
+function scrollbar(top, vis, n) {
+  if (n <= vis) return;
+  const x = W - 4, y = CY + 2, h = CH - 4;
+  g.fillStyle = C.panel; g.fillRect(x, y, 2, h);
+  const bh = Math.max(6, h * vis / n), by = y + (h - bh) * top / Math.max(1, n - vis);
+  g.fillStyle = C.dim; g.fillRect(x, by, 2, bh);
+}
+function progress(x, y, w, h, f, col = C.accent) {
+  f = Math.max(0, Math.min(1, f));
+  g.strokeStyle = C.dim; g.lineWidth = 1; g.beginPath(); g.roundRect(x + .5, y + .5, w - 1, h - 1, 3); g.stroke();
+  if (f > 0) rr(x + 2, y + 2, (w - 4) * f, h - 4, 2, col);
+}
+
+// ======================= mascotte (stessa di firmware: src/apps/mascot.cpp) =======================
+function mascot(cx, cy, r, t, mood) {
+  const body = C.accent, shade = "rgb(214,86,64)";
+  const phase = (t % 2400) / 2400 * 6.2832;
+  const speed = mood === "excited" ? 2 : mood === "sleepy" ? .5 : 1;
+  for (let k = 0; k < 8; k++) {
+    const base = -1.05 + k * 0.30;
+    let x = cx + Math.sin(base) * r * .75, y = cy + r * .55, ang = 1.5708 + base * .9, w = r / 4 + 2;
+    for (let s = 0; s < 6; s++) {
+      const wave = Math.sin(phase * speed + k * .8 + s * .7) * .35;
+      const nx = x + Math.cos(ang + wave) * r * .22, ny = y + Math.sin(ang + wave) * r * .22;
+      g.fillStyle = s % 2 ? body : shade; g.beginPath(); g.arc(nx, ny, w, 0, 7); g.fill();
+      x = nx; y = ny; ang += k < 4 ? -.12 : .12; if (w > 2) w--;
+    }
+    g.fillStyle = "rgb(255,200,180)"; g.beginPath(); g.arc(x, y, 2, 0, 7); g.fill();
+  }
+  const bob = Math.sin(phase) * 2;
+  g.fillStyle = body; g.beginPath(); g.ellipse(cx, cy + bob, r, r * .9, 0, 0, 7); g.fill();
+  g.fillStyle = "rgb(255,170,150)"; g.beginPath(); g.ellipse(cx + r / 3, cy - r / 3 + bob, r / 4, r / 5, 0, 0, 7); g.fill();
+  const blink = (t % 3600) < 140, ey = cy + r / 8 + bob, ex = r * .4;
+  for (const side of [-1, 1]) {
+    const x = cx + side * ex;
+    if (blink || mood === "sleepy") { g.fillStyle = C.bg; g.fillRect(x - r / 6, ey, r / 3, 2); }
+    else {
+      g.fillStyle = C.fg; g.beginPath(); g.arc(x, ey, r / 5, 0, 7); g.fill();
+      g.fillStyle = C.bg; g.beginPath(); g.arc(x + Math.sin(phase * .5) * 2, ey + 1, r / 9 + 1, 0, 7); g.fill();
+    }
+  }
+  const my = ey + r / 3;
+  g.strokeStyle = C.bg; g.lineWidth = 2; g.beginPath();
+  if (mood === "worried") g.arc(cx, my + 4, r / 6, Math.PI * 1.15, Math.PI * 1.85);
+  else if (mood === "sleepy") { g.fillStyle = C.bg; g.arc(cx, my, 2, 0, 7); g.fill(); }
+  else g.arc(cx, my - 3, r / 5, Math.PI * .15, Math.PI * .85);
+  g.stroke();
+  g.fillStyle = "rgb(255,150,160)";
+  for (const side of [-1, 1]) { g.beginPath(); g.arc(cx + side * (ex + r / 6), ey + r / 4, 3, 0, 7); g.fill(); }
+}
+
+// ======================= hardware simulato =======================
+const logEl = document.getElementById("log"), pcEl = document.getElementById("pc"), pcState = document.getElementById("pc-state");
+function hw(kind, msg) {
+  if (logEl.querySelector(".empty")) logEl.innerHTML = "";
+  const li = document.createElement("li");
+  const chip = document.createElement("span"); chip.className = "chip " + kind.toLowerCase(); chip.textContent = kind;
+  const m = document.createElement("span"); m.textContent = msg;
+  li.append(chip, m); logEl.prepend(li);
+  while (logEl.children.length > 40) logEl.lastChild.remove();
+}
+function flash(id, cls, ms = 220) {
+  const el = document.getElementById(id); el.classList.add(cls);
+  setTimeout(() => el.classList.remove(cls), ms);
+}
+const state = { xp: 7, sound: true, brightness: 3, layout: "IT", irRepeats: 1, rfRepeats: 8, rfUsedMs: 0, boots: 3, lastKey: 0 };
+const level = () => [0, 20, 80, 200, 500].filter(s => state.xp >= s).length;
+const addXp = n => { state.xp += n; };
+
+// ======================= pila delle schermate =======================
+const stack = [];
+const nav = {
+  push(s) { stack.push(s); s.onEnter?.(); },
+  pop() { if (stack.length > 1) { stack.pop().onExit?.(); stack[stack.length - 1].onResume?.(); } },
+  top() { return stack[stack.length - 1]; },
+  root() { while (stack.length > 1) stack.pop().onExit?.(); stack[0].onResume?.(); }
+};
+const open = s => nav.push(s);
+
+class Menu {
+  constructor(title, items = [], hints = "OK apri   ` indietro") { this.title = title; this.items = items; this.hints = hints; this.sel = 0; this.top = 0; this.empty = "Nessun elemento"; }
+  setItems(it) { this.items = it; this.sel = Math.min(this.sel, Math.max(0, it.length - 1)); this.fix(); }
+  fix() { if (this.sel < this.top) this.top = this.sel; if (this.sel >= this.top + ROWS) this.top = this.sel - ROWS + 1; this.top = Math.max(0, Math.min(this.top, this.items.length - ROWS)); }
+  extra() { return false; }
+  back() { nav.pop(); }
+  onEvent(e) {
+    if (this.extra(e)) return;
+    const n = this.items.length;
+    if (e.key === "up" && n) this.sel = this.sel > 0 ? this.sel - 1 : n - 1;
+    else if (e.key === "down" && n) this.sel = this.sel < n - 1 ? this.sel + 1 : 0;
+    else if (e.key === "left" && n) this.sel = Math.max(0, this.sel - ROWS);
+    else if (e.key === "right" && n) this.sel = Math.min(n - 1, this.sel + ROWS);
+    else if (e.key === "ok" && n && this.items[this.sel].action) this.items[this.sel].action();
+    else if (e.key === "back" || e.key === "backspace") this.back();
+    this.fix();
+  }
+  drawEmpty() { textC(CY + 40, this.empty, C.dim); }
+  draw() {
+    header(this.title);
+    if (!this.items.length) this.drawEmpty();
+    for (let i = 0; i < ROWS; i++) {
+      const idx = this.top + i, it = this.items[idx];
+      if (!it) break;
+      row(i, idx === this.sel, it.label, it.right || "", it.color || C.fg);
+    }
+    scrollbar(this.top, ROWS, this.items.length);
+    footer(this.hints);
+  }
+}
+class Message {
+  constructor(title, body, accent = C.accent, onClose) { Object.assign(this, { title, body, accent, onClose, scroll: 0 }); }
+  onEvent(e) {
+    if (e.key === "up" && this.scroll > 0) this.scroll--;
+    else if (e.key === "down" && this.scroll + 7 < lines(W - 12, this.body).length) this.scroll++;
+    else if (["ok", "back", "backspace"].includes(e.key)) { nav.pop(); this.onClose?.(); }
+  }
+  draw() { header(this.title, this.accent); wrap(6, CY + 3, W - 12, this.body, C.fg, 14, 7, this.scroll); footer("OK chiudi   ; . scorri"); }
+}
+const msg = (t, b, a) => open(new Message(t, b, a));
+const err = b => open(new Message("Errore", b, C.err));
+class Confirm {
+  constructor(title, body, done, yes = "Sì", no = "No", accent = C.warn) { Object.assign(this, { title, body, done, yes, no, accent, choice: false }); }
+  onEvent(e) {
+    if (["left", "right", "tab"].includes(e.key)) this.choice = !this.choice;
+    else if (e.key === "ok") { nav.pop(); this.done?.(this.choice); }
+    else if (e.key === "back" || e.key === "backspace") { nav.pop(); this.done?.(false); }
+    else if ("sSyY".includes(e.ch || "-")) this.choice = true;
+    else if ("nN".includes(e.ch || "-")) this.choice = false;
+  }
+  draw() {
+    header(this.title, this.accent); wrap(6, CY + 4, W - 12, this.body, C.fg, 14, 5);
+    const y = H - FOOTER - 22, w = 90;
+    const btn = (x, l, s) => { rr(x, y, w, 18, 4, s ? this.accent : C.panel); text(x + (w - tw(l)) / 2, y + 3, l, s ? C.bg : C.fg); };
+    btn(22, this.no, !this.choice); btn(W - 22 - w, this.yes, this.choice);
+    footer(", / scegli   OK conferma   ` annulla");
+  }
+}
+class TextInput {
+  constructor(title, init, max, kind, done) { Object.assign(this, { title, t: init, max, kind, done }); this.interval = 500; }
+  ok(c) {
+    if (this.kind === "file") return /[A-Za-z0-9_\- ]/.test(c);
+    if (this.kind === "url") return c !== " " && c !== "`";
+    return c !== "`";
+  }
+  onEvent(e) {
+    if (e.key === "back" && (e.ch === "`" || e.esc || !e.ch)) { nav.pop(); return; }
+    if (e.key === "ok") { nav.pop(); this.done?.(this.t); return; }
+    if (e.key === "backspace") { this.t = [...this.t].slice(0, -1).join(""); return; }
+    if (e.nav && !e.ch) return;
+    if (e.ch && this.ok(e.ch) && this.t.length < this.max) this.t += e.ch;
+  }
+  draw() {
+    header(this.title);
+    rr(4, CY + 8, W - 8, 40, 4, C.panel);
+    const on = Math.floor(performance.now() / 500) % 2 === 0;
+    wrap(10, CY + 12, W - 20, this.t + (on ? "_" : " "), C.fg, 15, 2);
+    textR(W - 6, CY + 52, `${this.t.length}/${this.max}`, C.dim);
+    if (this.kind === "file") text(6, CY + 52, "lettere, numeri, _ e -", C.dim);
+    if (this.kind === "url") text(6, CY + 52, "es. https://example.com", C.dim);
+    footer("OK conferma   DEL cancella   ` annulla");
+  }
+}
+class TextView {
+  constructor(title, body) { this.title = title; this.body = body; this.top = 0; }
+  onEvent(e) {
+    const n = lines(W - 12, this.body).length;
+    if (e.key === "up") this.top = Math.max(0, this.top - 1);
+    else if (e.key === "down") this.top = Math.min(Math.max(0, n - 7), this.top + 1);
+    else if (["ok", "back", "backspace"].includes(e.key)) nav.pop();
+  }
+  draw() { header(this.title); wrap(6, CY + 2, W - 12, this.body, C.fg, 15, 7, this.top); scrollbar(this.top, 7, lines(W - 12, this.body).length); footer("; . riga   ` chiudi"); }
+}
+
+// ======================= dati di esempio =======================
+const FILES = {
+  "/polpo": [["ir", "dir"], ["badusb", "dir"], ["rf433", "dir"], ["nfc", "dir"], ["logs", "dir"], ["LEGGIMI.txt", 612]],
+  "/polpo/ir": [["esempio_tv.ir", 734], ["imparati.ir", 211]],
+  "/polpo/badusb": [["ciao_linux.txt", 145], ["ciao_mac.txt", 330], ["ciao_windows.txt", 352]],
+  "/polpo/rf433": [["presa_sala.sub", 168], ["campanello.sub", 2150]],
+  "/polpo/nfc": [["tag_04A2C9F2316B80.nfc", 1440]],
+  "/polpo/logs": [["wifi.csv", 412]]
+};
+const README = "POLPO - cartella dei dati sulla microSD\n\nir/  telecomandi infrarossi (.ir)\nbadusb/  script tastiera USB (.txt)\nrf433/  segnali 433,92 MHz (.sub)\nnfc/  letture di tag (.nfc)\nlogs/  scansioni Wi-Fi e Bluetooth (.csv)\n\nUsa il Polpo solo su dispositivi tuoi.";
+const size = b => b < 1024 ? b + " B" : (b / 1024).toFixed(1) + " KB";
+class Browser extends Menu {
+  constructor(title, dir, ext, pick) { super(title, [], "OK apri   ` indietro"); Object.assign(this, { root: dir, dir, ext, pick }); this.empty = "Cartella vuota"; this.reload(); }
+  reload() {
+    const list = (FILES[this.dir] || []).filter(([n, t]) => t === "dir" || !this.ext || n.endsWith(this.ext));
+    this.setItems(list.map(([n, t]) => t === "dir"
+      ? { label: n + "/", color: C.accent2, action: () => { this.dir += "/" + n; this.sel = 0; this.reload(); } }
+      : { label: n, right: size(t), action: () => this.pick(this.dir + "/" + n, n) }));
+  }
+  back() { if (this.dir !== this.root) { this.dir = this.dir.slice(0, this.dir.lastIndexOf("/")); this.sel = 0; this.reload(); } else nav.pop(); }
+}
+
+// ======================= desktop e menu =======================
+class Desktop {
+  constructor() { this.interval = 80; this.poke = -9999; }
+  onEvent(e) {
+    if (["ok", "down", "right"].includes(e.key)) openMenu();
+    else if (e.ch === "i") openAbout();
+    else if (e.ch === "p") { this.poke = performance.now(); addXp(1); }
+  }
+  draw() {
+    const now = performance.now(), idle = now - state.lastKey;
+    let mood = now - this.poke < 1500 ? "excited" : idle > 60000 ? "sleepy" : "happy";
+    g.strokeStyle = C.panel; g.lineWidth = 1;
+    for (let b = 0; b < 6; b++) { const x = 12 + b * 19, y = 130 - ((now / (14 + b * 3) + b * 37) % 140); g.beginPath(); g.arc(x, y, 2 + b % 3, 0, 7); g.stroke(); }
+    mascot(62, 52, 28, now, mood);
+    text(128, 12, "POLPO", C.fg, BIG);
+    const lv = level();
+    text(130, 44, "Livello " + lv, C.accent);
+    const steps = [0, 20, 80, 200, 500, 500], lo = steps[lv - 1], hi = steps[Math.min(lv, 5)];
+    progress(130, 60, 96, 8, lv >= 5 ? 1 : (state.xp - lo) / (hi - lo));
+    text(130, 74, "microSD ok", C.ok);
+    text(130, 89, "Batteria 82%", C.dim);
+    text(130, 104, mood === "sleepy" ? "Zzz..." : "Pronto!", C.dim);
+    footer("OK menu   p coccola   i info");
+  }
+}
+function openMenu() {
+  open(new Menu("Menu", [
+    { label: "Infrarossi", right: "IR", action: openIr },
+    { label: "Radio 433 MHz", right: "RF", action: openRf },
+    { label: "NFC", right: "13,56", action: openNfc },
+    { label: "BadUSB", right: "USB", action: openBadUsb },
+    { label: "Bluetooth", right: "BLE", action: openBle },
+    { label: "Wi-Fi", right: "2,4 GHz", action: openWifi },
+    { label: "GPIO e I2C", right: "Grove", action: openGpio },
+    { label: "File", right: "SD", action: () => open(new Browser("File  /polpo", "/polpo", null, (p, n) => fileActions(p, n))) },
+    { label: "Diagnostica", action: openDiag },
+    { label: "Impostazioni", action: openSettings },
+    { label: "Info", action: openAbout }
+  ]));
+}
+
+// ======================= infrarossi =======================
+const LIB = {
+  "Accendi / spegni": ["Samsung", "LG", "Sony", "Philips RC5", "Philips RC6", "Panasonic", "Toshiba"],
+  "Volume +": ["Samsung", "LG", "Sony", "Philips RC5", "Philips RC6"], "Volume -": ["Samsung", "LG", "Sony", "Philips RC5", "Philips RC6"],
+  "Muto": ["Samsung", "LG", "Sony", "Philips RC5", "Philips RC6"], "Canale +": ["Samsung", "LG", "Sony", "Philips RC5"], "Canale -": ["Samsung", "LG", "Sony", "Philips RC5"]
+};
+const AUDIO = { "Accendi / spegni": ["Sony", "Yamaha"], "Volume +": ["Sony", "Yamaha"], "Volume -": ["Sony", "Yamaha"], "Muto": ["Sony", "Yamaha"] };
+const PROTO = { Samsung: "Samsung32", LG: "NEC", Sony: "SIRC", "Philips RC5": "RC5", "Philips RC6": "RC6", Panasonic: "Kaseikyo", Toshiba: "NEC", Yamaha: "NEC" };
+function irSend(what) { flash("led-ir", "on-ir"); hw("IR", what); }
+class UniSend {
+  constructor(btn, brands) { Object.assign(this, { btn, brands, i: 0, next: 0 }); }
+  onEvent(e) { if (["ok", "back", "backspace"].includes(e.key)) nav.pop(); }
+  tick(now) {
+    if (this.i >= this.brands.length || now < this.next) return;
+    const b = this.brands[this.i++];
+    irSend(`${PROTO[b]} · ${b} · ${this.btn}`);
+    this.next = now + 350;
+    if (this.i === this.brands.length) addXp(1);
+  }
+  draw() {
+    header("Universale: " + this.btn);
+    const n = this.brands.length, done = this.i >= n;
+    text(6, CY + 6, done ? "Fatto: inviati tutti i codici." : "Punta il Cardputer verso il dispositivo.", done ? C.ok : C.fg);
+    if (!done) text(6, CY + 26, "Marca: " + this.brands[this.i], C.accent);
+    progress(6, CY + 48, W - 12, 12, n ? this.i / n : 1);
+    textC(CY + 66, `${this.i} / ${n}`, C.dim);
+    footer(done ? "OK chiudi" : "Il dispositivo ha reagito?  OK = ferma");
+  }
+}
+const uni = (title, lib) => open(new Menu("Universale: " + title, Object.entries(lib).map(([btn, brands]) => ({ label: btn, right: brands.length + " marche", action: () => open(new UniSend(btn, brands)) }))));
+const REMOTES = {
+  "esempio_tv.ir": [["Samsung_Accendi", "Samsung32"], ["Samsung_Vol_su", "Samsung32"], ["Samsung_Vol_giu", "Samsung32"], ["LG_Accendi", "NEC"], ["LG_Vol_su", "NEC"], ["LG_Vol_giu", "NEC"]],
+  "imparati.ir": [["Ventilatore", "RAW"], ["Lampada_LED", "NEC"]]
+};
+function openRemote(p, n) {
+  const m = new Menu(n, (REMOTES[n] || []).map(([name, proto]) => ({ label: name, right: proto, action: () => { irSend(`${proto} · ${name}`); m.sent = true; addXp(1); } })), "OK invia   ` indietro");
+  const base = m.draw.bind(m); m.draw = () => { base(); if (m.sent) textR(W - 30, 2, "inviato", C.ok); };
+  open(m);
+}
+class Learn {
+  constructor() { this.state = "listen"; this.t0 = performance.now(); }
+  tick(now) { if (this.state === "listen" && now - this.t0 > 2500) { this.state = "got"; hw("IR", "ricevuto NEC indirizzo 0x4 comando 0x8 (IR Unit)"); } }
+  onEvent(e) {
+    if (e.key === "back" || e.key === "backspace") return nav.pop();
+    if (this.state !== "got") return;
+    if (e.key === "ok") open(new TextInput("Nome del tasto", "Tasto", 24, "file", n => { addXp(2); msg("Salvato", `Tasto "${n.replace(/ /g, "_")}" aggiunto a /polpo/ir/imparati.ir`, C.ok); this.state = "listen"; this.t0 = performance.now(); }));
+    else if (e.ch === "t") irSend("NEC · prova del tasto imparato");
+    else if (e.ch === "r") { this.state = "listen"; this.t0 = performance.now(); }
+  }
+  draw() {
+    header("Impara (IR Unit)");
+    if (this.state === "listen") { wrap(6, CY + 6, W - 12, "Punta il telecomando verso la IR Unit da 5-10 cm e premi brevemente un tasto.  (simulazione: arriva da solo tra poco)"); footer("in ascolto...   ` indietro"); return; }
+    text(6, CY + 6, "Ricevuto!", C.ok); text(6, CY + 22, "Protocollo NEC"); text(6, CY + 38, "indirizzo 0x4  comando 0x8", C.dim);
+    footer("OK salva   t prova   r riascolta");
+  }
+}
+function openIr() {
+  open(new Menu("Infrarossi", [
+    { label: "Universale: televisori", action: () => uni("televisori", LIB) },
+    { label: "Universale: audio", action: () => uni("audio", AUDIO) },
+    { label: "I miei telecomandi (.ir)", right: "SD", action: () => open(new Browser("Telecomandi", "/polpo/ir", ".ir", openRemote)) },
+    { label: "Impara un telecomando", right: "IR Unit", action: () => open(new Learn()) },
+    { label: "Come funziona", action: () => msg("Infrarossi", "Il LED IR è sul lato del Cardputer: puntalo verso il dispositivo (portata 3-5 m).\nCopia in /polpo/ir/ i file .ir: protocolli NEC, Samsung32, RC5, RC6, SIRC, Kaseikyo, RCA, Pioneer o RAW.\nPer imparare serve la IR Unit (ricevitore) sulla porta Grove.") }
+  ]));
+}
+
+// ======================= radio 433 =======================
+function rfSend(what, ms) {
+  const limit = 288000;
+  if (state.rfUsedMs + ms > limit) return err("limite orario di trasmissione raggiunto: riprova più tardi");
+  state.rfUsedMs += ms; flash("led-rf", "on-rf", 400); hw("433", what); addXp(1);
+}
+const CODES = [{ v: "0x95D5D4", bits: 24, p: 1, te: 352 }, { v: "0x95D5D1", bits: 24, p: 1, te: 350 }, { v: "0x2A61", bits: 16, p: 2, te: 648 }];
+const codeText = c => `${c.v}  ${c.bits} bit  P${c.p}  ${c.te} us`;
+class RfReceive extends Menu {
+  constructor() { super("Ricevi 433,92 MHz", [], "OK dettagli   ` indietro"); this.empty = "In ascolto... premi il tuo telecomando"; this.t0 = performance.now(); this.got = []; }
+  tick(now) {
+    const want = Math.min(CODES.length, Math.floor((now - this.t0 - 1500) / 2200) + 1);
+    if (want > this.got.length && want > 0) {
+      const c = CODES[this.got.length]; this.got.unshift({ c, n: 3 + this.got.length * 2 }); hw("433", "ricevuto " + codeText(c));
+      this.setItems(this.got.map(({ c, n }) => ({ label: codeText(c), right: "x" + n, action: () => rfActions(c) })));
+    }
+  }
+}
+function rfActions(c) {
+  open(new Menu("Codice ricevuto", [
+    { label: "Salva su microSD", action: () => open(new TextInput("Nome del segnale", "telecomando", 24, "file", n => { addXp(2); msg("Salvato", `/polpo/rf433/${n.replace(/ /g, "_")}.sub`, C.ok); })) },
+    { label: "Ritrasmetti (solo tuoi dispositivi)", action: () => rfSend(`trasmesso ${c.v} (${c.bits} bit) x${state.rfRepeats}`, Math.round(state.rfRepeats * (c.bits * 4 + 32) * c.te / 1000)) },
+    { label: "Dettagli", action: () => msg("Codice", `Valore: ${c.v}\nBit: ${c.bits}\nProtocollo rc-switch: ${c.p}${c.p === 1 ? " (PT2262/EV1527)" : ""}\nImpulso base (TE): ${c.te} us\nCodice fisso: chiunque lo registri può ripeterlo. Non è sicuro per porte e allarmi.`) }
+  ]));
+}
+class RfRaw {
+  constructor() { this.frozen = false; this.edges = 0; this.interval = 200; this.off = 0; }
+  tick() { if (!this.frozen) this.edges += 40 + Math.floor(Math.random() * 60); }
+  onEvent(e) {
+    if (e.key === "back" || e.key === "backspace") return nav.pop();
+    if (e.key === "ok" && !this.frozen) {
+      this.data = [];
+      for (let f = 0; f < 4; f++) { for (let b = 0; b < 24; b++) { const one = (0x95D5D4 >> (23 - b)) & 1; this.data.push(one ? 1050 : 350, one ? -350 : -1050); } this.data.push(350, -10850); }
+      this.frozen = true; hw("433", `catturati ${this.data.length} tempi RAW`);
+    } else if (e.key === "ok") {
+      open(new Menu("RAW", [
+        { label: "Salva su microSD", action: () => open(new TextInput("Nome del segnale", "registrazione", 24, "file", n => msg("Salvato", `/polpo/rf433/${n.replace(/ /g, "_")}.sub`, C.ok))) },
+        { label: "Ritrasmetti (solo tuoi dispositivi)", action: () => rfSend(`trasmesso RAW (${this.data.length} tempi) x3`, 420) }
+      ]));
+    } else if (e.ch === "r") { this.frozen = false; }
+    else if (this.frozen && e.key === "left") this.off = Math.max(0, this.off - 20);
+    else if (this.frozen && e.key === "right") this.off = Math.min(this.data.length - 20, this.off + 20);
+  }
+  draw() {
+    header(this.frozen ? "RAW registrato" : "Registra RAW");
+    if (!this.frozen) { wrap(6, CY + 4, W - 12, "Tieni premuto il tasto del TUO telecomando vicino all'RF433R e, mentre lo tieni, premi OK.", C.fg, 14, 4); text(6, CY + 64, "fronti: " + this.edges, C.dim); footer("OK cattura   ` indietro"); return; }
+    const yh = CY + 8, yl = CY + 30; let x = 2;
+    for (let i = this.off; i < this.data.length && x < W - 2; i++) {
+      const v = this.data[i], w = Math.max(1, Math.min(60, Math.abs(v) / 100));
+      g.fillStyle = v > 0 ? C.accent : C.accent2; g.fillRect(x, v > 0 ? yh : yl, w, 1);
+      g.fillStyle = C.panel; g.fillRect(x + w, yh, 1, yl - yh); x += w;
+    }
+    text(4, CY + 40, `${this.data.length} tempi   min 350 us   max 10850 us`);
+    text(4, CY + 56, "impulso base ~350 us, lungo ~1050 us (x3.0)", C.dim);
+    text(4, CY + 72, "Rapporto 1:3: probabile codice fisso PT2262/EV1527", C.ok);
+    footer("OK azioni   , / scorri   r riprova");
+  }
+}
+function openRf() {
+  open(new Menu("Radio 433 MHz", [
+    { label: "Ricevi codici fissi", right: "RF433R", action: () => open(new RfReceive()) },
+    { label: "Registra RAW", right: "RF433R", action: () => open(new RfRaw()) },
+    { label: "Segnali salvati", right: "RF433T", action: () => open(new Browser("Segnali 433 MHz", "/polpo/rf433", ".sub", (p, n) => open(new Menu(n, [
+      { label: "Trasmetti", right: n.startsWith("presa") ? "codice" : "RAW", action: () => rfSend("trasmesso " + n, 300) },
+      { label: "Informazioni", action: () => msg("Segnale", n.startsWith("presa") ? "Codice fisso\n0x95D5D4  24 bit  P1  352 us" : "Registrazione RAW\n396 tempi, durata 210 ms\nimpulso base ~350 us") },
+      { label: "Elimina", action: () => open(new Confirm("Eliminare?", "Il segnale verrà cancellato dalla microSD.", y => { if (y) { nav.pop(); hw("SD", "eliminato " + n); } })) }
+    ])))) },
+    { label: "Limite di trasmissione", action: () => msg("Trasmissione", `Usati ${Math.round(state.rfUsedMs / 1000)} s su 288 s nell'ultima ora.\nLa norma europea per 433,05-434,79 MHz consente al massimo il 10% del tempo a 10 mW: il Polpo si ferma all'8%.`) },
+    { label: "Collegamenti e regole", action: () => msg("Radio 433 MHz", "RF433R (ricevitore) e RF433T (trasmettitore) vanno sulla porta Grove: uno alla volta, oppure insieme con una Unit HUB. Niente moduli I2C sulla stessa HUB.\nFunzionano solo i codici fissi (es. prese radiocomandate, campanelli). Cancelli e auto moderni usano codici variabili: non si possono e non si devono copiare.\nRitrasmetti solo segnali di dispositivi tuoi.") }
+  ]));
+}
+
+// ======================= NFC =======================
+const TAG = "UID: 04:A2:C9:F2:31:6B:80\nATQA: 0044   SAK: 00\nTipo: NFC Type 2 (NTAG / MIFARE Ultralight)\nModello: NTAG213\nNDEF: 144 byte, scrivibile\nLink: https://www.example.com";
+class NfcRead {
+  constructor() { this.have = false; this.t0 = performance.now(); }
+  tick(now) { if (!this.have && now - this.t0 > 1800) { this.have = true; hw("NFC", "letto NTAG213 04:A2:C9:F2:31:6B:80"); addXp(1); } }
+  onEvent(e) {
+    if (e.key === "back" || e.key === "backspace") nav.pop();
+    else if (this.have && e.key === "ok") open(new TextView("Tag NFC", TAG + "\n\nMemoria: 45 pagine da 4 byte, lette tutte."));
+    else if (this.have && e.ch === "s") msg("Salvato", "/polpo/nfc/tag_04A2C9F2316B80.nfc", C.ok);
+    else if (this.have && e.ch === "r") { this.have = false; this.t0 = performance.now(); }
+  }
+  draw() {
+    header("Leggi NFC");
+    if (!this.have) { wrap(6, CY + 6, W - 12, "Appoggia la carta o il tag sul modulo RFID2 (distanza massima circa 2 cm)."); footer("in attesa...   ` indietro"); return; }
+    wrap(6, CY + 2, W - 12, TAG, C.fg, 14, 7); footer("OK tutto   s salva   r altra");
+  }
+}
+class NfcWrite {
+  constructor(what) { this.what = what; this.done = false; this.t0 = performance.now(); }
+  tick(now) { if (!this.done && now - this.t0 > 2000) { this.done = true; hw("NFC", "scritto e verificato: " + this.what); addXp(3); } }
+  onEvent(e) { if (e.key === "back" || e.key === "backspace" || (this.done && e.key === "ok")) nav.pop(); }
+  draw() {
+    header("Scrivi NFC");
+    if (!this.done) wrap(6, CY + 4, W - 12, "Appoggia un tag NTAG213/215/216 TUO e tienilo fermo.\nContenuto: " + this.what, C.fg, 14, 6);
+    else wrap(6, CY + 4, W - 12, "Fatto! NTAG213 scritto e verificato.", C.ok);
+    footer(this.done ? "OK chiudi" : "` annulla");
+  }
+}
+function openNfc() {
+  open(new Menu("NFC", [
+    { label: "Leggi carta o tag", right: "RFID2", action: () => open(new NfcRead()) },
+    { label: "Scrivi un link", right: "NDEF", action: () => open(new TextInput("Link da scrivere", "https://", 120, "url", u => u.length < 4 ? err("Link troppo corto.") : open(new NfcWrite(u)))) },
+    { label: "Scrivi un testo", right: "NDEF", action: () => open(new TextInput("Testo da scrivere", "", 120, "any", t => t ? open(new NfcWrite(t)) : err("Testo vuoto."))) },
+    { label: "Letture salvate", right: "SD", action: () => open(new Browser("Letture NFC", "/polpo/nfc", ".nfc", (p, n) => open(new TextView(n, "Filetype: Polpo NFC dump\nVersion: 1\nUID: 04 A2 C9 F2 31 6B 80\nModel: NTAG213\nPage 0: 04 A2 C9 9F\nPage 1: F2 31 6B 80\nPage 2: 48 00 00 00\nPage 3: E1 10 12 00\nPage 4: 03 10 D1 01\n...")))) },
+    { label: "Cosa può fare", action: () => msg("NFC", "Il modulo RFID2 legge carte ISO 14443-A a 13,56 MHz: identificativo di qualsiasi carta, contenuto di tag NTAG e Ultralight.\nScrive link e testi (NDEF) solo su tag scrivibili e non bloccati.\nNon emula carte, non legge carte crittografate e non funziona a 125 kHz.") }
+  ]));
+}
+
+// ======================= BadUSB =======================
+const SCRIPTS = {
+  "ciao_windows.txt": { lines: 10, chars: 105, wait: 2, text: "Ciao! Questo testo l'ha scritto il Polpo.\nFunziona come una tastiera USB: nessun programma installato.\n", app: "Blocco note" },
+  "ciao_mac.txt": { lines: 12, chars: 49, wait: 5, text: "Ciao! Questo testo l'ha scritto il Polpo.\n", app: "TextEdit" },
+  "ciao_linux.txt": { lines: 5, chars: 23, wait: 2, text: "$ echo \"Ciao dal Polpo!\"\nCiao dal Polpo!\n", app: "Terminale" }
+};
+class BadRun {
+  constructor(name) { const s = SCRIPTS[name]; Object.assign(this, { name, s, state: "count", t0: performance.now(), pos: 0, interval: 120 }); pcEl.textContent = ""; pcState.textContent = "pronto"; }
+  onEvent() { if (this.state !== "done") { this.state = "done"; this.stopped = true; pcState.textContent = "interrotto"; return; } nav.pop(); }
+  tick(now) {
+    if (this.state === "count" && now - this.t0 > 3000) { this.state = "run"; pcState.textContent = "digitazione: " + this.s.app; hw("USB", "tastiera collegata, layout " + state.layout); }
+    if (this.state === "run") {
+      this.pos = Math.min(this.s.text.length, this.pos + 2);
+      pcEl.textContent = this.s.text.slice(0, this.pos); flash("led-usb", "on-usb", 80);
+      if (this.pos >= this.s.text.length) { this.state = "done"; pcState.textContent = "completato"; hw("USB", `digitato ${this.s.chars} caratteri (${this.name})`); addXp(2); }
+    }
+  }
+  draw() {
+    header("BadUSB: " + this.name, C.warn);
+    if (this.state === "count") { textC(CY + 12, "Avvio tra " + (3 - Math.min(3, Math.floor((performance.now() - this.t0) / 1000))) + "...", C.warn, BIG); textC(CY + 50, "Premi un tasto qualsiasi per annullare"); }
+    else if (this.state === "run") { text(6, CY + 8, "In esecuzione sul computer collegato"); text(6, CY + 28, `Riga ${Math.min(this.s.lines, 1 + Math.floor(this.pos / this.s.text.length * this.s.lines))} di ${this.s.lines}`, C.accent); progress(6, CY + 50, W - 12, 12, this.pos / this.s.text.length); }
+    else text(6, CY + 8, this.stopped ? "Interrotto." : "Completato.", this.stopped ? C.warn : C.ok);
+    footer(this.state === "done" ? "un tasto per chiudere" : "UN TASTO QUALSIASI = STOP");
+  }
+}
+function openScript(p, n) {
+  const s = SCRIPTS[n];
+  open(new Confirm("Eseguire lo script?", `${n}: ${s.lines} righe, ${s.chars} caratteri, attese ${s.wait} s, layout ${state.layout}.\nSolo sul TUO computer, con la finestra giusta in primo piano.`, y => { if (y) open(new BadRun(n)); }, "Esegui", "Annulla"));
+}
+function openBadUsb() {
+  const m = new Menu("BadUSB", []);
+  const build = () => m.setItems([
+    { label: "Script dalla microSD", action: () => open(new Browser("Script BadUSB", "/polpo/badusb", ".txt", openScript)) },
+    { label: "Layout tastiera", right: state.layout, action: () => { state.layout = state.layout === "IT" ? "US" : "IT"; build(); } },
+    { label: 'Prova: scrivi "Ciao"', action: () => open(new Confirm("Prova", 'Il Polpo scriverà "Ciao dal Polpo" nella finestra attiva del computer.', y => { if (y) { pcEl.textContent = "Ciao dal Polpo"; pcState.textContent = "prova"; hw("USB", 'digitato "Ciao dal Polpo"'); flash("led-usb", "on-usb", 500); } })) },
+    { label: "Comandi supportati", action: () => open(new TextView("DuckyScript", "REM commento\nDELAY ms\nDEFAULT_DELAY ms\nSTRING testo\nSTRINGLN testo (+Invio)\nREPEAT n\nENTER TAB ESC SPACE BACKSPACE DELETE INSERT\nHOME END PAGEUP PAGEDOWN\nUP DOWN LEFT RIGHT  F1-F12\nCAPSLOCK NUMLOCK PRINTSCREEN PAUSE MENU\nCombinazioni: GUI r, CTRL ALT DELETE, CTRL-SHIFT ESC, ALT F4\nLimiti: 32 KB, 2000 righe, DELAY max 60 s.\nCon layout IT i caratteri ` e ~ non esistono e danno errore.")) }
+  ]);
+  build(); open(m);
+}
+
+// ======================= Bluetooth e Wi-Fi =======================
+const BLE = [["Auricolari Marco", "-48 dBm", "C4:1F:22:8A:01:9E", "?"], ["(Apple)", "-61 dBm", "5A:31:C2:77:10:04", "Apple"], ["Smartwatch", "-66 dBm", "E2:90:41:0B:6C:21", "Garmin"], ["(senza nome)", "-79 dBm", "71:0D:9E:52:3A:88", "?"], ["TV Sala", "-83 dBm", "A8:23:FE:14:7D:30", "Samsung"]];
+class BleScan extends Menu {
+  constructor() { super("Dispositivi Bluetooth", [], "OK dettagli  r ripeti  s salva"); this.t0 = performance.now(); this.scanning = true; this.interval = 300; }
+  tick(now) { if (this.scanning && now - this.t0 > 5000) { this.scanning = false; hw("BLE", "scansione: 5 dispositivi"); addXp(1); this.setItems(BLE.map(([n, r, a, v]) => ({ label: n, right: r, action: () => msg("Dispositivo", `Nome: ${n.startsWith("(") ? "-" : n}\nIndirizzo: ${a}\nSegnale: ${r}\nProduttore: ${v}\nConnettibile: sì`) }))); } }
+  extra(e) { if (e.ch === "r" && !this.scanning) { this.scanning = true; this.t0 = performance.now(); this.setItems([]); return true; } if (e.ch === "s" && !this.scanning) { msg("Salvato", "/polpo/logs/ble.csv", C.ok); return true; } return false; }
+  drawEmpty() { textC(CY + 40, this.scanning ? "Scansione in corso (" + Math.max(0, 5 - Math.floor((performance.now() - this.t0) / 1000)) + " s)..." : "Nessun dispositivo trovato", C.dim); }
+}
+class Remote {
+  constructor() { this.t0 = performance.now(); this.last = ""; this.interval = 500; }
+  get conn() { return performance.now() - this.t0 > 2500; }
+  onEvent(e) {
+    if (e.key === "back" || e.key === "backspace") return nav.pop();
+    const map = { up: "Volume +", down: "Volume -", left: "Precedente", right: "Successivo", ok: "Play / pausa" };
+    const what = map[e.key] || (e.ch === "m" ? "Muto" : "");
+    if (what && this.conn) { this.last = what; hw("BLE", "telecomando: " + what); }
+  }
+  draw() {
+    header("Telecomando Bluetooth", C.accent2);
+    text(6, CY + 4, this.conn ? "Collegato" : "In attesa di abbinamento...", this.conn ? C.ok : C.warn);
+    wrap(6, CY + 20, W - 12, this.conn ? "; volume+  . volume-  , precedente  / successivo  OK play/pausa  m muto" : 'Sul telefono o PC apri Bluetooth e abbina "Polpo Remote".', C.fg, 14, 4);
+    if (this.last) text(6, CY + 80, "Inviato: " + this.last, C.accent);
+    footer("` indietro (scollega)");
+  }
+}
+function openBle() {
+  open(new Menu("Bluetooth", [
+    { label: "Scansione dispositivi", action: () => open(new BleScan()) },
+    { label: "Telecomando multimediale", right: "HID", action: () => open(new Remote()) },
+    { label: "Cosa fa", action: () => msg("Bluetooth", "La scansione ascolta gli annunci Bluetooth LE dei dispositivi vicini (nome, potenza, produttore): utile per trovare i tuoi auricolari o capire quanti dispositivi ci sono.\nIl telecomando si abbina al TUO telefono o PC e controlla musica e volume.") }
+  ]));
+}
+const NETS = [["CasaRossi_5G", 6, -42, "WPA2/WPA3"], ["CasaRossi", 6, -45, "WPA2"], ["Vodafone-A71C2", 1, -63, "WPA2"], ["TIM-28813401", 11, -70, "WPA2"], ["(rete nascosta)", 1, -74, "WPA2"], ["Bar_Ospiti", 1, -81, "aperta"], ["DIRECT-TV-Sala", 6, -86, "WPA2"]];
+class Channels {
+  onEvent(e) { if (["back", "ok", "backspace"].includes(e.key)) nav.pop(); }
+  draw() {
+    header("Occupazione canali 2,4 GHz");
+    const load = Array(14).fill(0);
+    for (const [, ch, rssi] of NETS) { const w = Math.max(.05, Math.min(1, (rssi + 100) / 70)); for (let d = -2; d <= 2; d++) { const c = ch + d; if (c >= 1 && c <= 13) load[c] += w * [1, .5, .25][Math.abs(d)]; } }
+    const best = [1, 6, 11].reduce((a, b) => load[b] < load[a] ? b : a, 1), max = Math.max(.5, ...load);
+    const base = CY + 80, top = CY + 14;
+    for (let ch = 1; ch <= 13; ch++) {
+      const x = 10 + (ch - 1) * 17, h = (base - top) * load[ch] / max;
+      g.fillStyle = ch === best ? C.ok : load[ch] > max * .66 ? C.err : C.accent2; g.fillRect(x, base - h, 16, h);
+      text(x + 3, base + 2, String(ch), [1, 6, 11].includes(ch) ? C.fg : C.dim, SMALL);
+    }
+    text(6, CY + 1, `${NETS.length} reti. Canale consigliato: ${best}`, C.ok);
+    footer("Per il TUO router scegli 1, 6 o 11");
+  }
+}
+class WifiScan extends Menu {
+  constructor() { super("Reti Wi-Fi", [], "OK dettagli  c canali  r ripeti  s salva"); this.t0 = performance.now(); this.scanning = true; this.interval = 300; }
+  tick(now) { if (this.scanning && now - this.t0 > 2500) { this.scanning = false; hw("Wi-Fi", `scansione: ${NETS.length} reti`); addXp(1); this.setItems(NETS.map(([n, ch, r, sec]) => ({ label: n, right: `c${ch} ${r}`, color: sec === "aperta" ? C.warn : C.fg, action: () => msg("Rete", `Nome: ${n}\nCanale: ${ch}\nSegnale: ${r} dBm\nSicurezza: ${sec}`) }))); } }
+  extra(e) { if (this.scanning) return false; if (e.ch === "c") { open(new Channels()); return true; } if (e.ch === "r") { this.scanning = true; this.t0 = performance.now(); this.setItems([]); return true; } if (e.ch === "s") { msg("Salvato", "/polpo/logs/wifi_2.csv", C.ok); return true; } return false; }
+  drawEmpty() { textC(CY + 40, this.scanning ? "Scansione in corso..." : "Nessuna rete trovata", C.dim); }
+}
+function openWifi() {
+  open(new Menu("Wi-Fi", [
+    { label: "Scansione reti", action: () => open(new WifiScan()) },
+    { label: "Cosa fa", action: () => msg("Wi-Fi", "Elenca le reti a 2,4 GHz con canale, segnale e sicurezza, e mostra quali canali sono più affollati: serve a scegliere il canale migliore per il TUO router.\nIl Polpo non si collega a reti altrui e non invia pacchetti di disturbo.") }
+  ]));
+}
+
+// ======================= GPIO, file, sistema =======================
+class PinMon {
+  constructor() { this.interval = 100; this.cw = 0; this.cy = 0; this.w = false; this.y = false; }
+  tick() { if (Math.random() < .04) { this.w = !this.w; this.cw++; } }
+  onEvent(e) { if (["back", "ok", "backspace"].includes(e.key)) nav.pop(); }
+  draw() {
+    header("Monitor pin Grove");
+    const pin = (y, n, l, c) => { text(6, y, n); rr(120, y, 40, 14, 3, l ? C.ok : C.panel); text(126, y + 1, l ? "ALTO" : "basso", l ? C.bg : C.dim); text(168, y + 1, String(c), C.dim); };
+    pin(CY + 8, "G1 (filo bianco)", this.w, this.cw); pin(CY + 30, "G2 (filo giallo)", this.y, this.cy);
+    wrap(6, CY + 54, W - 12, "Ingressi a 3,3 V con resistenza verso massa. Non collegare mai 5 V ai pin di segnale.", C.dim, 13, 3);
+    footer("numero = cambi di livello   ` indietro");
+  }
+}
+function openGpio() {
+  open(new Menu("GPIO e I2C", [
+    { label: "Scanner I2C", action: () => { hw("I2C", "trovato 0x28"); open(new Menu("Scanner I2C (Grove)", [{ label: "M5 RFID2 (WS1850S)", right: "0x28" }], "r ripeti   ` indietro")); } },
+    { label: "Monitor pin G1 / G2", action: () => open(new PinMon()) },
+    { label: "Piedinatura Grove", action: () => msg("Porta Grove", "Nero: GND\nRosso: 5 V\nGiallo: G2 (SDA in I2C)\nBianco: G1 (SCL in I2C)\nI segnali lavorano a 3,3 V. Sul Cardputer Adv l'interruttore vicino alla porta deve essere su uscita 5 V per alimentare i moduli.") }
+  ]));
+}
+function fileActions(p, n) {
+  open(new Menu(n, [
+    { label: "Mostra contenuto", action: () => open(new TextView(n, n === "LEGGIMI.txt" ? README : "(contenuto di esempio)")) },
+    { label: "Elimina", action: () => open(new Confirm("Eliminare?", `Il file "${n}" verrà cancellato dalla microSD.`, y => { if (y) { nav.pop(); hw("SD", "eliminato " + n); } })) }
+  ]));
+}
+class KeyTest {
+  constructor() { this.last = "-"; this.n = 0; }
+  onEvent(e) { if (e.key === "back" && e.g0) return nav.pop(); this.n++; this.last = `${e.key}  '${e.ch || " "}'`; }
+  draw() { header("Test tastiera"); text(6, CY + 6, "Premi i tasti uno alla volta.", C.dim); text(6, CY + 30, this.last, C.accent); text(6, CY + 54, "Tasti letti: " + this.n); footer("tasto G0 (laterale) per uscire"); }
+}
+function openDiag() {
+  open(new Menu("Diagnostica", [
+    { label: "Tastiera", action: () => open(new KeyTest()) },
+    { label: "microSD: scrivi e rileggi", action: () => msg("microSD", "Scrittura e lettura riuscite.", C.ok) },
+    { label: "Scansione I2C (Grove)", action: () => msg("I2C", "0x28  M5 RFID2 (WS1850S)") },
+    { label: "LED infrarosso", action: () => { let n = 0; const t = setInterval(() => { flash("led-ir", "on-ir", 60); if (++n >= 20) { clearInterval(t); hw("IR", "test LED: 20 segnali"); } }, 120); msg("LED IR", "Inviati 20 segnali. Guardando il LED con la fotocamera del telefono dovevi vedere un lampeggio viola."); } },
+    { label: "Ricevitore RF433R", action: () => msg("RF433R", "Fronti al secondo: ~180 a riposo, ~2400 con un telecomando vicino (simulato).") },
+    { label: "Riepilogo", action: () => msg("Riepilogo", `Scheda: Cardputer Adv\nmicroSD: ok\nRFID2 (0x28): trovato\nMemoria libera: 142 KB\nAvvii: ${state.boots}\nSe qualcosa non va, annota questi dati.`) }
+  ]));
+}
+function openSettings() {
+  const m = new Menu("Impostazioni", []);
+  const build = () => m.setItems([
+    { label: "Luminosità", right: `${state.brightness + 1}/5`, action: () => { state.brightness = (state.brightness + 1) % 5; cv.style.filter = `brightness(${.55 + state.brightness * .12})`; build(); } },
+    { label: "Suoni", right: state.sound ? "sì" : "no", action: () => { state.sound = !state.sound; build(); } },
+    { label: "Layout BadUSB", right: state.layout, action: () => { state.layout = state.layout === "IT" ? "US" : "IT"; build(); } },
+    { label: "Invii IR per tasto", right: String(state.irRepeats), action: () => { state.irRepeats = state.irRepeats % 5 + 1; build(); } },
+    { label: "Ripetizioni 433 MHz", right: String(state.rfRepeats), action: () => { state.rfRepeats = state.rfRepeats >= 20 ? 3 : state.rfRepeats + 1; build(); } },
+    { label: "Ricrea cartelle SD", action: () => msg("microSD", "Cartelle /polpo e file di esempio pronti.", C.ok) }
+  ]);
+  build(); open(m);
+}
+function openAbout() {
+  open({
+    onEvent(e) { if (["back", "ok", "backspace"].includes(e.key)) nav.pop(); },
+    draw() {
+      header("Info"); let y = CY + 2;
+      for (const [k, v] of [["Firmware", "Polpo 0.1.0"], ["Commit", "simulatore"], ["Scheda", "Cardputer Adv"], ["Memoria", "142 KB liberi"], ["microSD", "1.2 MB / 7.4 GB"], ["Licenza", "MIT (codice Polpo)"]]) { text(6, y, k, C.dim); text(96, y, v); y += 14; }
+      text(6, y + 2, "Usalo solo su dispositivi tuoi.", C.accent); footer("` indietro");
+    }
+  });
+}
+
+// ======================= input =======================
+const NAVMAP = { ";": "up", ".": "down", ",": "left", "/": "right" };
+function dispatch(e) {
+  state.lastKey = performance.now();
+  nav.top().onEvent(e);
+  render(true);
+}
+function fromKey(k, shift = false) {
+  if (k === "Enter") return { key: "ok" };
+  if (k === "Escape" || k === "`") return { key: "back", ch: k === "`" ? "`" : "", esc: true };
+  if (k === "Backspace") return { key: "backspace" };
+  if (k === "Tab") return { key: "tab" };
+  if (k === "ArrowUp") return { key: "up", nav: true };
+  if (k === "ArrowDown") return { key: "down", nav: true };
+  if (k === "ArrowLeft") return { key: "left", nav: true };
+  if (k === "ArrowRight") return { key: "right", nav: true };
+  if (k.length === 1) return NAVMAP[k] ? { key: NAVMAP[k], ch: k, nav: true } : { key: "char", ch: k, shift };
+  return null;
+}
+document.addEventListener("keydown", e => {
+  // Tasti fisici: quando il focus è sullo schermo o sulla pagina (non sui tasti cliccabili).
+  if (e.target !== cv && e.target !== document.body) return;
+  if (e.ctrlKey || e.metaKey || e.altKey) return;
+  const ev = fromKey(e.key, e.shiftKey);
+  if (!ev) return;
+  e.preventDefault(); dispatch(ev);
+});
+document.getElementById("g0").addEventListener("click", () => { dispatch({ key: "back", g0: true }); cv.focus({ preventScroll: true }); });
+
+// tastiera del Cardputer
+const ROWS_KB = [
+  ["`|ESC", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "-", "=", "Backspace|del"],
+  ["Tab|tab", "q", "w", "e", "r", "t", "y", "u", "i", "o", "p", "[", "]", "\\"],
+  ["Fn|fn", "Shift|aa", "a", "s", "d", "f", "g", "h", "j", "k", "l", ";|↑", "'", "Enter|ok"],
+  ["Ctrl|ctrl", "Opt|opt", "Alt|alt", "z", "x", "c", "v", "b", "n", "m", ",|←", ".|↓", "/|→", " |spazio"]
+];
+let shift = false;
+const kbd = document.getElementById("kbd");
+for (const r of ROWS_KB) {
+  const rowEl = document.createElement("div"); rowEl.className = "row";
+  for (const k of r) {
+    const [v, lab] = k.split("|");
+    const b = document.createElement("button"); b.type = "button"; b.className = "key";
+    const isMod = ["Fn", "Shift", "Ctrl", "Opt", "Alt", "Tab", "Backspace", "Enter", " ", "`"].includes(v);
+    if (isMod) b.classList.add("mod");
+    if (lab && v.length === 1 && v !== " " && v !== "`") { b.innerHTML = ""; b.append(v); const s = document.createElement("small"); s.textContent = lab; b.append(s); }
+    else b.textContent = lab || v;
+    b.setAttribute("aria-label", lab ? `${v.trim() || "spazio"} (${lab})` : v);
+    b.addEventListener("click", () => {
+      if (v === "Shift") { shift = !shift; b.classList.toggle("held", shift); return; }
+      if (["Fn", "Ctrl", "Opt", "Alt"].includes(v)) return;
+      let key = v;
+      if (shift && v.length === 1 && /[a-z]/.test(v)) key = v.toUpperCase();
+      const ev = fromKey(key, shift);
+      if (ev) dispatch(ev);
+      if (shift) { shift = false; kbd.querySelectorAll(".held").forEach(x => x.classList.remove("held")); }
+    });
+    rowEl.append(b);
+  }
+  kbd.append(rowEl);
+}
+
+// ======================= ciclo =======================
+let lastDraw = 0;
+function render(force = false) {
+  const now = performance.now(), s = nav.top();
+  s.tick?.(now);
+  const every = s.interval || 0;
+  if (force || (every && now - lastDraw >= every) || s.dirtyAlways) {
+    g.fillStyle = C.bg; g.fillRect(0, 0, W, H);
+    s.draw(); lastDraw = now;
+  }
+}
+function loop() { render(false); requestAnimationFrame(loop); }
+nav.push(new Desktop());
+const start = () => { render(true); requestAnimationFrame(loop); };
+(document.fonts && document.fonts.load) ? Promise.all([document.fonts.load(FONT), document.fonts.load(BIG)]).then(start, start) : start();
+// i dati che cambiano (scansioni, conti alla rovescia) si ridisegnano almeno 4 volte al secondo
+setInterval(() => render(true), 250);
+})();
+</script>
+</body>
+</html>

@@ -63,9 +63,10 @@ public:
             std::snprintf(buf, sizeof buf, "Batteria %d%%", bat);
             ui::text(130, 89, buf, ui::kDim);
         }
-        const char* msg = mood == mascot::Mood::Sleepy    ? "Zzz... premi un tasto"
-                          : mood == mascot::Mood::Worried ? "Inserisci una microSD"
-                                                          : "Pronto ad imparare!";
+        // Al massimo 18 caratteri: la colonna destra è larga 110 pixel.
+        const char* msg = mood == mascot::Mood::Sleepy    ? "Zzz..."
+                          : mood == mascot::Mood::Worried ? "Manca la microSD"
+                                                          : "Pronto!";
         ui::text(130, 104, msg, ui::kDim);
         ui::footer("OK menu   p coccola   i info");
     }
