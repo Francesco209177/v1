@@ -125,7 +125,8 @@ QLineEdit, QComboBox, QSpinBox, QDoubleSpinBox, QPlainTextEdit, QTextEdit {{
     background: {p.panel}; border: {bw}px solid {p.border}; border-radius: 7px; padding: 5px 8px;
     selection-background-color: {accent}; selection-color: {acc_text}; }}
 QComboBox QAbstractItemView {{ background: {p.panel}; selection-background-color: {accent}; selection-color: {acc_text}; }}
-QCheckBox {{ spacing: 8px; }}
+QCheckBox, QRadioButton {{ spacing: 8px; background: transparent; }}
+QCheckBox:disabled {{ color: {p.muted}; }}
 QTableWidget, QTreeWidget, QListWidget {{ background: {p.panel}; border: {bw}px solid {p.border}; border-radius: 8px;
     gridline-color: {p.border}; alternate-background-color: {p.card}; }}
 QHeaderView::section {{ background: {p.card}; color: {p.muted}; border: none; border-bottom: {bw}px solid {p.border}; padding: 6px; font-weight: 600; }}

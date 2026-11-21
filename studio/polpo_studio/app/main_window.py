@@ -5,7 +5,9 @@ from __future__ import annotations
 import logging
 from collections.abc import Callable
 
-from PySide6.QtCore import QByteArray, Qt, QTimer
+import time
+
+from PySide6.QtCore import QByteArray, QEvent, QObject, Qt, QTimer
 from PySide6.QtGui import QAction, QKeySequence
 from PySide6.QtWidgets import (
     QApplication,
@@ -25,6 +27,7 @@ from .. import APP_NAME, __version__
 from ..core.capability import STATUS_HELP, STATUS_LABEL, Status
 from ..core.catalog import MODULE_IDS, MODULES
 from ..core.i18n import set_language, tr
+from . import tools  # noqa: F401  (registra gli strumenti dei moduli)
 from .activity_page import ActivityPage
 from .connect_dialog import ConnectDialog
 from .context import AppContext
@@ -32,9 +35,11 @@ from .dashboard import DashboardPage
 from .icons import icon
 from .module_page import ModulePage
 from .qt_bridge import GuiBridge
+from .security_dialogs import UnlockPanel
+from .security_page import SecurityPage
 from .settings_page import SettingsPage
 from .themes import accent_text, effective_accent, stylesheet
-from .widgets import SimTag
+from .widgets import LabTag, SimTag
 
 log = logging.getLogger(__name__)
 
@@ -53,14 +58,28 @@ class MainWindow(QMainWindow):
             self.restoreGeometry(QByteArray.fromBase64(geo.encode()))
         ctx.devices.virtual_confirm = self._virtual_confirm
         self.bridge.event.connect(self._on_event)
+        self.root = QStackedWidget()
+        self.setCentralWidget(self.root)
+        self.main_area: QWidget | None = None
+        self.lock_page = UnlockPanel(ctx, allow_pin=True)
+        self.lock_page.unlocked.connect(self._unlocked)
+        self.root.addWidget(self.lock_page)
         self.apply_theme()
         self.build()
+        self._last_input = time.monotonic()
+        self._idle = _IdleWatcher(self)
+        QApplication.instance().installEventFilter(self._idle)
+        self._tick = QTimer(self)
+        self._tick.timeout.connect(self._on_tick)
+        self._tick.start(1000)
+        if not ctx.vault.unlocked or ctx.vault.quick_locked:
+            self.lock(quick=ctx.vault.unlocked)
 
     # ---------------- costruzione ----------------
 
     def build(self) -> None:
         current = self.current_page()
-        old = self.centralWidget()
+        old = self.main_area
         central = QWidget()
         lay = QHBoxLayout(central)
         lay.setContentsMargins(0, 0, 0, 0)
@@ -72,9 +91,16 @@ class MainWindow(QMainWindow):
         self.stack = QStackedWidget()
         lay.addWidget(self.sidebar)
         lay.addWidget(self.stack, 1)
-        self.setCentralWidget(central)
+        self.root.insertWidget(0, central)
         if old is not None:
+            was_current = self.root.currentWidget() is old
+            self.root.removeWidget(old)
             old.deleteLater()
+            if was_current:
+                self.root.setCurrentWidget(central)
+        else:
+            self.root.setCurrentWidget(central)
+        self.main_area = central
         self.pages = {}
         self.sidebar.clear()
 
@@ -92,6 +118,7 @@ class MainWindow(QMainWindow):
         sep.setSizeHint(_qsize(10, 8))
         self.sidebar.addItem(sep)
         self._add_page("activity", tr("Registro attività", "Activity log"), "activity", ActivityPage(self.ctx, self.bridge))
+        self._add_page("security", tr("Sicurezza", "Security"), "security", SecurityPage(self.ctx, self.bridge, self.lock))
         self._add_page("settings", tr("Impostazioni", "Settings"), "settings", SettingsPage(self.ctx))
         self.sidebar.currentRowChanged.connect(self._on_row)
         self._build_menus()
@@ -117,6 +144,7 @@ class MainWindow(QMainWindow):
         mb = self.menuBar()
         mb.clear()
         m = mb.addMenu(tr("&File", "&File"))
+        self._act(m, tr("Blocca ora", "Lock now"), self.lock, "Ctrl+Shift+B")
         self._act(m, tr("Esci", "Quit"), self.close, QKeySequence.StandardKey.Quit)
         m = mb.addMenu(tr("&Polpo", "&Polpo"))
         self._act(m, tr("Collega via USB…", "Connect via USB…"), self.connect_usb, "Ctrl+L")
@@ -124,9 +152,10 @@ class MainWindow(QMainWindow):
         self._act(m, tr("Aggiorna informazioni", "Refresh info"), self.refresh_polpo, "F5")
         self._act(m, tr("Scollega", "Disconnect"), self.disconnect)
         m = mb.addMenu(tr("&Vai", "&Go"))
-        keys = ["home"] + [x.id for x in self._module_order()] + ["activity", "settings"]
+        keys = ["home"] + [x.id for x in self._module_order()] + ["activity", "security", "settings"]
+        extra = {"home": tr("Home", "Home"), "activity": tr("Registro attività", "Activity log"), "security": tr("Sicurezza", "Security"), "settings": tr("Impostazioni", "Settings")}
         for i, k in enumerate(keys):
-            name = tr("Home", "Home") if k == "home" else str(MODULE_IDS[k].title) if k in MODULE_IDS else (tr("Registro attività", "Activity log") if k == "activity" else tr("Impostazioni", "Settings"))
+            name = str(MODULE_IDS[k].title) if k in MODULE_IDS else extra[k]
             self._act(m, name, lambda _=False, key=k: self.show_page(key), f"Ctrl+{i + 1}" if i < 9 else None)
         m = mb.addMenu(tr("&Aiuto", "&Help"))
         self._act(m, tr("Legenda degli stati", "Status legend"), self.show_legend)
@@ -151,8 +180,13 @@ class MainWindow(QMainWindow):
         self.st_notif = QPushButton()
         self.st_notif.setProperty("flat", "true")
         self.st_notif.clicked.connect(self.show_notifications)
-        self._status_widgets = [self.st_conn, self.st_sim, self.st_batt, self.st_notif]
+        self.st_lab = LabTag()
+        self.st_lab.setToolTip(tr("Modalità laboratorio attiva: clic per spegnerla", "Lab mode on: click to switch it off"))
+        self.st_lab.mousePressEvent = lambda _e: self._lab_off()
+        self.st_lab.setVisible(False)
+        self._status_widgets = [self.st_conn, self.st_lab, self.st_sim, self.st_batt, self.st_notif]
         sb.addWidget(self.st_conn, 1)
+        sb.addPermanentWidget(self.st_lab)
         sb.addPermanentWidget(self.st_sim)
         sb.addPermanentWidget(self.st_batt)
         sb.addPermanentWidget(self.st_notif)
@@ -249,9 +283,60 @@ class MainWindow(QMainWindow):
 
         self.bridge.call_in_gui(show)
 
+    # ---------------- blocco ----------------
+
+    def lock(self, quick: bool = True) -> None:
+        """Blocco dello schermo: serve il PIN (se impostato) o la frase per riprendere."""
+        if quick and self.ctx.vault.unlocked:
+            self.ctx.vault.quick_lock()
+        if self.ctx.lab.enabled:
+            self.ctx.lab.disable()
+        self.menuBar().setEnabled(False)
+        self.statusBar().setEnabled(False)
+        self.lock_page.reset()
+        self.root.setCurrentWidget(self.lock_page)
+        self._on_tick()
+        self.lock_page.field.setFocus()
+
+    @property
+    def locked(self) -> bool:
+        return self.root.currentWidget() is self.lock_page
+
+    def _unlocked(self) -> None:
+        self._last_input = time.monotonic()
+        self.menuBar().setEnabled(True)
+        self.statusBar().setEnabled(True)
+        if self.main_area is not None:
+            self.root.setCurrentWidget(self.main_area)
+        self._update_status()
+
+    def _on_tick(self) -> None:
+        minutes = self.ctx.settings.get("autolock_min")
+        if minutes and not self.locked and time.monotonic() - self._last_input > minutes * 60:
+            self.ctx.activity.add("sicurezza", tr("Blocco automatico per inattività", "Automatic lock after inactivity"), "info")
+            self.lock()
+        lab = self.ctx.lab
+        on = lab.enabled
+        self.st_lab.setVisible(on)
+        if on:
+            m, sec = divmod(lab.remaining_s, 60)
+            self.st_lab.setText(tr("Laboratorio {m}:{s:02d}", "Lab {m}:{s:02d}", m=m, s=sec))
+
+    def _lab_off(self) -> None:
+        if self.ctx.lab.enabled:
+            self.ctx.lab.disable()
+            self.ctx.activity.add("sicurezza", tr("Modalità laboratorio disattivata", "Lab mode disabled"), "info")
+        self._on_tick()
+
     # ---------------- stato ----------------
 
     def _on_event(self, topic: str, payload: dict) -> None:
+        if topic == "vault.locked" and not self.locked:
+            self.lock(quick=False)
+            return
+        if topic == "lab.changed":
+            self._on_tick()
+            return
         if topic in ("polpo.state", "polpo.info", "polpo.phase", "hardware.changed", "notification"):
             if topic == "polpo.phase" and payload.get("text"):
                 self.st_conn.setText(payload["text"])
@@ -317,9 +402,26 @@ class MainWindow(QMainWindow):
         self.ctx.settings.set("window_geometry", bytes(self.saveGeometry().toBase64()).decode())
         for box in list(self._virtual_boxes):
             box.reject()
+        self._tick.stop()
+        QApplication.instance().removeEventFilter(self._idle)
         self.bridge.close()
         self.ctx.shutdown()
         super().closeEvent(event)
+
+
+class _IdleWatcher(QObject):
+    """Annota l'ultimo uso di tastiera e mouse per il blocco automatico."""
+
+    KINDS = (QEvent.Type.KeyPress, QEvent.Type.MouseButtonPress, QEvent.Type.MouseMove, QEvent.Type.Wheel)
+
+    def __init__(self, win: MainWindow) -> None:
+        super().__init__(win)
+        self.win = win
+
+    def eventFilter(self, _obj, event) -> bool:  # noqa: N802 (Qt)
+        if event.type() in self.KINDS:
+            self.win._last_input = time.monotonic()
+        return False
 
 
 def _qsize(w: int, h: int | None = None):

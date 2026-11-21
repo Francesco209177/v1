@@ -30,6 +30,9 @@ DEFAULTS: dict[str, Any] = {
     "virtual_confirm_dialog": True,  # le conferme del Polpo virtuale appaiono come finestra
     "dashboard_cards": ["polpo", "notifications", "hardware", "functions", "favorites", "activity"],
     "window_geometry": "",
+    "autolock_min": 10,  # blocco rapido dopo minuti di inattività (0 = mai)
+    "lab_minutes": 30,  # durata della modalità laboratorio
+    "remember_key": False,  # chiave dati nel portachiavi del sistema
 }
 
 

@@ -1,19 +1,18 @@
-"""Registro delle attività, notifiche, cronologia.
+"""Registro delle attività e notifiche.
 
-In questa versione il registro è un file JSONL in chiaro nella cartella dei dati; la cassaforte
-(fase successiva) lo cifra e lo protegge con una catena HMAC.
+Le voci restano in memoria per l'interfaccia e vengono salvate solo nel registro cifrato della
+cassaforte (``security.audit``), collegato con :meth:`ActivityLog.attach_sink` dopo lo sblocco.
+Quelle nate prima dello sblocco aspettano in memoria e vengono salvate subito dopo.
 """
 
 from __future__ import annotations
 
-import json
 import logging
 import threading
 import time
 from collections import deque
 from collections.abc import Callable
 from dataclasses import asdict, dataclass, field
-from pathlib import Path
 
 log = logging.getLogger(__name__)
 
@@ -30,35 +29,46 @@ class Entry:
 
 
 class ActivityLog:
-    def __init__(self, path: Path | None = None, keep: int = 2000) -> None:
-        self.path = path
+    def __init__(self, keep: int = 2000) -> None:
         self._lock = threading.Lock()
         self._entries: deque[Entry] = deque(maxlen=keep)
+        self._pending: list[Entry] = []
+        self._sink: Callable[[dict], None] | None = None
         self._listeners: list[Callable[[Entry], None]] = []
-        if path and path.exists():
-            self._load(path)
 
-    def _load(self, path: Path) -> None:
+    def attach_sink(self, sink: Callable[[dict], None], history: list[dict] | None = None) -> None:
+        """Collega il registro cifrato: carica le voci passate e salva quelle in attesa."""
+        with self._lock:
+            old = [Entry(**{k: d[k] for k in ("ts", "category", "message", "level", "simulated")}) for d in history or [] if _valid(d)]
+            current = list(self._entries)
+            self._entries.clear()
+            self._entries.extend(old + current)
+            self._sink = sink
+            pending, self._pending = self._pending, []
+        for e in pending:
+            self._write(e)
+
+    def detach_sink(self) -> None:
+        with self._lock:
+            self._sink = None
+            self._entries.clear()
+
+    def _write(self, e: Entry) -> None:
+        sink = self._sink
+        if sink is None:
+            with self._lock:
+                self._pending.append(e)
+            return
         try:
-            for line in path.read_text(encoding="utf-8").splitlines()[-self._entries.maxlen :]:  # type: ignore[index]
-                try:
-                    d = json.loads(line)
-                    self._entries.append(Entry(**{k: d[k] for k in ("ts", "category", "message", "level", "simulated")}))
-                except (ValueError, KeyError, TypeError):
-                    continue
-        except OSError as e:
-            log.warning("registro attività non leggibile: %s", e)
+            sink(asdict(e))
+        except Exception as err:  # il registro non deve mai fermare il programma
+            log.warning("impossibile salvare nel registro: %s", err)
 
     def add(self, category: str, message: str, level: str = "info", simulated: bool = False) -> Entry:
         e = Entry(time.time(), category, message, level if level in LEVELS else "info", simulated)
         with self._lock:
             self._entries.append(e)
-            if self.path:
-                try:
-                    with self.path.open("a", encoding="utf-8") as f:
-                        f.write(json.dumps(asdict(e), ensure_ascii=False) + "\n")
-                except OSError as err:
-                    log.warning("impossibile scrivere il registro: %s", err)
+        self._write(e)
         for cb in list(self._listeners):
             cb(e)
         return e
@@ -69,6 +79,10 @@ class ActivityLog:
 
     def on_add(self, cb: Callable[[Entry], None]) -> None:
         self._listeners.append(cb)
+
+
+def _valid(d: dict) -> bool:
+    return isinstance(d, dict) and all(k in d for k in ("ts", "category", "message", "level", "simulated"))
 
 
 @dataclass

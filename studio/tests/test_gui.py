@@ -14,9 +14,16 @@ from polpo_studio.core.catalog import MODULE_IDS
 SHOTS = os.environ.get("POLPO_SCREENSHOTS")
 
 
+def make_ctx(folder):
+    ctx = AppContext.create(folder, kdf_n=2**10)
+    ctx.vault.create("frase di prova abbastanza lunga")
+    ctx.on_unlocked()
+    return ctx
+
+
 @pytest.fixture
 def win(qtbot, tmp_path):
-    ctx = AppContext.create(tmp_path / "dati")
+    ctx = make_ctx(tmp_path / "dati")
     ctx.settings.set("virtual_confirm_dialog", False)
     ctx.devices.virtual_options = dict(time_scale=0.01, latency=0.0, auto_confirm_delay=0.5)
     w = MainWindow(ctx)
@@ -119,7 +126,7 @@ def test_theme_language_and_favourites(win, qtbot):
 
 
 def test_virtual_confirm_dialog_can_refuse(qtbot, tmp_path):
-    ctx = AppContext.create(tmp_path / "d2")
+    ctx = make_ctx(tmp_path / "d2")
     ctx.devices.virtual_options = dict(time_scale=0.01, latency=0.0)
     w = MainWindow(ctx)
     qtbot.addWidget(w)

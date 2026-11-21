@@ -16,6 +16,22 @@ Ogni funzione mostra, calcolato dal vivo, se è:
 Polpo Studio non contiene funzioni per entrare in sistemi altrui (cancelli, veicoli, allarmi, carte di
 altre persone): niente disturbo radio, forza bruta, rolling code, copie di badge o emulazione di carte.
 
+## Sicurezza
+
+* **Cassaforte cifrata** (AES-256-GCM): letture, file, backup e registro attività. La chiave dati è
+  protetta dalla **frase di accesso** e dalla **chiave di recupero** (scrypt); senza una delle due
+  nessuno può aprirla, nemmeno chi ha scritto il programma.
+* **PIN** per sbloccare velocemente lo schermo dopo una pausa (5 errori = serve la frase) e
+  **blocco automatico** dopo un tempo di inattività.
+* **Registro attività** cifrato e protetto da una catena HMAC: righe cambiate, tolte o tagliate
+  vengono scoperte da *Verifica integrità*.
+* **Modalità laboratorio**: trasmissioni, scritture di tag, programmazione di schede e app di terze
+  parti restano bloccate finché non la attivi (regole da accettare, PIN o frase, spegnimento
+  automatico).
+* **Backup `.polpobak`** cifrati con una password a parte, ripristinabili su un altro computer.
+* "Ricorda su questo computer" usa il portachiavi del sistema: comodo, ma chi usa il tuo account
+  del computer può aprire la cassaforte.
+
 ## Avvio da sorgente
 
 ```bash
@@ -47,5 +63,6 @@ polpo_studio/
   core/       modello delle capacità, catalogo moduli e hardware, impostazioni, lingue, registro, eventi
   devices/    trasporto seriale, client Polpo Link, Polpo virtuale, gestore del collegamento
   protocols/  Polpo Link (copia del firmware), NDEF
+  security/   cassaforte, registro con catena HMAC, modalità laboratorio, backup .polpobak
   resources/  file della microSD del Polpo virtuale (uguali al modello in polpo/sd_template)
 ```

@@ -29,6 +29,8 @@ def main(argv: list[str] | None = None) -> int:
     from ..core.logsetup import setup_logging
     from .context import AppContext
     from .main_window import MainWindow
+    from .security_dialogs import unlock_or_setup
+    from .themes import stylesheet
 
     ctx = AppContext.create()
     setup_logging(ctx.data_dir / "log")
@@ -39,8 +41,15 @@ def main(argv: list[str] | None = None) -> int:
     app.setApplicationVersion(__version__)
     app.setOrganizationName("Polpo")
     app.setStyle("Fusion")
+    s = ctx.settings
+    app.setStyleSheet(stylesheet(s.get("theme"), s.get("accent"), s.get("font_scale")))
+    if not unlock_or_setup(ctx):
+        ctx.shutdown()
+        return 0
     win = MainWindow(ctx)
     win.show()
     if args.virtuale:
         win.connect_virtual()
-    return app.exec()
+    rc = app.exec()
+    ctx.shutdown()
+    return rc

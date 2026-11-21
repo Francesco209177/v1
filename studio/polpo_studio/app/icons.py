@@ -168,6 +168,15 @@ def _draw_activity(p: QPainter, c: QColor) -> None:
         p.drawPoint(12, y)
 
 
+def _draw_security(p: QPainter, c: QColor) -> None:
+    p.drawRoundedRect(QRectF(14, 28, 36, 28), 6, 6)
+    p.drawArc(QRectF(20, 8, 24, 32), 0, 180 * 16)
+    p.drawLine(20, 24, 20, 28)
+    p.drawLine(44, 24, 44, 28)
+    p.setBrush(QBrush(c))
+    p.drawEllipse(QPointF(32, 41), 3.5, 3.5)
+
+
 _DRAW = {
     "home": _draw_home,
     "polpo": _draw_polpo,
@@ -183,6 +192,7 @@ _DRAW = {
     "apps": _draw_apps,
     "settings": _draw_settings,
     "activity": _draw_activity,
+    "security": _draw_security,
 }
 
 
