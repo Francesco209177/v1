@@ -532,6 +532,8 @@ button.frag:hover{transform:translateY(-3px)}
 .field input{font:500 1.1rem var(--body);padding:10px 12px;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:3px;min-width:0}
 .field input:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
 .seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg-b[data-dur]{flex:1 1 90px}
+#dur-t{display:inline-block}#dur-t.pop{animation:dlPop .25s ease-out}
 .seg-b{flex:1 1 130px;padding:9px 12px;border:1px solid var(--line);background:transparent;color:var(--ink);font-weight:500}
 .seg-b.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 .board{display:flex;flex-direction:column;gap:10px}
@@ -977,7 +979,7 @@ function reveal(i,a){
   }catch(e){return {topic:'',formula:'',expl:''}}
 }
 
-function fresh(){return {started:null,penalty:0,room:0,answers:[],hints:{},errors:0,hintCount:0,finished:null,noTimer:false,team:'',recorded:false,recId:null,secrets:[],secretSolved:null,inSecret:false,secretHints:0,alarm:0,seenIntro:{},gino:null,inChase:false,chaseDone:false,chaseIntro:false,chaseQs:null,chaseProg:0,items:{notes:1},notes:'',torchSeen:{}}}
+function fresh(){return {started:null,total:3600,penalty:0,room:0,answers:[],hints:{},errors:0,hintCount:0,finished:null,noTimer:false,team:'',recorded:false,recId:null,secrets:[],secretSolved:null,inSecret:false,secretHints:0,alarm:0,seenIntro:{},gino:null,inChase:false,chaseDone:false,chaseIntro:false,chaseQs:null,chaseProg:0,items:{notes:1},notes:'',torchSeen:{}}}
 function sane(s){ /* codici salvati con una versione vecchia delle porte: quelle porte vanno rifatte */
   let bad=-1;
   s.answers=s.answers.slice(0,ROOMS.length).map((a,i)=>{ if(a==null) return null; if(check(i,String(a))) return a; if(bad<0) bad=i; return null });
@@ -990,9 +992,9 @@ let S = load();
 let confirmReset = false;
 
 function remaining(){
-  if(!S.started) return TOTAL;
+  if(!S.started) return S.total||TOTAL;
   const end = S.finished || Date.now();
-  return TOTAL - Math.floor((end - S.started)/1000) - S.penalty;
+  return (S.total||TOTAL) - Math.floor((end - S.started)/1000) - S.penalty;
 }
 function mmss(sec){sec=Math.max(0,sec);return String(Math.floor(sec/60)).padStart(2,'0')+':'+String(sec%60).padStart(2,'0')}
 function fmt(n){return String(n).replace(/\B(?=(\d{3})+(?!\d))/g,'.')}
@@ -1016,6 +1018,7 @@ $('animt').addEventListener('click', ()=>{ RM=!RM; try{localStorage.setItem(KEY+
 animLabel();
 let DARK = true;
 try{ const v=localStorage.getItem(KEY+'-buio'); if(v!==null) DARK = v==='1' }catch(e){}
+let DUR = 60; try{ const v=+localStorage.getItem(KEY+'-durata'); if([45,60,75].includes(v)) DUR=v }catch(e){}
 function applyDark(){ document.documentElement.classList.toggle('buio', DARK); const b=$('darkt'); b.textContent = DARK ? 'Buio: sì' : 'Buio: no'; b.setAttribute('aria-pressed', String(DARK));
   document.querySelectorAll('[data-dark]').forEach(x=>{ const on=(x.dataset.dark==='1')===DARK; x.classList.toggle('on',on); x.setAttribute('aria-pressed',String(on)) }) }
 function setDark(v){ DARK=v; try{localStorage.setItem(KEY+'-buio', v?'1':'0')}catch(e){} applyDark() }
@@ -1190,7 +1193,7 @@ async function transition(kind, cardHtml, swap){
 const restartCard = () => card('Si ricomincia','Il Caveau Tartaglia',"Tutte le porte si richiudono e torni all'ingresso.");
 function celebrate(){
   setTimeout(()=>{ fx.rain(280); sfx('win') }, 500);
-  const used = TOTAL - remaining(), bs=[...document.querySelectorAll('.stat b')];
+  const used = (S.total||TOTAL) - remaining(), bs=[...document.querySelectorAll('.stat b')];
   const vals = S.noTimer ? [[S.errors,String],[S.hintCount,String]] : [[used,mmss],[S.errors,String],[S.hintCount,String]];
   bs.forEach((b,k)=>{ const [v,f]=vals[k]; b.textContent=f(0); setTimeout(()=>countUp(b,v,f,1400),700) });
   setTimeout(()=>{ const sl=document.querySelector('.seal'); sfx('stamp'); if(sl){ const r=sl.getBoundingClientRect(); fx.win(2, r.left+r.width/2, r.top+r.height/2) } }, 2950);
@@ -1976,7 +1979,7 @@ function board(){ try{ const l=JSON.parse(localStorage.getItem(BKEY)); if(Array.
 function saveBoard(l){ try{ localStorage.setItem(BKEY, JSON.stringify(l)) }catch(e){} }
 function recordResult(){
   if(S.recorded) return; S.recorded=true;
-  if(!S.noTimer){ const l=board(); S.recId=Date.now(); l.push({team:S.team||'Squadra senza nome', time:TOTAL-remaining(), errors:S.errors, hints:S.hintCount, at:S.recId, secret:!!S.secretSolved, seals:(S.secrets||[]).length}); saveBoard(l) }
+  if(!S.noTimer){ const l=board(); S.recId=Date.now(); l.push({team:S.team||'Squadra senza nome', time:(S.total||TOTAL)-remaining(), errors:S.errors, hints:S.hintCount, at:S.recId, secret:!!S.secretSolved, seals:(S.secrets||[]).length}); saveBoard(l) }
   save();
 }
 function boardHtml(list, me, clear){
@@ -2015,7 +2018,7 @@ function viewIntro(){
   </div><div class="col side">
   <h3>Regole</h3>
   <ul class="rules">
-    <li>Hai <b>60 minuti</b>. Il tempo parte quando entri.</li>
+    <li>Hai <b id="dur-t">${DUR} minuti</b>. Il tempo parte quando entri.</li>
     <li>Ogni porta si apre solo con il codice giusto: senza soluzione non si passa.</li>
     <li>Nelle stanze puoi toccare gli oggetti e fare tutte le prove che vuoi: non costano niente.</li>
     <li>Ogni porta aperta ti lascia una lettera. Alla fine ti serviranno tutte.</li>
@@ -2023,6 +2026,7 @@ function viewIntro(){
   </ul>
   <div class="setup">
     <div class="field"><label for="team">Nome della squadra</label><input id="team" maxlength="32" placeholder="Es. I Fattoriali" autocomplete="off"></div>
+    <div class="field"><span class="flabel" id="dur-l">Durata della partita</span><div class="seg" role="group" aria-labelledby="dur-l">${[45,60,75].map(m=>`<button type="button" class="seg-b${DUR===m?' on':''}" data-dur="${m}" aria-pressed="${DUR===m}">${m} minuti</button>`).join('')}</div></div>
     <div class="field"><span class="flabel" id="atm-l">Atmosfera</span><div class="seg" role="group" aria-labelledby="atm-l"><button type="button" class="seg-b${DARK?' on':''}" data-dark="1" aria-pressed="${DARK}">Caveau al buio</button><button type="button" class="seg-b${DARK?'':' on'}" data-dark="0" aria-pressed="${!DARK}">Luce accesa</button></div></div>
   </div>
   <div class="row"><button class="btn" id="go">Entra nel caveau</button></div>
@@ -2031,7 +2035,7 @@ function viewIntro(){
 }
 
 function viewEnd(){
-  const used=TOTAL-remaining(), list=board();
+  const used=(S.total||TOTAL)-remaining(), list=board();
   const date=new Date(S.finished||Date.now()).toLocaleDateString('it-IT',{day:'numeric',month:'long',year:'numeric'});
   const rows=ROOMS.map((r,i)=>{ const d=reveal(i,S.answers[i]);
     return `<tr style="--d:${i}"><td>${i<8?(i+1)+'.':'★'} ${d.topic}</td><td class="m">${d.formula}</td><td class="n">${fmt(S.answers[i])}</td></tr>` }).join('');
@@ -2139,9 +2143,12 @@ function bind(){
   on('clear-no',keepTeam(()=>{confirmClear=false}));
   on('clear-yes',keepTeam(()=>{confirmClear=false; saveBoard([])}));
   document.querySelectorAll('[data-dark]').forEach(b=>b.addEventListener('click',()=>{ setDark(b.dataset.dark==='1'); sfx('lamp') }));
+  document.querySelectorAll('[data-dur]').forEach(b=>b.addEventListener('click',()=>{ DUR=+b.dataset.dur; try{localStorage.setItem(KEY+'-durata',String(DUR))}catch(e){} sfx('click');
+    document.querySelectorAll('[data-dur]').forEach(x=>{ const on=+x.dataset.dur===DUR; x.classList.toggle('on',on); x.setAttribute('aria-pressed',String(on)) });
+    const dt=$('dur-t'); if(dt){ dt.textContent=DUR+' minuti'; restartAnim(dt,'pop') } }));
   applyDark();
   mountScenes($('app'));
-  on('go',()=>{ const tm=$('team'); S.team=(tm&&tm.value.trim().slice(0,32))||'Squadra senza nome'; const d=document.querySelector('.dial'); d&&d.classList.add('fast'); transition('ante', missionCard(0), ()=>{S.started=Date.now();save();render()}) });
+  on('go',()=>{ const tm=$('team'); S.team=(tm&&tm.value.trim().slice(0,32))||'Squadra senza nome'; const d=document.querySelector('.dial'); d&&d.classList.add('fast'); S.total=DUR*60; transition('ante', missionCard(0), ()=>{S.started=Date.now();save();render()}) });
   on('again',()=>transition('shutter', restartCard(), restart));
   on('notimer',()=>{S.noTimer=true;save();render()});
   on('reset',()=>{confirmReset=true;render()});
