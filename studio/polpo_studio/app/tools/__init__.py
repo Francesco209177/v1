@@ -2,10 +2,13 @@
 
 from ..archive_page import ArchiveTools
 from ..module_page import TOOL_FACTORIES
+from .bluetooth_tools import BluetoothTools
+from .gpio_tools import GpioTools
 from .ir_tools import IrTools
 from .nfc_tools import NfcTools
 from .polpo_tools import PolpoTools
 from .radio_tools import RadioTools
+from .usb_tools import UsbTools
 
 TOOL_FACTORIES.update(
     {
@@ -14,5 +17,8 @@ TOOL_FACTORIES.update(
         "radio": RadioTools,
         "infrared": IrTools,
         "nfc": NfcTools,
+        "usb": UsbTools,
+        "bluetooth": BluetoothTools,
+        "gpio": GpioTools,
     }
 )
