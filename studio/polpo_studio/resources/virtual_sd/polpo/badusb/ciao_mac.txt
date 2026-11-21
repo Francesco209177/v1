@@ -1,0 +1,12 @@
+REM Esempio innocuo per macOS: apre TextEdit con Spotlight e scrive un saluto.
+REM Al primo collegamento macOS può chiedere di identificare la tastiera: chiudi la finestra.
+DELAY 1500
+GUI SPACE
+DELAY 700
+STRING TextEdit
+DELAY 400
+ENTER
+DELAY 2000
+GUI n
+DELAY 800
+STRINGLN Ciao! Questo testo l'ha scritto il Polpo.
