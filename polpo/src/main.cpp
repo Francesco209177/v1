@@ -10,6 +10,7 @@
 #include "core/settings.h"
 #include "core/storage.h"
 #include "hal/usb_kbd.h"
+#include "link/link.h"
 
 void setup() {
     usb_kbd::begin();  // l'interfaccia USB tastiera va registrata subito
@@ -26,6 +27,7 @@ void setup() {
     ui::begin();
     ui::set_brightness(settings::get().brightness);
     storage::begin();
+    pclink::begin();
 
     open_desktop();
 }
@@ -34,6 +36,7 @@ void loop() {
     M5Cardputer.update();
     const uint32_t now = millis();
     input.update(now);
+    pclink::poll(now);
     nav.run_once(now);
     delay(5);
 }

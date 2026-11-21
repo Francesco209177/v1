@@ -5,6 +5,7 @@
   "license": "MIT",
   "platforms": "*",
   "frameworks": "*",
+  "dependencies": [{ "owner": "bblanchon", "name": "ArduinoJson", "version": "7.4.3" }],
   "build": {
     "flags": ["-std=gnu++17"]
   }

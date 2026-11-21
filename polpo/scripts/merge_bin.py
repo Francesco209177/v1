@@ -51,7 +51,11 @@ def merge_bin(source, target, env):
                .replace("--flash-freq", "--flash_freq").replace("--flash-size", "--flash_size") for c in cmd]
         subprocess.check_call(cmd)
     shutil.copyfile(out, os.path.join(out_dir, "polpo-cardputer-latest.bin"))
-    print("merge_bin: creato %s" % out)
+    # Solo applicazione (indirizzo 0x10000): per gli aggiornamenti da Polpo Studio senza cancellare
+    # le impostazioni salvate nella partizione NVS.
+    app_only = os.path.join(out_dir, "polpo-cardputer-%s-app.bin" % version)
+    shutil.copyfile(app, app_only)
+    print("merge_bin: creato %s e %s" % (out, app_only))
 
 
 env.AddPostAction("$BUILD_DIR/${PROGNAME}.bin", merge_bin)  # noqa: F821
