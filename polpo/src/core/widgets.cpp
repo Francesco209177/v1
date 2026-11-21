@@ -220,12 +220,13 @@ void TextViewScreen::draw() {
 // ---------------- FileBrowserScreen ----------------
 
 FileBrowserScreen::FileBrowserScreen(std::string title, std::string dir, const char* ext, Pick pick, bool subdirs)
-    : MenuScreen(std::move(title), {}, "OK apri   ` indietro"),
+    : MenuScreen(title, {}, "OK apri   ` indietro"),
       root_(dir),
       dir_(std::move(dir)),
       ext_(ext),
       pick_(std::move(pick)),
       subdirs_(subdirs) {
+    base_title_ = title_;
     empty_text_ = "Cartella vuota";
 }
 
@@ -233,6 +234,8 @@ void FileBrowserScreen::on_enter() { reload(); }
 void FileBrowserScreen::on_resume() { reload(); }
 
 void FileBrowserScreen::reload() {
+    // Nel titolo la sottocartella corrente, es. "File  /polpo /logs".
+    title_ = dir_ == root_ ? base_title_ : base_title_ + " " + dir_.substr(root_.size());
     std::vector<MenuItem> items;
     if (!storage::ok()) {
         empty_text_ = "microSD non trovata";

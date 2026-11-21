@@ -105,7 +105,7 @@ public:
 protected:
     void on_back() override;
     void reload();
-    std::string root_, dir_;
+    std::string root_, dir_, base_title_;
     const char* ext_;
     Pick pick_;
     bool subdirs_;

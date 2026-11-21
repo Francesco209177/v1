@@ -29,7 +29,7 @@ Esclusi di proposito:
 | `docs/MANUALE.md` | acquisto, installazione, uso di ogni funzione, limiti noti |
 | `release/` | file `.bin` pronto da installare (indirizzo 0x0) |
 | `web/` | pagina di installazione con un pulsante (ESP Web Tools) |
-| `simulator/index.html` | simulatore nel browser con gli stessi menu |
+| `simulator/index.html` | simulatore nel browser con gli stessi menu, microSD virtuale e pannello per moduli e oggetti simulati (`scripts/sim_samples.py` copia dentro i file di `sd_template`) |
 | `src/` | firmware: `core` interfaccia, `hal` driver, `apps` funzioni |
 | `lib/polpo_core/` | logica pura testata sul PC (protocolli IR, DuckyScript, NDEF, `.sub`) |
 | `test/` | test unitari (`pio test -e native`) |

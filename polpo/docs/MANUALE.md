@@ -23,6 +23,11 @@ Ogni modulo M5Stack ha già il suo cavetto Grove a 4 fili.
 
 Prima di comprare puoi provare tutti i menu nel **simulatore**: `polpo/simulator/index.html`.
 
+Nel simulatore:
+
+- il pannello **Porta Grove e oggetti** serve a collegare i moduli virtuali, appoggiare carte NFC e premere telecomandi a 433 MHz e a infrarossi;
+- file, livello e impostazioni restano salvati nel browser.
+
 ---
 
 ## 2. Installare il firmware (una volta sola)
