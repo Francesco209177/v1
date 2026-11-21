@@ -32,6 +32,21 @@ altre persone): niente disturbo radio, forza bruta, rolling code, copie di badge
 * "Ricorda su questo computer" usa il portachiavi del sistema: comodo, ma chi usa il tuo account
   del computer può aprire la cassaforte.
 
+## Pacchetti
+
+La build di GitHub Actions (`.github/workflows/polpo.yml`) produce l'installer e lo zip per **Windows** e
+l'archivio per **Linux** (con `installa.sh`, regola udev e voce di menu), e su entrambi esegue
+`PolpoStudio --self-test`. **macOS**: per ora da sorgente.
+
+Build locale: `pip install pyinstaller==6.22.0`, copia `polpo/release/polpo-cardputer-<ver>-app.bin` in
+`polpo_studio/resources/firmware/`, poi `pyinstaller packaging/polpo_studio.spec` (cartella `dist/PolpoStudio`).
+
+## Documentazione
+
+[Manuale](docs/MANUALE_STUDIO.md) · [Sicurezza](docs/SICUREZZA.md) · [Hardware esterno](docs/HARDWARE_ESTERNO.md) ·
+[Protocollo Polpo Link](docs/PROTOCOLLO_POLPO_LINK.md) · [Architettura](docs/ARCHITETTURA.md) ·
+[Polpo Bridge](bridge/LEGGIMI.md)
+
 ## Avvio da sorgente
 
 ```bash
@@ -42,7 +57,8 @@ python -m polpo_studio                # oppure: polpo-studio
 python -m polpo_studio --virtuale     # parte subito con il Polpo virtuale (SIMULATO)
 ```
 
-Opzioni: `--dati CARTELLA` (dove salvare impostazioni e registro), `--lingua it|en`, `--version`.
+Opzioni: `--virtuale`, `--dati CARTELLA` (dove salvare impostazioni e cassaforte), `--lingua it|en`,
+`--self-test` (autodiagnosi senza hardware), `--version`.
 
 ## Test
 

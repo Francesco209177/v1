@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=Polpo Studio
+Comment=Programma per PC del Polpo (M5Stack Cardputer)
+Exec=PolpoStudio
+Terminal=false
+Categories=Utility;Electronics;

@@ -3,7 +3,6 @@
 
 from __future__ import annotations
 
-import sys
 import time
 from pathlib import Path
 
@@ -238,22 +237,24 @@ class GpioTools(ToolBase):
             self.f_file.setText(path)
 
     def esptool_args(self, action: str) -> list[str]:
+        """Riga di comando completa di esptool (programma incluso)."""
+        from ...devices.esptool_runner import esptool_argv
+
         port = self.f_port.currentData() or ""
-        base = ["-m", "esptool", "--port", port]
         if action == "info":
-            return base + ["flash-id"]
-        return base + ["write-flash", self.f_offset.text().strip(), self.f_file.text().strip()]
+            return esptool_argv(["--port", port, "flash-id"])
+        return esptool_argv(["--port", port, "write-flash", self.f_offset.text().strip(), self.f_file.text().strip()])
 
     def _run(self, args: list[str]) -> None:
         if self._proc is not None and self._proc.state() != QProcess.ProcessState.NotRunning:
             self.say(tr("esptool è già in esecuzione.", "esptool is already running."), True)
             return
-        self.f_log.setPlainText("esptool " + " ".join(args[2:]) + "\n")
+        self.f_log.setPlainText(" ".join(args) + "\n")
         proc = QProcess(self)
         proc.setProcessChannelMode(QProcess.ProcessChannelMode.MergedChannels)
         proc.readyReadStandardOutput.connect(lambda: self.f_log.appendPlainText(bytes(proc.readAllStandardOutput()).decode(errors="replace").rstrip()))
         proc.finished.connect(lambda code, _s: self.say(tr("esptool terminato (codice {c}).", "esptool finished (code {c}).", c=code), code != 0))
-        proc.start(sys.executable, args)
+        proc.start(args[0], args[1:])
         self._proc = proc
 
     def chip_info(self) -> None:

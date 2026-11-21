@@ -10,7 +10,6 @@ from __future__ import annotations
 
 import hashlib
 import json
-import sys
 import time
 from dataclasses import dataclass
 from pathlib import Path
@@ -50,12 +49,14 @@ def verify(fw: Firmware) -> bool:
 
 
 def esptool_command(port: str, fw: Firmware) -> list[str]:
+    from .esptool_runner import esptool_argv
+
     assert fw.path is not None
-    return [
-        sys.executable, "-m", "esptool", "--chip", "esp32s3", "--port", port,
+    return esptool_argv([
+        "--chip", "esp32s3", "--port", port,
         "--before", "no-reset", "--after", "hard-reset",
         "write-flash", fw.offset, str(fw.path),
-    ]  # fmt: skip
+    ])  # fmt: skip
 
 
 def touch_1200(port: str) -> None:

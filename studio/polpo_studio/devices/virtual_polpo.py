@@ -207,6 +207,7 @@ class VirtualPolpo:
     # ---------------- microSD simulata ----------------
 
     def _seed(self, root: Path) -> None:
+        self.dirs.update(f"/polpo/{d}" for d in ("ir", "rf433", "nfc", "badusb", "logs"))  # come sd_template
         if not root.is_dir():
             return
         for p in sorted(root.rglob("*")):

@@ -15,12 +15,30 @@ def build_parser() -> argparse.ArgumentParser:
     ap.add_argument("--virtuale", action="store_true", help="collega subito il Polpo virtuale (SIMULATO)")
     ap.add_argument("--dati", metavar="CARTELLA", help="cartella dei dati dell'utente")
     ap.add_argument("--lingua", choices=["it", "en"], help="lingua dell'interfaccia")
+    ap.add_argument("--self-test", action="store_true", help="autodiagnosi senza hardware (esce con 0 se va tutto bene)")
     ap.add_argument("--version", action="version", version=f"{APP_NAME} {__version__}")
     return ap
 
 
 def main(argv: list[str] | None = None) -> int:
+    argv = list(sys.argv[1:] if argv is None else argv)
+    if argv[:1] == ["--esptool"]:  # nel pacchetto: esptool gira dentro il programma stesso
+        from ..devices.esptool_runner import run_embedded
+
+        return run_embedded(argv[1:])
     args = build_parser().parse_args(argv)
+    if args.self_test:
+        from .selftest import run
+
+        if sys.stdout is not None:
+            return run()
+        # Programma senza console (Windows): il risultato va in un file accanto ai dati temporanei.
+        import tempfile
+
+        lines: list[str] = []
+        rc = run(lines.append)
+        Path(tempfile.gettempdir(), "polpo-studio-autodiagnosi.txt").write_text("\n".join(lines) + "\n", encoding="utf-8")
+        return rc
     if args.dati:
         os.environ["POLPO_STUDIO_HOME"] = str(Path(args.dati).expanduser())
 

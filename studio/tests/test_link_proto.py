@@ -114,3 +114,11 @@ def test_ndef_roundtrip():
     assert (t.kind, t.lang, t.value) == ("text", "it", "ciao")
     with pytest.raises(ValueError):
         ndef.parse(b"\xd1\x01\x09U\x01ab")
+
+
+def test_bundled_golden_copy_is_identical():
+    """L'autodiagnosi del pacchetto usa una copia dei casi golden: deve restare uguale all'originale."""
+    from .conftest import GOLDEN
+
+    bundled = REPO / "studio/polpo_studio/resources/link_pure.jsonl"
+    assert bundled.read_bytes() == GOLDEN.read_bytes()

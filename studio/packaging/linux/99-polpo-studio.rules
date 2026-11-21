@@ -1,0 +1,12 @@
+# Polpo Studio: accesso alle porte seriali del Polpo e delle schede più comuni senza privilegi di root,
+# e niente interferenze di ModemManager (che altrimenti "prova" la porta appena compare).
+# Installazione: sudo cp 99-polpo-studio.rules /etc/udev/rules.d/ && sudo udevadm control --reload && sudo udevadm trigger
+
+# Espressif (Polpo / Cardputer e altre schede ESP32 con USB nativa)
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="303a", ENV{ID_MM_DEVICE_IGNORE}="1", MODE="0660", TAG+="uaccess"
+# Adattatori USB-seriale (Polpo Bridge, RDM6300, schede Arduino/ESP32)
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="1a86", ATTRS{idProduct}=="7523", ENV{ID_MM_DEVICE_IGNORE}="1", MODE="0660", TAG+="uaccess"
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="1a86", ATTRS{idProduct}=="55d4", ENV{ID_MM_DEVICE_IGNORE}="1", MODE="0660", TAG+="uaccess"
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="10c4", ATTRS{idProduct}=="ea60", ENV{ID_MM_DEVICE_IGNORE}="1", MODE="0660", TAG+="uaccess"
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="0403", ENV{ID_MM_DEVICE_IGNORE}="1", MODE="0660", TAG+="uaccess"
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="2341", ENV{ID_MM_DEVICE_IGNORE}="1", MODE="0660", TAG+="uaccess"

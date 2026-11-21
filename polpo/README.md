@@ -22,6 +22,13 @@ Esclusi di proposito:
 - deauth Wi-Fi;
 - spam Bluetooth.
 
+## Polpo Studio (programma per PC)
+
+Il Polpo si può comandare anche dal PC con **Polpo Studio** (cartella `studio/`): collegamento USB con
+**Polpo Link** (il Polpo chiede conferma sul suo schermo), cassaforte cifrata, moduli Radio, NFC, RFID 125 kHz,
+Infrarossi, GPIO, Bluetooth, USB, iButton, app e un Polpo virtuale segnato SIMULATO.
+Vedi `studio/README.md` e `studio/docs/MANUALE_STUDIO.md`.
+
 ## Cartelle
 
 | Percorso | Contenuto |

@@ -4,6 +4,7 @@ import os
 import plistlib
 import sys
 import threading
+import time
 import types
 from unittest import mock
 
@@ -298,9 +299,19 @@ def test_serial_console_over_pty():
     c.open()
     try:
         os.write(master, b"ciao dalla scheda\n")
-        assert ev.wait(2) and b"ciao" in b"".join(got)
+        deadline = time.monotonic() + 10
+        while b"ciao dalla scheda" not in b"".join(got) and time.monotonic() < deadline:
+            ev.wait(0.1)
+        assert b"ciao dalla scheda" in b"".join(got)
         c.write(b"ping\n")
-        assert os.read(master, 100).startswith(b"ping")
+        received = b""
+        os.set_blocking(master, False)
+        while b"ping\n" not in received and time.monotonic() < deadline:
+            try:
+                received += os.read(master, 100)
+            except BlockingIOError:
+                time.sleep(0.02)
+        assert received.startswith(b"ping")
     finally:
         c.close()
         os.close(master)
