@@ -32,6 +32,7 @@ from .activity_page import ActivityPage
 from .connect_dialog import ConnectDialog
 from .context import AppContext
 from .dashboard import DashboardPage
+from . import icons as icons_mod
 from .icons import icon
 from .module_page import ModulePage
 from .qt_bridge import GuiBridge
@@ -51,6 +52,7 @@ class MainWindow(QMainWindow):
         self.bridge = GuiBridge(ctx.bus)
         self.pages: dict[str, QWidget] = {}
         self._virtual_boxes: list[QMessageBox] = []
+        self._settings_tab = 0
         self.setWindowTitle(APP_NAME)
         self.resize(1280, 820)
         geo = ctx.settings.get("window_geometry")
@@ -86,7 +88,8 @@ class MainWindow(QMainWindow):
         lay.setSpacing(0)
         self.sidebar = QListWidget()
         self.sidebar.setObjectName("sidebar")
-        self.sidebar.setFixedWidth(232)
+        compact = self.ctx.settings.get("sidebar_compact")
+        self.sidebar.setFixedWidth(64 if compact else 232)
         self.sidebar.setIconSize(_qsize(22))
         self.stack = QStackedWidget()
         lay.addWidget(self.sidebar)
@@ -119,7 +122,10 @@ class MainWindow(QMainWindow):
         self.sidebar.addItem(sep)
         self._add_page("activity", tr("Registro attività", "Activity log"), "activity", ActivityPage(self.ctx, self.bridge))
         self._add_page("security", tr("Sicurezza", "Security"), "security", SecurityPage(self.ctx, self.bridge, self.lock))
-        self._add_page("settings", tr("Impostazioni", "Settings"), "settings", SettingsPage(self.ctx))
+        settings_page = SettingsPage(self.ctx, self.actions_catalog)
+        settings_page.tabs.setCurrentIndex(self._settings_tab)
+        settings_page.tabs.currentChanged.connect(lambda i: setattr(self, "_settings_tab", i))
+        self._add_page("settings", tr("Impostazioni", "Settings"), "settings", settings_page)
         self.sidebar.currentRowChanged.connect(self._on_row)
         self._build_menus()
         self._build_status()
@@ -134,29 +140,51 @@ class MainWindow(QMainWindow):
 
     def _add_page(self, key: str, title: str, icon_key: str, page: QWidget) -> None:
         acc = effective_accent(self.ctx.settings.get("theme"), self.ctx.settings.get("accent"))
-        item = QListWidgetItem(icon(icon_key, acc, 44, accent_text(acc)), title)
+        compact = self.ctx.settings.get("sidebar_compact")
+        item = QListWidgetItem(icon(icon_key, acc, 44, accent_text(acc)), "" if compact else title)
+        item.setToolTip(title)
         item.setData(Qt.ItemDataRole.UserRole, key)
         self.sidebar.addItem(item)
         self.stack.addWidget(page)
         self.pages[key] = page
 
-    def _build_menus(self) -> None:
-        mb = self.menuBar()
-        mb.clear()
-        m = mb.addMenu(tr("&File", "&File"))
-        self._act(m, tr("Blocca ora", "Lock now"), self.lock, "Ctrl+Shift+B")
-        self._act(m, tr("Esci", "Quit"), self.close, QKeySequence.StandardKey.Quit)
-        m = mb.addMenu(tr("&Polpo", "&Polpo"))
-        self._act(m, tr("Collega via USB…", "Connect via USB…"), self.connect_usb, "Ctrl+L")
-        self._act(m, tr("Usa il Polpo virtuale (SIMULATO)", "Use the virtual Polpo (SIMULATED)"), self.connect_virtual, "Ctrl+Shift+L")
-        self._act(m, tr("Aggiorna informazioni", "Refresh info"), self.refresh_polpo, "F5")
-        self._act(m, tr("Scollega", "Disconnect"), self.disconnect)
-        m = mb.addMenu(tr("&Vai", "&Go"))
+    def actions_catalog(self) -> list[tuple[str, str, str, Callable]]:
+        """(id, nome, scorciatoia predefinita, funzione): personalizzabili in Impostazioni."""
+        out = [
+            ("lock", tr("Blocca ora", "Lock now"), "Ctrl+Shift+B", self.lock),
+            ("connect_usb", tr("Collega via USB…", "Connect via USB…"), "Ctrl+L", self.connect_usb),
+            ("connect_virtual", tr("Usa il Polpo virtuale (SIMULATO)", "Use the virtual Polpo (SIMULATED)"), "Ctrl+Shift+L", self.connect_virtual),
+            ("refresh", tr("Aggiorna informazioni", "Refresh info"), "F5", self.refresh_polpo),
+            ("disconnect", tr("Scollega", "Disconnect"), "", self.disconnect),
+        ]
         keys = ["home"] + [x.id for x in self._module_order()] + ["activity", "security", "settings"]
         extra = {"home": tr("Home", "Home"), "activity": tr("Registro attività", "Activity log"), "security": tr("Sicurezza", "Security"), "settings": tr("Impostazioni", "Settings")}
         for i, k in enumerate(keys):
             name = str(MODULE_IDS[k].title) if k in MODULE_IDS else extra[k]
-            self._act(m, name, lambda _=False, key=k: self.show_page(key), f"Ctrl+{i + 1}" if i < 9 else None)
+            out.append((f"go.{k}", tr("Vai a: {n}", "Go to: {n}", n=name), f"Ctrl+{i + 1}" if i < 9 else "", lambda key=k: self.show_page(key)))
+        return out
+
+    def _build_menus(self) -> None:
+        mb = self.menuBar()
+        mb.clear()
+        custom = self.ctx.settings.get("shortcuts")
+        acts = {a[0]: a for a in self.actions_catalog()}
+        self.qactions: dict[str, QAction] = {}
+
+        def add(menu: QMenu, aid: str) -> None:
+            _id, name, default, fn = acts[aid]
+            self.qactions[aid] = self._act(menu, name.removeprefix(tr("Vai a: ", "Go to: ")), fn, custom.get(aid, default) or None)
+
+        m = mb.addMenu(tr("&File", "&File"))
+        add(m, "lock")
+        self._act(m, tr("Esci", "Quit"), self.close, QKeySequence.StandardKey.Quit)
+        m = mb.addMenu(tr("&Polpo", "&Polpo"))
+        for aid in ("connect_usb", "connect_virtual", "refresh", "disconnect"):
+            add(m, aid)
+        m = mb.addMenu(tr("&Vai", "&Go"))
+        for aid in acts:
+            if aid.startswith("go."):
+                add(m, aid)
         m = mb.addMenu(tr("&Aiuto", "&Help"))
         self._act(m, tr("Legenda degli stati", "Status legend"), self.show_legend)
         self._act(m, tr("Informazioni su Polpo Studio", "About Polpo Studio"), self.show_about)
@@ -195,7 +223,8 @@ class MainWindow(QMainWindow):
         s = self.ctx.settings
         app = QApplication.instance()
         if app is not None:
-            app.setStyleSheet(stylesheet(s.get("theme"), s.get("accent"), s.get("font_scale")))
+            app.setStyleSheet(stylesheet(s.get("theme"), s.get("accent"), s.get("font_scale"), s.get("density")))
+        icons_mod.STYLE["filled"] = s.get("icon_style") == "pieno"
 
     # ---------------- navigazione ----------------
 
@@ -344,14 +373,14 @@ class MainWindow(QMainWindow):
                 self._update_status()
         elif topic == "settings.changed":
             key = payload.get("key")
-            if key in ("theme", "accent", "font_scale"):
+            if key in ("theme", "accent", "font_scale", "density", "icon_style"):
                 self.apply_theme()
-                if key in ("accent", "theme"):
+                if key in ("accent", "theme", "icon_style"):
                     QTimer.singleShot(0, self.build)
             elif key == "language":
                 set_language(payload.get("value", "it"))
                 QTimer.singleShot(0, self.build)
-            elif key in ("sidebar_order", "hidden_modules"):
+            elif key in ("sidebar_order", "hidden_modules", "sidebar_compact", "shortcuts"):
                 QTimer.singleShot(0, self.build)
 
     def _update_status(self) -> None:

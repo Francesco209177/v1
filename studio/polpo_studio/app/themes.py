@@ -71,7 +71,7 @@ def accent_text(accent: str) -> str:
     return "#000000" if QColor(accent).lightnessF() > 0.6 else "#ffffff"
 
 
-def stylesheet(theme: str, accent: str, font_scale: float = 1.0) -> str:
+def stylesheet(theme: str, accent: str, font_scale: float = 1.0, density: str = "comoda") -> str:
     p = palette(theme)
     accent = effective_accent(theme, accent)
     acc = QColor(accent)
@@ -79,6 +79,10 @@ def stylesheet(theme: str, accent: str, font_scale: float = 1.0) -> str:
     fs = max(10, round(13 * font_scale))
     hc = theme == "alto_contrasto"
     bw = 2 if hc else 1
+    tight = density == "compatta"
+    item_pad = "5px 8px" if tight else "8px 10px"
+    btn_pad = "3px 10px" if tight else "6px 14px"
+    field_pad = "3px 6px" if tight else "5px 8px"
     badges = []
     for value, key in STATUS_COLOR_KEY.items():
         col = getattr(p, key)
@@ -110,10 +114,10 @@ QFrame#card {{ background: {p.card}; border: {bw}px solid {p.border}; border-rad
 QFrame#capRow {{ background: {p.card}; border: {bw}px solid {p.border}; border-radius: 10px; }}
 QFrame#note {{ background: {_rgba(accent, 0.12)}; border: {bw}px solid {_rgba(accent, 0.55)}; border-radius: 10px; }}
 QListWidget#sidebar {{ background: {p.panel}; border: none; border-right: {bw}px solid {p.border}; padding: 8px 6px; outline: 0; }}
-QListWidget#sidebar::item {{ padding: 8px 10px; border-radius: 8px; margin: 1px 0; }}
+QListWidget#sidebar::item {{ padding: {item_pad}; border-radius: 8px; margin: 1px 0; }}
 QListWidget#sidebar::item:hover {{ background: {p.hover}; }}
 QListWidget#sidebar::item:selected {{ background: {accent}; color: {acc_text}; }}
-QPushButton {{ background: {p.card}; border: {bw}px solid {p.border}; border-radius: 8px; padding: 6px 14px; }}
+QPushButton {{ background: {p.card}; border: {bw}px solid {p.border}; border-radius: 8px; padding: {btn_pad}; }}
 QPushButton:hover {{ background: {p.hover}; border-color: {accent}; }}
 QPushButton:pressed {{ background: {p.border}; }}
 QPushButton:disabled {{ color: {p.muted}; border-color: {p.border}; }}
@@ -122,7 +126,7 @@ QPushButton[primary="true"]:hover {{ background: {acc.lighter(115).name()}; }}
 QPushButton[flat="true"] {{ background: transparent; border: none; padding: 4px 8px; }}
 QPushButton:focus, QComboBox:focus, QLineEdit:focus, QSpinBox:focus, QCheckBox:focus {{ border: 2px solid {accent}; }}
 QLineEdit, QComboBox, QSpinBox, QDoubleSpinBox, QPlainTextEdit, QTextEdit {{
-    background: {p.panel}; border: {bw}px solid {p.border}; border-radius: 7px; padding: 5px 8px;
+    background: {p.panel}; border: {bw}px solid {p.border}; border-radius: 7px; padding: {field_pad};
     selection-background-color: {accent}; selection-color: {acc_text}; }}
 QComboBox QAbstractItemView {{ background: {p.panel}; selection-background-color: {accent}; selection-color: {acc_text}; }}
 QCheckBox, QRadioButton {{ spacing: 8px; background: transparent; }}

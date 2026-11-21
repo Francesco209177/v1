@@ -33,6 +33,11 @@ DEFAULTS: dict[str, Any] = {
     "autolock_min": 10,  # blocco rapido dopo minuti di inattività (0 = mai)
     "lab_minutes": 30,  # durata della modalità laboratorio
     "remember_key": False,  # chiave dati nel portachiavi del sistema
+    "third_party_apps": {},  # id -> {"version", "sha256": {file: impronta}}
+    "icon_style": "linea",  # "linea" oppure "pieno"
+    "sidebar_compact": False,  # barra laterale con sole icone
+    "density": "comoda",  # "comoda" oppure "compatta"
+    "shortcuts": {},  # id azione -> sequenza di tasti (vuoto = predefinita)
 }
 
 

@@ -7,12 +7,13 @@ import math
 from PySide6.QtCore import QPointF, QRectF, Qt
 from PySide6.QtGui import QBrush, QColor, QIcon, QPainter, QPainterPath, QPen, QPixmap
 
-_cache: dict[tuple[str, str, int, str], QIcon] = {}
+_cache: dict[tuple[str, str, int, str, bool], QIcon] = {}
+STYLE = {"filled": False}  # stile delle icone scelto in Impostazioni › Aspetto
 
 
 def icon(key: str, color: str, size: int = 64, selected: str = "") -> QIcon:
     """``selected``: colore da usare quando la voce è selezionata (sfondo colorato)."""
-    k = (key, color, size, selected)
+    k = (key, color, size, selected, STYLE["filled"])
     if k not in _cache:
         ic = QIcon(pixmap(key, color, size))
         if selected:
@@ -29,7 +30,12 @@ def pixmap(key: str, color: str, size: int = 64) -> QPixmap:
     p.scale(size / 64, size / 64)
     pen = QPen(QColor(color), 4.5, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap, Qt.PenJoinStyle.RoundJoin)
     p.setPen(pen)
-    p.setBrush(Qt.BrushStyle.NoBrush)
+    if STYLE["filled"]:
+        fill = QColor(color)
+        fill.setAlpha(70)
+        p.setBrush(QBrush(fill))
+    else:
+        p.setBrush(Qt.BrushStyle.NoBrush)
     _DRAW.get(key, _draw_dot)(p, QColor(color))
     p.end()
     return pm

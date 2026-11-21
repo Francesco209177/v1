@@ -2,6 +2,7 @@
 
 from ..archive_page import ArchiveTools
 from ..module_page import TOOL_FACTORIES
+from .apps_tools import AppsTools
 from .bluetooth_tools import BluetoothTools
 from .gpio_tools import GpioTools
 from .ibutton_tools import IButtonTools
@@ -24,5 +25,6 @@ TOOL_FACTORIES.update(
         "gpio": GpioTools,
         "rfid125": RfidTools,
         "ibutton": IButtonTools,
+        "apps": AppsTools,
     }
 )
