@@ -58,7 +58,7 @@ public:
         ui::progress(130, 60, 96, 8, frac);
 
         ui::text(130, 74, storage::ok() ? "microSD ok" : "microSD assente", storage::ok() ? ui::kOk : ui::kWarn);
-        const int bat = M5Cardputer.Power.getBatteryLevel();
+        const int bat = ui::battery_level();
         if (bat >= 0) {
             std::snprintf(buf, sizeof buf, "Batteria %d%%", bat);
             ui::text(130, 89, buf, ui::kDim);

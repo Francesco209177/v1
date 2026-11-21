@@ -29,7 +29,9 @@ void MenuScreen::on_event(const InputEvent& ev) {
         case Key::Ok:
             if (!items_.empty() && items_[model_.selected].action) {
                 sound::click();
-                items_[model_.selected].action();
+                // Copia: l'azione può ricostruire il menu (e quindi distruggere l'originale).
+                const auto action = items_[model_.selected].action;
+                action();
             }
             break;
         case Key::Back:

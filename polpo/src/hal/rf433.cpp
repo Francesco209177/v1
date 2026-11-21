@@ -2,6 +2,7 @@
 
 #include <Arduino.h>
 #include <RCSwitch.h>
+#include <soc/gpio_reg.h>
 
 #include <cstdlib>
 
@@ -29,7 +30,8 @@ void IRAM_ATTR on_edge() {
     const uint32_t dt = now - last_edge_us;
     last_edge_us = now;
     // Il livello è già cambiato: la durata appena finita apparteneva al livello opposto.
-    const bool was_high = digitalRead(pins::kRf433Rx) == LOW;
+    // Lettura diretta del registro (G1 < 32): sicura dentro un interrupt in IRAM.
+    const bool was_high = ((REG_READ(GPIO_IN_REG) >> pins::kRf433Rx) & 1u) == 0;
     const int32_t v = static_cast<int32_t>(dt > 1000000 ? 1000000 : dt);
     ring[ring_head % kRing] = was_high ? v : -v;
     ring_head = ring_head + 1;

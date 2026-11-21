@@ -58,6 +58,8 @@ void row(int index_on_screen, bool selected, const std::string& left, const std:
 void scrollbar(int top, int visible, int count);
 void progress(int x, int y, int w, int h, float frac, uint16_t color = kAccent);
 void battery(int x, int y);
+int battery_level();  // 0-100, -1 se non disponibile (aggiornato al massimo ogni 3 s)
+bool battery_charging();
 void bars(int x, int y, uint8_t level_0_4, uint16_t color = kOk);
 void panel(int x, int y, int w, int h, uint16_t color = kPanel);
 

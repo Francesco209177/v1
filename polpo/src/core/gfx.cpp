@@ -180,17 +180,34 @@ void progress(int x, int y, int w, int h, float frac, uint16_t color) {
     if (fw > 0) canvas->fillRoundRect(x + 2, y + 2, fw, h - 4, 2, color);
 }
 
-void battery(int x, int y) {
+namespace {
+uint32_t bat_last = 0;
+int bat_level = -1;
+bool bat_charging = false;
+void bat_refresh() {
     // La lettura della batteria è lenta: si aggiorna al massimo ogni 3 secondi.
-    static uint32_t last = 0;
-    static int level = -1;
-    static bool charging = false;
     const uint32_t now = millis();
-    if (last == 0 || now - last > 3000) {
-        last = now ? now : 1;
-        level = M5Cardputer.Power.getBatteryLevel();
-        charging = M5Cardputer.Power.isCharging() == m5::Power_Class::is_charging_t::is_charging;
+    if (bat_last == 0 || now - bat_last > 3000) {
+        bat_last = now ? now : 1;
+        bat_level = M5Cardputer.Power.getBatteryLevel();
+        bat_charging = M5Cardputer.Power.isCharging() == m5::Power_Class::is_charging_t::is_charging;
     }
+}
+}  // namespace
+
+int battery_level() {
+    bat_refresh();
+    return bat_level;
+}
+
+bool battery_charging() {
+    bat_refresh();
+    return bat_charging;
+}
+
+void battery(int x, int y) {
+    const int level = battery_level();
+    const bool charging = battery_charging();
     canvas->drawRect(x, y, 20, 10, kFg);
     canvas->fillRect(x + 20, y + 3, 2, 4, kFg);
     const uint16_t col = level < 0 ? kDim : (level < 20 ? kErr : (level < 50 ? kWarn : kOk));
