@@ -22,6 +22,32 @@ def icon(key: str, color: str, size: int = 64, selected: str = "") -> QIcon:
     return _cache[k]
 
 
+def check_mark_file(color: str) -> str:
+    """PNG di un segno di spunta (per le caselle nei fogli di stile Qt, che vogliono un file)."""
+    import tempfile
+    from pathlib import Path
+
+    from PySide6.QtGui import QImage
+
+    folder = Path(tempfile.gettempdir()) / "polpo-studio"
+    folder.mkdir(parents=True, exist_ok=True)
+    path = folder / f"spunta-{color.lstrip('#')}.png"
+    if not path.exists():
+        img = QImage(32, 32, QImage.Format.Format_ARGB32)
+        img.fill(Qt.GlobalColor.transparent)
+        p = QPainter(img)
+        p.setRenderHint(QPainter.RenderHint.Antialiasing)
+        p.setPen(QPen(QColor(color), 4.5, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap, Qt.PenJoinStyle.RoundJoin))
+        path_line = QPainterPath()
+        path_line.moveTo(7, 16.5)
+        path_line.lineTo(13.5, 23)
+        path_line.lineTo(25, 9)
+        p.drawPath(path_line)
+        p.end()
+        img.save(str(path))
+    return path.as_posix()
+
+
 def pixmap(key: str, color: str, size: int = 64) -> QPixmap:
     pm = QPixmap(size, size)
     pm.fill(Qt.GlobalColor.transparent)

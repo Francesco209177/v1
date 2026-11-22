@@ -9,6 +9,8 @@ from dataclasses import dataclass
 
 from PySide6.QtGui import QColor
 
+from .icons import check_mark_file
+
 
 @dataclass(frozen=True)
 class Palette:
@@ -123,14 +125,21 @@ QPushButton:pressed {{ background: {p.border}; }}
 QPushButton:disabled {{ color: {p.muted}; border-color: {p.border}; }}
 QPushButton[primary="true"] {{ background: {accent}; color: {acc_text}; border-color: {accent}; font-weight: 600; }}
 QPushButton[primary="true"]:hover {{ background: {acc.lighter(115).name()}; }}
+QPushButton[primary="true"]:disabled {{ background: {p.hover}; color: {p.muted}; border-color: {p.border}; font-weight: 600; }}
 QPushButton[flat="true"] {{ background: transparent; border: none; padding: 4px 8px; }}
-QPushButton:focus, QComboBox:focus, QLineEdit:focus, QSpinBox:focus, QCheckBox:focus {{ border: 2px solid {accent}; }}
+QPushButton:focus, QComboBox:focus, QLineEdit:focus, QSpinBox:focus {{ border: 2px solid {accent}; }}
 QLineEdit, QComboBox, QSpinBox, QDoubleSpinBox, QPlainTextEdit, QTextEdit {{
     background: {p.panel}; border: {bw}px solid {p.border}; border-radius: 7px; padding: {field_pad};
     selection-background-color: {accent}; selection-color: {acc_text}; }}
 QComboBox QAbstractItemView {{ background: {p.panel}; selection-background-color: {accent}; selection-color: {acc_text}; }}
 QCheckBox, QRadioButton {{ spacing: 8px; background: transparent; }}
 QCheckBox:disabled {{ color: {p.muted}; }}
+QCheckBox::indicator, QAbstractItemView::indicator {{ width: 16px; height: 16px; border: {max(bw, 2)}px solid {p.muted}; border-radius: 4px; background: {p.panel}; }}
+QCheckBox::indicator:hover, QAbstractItemView::indicator:hover {{ border-color: {accent}; }}
+QCheckBox:focus {{ color: {p.text}; }}
+QCheckBox::indicator:focus {{ border-color: {accent}; }}
+QCheckBox::indicator:checked, QAbstractItemView::indicator:checked {{ background: {accent}; border-color: {accent}; image: url({check_mark_file(acc_text)}); }}
+QCheckBox::indicator:disabled {{ background: {p.hover}; border-color: {p.border}; }}
 QTableWidget, QTreeWidget, QListWidget {{ background: {p.panel}; border: {bw}px solid {p.border}; border-radius: 8px;
     gridline-color: {p.border}; alternate-background-color: {p.card}; }}
 QHeaderView::section {{ background: {p.card}; color: {p.muted}; border: none; border-bottom: {bw}px solid {p.border}; padding: 6px; font-weight: 600; }}

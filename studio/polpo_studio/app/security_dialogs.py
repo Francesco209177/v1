@@ -264,6 +264,8 @@ class SetupDialog(QDialog):
             self.next.setText(tr("Crea la cassaforte", "Create the vault"))
         elif i == 2:
             self.next.setEnabled(self.kept.isChecked())
+            if not self.kept.isChecked():
+                self.err.setText(tr("Spunta la casella qui sopra per continuare.", "Tick the box above to continue."))
             self.next.setText(tr("Avanti", "Next"))
             self.back.setEnabled(False)
         elif i == 3:
