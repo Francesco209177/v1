@@ -1,0 +1,10 @@
+REM Esempio innocuo per Windows: apre il Blocco note e scrive un saluto.
+REM Imposta il layout IT o US nel Polpo uguale a quello del tuo PC.
+DELAY 1000
+GUI r
+DELAY 600
+STRING notepad
+ENTER
+DELAY 1200
+STRINGLN Ciao! Questo testo l'ha scritto il Polpo.
+STRINGLN Funziona come una tastiera USB: nessun programma installato.

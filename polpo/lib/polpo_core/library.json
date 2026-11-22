@@ -1,0 +1,12 @@
+{
+  "name": "polpo_core",
+  "version": "0.1.0",
+  "description": "Logica pura (senza hardware) del firmware Polpo: formati file, protocolli IR, layout tastiera, DuckyScript, NDEF, analisi impulsi.",
+  "license": "MIT",
+  "platforms": "*",
+  "frameworks": "*",
+  "dependencies": [{ "owner": "bblanchon", "name": "ArduinoJson", "version": "7.4.3" }],
+  "build": {
+    "flags": ["-std=gnu++17"]
+  }
+}

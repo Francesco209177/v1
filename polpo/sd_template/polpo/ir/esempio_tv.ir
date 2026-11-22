@@ -1,0 +1,40 @@
+Filetype: IR signals file
+Version: 1
+# Telecomando di esempio scritto per il Polpo: codici pubblici dei televisori
+# Samsung (protocollo Samsung32) e LG (protocollo NEC).
+#
+name: Samsung_Accendi
+type: parsed
+protocol: Samsung32
+address: 07 00 00 00
+command: 02 00 00 00
+#
+name: Samsung_Vol_su
+type: parsed
+protocol: Samsung32
+address: 07 00 00 00
+command: 07 00 00 00
+#
+name: Samsung_Vol_giu
+type: parsed
+protocol: Samsung32
+address: 07 00 00 00
+command: 0B 00 00 00
+#
+name: LG_Accendi
+type: parsed
+protocol: NEC
+address: 04 00 00 00
+command: 08 00 00 00
+#
+name: LG_Vol_su
+type: parsed
+protocol: NEC
+address: 04 00 00 00
+command: 02 00 00 00
+#
+name: LG_Vol_giu
+type: parsed
+protocol: NEC
+address: 04 00 00 00
+command: 03 00 00 00

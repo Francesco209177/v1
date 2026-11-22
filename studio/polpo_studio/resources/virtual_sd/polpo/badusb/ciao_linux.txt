@@ -1,0 +1,5 @@
+REM Esempio innocuo per Linux (GNOME/KDE): apre un terminale e stampa un saluto.
+DELAY 1000
+CTRL ALT t
+DELAY 1500
+STRINGLN echo "Ciao dal Polpo!"

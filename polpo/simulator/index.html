@@ -1,0 +1,1396 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Simulatore Polpo</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: dispositivo a sinistra (schermo + tastiera Cardputer), pannelli "hardware simulato" a destra; una colonna sotto 900px. */
+:root {
+  --bg: #eef1f4;
+  --surface: #ffffff;
+  --ink: #18202b;
+  --muted: #5b6676;
+  --line: #d5dbe3;
+  --accent: #e2583a;
+  --accent-soft: #fde4dc;
+  --ok: #1f8a4c;
+  --info: #1f6fae;
+  --field: #f6f8fa;
+  /* il dispositivo è un oggetto fisico: stessi colori in entrambi i temi */
+  --dev-body: #c9ced4;
+  --dev-edge: #a9b0b8;
+  --dev-key: #f4f5f6;
+  --dev-key-ink: #2a313a;
+  --dev-key-mod: #dde1e5;
+  --dev-bezel: #12161c;
+  --font-display: "Space Grotesk", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Inter", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f141b; --surface: #171e27; --ink: #e8edf2; --muted: #9aa6b5; --line: #2a3441;
+    --accent: #ff7a59; --accent-soft: #3a211b; --ok: #5fd48a; --info: #6cb8ff; --field: #10161e; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f141b; --surface: #171e27; --ink: #e8edf2; --muted: #9aa6b5; --line: #2a3441;
+  --accent: #ff7a59; --accent-soft: #3a211b; --ok: #5fd48a; --info: #6cb8ff; --field: #10161e; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 20px 40px;
+}
+.wrap { max-width: 1180px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+header.top { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 24px; }
+h1 { font-family: var(--font-display); font-weight: 700; font-size: clamp(26px, 4vw, 36px); margin: 0; letter-spacing: -0.01em; text-wrap: balance; }
+.lead { margin: 0; color: var(--muted); max-width: 62ch; }
+.tag { font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent); }
+.grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 340px); gap: 20px; align-items: start; }
+@media (max-width: 900px) { .grid { grid-template-columns: minmax(0, 1fr); } }
+
+/* ---- dispositivo ---- */
+.device {
+  background: linear-gradient(180deg, var(--dev-body), #bfc5cb); border: 1px solid var(--dev-edge); border-radius: 18px;
+  padding: 18px 18px 16px; max-width: 760px; width: 100%; margin: 0 auto; position: relative;
+  box-shadow: 0 1px 0 rgba(255,255,255,.6) inset, 0 10px 30px rgba(0,0,0,.18);
+}
+.device-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+.brand { font-family: var(--font-display); font-weight: 700; color: #59616b; font-size: 13px; letter-spacing: .12em; }
+.leds { display: flex; gap: 14px; align-items: center; font-family: var(--font-mono); font-size: 11px; color: #4b535d; }
+.led { width: 10px; height: 10px; border-radius: 50%; background: #8d949c; display: inline-block; vertical-align: -1px; margin-right: 5px; transition: background .08s, box-shadow .08s; }
+.led.on-ir { background: #b46bff; box-shadow: 0 0 10px 3px rgba(180,107,255,.8); }
+.led.on-rf { background: #ffb020; box-shadow: 0 0 10px 3px rgba(255,176,32,.8); }
+.led.on-usb { background: #36c46e; box-shadow: 0 0 8px 2px rgba(54,196,110,.7); }
+.screen-bezel { background: var(--dev-bezel); border-radius: 10px; padding: 10px; }
+canvas#screen { display: block; width: 100%; height: auto; aspect-ratio: 240 / 135; border-radius: 3px; background: #0a0e16; outline: none; }
+canvas#screen:focus-visible { box-shadow: 0 0 0 3px var(--accent); }
+.g0 { position: absolute; right: -10px; top: 70px; width: 12px; height: 40px; border-radius: 4px; background: #8f969e; border: 1px solid #7a8189; cursor: pointer; padding: 0; }
+.g0:focus-visible { outline: 3px solid var(--accent); }
+
+.kbd { margin-top: 14px; display: grid; gap: 5px; }
+.row { display: grid; grid-template-columns: repeat(14, minmax(0, 1fr)); gap: 5px; }
+.key {
+  appearance: none; border: 1px solid #b7bdc4; border-bottom-width: 3px; border-radius: 6px; background: var(--dev-key); color: var(--dev-key-ink);
+  font-family: var(--font-mono); font-size: clamp(10px, 1.6vw, 14px); padding: 0; height: clamp(26px, 4.6vw, 40px); cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1; min-width: 0; touch-action: manipulation;
+}
+.key small { font-size: .62em; color: #e2583a; margin-top: 2px; }
+.key.mod { background: var(--dev-key-mod); font-size: clamp(8px, 1.2vw, 11px); }
+.key.held, .key:active { transform: translateY(1px); border-bottom-width: 2px; background: #ffe3da; }
+.key.held { box-shadow: inset 0 0 0 2px #e2583a; }
+.key:focus-visible { outline: 3px solid var(--accent); outline-offset: 1px; }
+.hint { margin: 10px 2px 0; font-size: 12px; color: #4b535d; font-family: var(--font-mono); }
+
+/* ---- pannelli ---- */
+aside { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; min-width: 0; }
+.card h2 { font-family: var(--font-display); font-size: 16px; margin: 0 0 8px; }
+.log { list-style: none; margin: 0; padding: 0; font-family: var(--font-mono); font-size: 12.5px; display: flex; flex-direction: column; gap: 6px; max-height: 240px; overflow: auto; }
+.log li { display: grid; grid-template-columns: auto 1fr; gap: 8px; align-items: baseline; }
+.log .chip { font-size: 10.5px; padding: 1px 6px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); letter-spacing: .04em; }
+.log .chip.usb { color: var(--ok); }
+.log .chip.ble, .log .chip.wifi { color: var(--info); }
+.log .chip.sim { background: transparent; border: 1px dashed var(--line); color: var(--muted); }
+.log .empty { color: var(--muted); display: block; }
+.pc { background: #fbfbfc; color: #222; border: 1px solid var(--line); border-radius: 8px; font-family: var(--font-mono); font-size: 12.5px; min-height: 80px; padding: 8px 10px; white-space: pre-wrap; overflow-wrap: anywhere; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .pc { background: #0c1117; color: #dfe6ee; } }
+:root[data-theme="dark"] .pc { background: #0c1117; color: #dfe6ee; }
+.pc-title { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+.badge { display: inline-block; font-family: var(--font-mono); font-size: 11px; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); white-space: nowrap; }
+.sim { display: flex; flex-direction: column; gap: 12px; }
+.sim label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 4px; letter-spacing: .02em; }
+.pair { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; }
+select, .btn {
+  font: 500 13.5px var(--font-body); color: var(--ink); background: var(--field); border: 1px solid var(--line); border-radius: 8px; padding: 7px 10px; min-width: 0; width: 100%;
+}
+.btn { width: auto; cursor: pointer; background: var(--accent); color: #fff; border-color: transparent; font-weight: 600; white-space: nowrap; }
+.btn.ghost { background: transparent; color: var(--muted); border-color: var(--line); font-weight: 500; }
+.btn.danger { background: #b3261e; }
+.btn:focus-visible, select:focus-visible { outline: 3px solid var(--accent); outline-offset: 1px; }
+.btn.active { box-shadow: 0 0 0 3px var(--accent-soft); }
+dl.keys { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; margin: 0; font-size: 13.5px; }
+dl.keys dt { font-family: var(--font-mono); color: var(--accent); white-space: nowrap; }
+dl.keys dd { margin: 0; color: var(--muted); }
+.note { font-size: 13px; color: var(--muted); margin: 0; }
+.foot { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; }
+@media (prefers-reduced-motion: reduce) { .led { transition: none; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <div class="tag">Firmware Polpo 0.1 · simulazione</div>
+      <h1>Simulatore Polpo</h1>
+    </div>
+    <p class="lead">Prova i menu del firmware prima di comprare l'hardware. Tutto ciò che leggi qui è <strong>simulato</strong>: nessun segnale vero viene ricevuto o trasmesso. File, livello e impostazioni restano salvati in questo browser.</p>
+  </header>
+
+  <div class="grid">
+    <section aria-label="Dispositivo simulato">
+      <div class="device">
+        <div class="device-top">
+          <span class="brand">POLPO · CARDPUTER</span>
+          <span class="leds" aria-live="polite">
+            <span><i class="led" id="led-ir"></i>IR</span>
+            <span><i class="led" id="led-rf"></i>433</span>
+            <span><i class="led" id="led-usb"></i>USB</span>
+          </span>
+        </div>
+        <div class="screen-bezel">
+          <canvas id="screen" width="720" height="405" tabindex="0" aria-label="Schermo del Polpo. Usa le frecce, Invio ed Esc."></canvas>
+        </div>
+        <button class="g0" id="g0" type="button" title="Tasto G0 (indietro)" aria-label="Tasto G0, indietro"></button>
+        <div class="kbd" id="kbd" aria-label="Tastiera del Cardputer"></div>
+        <p class="hint">Frecce o ; . , / per muoverti · Invio = OK · Esc o ` = indietro · Fn, Shift, Ctrl, Alt, Opt restano premuti fino al tasto successivo</p>
+      </div>
+    </section>
+
+    <aside>
+      <div class="card">
+        <h2>Porta Grove e oggetti</h2>
+        <div class="sim">
+          <div>
+            <label for="grove">Modulo collegato alla porta Grove</label>
+            <select id="grove">
+              <option value="none">Nessun modulo</option>
+              <option value="rfid2">Unit RFID2 (NFC)</option>
+              <option value="rf433">RF433R + RF433T con Unit HUB</option>
+              <option value="irunit">IR Unit (ricevitore infrarossi)</option>
+            </select>
+          </div>
+          <div>
+            <label for="card">Carta da appoggiare sul modulo RFID2</label>
+            <div class="pair">
+              <select id="card">
+                <option value="ntag213">Tag NTAG213 (con link)</option>
+                <option value="ntag215">Tag NTAG215 (vuoto)</option>
+                <option value="classic">Badge MIFARE Classic 1K</option>
+                <option value="bank">Carta bancaria contactless</option>
+              </select>
+              <button class="btn" id="btn-card" type="button">Appoggia</button>
+            </div>
+          </div>
+          <div>
+            <label for="remote433">Telecomando a 433 MHz</label>
+            <div class="pair">
+              <select id="remote433">
+                <option value="presa">Presa radiocomandata (codice fisso)</option>
+                <option value="campanello">Campanello wireless (codice fisso)</option>
+                <option value="cancello">Cancello (codice variabile)</option>
+              </select>
+              <button class="btn" id="btn-433" type="button">Premi</button>
+            </div>
+          </div>
+          <div>
+            <label for="remoteir">Telecomando a infrarossi</label>
+            <div class="pair">
+              <select id="remoteir">
+                <option value="lg">TV LG: accendi</option>
+                <option value="samsung">TV Samsung: volume +</option>
+                <option value="fan">Ventilatore (segnale RAW)</option>
+              </select>
+              <button class="btn" id="btn-ir" type="button">Premi</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Hardware simulato</h2>
+        <ul class="log" id="log" aria-live="polite"><li><span class="empty">Qui compare cosa farebbe il dispositivo vero: segnali IR, codici radio, tag NFC, tasti USB, file sulla microSD.</span></li></ul>
+      </div>
+      <div class="card">
+        <div class="pc-title"><span>Computer collegato via USB</span><span class="badge" id="pc-state">in attesa</span></div>
+        <div class="pc" id="pc" aria-live="polite"></div>
+      </div>
+      <div class="card">
+        <h2>Comandi</h2>
+        <dl class="keys">
+          <dt>↑ ↓ ← →</dt><dd>muoversi (sul Cardputer: ; . , /)</dd>
+          <dt>Invio</dt><dd>apre, conferma, invia</dd>
+          <dt>Esc · `</dt><dd>torna indietro</dd>
+          <dt>lettere</dt><dd>scorciatoie mostrate in basso sullo schermo</dd>
+        </dl>
+      </div>
+      <div class="foot">
+        <p class="note">Dati di esempio inventati. Usa il Polpo reale solo su dispositivi tuoi.</p>
+        <button class="btn ghost" id="reset" type="button">Azzera simulatore</button>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<script>
+(() => {
+"use strict";
+// ======================= file di esempio (copiati da polpo/sd_template) =======================
+const SAMPLES = /*__SAMPLES__*/{"/polpo/LEGGIMI.txt": "POLPO - cartella dei dati sulla microSD\n=======================================\n\nQuesta cartella viene creata dal firmware Polpo al primo avvio.\n\n  ir/       telecomandi infrarossi (.ir, formato testo \"IR signals file\")\n  badusb/   script per la tastiera USB (.txt, sottoinsieme di DuckyScript)\n  rf433/    segnali radio a 433,92 MHz (.sub, codici fissi o RAW)\n  nfc/      letture di tag NFC (.nfc)\n  logs/     risultati delle scansioni Wi-Fi e Bluetooth (.csv)\n\nPuoi copiare qui file .ir scaricati da raccolte pubbliche di telecomandi:\nil Polpo li legge se usano i protocolli supportati (NEC, Samsung32, RC5,\nRC6, SIRC, Kaseikyo, RCA, Pioneer) o il tipo \"raw\".\n\nREGOLE\n- Usa il Polpo solo su dispositivi tuoi o con permesso scritto.\n- Non ritrasmettere codici di cancelli, allarmi o auto di altri.\n- Gli script BadUSB vanno eseguiti solo sul TUO computer.\n", "/polpo/badusb/ciao_linux.txt": "REM Esempio innocuo per Linux (GNOME/KDE): apre un terminale e stampa un saluto.\nDELAY 1000\nCTRL ALT t\nDELAY 1500\nSTRINGLN echo \"Ciao dal Polpo!\"\n", "/polpo/badusb/ciao_mac.txt": "REM Esempio innocuo per macOS: apre TextEdit con Spotlight e scrive un saluto.\nREM Al primo collegamento macOS può chiedere di identificare la tastiera: chiudi la finestra.\nDELAY 1500\nGUI SPACE\nDELAY 700\nSTRING TextEdit\nDELAY 400\nENTER\nDELAY 2000\nGUI n\nDELAY 800\nSTRINGLN Ciao! Questo testo l'ha scritto il Polpo.\n", "/polpo/badusb/ciao_windows.txt": "REM Esempio innocuo per Windows: apre il Blocco note e scrive un saluto.\nREM Imposta il layout IT o US nel Polpo uguale a quello del tuo PC.\nDELAY 1000\nGUI r\nDELAY 600\nSTRING notepad\nENTER\nDELAY 1200\nSTRINGLN Ciao! Questo testo l'ha scritto il Polpo.\nSTRINGLN Funziona come una tastiera USB: nessun programma installato.\n", "/polpo/ir/esempio_tv.ir": "Filetype: IR signals file\nVersion: 1\n# Telecomando di esempio scritto per il Polpo: codici pubblici dei televisori\n# Samsung (protocollo Samsung32) e LG (protocollo NEC).\n#\nname: Samsung_Accendi\ntype: parsed\nprotocol: Samsung32\naddress: 07 00 00 00\ncommand: 02 00 00 00\n#\nname: Samsung_Vol_su\ntype: parsed\nprotocol: Samsung32\naddress: 07 00 00 00\ncommand: 07 00 00 00\n#\nname: Samsung_Vol_giu\ntype: parsed\nprotocol: Samsung32\naddress: 07 00 00 00\ncommand: 0B 00 00 00\n#\nname: LG_Accendi\ntype: parsed\nprotocol: NEC\naddress: 04 00 00 00\ncommand: 08 00 00 00\n#\nname: LG_Vol_su\ntype: parsed\nprotocol: NEC\naddress: 04 00 00 00\ncommand: 02 00 00 00\n#\nname: LG_Vol_giu\ntype: parsed\nprotocol: NEC\naddress: 04 00 00 00\ncommand: 03 00 00 00\n"};
+
+// ======================= stato salvato nel browser =======================
+const KEY = "polpo-simulatore-v1";
+const DEFAULTS = {
+  xp: 7, sound: true, brightness: 3, layout: "IT", irRepeats: 1, rfRepeats: 8, boots: 0, battery: 82,
+  grove: "rfid2", rfLog: [],
+  tags: {
+    ntag213: { uid: "04A2C9F2316B80", model: "NTAG213", cap: 144, ndef: { kind: "uri", value: "https://www.example.com" } },
+    ntag215: { uid: "0451B2CA7E4F80", model: "NTAG215", cap: 496, ndef: null },
+    classic: { uid: "7A3F9C21", sak: 0x08, atqa: 0x0004 },
+    bank: { uid: "08B4F1C3", sak: 0x20, atqa: 0x0004 }
+  }
+};
+function freshFs() {
+  const fs = { dirs: ["/polpo", "/polpo/ir", "/polpo/badusb", "/polpo/rf433", "/polpo/nfc", "/polpo/logs"], files: {} };
+  for (const [p, c] of Object.entries(SAMPLES)) fs.files[p] = c;
+  return fs;
+}
+let state, fs;
+function load() {
+  let saved = null;
+  try { saved = JSON.parse(localStorage.getItem(KEY) || "null"); } catch (_) { saved = null; }
+  state = Object.assign(JSON.parse(JSON.stringify(DEFAULTS)), saved && saved.state || {});
+  fs = saved && saved.fs && saved.fs.files ? saved.fs : freshFs();
+  state.boots++;
+}
+let saveTimer = 0;
+function persist() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => { try { localStorage.setItem(KEY, JSON.stringify({ state, fs })); } catch (_) {} }, 250);
+}
+function flush() { clearTimeout(saveTimer); try { localStorage.setItem(KEY, JSON.stringify({ state, fs })); } catch (_) {} }
+// Chiudendo o nascondendo la pagina si salva subito, senza aspettare il ritardo.
+addEventListener("pagehide", flush);
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden") flush(); });
+load(); persist();
+
+// ======================= microSD virtuale =======================
+const enc = new TextEncoder();
+const dirname = p => p.slice(0, p.lastIndexOf("/")) || "/";
+const basename = p => p.slice(p.lastIndexOf("/") + 1);
+function fsList(dir, ext) {
+  const ds = fs.dirs.filter(d => dirname(d) === dir && d !== dir).map(d => ({ name: basename(d), dir: true })).sort((a, b) => a.name.localeCompare(b.name));
+  const fl = Object.keys(fs.files).filter(p => dirname(p) === dir && (!ext || p.toLowerCase().endsWith(ext)))
+    .map(p => ({ name: basename(p), size: enc.encode(fs.files[p]).length })).sort((a, b) => a.name.localeCompare(b.name));
+  return [...ds, ...fl];
+}
+function uniquePath(dir, base, ext) {
+  let p = `${dir}/${base}${ext}`;
+  for (let i = 2; fs.files[p] !== undefined && i < 1000; i++) p = `${dir}/${base}_${i}${ext}`;
+  return p;
+}
+function fsWrite(p, content) { fs.files[p] = content; persist(); hw("SD", "scritto " + p); }
+function fsAppend(p, content) { fs.files[p] = (fs.files[p] || "") + content; persist(); hw("SD", "aggiunto in coda a " + p); }
+function fsRemove(p) { delete fs.files[p]; persist(); hw("SD", "eliminato " + p); }
+function safeName(s) {
+  const map = { "à": "a", "è": "e", "é": "e", "ì": "i", "ò": "o", "ù": "u" };
+  let out = [...s].map(c => /[A-Za-z0-9_.-]/.test(c) ? c : c === " " ? "_" : (map[c] || "")).join("").replace(/^\.+/, "").slice(0, 24);
+  return out || "senza_nome";
+}
+const size = b => b < 1024 ? b + " B" : (b / 1024).toFixed(1) + " KB";
+
+// ======================= schermo =======================
+const W = 240, H = 135, S = 3, HEADER = 16, FOOTER = 12, CY = HEADER, CH = H - HEADER - FOOTER, ROW = 15, ROWS = 7;
+const cv = document.getElementById("screen");
+const g = cv.getContext("2d");
+g.setTransform(S, 0, 0, S, 0, 0);
+const C = {
+  bg: "rgb(10,14,22)", panel: "rgb(24,31,44)", fg: "rgb(232,236,241)", dim: "rgb(132,144,160)",
+  accent: "rgb(255,122,89)", accent2: "rgb(92,200,255)", ok: "rgb(96,214,128)", warn: "rgb(255,196,64)",
+  err: "rgb(255,84,84)", sel: "rgb(58,38,40)"
+};
+const FONT = '10.5px "IBM Plex Mono", ui-monospace, monospace';
+const SMALL = '7px "IBM Plex Mono", ui-monospace, monospace';
+const BIG = '700 15px "Space Grotesk", system-ui, sans-serif';
+g.textBaseline = "top";
+const tw = (s, f = FONT) => { g.font = f; return g.measureText(s).width; };
+function text(x, y, s, col = C.fg, f = FONT) { g.font = f; g.fillStyle = col; g.fillText(s, x, y + 1); }
+function textR(xr, y, s, col = C.fg) { text(xr - tw(s), y, s, col); }
+function textC(y, s, col = C.fg, f = FONT) { text((W - tw(s, f)) / 2, y, s, col, f); }
+function ell(s, maxw) {
+  if (tw(s) <= maxw) return s;
+  const chars = [...s];
+  while (chars.length && tw(chars.join("") + "…") > maxw) chars.pop();
+  return chars.join("") + "…";
+}
+function lines(w, s) {
+  const out = [];
+  for (const para of String(s).replace(/\r/g, "").split("\n")) {
+    let line = "";
+    for (const word of para.split(" ")) {
+      const cand = line ? line + " " + word : word;
+      if (tw(cand) <= w) { line = cand; continue; }
+      if (line) out.push(line);
+      line = word;
+      while (tw(line) > w && line.length > 1) {
+        let cut = line.length;
+        while (cut > 1 && tw(line.slice(0, cut)) > w) cut--;
+        out.push(line.slice(0, cut)); line = line.slice(cut);
+      }
+    }
+    out.push(line);
+  }
+  return out;
+}
+function wrap(x, y, w, s, col = C.fg, lh = 14, max = 99, skip = 0) {
+  const ls = lines(w, s);
+  ls.slice(skip, skip + max).forEach((l, i) => text(x, y + i * lh, l, col));
+  return ls.length;
+}
+function rr(x, y, w, h, r, col) { g.fillStyle = col; g.beginPath(); g.roundRect(x, y, w, h, r); g.fill(); }
+function header(title, accent = C.accent) {
+  g.fillStyle = C.panel; g.fillRect(0, 0, W, HEADER);
+  g.fillStyle = accent; g.fillRect(0, HEADER - 2, W, 2);
+  text(4, 2, ell(title, W - 40));
+  const lv = Math.round(state.battery);
+  g.strokeStyle = C.fg; g.lineWidth = 1; g.strokeRect(W - 25.5, 3.5, 20, 10);
+  g.fillStyle = C.fg; g.fillRect(W - 5, 6, 2, 4);
+  g.fillStyle = lv < 20 ? C.err : lv < 50 ? C.warn : C.ok; g.fillRect(W - 24, 5, 16 * lv / 100, 7);
+}
+function footer(h) {
+  g.fillStyle = C.panel; g.fillRect(0, H - FOOTER, W, FOOTER);
+  text(3, H - FOOTER + 1.5, h, C.dim, SMALL);
+}
+function row(i, sel, left, right = "", col = C.fg) {
+  const y = CY + i * ROW;
+  if (sel) { rr(1, y + 1, W - 8, ROW - 1, 3, C.sel); g.fillStyle = C.accent; g.fillRect(1, y + 2, 3, ROW - 3); }
+  const rw = right ? tw(right) + 6 : 0;
+  text(8, y + 2, ell(left, W - 16 - rw), sel ? C.fg : col);
+  if (right) textR(W - 10, y + 2, right, sel ? C.accent : C.dim);
+}
+function scrollbar(top, vis, n) {
+  if (n <= vis) return;
+  const x = W - 4, y = CY + 2, h = CH - 4;
+  g.fillStyle = C.panel; g.fillRect(x, y, 2, h);
+  const bh = Math.max(6, h * vis / n), by = y + (h - bh) * top / Math.max(1, n - vis);
+  g.fillStyle = C.dim; g.fillRect(x, by, 2, bh);
+}
+function progress(x, y, w, h, f, col = C.accent) {
+  f = Math.max(0, Math.min(1, f));
+  g.strokeStyle = C.dim; g.lineWidth = 1; g.beginPath(); g.roundRect(x + .5, y + .5, w - 1, h - 1, 3); g.stroke();
+  if (f > 0) rr(x + 2, y + 2, (w - 4) * f, h - 4, 2, col);
+}
+
+// ======================= mascotte (stessa del firmware: src/apps/mascot.cpp) =======================
+function mascot(cx, cy, r, t, mood) {
+  const body = C.accent, shade = "rgb(214,86,64)";
+  const phase = (t % 2400) / 2400 * 6.2832;
+  const speed = mood === "excited" ? 2 : mood === "sleepy" ? .5 : 1;
+  for (let k = 0; k < 8; k++) {
+    const base = -1.05 + k * 0.30;
+    let x = cx + Math.sin(base) * r * .75, y = cy + r * .55, ang = 1.5708 + base * .9, w = r / 4 + 2;
+    for (let s = 0; s < 6; s++) {
+      const wave = Math.sin(phase * speed + k * .8 + s * .7) * .35;
+      const nx = x + Math.cos(ang + wave) * r * .22, ny = y + Math.sin(ang + wave) * r * .22;
+      g.fillStyle = s % 2 ? body : shade; g.beginPath(); g.arc(nx, ny, w, 0, 7); g.fill();
+      x = nx; y = ny; ang += k < 4 ? -.12 : .12; if (w > 2) w--;
+    }
+    g.fillStyle = "rgb(255,200,180)"; g.beginPath(); g.arc(x, y, 2, 0, 7); g.fill();
+  }
+  const bob = Math.sin(phase) * 2;
+  g.fillStyle = body; g.beginPath(); g.ellipse(cx, cy + bob, r, r * .9, 0, 0, 7); g.fill();
+  g.fillStyle = "rgb(255,170,150)"; g.beginPath(); g.ellipse(cx + r / 3, cy - r / 3 + bob, r / 4, r / 5, 0, 0, 7); g.fill();
+  const blink = (t % 3600) < 140, ey = cy + r / 8 + bob, ex = r * .4;
+  for (const side of [-1, 1]) {
+    const x = cx + side * ex;
+    if (blink || mood === "sleepy") { g.fillStyle = C.bg; g.fillRect(x - r / 6, ey, r / 3, 2); }
+    else {
+      g.fillStyle = C.fg; g.beginPath(); g.arc(x, ey, r / 5, 0, 7); g.fill();
+      g.fillStyle = C.bg; g.beginPath(); g.arc(x + Math.sin(phase * .5) * 2, ey + 1, r / 9 + 1, 0, 7); g.fill();
+    }
+  }
+  const my = ey + r / 3;
+  g.strokeStyle = C.bg; g.lineWidth = 2; g.beginPath();
+  if (mood === "worried") g.arc(cx, my + 4, r / 6, Math.PI * 1.15, Math.PI * 1.85);
+  else if (mood === "sleepy") { g.fillStyle = C.bg; g.arc(cx, my, 2, 0, 7); g.fill(); }
+  else g.arc(cx, my - 3, r / 5, Math.PI * .15, Math.PI * .85);
+  g.stroke();
+  g.fillStyle = "rgb(255,150,160)";
+  for (const side of [-1, 1]) { g.beginPath(); g.arc(cx + side * (ex + r / 6), ey + r / 4, 3, 0, 7); g.fill(); }
+}
+
+// ======================= suoni (come src/core/sound.cpp) =======================
+let audio = null;
+function unlockAudio() { if (!audio) { try { audio = new (window.AudioContext || window.webkitAudioContext)(); } catch (_) { audio = null; } } }
+function tone(hz, ms) {
+  if (!state.sound || !audio) return;
+  try {
+    const o = audio.createOscillator(), v = audio.createGain();
+    o.type = "square"; o.frequency.value = hz; v.gain.value = 0.04;
+    o.connect(v); v.connect(audio.destination);
+    const t = audio.currentTime; o.start(t); o.stop(t + ms / 1000);
+  } catch (_) {}
+}
+const sound = { click: () => tone(2400, 12), ok: () => tone(1760, 60), error: () => tone(330, 180), send: () => tone(2900, 25) };
+
+// ======================= pannelli =======================
+const logEl = document.getElementById("log"), pcEl = document.getElementById("pc"), pcState = document.getElementById("pc-state");
+function hw(kind, msg) {
+  if (logEl.querySelector(".empty")) logEl.innerHTML = "";
+  const li = document.createElement("li");
+  const chip = document.createElement("span"); chip.className = "chip " + kind.toLowerCase().replace(/[^a-z]/g, ""); chip.textContent = kind;
+  const m = document.createElement("span"); m.textContent = msg;
+  li.append(chip, m); logEl.prepend(li);
+  while (logEl.children.length > 50) logEl.lastChild.remove();
+}
+const simNote = msg => hw("SIM", msg);
+function flash(id, cls, ms = 220) {
+  const el = document.getElementById(id); el.classList.add(cls);
+  setTimeout(() => el.classList.remove(cls), ms);
+}
+const level = () => [0, 20, 80, 200, 500].filter(s => state.xp >= s).length;
+const addXp = n => { state.xp += n; persist(); };
+const groveName = { none: "nessun modulo", rfid2: "Unit RFID2", rf433: "RF433R + RF433T", irunit: "IR Unit" };
+
+// ======================= pila delle schermate =======================
+const stack = [];
+const nav = {
+  push(s) { stack.push(s); s.onEnter?.(); },
+  pop() { if (stack.length > 1) { stack.pop().onExit?.(); stack[stack.length - 1].onResume?.(); } },
+  top() { return stack[stack.length - 1]; }
+};
+const open = s => nav.push(s);
+
+class Menu {
+  constructor(title, items = [], hints = "OK apri   ` indietro") { this.title = title; this.items = items; this.hints = hints; this.sel = 0; this.top = 0; this.empty = "Nessun elemento"; }
+  setItems(it) { this.items = it; this.sel = Math.min(this.sel, Math.max(0, it.length - 1)); this.fix(); }
+  fix() { if (this.sel < this.top) this.top = this.sel; if (this.sel >= this.top + ROWS) this.top = this.sel - ROWS + 1; this.top = Math.max(0, Math.min(this.top, this.items.length - ROWS)); }
+  extra() { return false; }
+  back() { nav.pop(); }
+  onEvent(e) {
+    if (this.extra(e)) return;
+    const n = this.items.length;
+    if (e.key === "up" && n) this.sel = this.sel > 0 ? this.sel - 1 : n - 1;
+    else if (e.key === "down" && n) this.sel = this.sel < n - 1 ? this.sel + 1 : 0;
+    else if (e.key === "left" && n) this.sel = Math.max(0, this.sel - ROWS);
+    else if (e.key === "right" && n) this.sel = Math.min(n - 1, this.sel + ROWS);
+    else if (e.key === "ok" && n && this.items[this.sel].action) { sound.click(); this.items[this.sel].action(); }
+    else if (e.key === "back" || e.key === "backspace") this.back();
+    this.fix();
+  }
+  drawEmpty() { textC(CY + 40, this.empty, C.dim); }
+  draw() {
+    header(this.title);
+    if (!this.items.length) this.drawEmpty();
+    for (let i = 0; i < ROWS; i++) {
+      const idx = this.top + i, it = this.items[idx];
+      if (!it) break;
+      row(i, idx === this.sel, it.label, it.right || "", it.color || C.fg);
+    }
+    scrollbar(this.top, ROWS, this.items.length);
+    footer(this.hints);
+  }
+}
+class Message {
+  constructor(title, body, accent = C.accent, onClose) { Object.assign(this, { title, body, accent, onClose, scroll: 0 }); }
+  onEvent(e) {
+    if (e.key === "up" && this.scroll > 0) this.scroll--;
+    else if (e.key === "down" && this.scroll + 7 < lines(W - 12, this.body).length) this.scroll++;
+    else if (["ok", "back", "backspace"].includes(e.key)) { nav.pop(); this.onClose?.(); }
+  }
+  draw() { header(this.title, this.accent); wrap(6, CY + 3, W - 12, this.body, C.fg, 14, 7, this.scroll); footer("OK chiudi   ; . scorri"); }
+}
+const msg = (t, b, a) => open(new Message(t, b, a));
+const err = b => { sound.error(); open(new Message("Errore", b, C.err)); };
+class Confirm {
+  constructor(title, body, done, yes = "Sì", no = "No", accent = C.warn) { Object.assign(this, { title, body, done, yes, no, accent, choice: false }); }
+  onEvent(e) {
+    if (["left", "right", "tab"].includes(e.key)) this.choice = !this.choice;
+    else if (e.key === "ok") { nav.pop(); this.done?.(this.choice); }
+    else if (e.key === "back" || e.key === "backspace") { nav.pop(); this.done?.(false); }
+    else if ("sSyY".includes(e.ch || "-")) this.choice = true;
+    else if ("nN".includes(e.ch || "-")) this.choice = false;
+  }
+  draw() {
+    header(this.title, this.accent); wrap(6, CY + 4, W - 12, this.body, C.fg, 14, 5);
+    const y = H - FOOTER - 22, w = 90;
+    const btn = (x, l, s) => { rr(x, y, w, 18, 4, s ? this.accent : C.panel); text(x + (w - tw(l)) / 2, y + 3, l, s ? C.bg : C.fg); };
+    btn(22, this.no, !this.choice); btn(W - 22 - w, this.yes, this.choice);
+    footer(", / scegli   OK conferma   ` annulla");
+  }
+}
+const ask = (title, body, done) => open(new Confirm(title, body, done));
+class TextInput {
+  constructor(title, init, max, kind, done) { Object.assign(this, { title, t: init, max, kind, done }); this.interval = 500; }
+  ok(c) {
+    if (this.kind === "file") return /[A-Za-z0-9_\- ]/.test(c);
+    if (this.kind === "url") return c !== " " && c !== "`";
+    return c !== "`";
+  }
+  onEvent(e) {
+    if (e.key === "back" && ((e.ch === "`" && !e.fn) || !e.ch)) { nav.pop(); return; }
+    if (e.key === "ok") { nav.pop(); this.done?.(this.t); return; }
+    if (e.key === "backspace") { this.t = [...this.t].slice(0, -1).join(""); return; }
+    if (e.fn) return;  // come nel firmware: con Fn le frecce non scrivono
+    if (e.ch && this.ok(e.ch) && this.t.length < this.max) this.t += e.ch;
+  }
+  draw() {
+    header(this.title);
+    rr(4, CY + 8, W - 8, 40, 4, C.panel);
+    const on = Math.floor(performance.now() / 500) % 2 === 0;
+    let shown = this.t;
+    while (tw(shown) > 2 * (W - 20) && shown.length > 1) shown = shown.slice(1);
+    wrap(10, CY + 12, W - 20, shown + (on ? "_" : " "), C.fg, 15, 2);
+    textR(W - 6, CY + 52, `${this.t.length}/${this.max}`, C.dim);
+    if (this.kind === "file") text(6, CY + 52, "lettere, numeri, _ e -", C.dim);
+    if (this.kind === "url") text(6, CY + 52, "es. https://example.com", C.dim);
+    footer("OK conferma   DEL cancella   ` annulla");
+  }
+}
+class TextView {
+  constructor(title, body) { this.title = title; this.body = body; this.top = 0; }
+  onEvent(e) {
+    const n = lines(W - 12, this.body).length, page = 7;
+    if (e.key === "up") this.top = Math.max(0, this.top - 1);
+    else if (e.key === "down") this.top = Math.min(Math.max(0, n - page), this.top + 1);
+    else if (e.key === "left") this.top = Math.max(0, this.top - page);
+    else if (e.key === "right") this.top = Math.min(Math.max(0, n - page), this.top + page);
+    else if (["ok", "back", "backspace"].includes(e.key)) nav.pop();
+  }
+  draw() { header(this.title); wrap(6, CY + 2, W - 12, this.body, C.fg, 15, 7, this.top); scrollbar(this.top, 7, lines(W - 12, this.body).length); footer("; . riga   , / pagina   ` chiudi"); }
+}
+class Browser extends Menu {
+  constructor(title, dir, ext, pick) { super(title, [], "OK apri   ` indietro"); Object.assign(this, { root: dir, dir, ext, pick, base: title }); this.empty = "Cartella vuota"; this.reload(); }
+  onResume() { this.reload(); }
+  reload() {
+    this.title = this.dir === this.root ? this.base : this.base + " " + this.dir.slice(this.root.length);
+    this.setItems(fsList(this.dir, this.ext).map(e => e.dir
+      ? { label: e.name + "/", color: C.accent2, action: () => { this.dir += "/" + e.name; this.sel = 0; this.reload(); } }
+      : { label: e.name, right: size(e.size), action: () => this.pick(this.dir + "/" + e.name, e.name) }));
+  }
+  back() { if (this.dir !== this.root) { this.dir = dirname(this.dir); this.sel = 0; this.reload(); } else nav.pop(); }
+}
+
+// ======================= oggetti simulati (pannello) =======================
+const sim = { cardUntil: 0, rfUntil: 0, rfRemote: "presa", irPending: null };
+const REMOTE433 = {
+  presa: { code: { v: 0x95D5D4, bits: 24, p: 1, te: 352 }, name: "presa radiocomandata" },
+  campanello: { code: { v: 0x3A61F2, bits: 24, p: 1, te: 310 }, name: "campanello" },
+  cancello: { code: null, name: "cancello a codice variabile" }
+};
+const IRREMOTES = {
+  lg: { proto: "NEC", addr: 0x04, cmd: 0x08, label: "TV LG accendi" },
+  samsung: { proto: "Samsung32", addr: 0x07, cmd: 0x07, label: "TV Samsung volume +" },
+  fan: { raw: true, data: [1250, 420, 1250, 420, 400, 1270, 1250, 420, 1250, 420, 400, 1270, 400, 1270, 400, 1270, 400, 1270, 400, 1270, 400, 1270, 1250], label: "ventilatore" }
+};
+const groveSel = document.getElementById("grove");
+groveSel.value = state.grove;
+groveSel.addEventListener("change", () => { state.grove = groveSel.value; flush(); simNote("collegato: " + groveName[state.grove]); render(true); });
+document.getElementById("btn-card").addEventListener("click", () => {
+  unlockAudio();
+  sim.cardUntil = performance.now() + 3000;
+  simNote(`carta appoggiata per 3 s: ${document.getElementById("card").selectedOptions[0].text}` + (state.grove !== "rfid2" ? " (ma il modulo RFID2 non è collegato)" : ""));
+});
+document.getElementById("btn-433").addEventListener("click", () => {
+  unlockAudio();
+  sim.rfRemote = document.getElementById("remote433").value;
+  sim.rfUntil = performance.now() + 3000;
+  simNote("tasto del telecomando tenuto premuto per 3 s: " + REMOTE433[sim.rfRemote].name + (state.grove !== "rf433" ? " (ma l'RF433R non è collegato)" : ""));
+});
+document.getElementById("btn-ir").addEventListener("click", () => {
+  unlockAudio();
+  const r = IRREMOTES[document.getElementById("remoteir").value];
+  sim.irPending = { r, at: performance.now() };
+  simNote("premuto il telecomando IR: " + r.label + (state.grove !== "irunit" ? " (ma la IR Unit non è collegata)" : ""));
+});
+// Dopo un'azione del pannello i tasti tornano al Polpo (altrimenti Invio "premerebbe" di nuovo il pulsante).
+for (const id of ["grove", "btn-card", "btn-433", "btn-ir"]) document.getElementById(id).addEventListener(id === "grove" ? "change" : "click", () => cv.focus({ preventScroll: true }));
+let resetArmed = 0;
+const resetBtn = document.getElementById("reset");
+resetBtn.addEventListener("click", () => {
+  if (performance.now() - resetArmed < 4000) {
+    try { localStorage.removeItem(KEY); } catch (_) {}
+    state = JSON.parse(JSON.stringify(DEFAULTS)); state.boots = 1; fs = freshFs(); persist();
+    groveSel.value = state.grove; resetBtn.textContent = "Azzera simulatore"; resetBtn.classList.remove("danger");
+    stack.length = 0; nav.push(new Desktop()); simNote("simulatore azzerato: microSD come al primo avvio"); render(true);
+    resetArmed = 0; return;
+  }
+  resetArmed = performance.now(); resetBtn.textContent = "Conferma: cancella tutto"; resetBtn.classList.add("danger");
+  setTimeout(() => { if (performance.now() - resetArmed >= 4000) { resetBtn.textContent = "Azzera simulatore"; resetBtn.classList.remove("danger"); } }, 4100);
+});
+
+// ======================= formati dei file (come polpo_core) =======================
+const hex2 = n => n.toString(16).toUpperCase().padStart(2, "0");
+const hexLE32 = n => [0, 1, 2, 3].map(i => hex2((n >>> (8 * i)) & 255)).join(" ");
+const hexBE = (v, n) => Array.from({ length: n }, (_, i) => hex2(Math.floor(v / 2 ** (8 * (n - 1 - i))) & 255)).join(" ");
+function parseIr(text) {
+  const out = []; let cur = null;
+  for (const raw of text.split("\n")) {
+    const l = raw.trim(); if (!l || l[0] === "#") continue;
+    const i = l.indexOf(":"); if (i < 0) continue;
+    const k = l.slice(0, i).trim(), v = l.slice(i + 1).trim();
+    if (k === "name") { cur = { name: v, proto: "?" }; out.push(cur); }
+    else if (cur && k === "type" && v === "raw") cur.proto = "RAW";
+    else if (cur && k === "protocol") cur.proto = v;
+  }
+  return out;
+}
+const irBlock = s => s.raw
+  ? `\n#\nname: ${s.name}\ntype: raw\nfrequency: 38000\nduty_cycle: 0.330000\ndata: ${s.data.join(" ")}\n`
+  : `\n#\nname: ${s.name}\ntype: parsed\nprotocol: ${s.proto}\naddress: ${hexLE32(s.addr)}\ncommand: ${hexLE32(s.cmd)}\n`;
+const SUB_HEAD = "Version: 1\nFrequency: 433920000\nPreset: FuriHalSubGhzPresetOok650Async\n";
+function subCode(c) {
+  const proto = c.p === 1 ? "Protocol: Princeton\n" : `Protocol: Polpo_RCSwitch\nRCS_Protocol: ${c.p}\n`;
+  return `Filetype: Flipper SubGhz Key File\n${SUB_HEAD}${proto}Bit: ${c.bits}\nKey: ${hexBE(c.v, 8)}\nTE: ${c.te}\n`;
+}
+function subRaw(data) {
+  let s = `Filetype: Flipper SubGhz RAW File\n${SUB_HEAD}Protocol: RAW\n`;
+  for (let i = 0; i < data.length; i += 512) s += "RAW_Data: " + data.slice(i, i + 512).join(" ") + "\n";
+  return s;
+}
+function parseSub(text) {
+  const kv = {}; const raw = [];
+  for (const l of text.split("\n")) { const i = l.indexOf(":"); if (i < 0) continue; const k = l.slice(0, i).trim(), v = l.slice(i + 1).trim(); if (k === "RAW_Data") raw.push(...v.split(/\s+/).map(Number)); else kv[k] = v; }
+  if (kv.Protocol === "RAW") return { raw: true, data: raw };
+  if (kv.Protocol !== "Princeton" && kv.Protocol !== "Polpo_RCSwitch") return { error: `protocollo ${kv.Protocol} non supportato (solo codici fissi Princeton o RAW)` };
+  const bits = Number(kv.Bit);
+  if (!(bits >= 1 && bits <= 32)) return { error: "Bit non valido (da 1 a 32)" };
+  const v = (kv.Key || "").split(/\s+/).reduce((a, h) => a * 256 + parseInt(h, 16), 0);
+  return { code: { v, bits, p: kv.Protocol === "Princeton" ? 1 : Number(kv.RCS_Protocol), te: Number(kv.TE) } };
+}
+// tabella rc-switch 2.6.4: {sincronismo alto, basso}, {zero}, {uno}
+const RCS = [[1,31,1,3,3,1],[1,10,1,2,2,1],[30,71,4,11,9,6],[1,6,1,3,3,1],[6,14,1,2,2,1],[23,1,1,2,2,1],[2,62,1,6,6,1],[3,130,7,16,3,16],[130,7,16,7,16,3],[18,1,3,1,1,3],[36,1,1,2,2,1],[36,1,1,2,2,1]];
+function airtimeUs(c, rep) { const p = RCS[c.p - 1]; if (!p) return 0; return ((Math.max(p[2] + p[3], p[4] + p[5])) * c.bits + p[0] + p[1]) * c.te * rep; }
+function pt2262(v, bits, te) { const d = []; for (let b = bits - 1; b >= 0; b--) { const one = Math.floor(v / 2 ** b) % 2; d.push(one ? 3 * te : te, -(one ? te : 3 * te)); } d.push(te, -31 * te); return d; }
+// NDEF (come polpo_core/nfc/ndef.cpp)
+const URI_PREFIX = ["", "http://www.", "https://www.", "http://", "https://", "tel:", "mailto:"];
+function ndefRecord(n) {
+  let type, payload;
+  if (n.kind === "uri") {
+    let best = 0; URI_PREFIX.forEach((p, i) => { if (i && n.value.startsWith(p) && p.length > URI_PREFIX[best].length) best = i; });
+    type = "U"; payload = [best, ...enc.encode(n.value.slice(URI_PREFIX[best].length))];
+  } else { type = "T"; payload = [2, ...enc.encode("it"), ...enc.encode(n.value)]; }
+  const sr = payload.length <= 255;
+  const len = sr ? [payload.length] : [payload.length >>> 24, (payload.length >> 16) & 255, (payload.length >> 8) & 255, payload.length & 255];
+  return [0xC1 | (sr ? 0x10 : 0), 1, ...len, type.charCodeAt(0), ...payload];
+}
+function ndefTlv(n) { const m = n ? ndefRecord(n) : []; return m.length < 255 ? [3, m.length, ...m, 0xFE] : [3, 0xFF, m.length >> 8, m.length & 255, ...m, 0xFE]; }
+function tagPages(t) {
+  const u = t.uid.match(/../g).map(h => parseInt(h, 16));
+  const cc = [0xE1, 0x10, t.cap / 8, 0x00];
+  const bytes = [u[0], u[1], u[2], 0x88 ^ u[0] ^ u[1] ^ u[2], u[3], u[4], u[5], u[6], u[3] ^ u[4] ^ u[5] ^ u[6], 0x48, 0, 0, ...cc, ...ndefTlv(t.ndef)];
+  while (bytes.length % 4) bytes.push(0);
+  return bytes;
+}
+function describeNdef(n) { return !n ? "Messaggio NDEF vuoto." : n.kind === "uri" ? "Link: " + n.value : "Testo (it): " + n.value; }
+function cardInfo(id) {
+  const t = state.tags[id];
+  const uidTxt = t.uid.match(/../g).join(":");
+  if (id === "classic" || id === "bank") {
+    const fam = id === "classic" ? "MIFARE Classic 1K (o compatibile)" : "Smart card ISO 14443-4 (DESFire, Plus SL3, carta bancaria, documento...)";
+    return { t, type2: false, text: `UID: ${uidTxt}\nATQA: ${t.atqa.toString(16).padStart(4, "0").toUpperCase()}   SAK: ${hex2(t.sak)}\nTipo: ${fam}\nQuesta carta usa crittografia o un protocollo che il Polpo non legge: si vede solo l'identificativo.` };
+  }
+  return { t, type2: true, text: `UID: ${uidTxt}\nATQA: 0044   SAK: 00\nTipo: NFC Type 2 (NTAG / MIFARE Ultralight)\nModello: ${t.model}\nNDEF: ${t.cap} byte, scrivibile\n${describeNdef(t.ndef)}` };
+}
+function nfcDump(id) {
+  const t = state.tags[id], p = tagPages(t);
+  let s = `Filetype: Polpo NFC dump\nVersion: 1\nUID: ${t.uid.match(/../g).join(" ")}\nATQA: 00 44\nSAK: 00\nModel: ${t.model}\n`;
+  for (let i = 0; i < p.length / 4; i++) s += `Page ${i}: ${p.slice(i * 4, i * 4 + 4).map(hex2).join(" ")}\n`;
+  return s;
+}
+
+// ======================= desktop e menu =======================
+class Desktop {
+  constructor() { this.interval = 80; this.poke = -9999; }
+  onEvent(e) {
+    if (["ok", "down", "right"].includes(e.key)) openMenu();
+    else if (e.ch === "i") openAbout();
+    else if (e.ch === "p") { this.poke = performance.now(); addXp(1); }
+  }
+  draw() {
+    const now = performance.now(), idle = now - lastKey;
+    const mood = now - this.poke < 1500 ? "excited" : idle > 60000 ? "sleepy" : "happy";
+    g.strokeStyle = C.panel; g.lineWidth = 1;
+    for (let b = 0; b < 6; b++) { const x = 12 + b * 19, y = 130 - ((now / (14 + b * 3) + b * 37) % 140); g.beginPath(); g.arc(x, y, 2 + b % 3, 0, 7); g.stroke(); }
+    mascot(62, 52, 28, now, mood);
+    text(128, 12, "POLPO", C.fg, BIG);
+    const lv = level();
+    text(130, 44, "Livello " + lv, C.accent);
+    const steps = [0, 20, 80, 200, 500, 500], lo = steps[lv - 1], hi = steps[Math.min(lv, 5)];
+    progress(130, 60, 96, 8, lv >= 5 ? 1 : (state.xp - lo) / (hi - lo));
+    text(130, 74, "microSD ok", C.ok);
+    text(130, 89, "Batteria " + Math.round(state.battery) + "%", C.dim);
+    text(130, 104, mood === "sleepy" ? "Zzz..." : "Pronto!", C.dim);
+    footer("OK menu   p coccola   i info");
+  }
+}
+function openMenu() {
+  open(new Menu("Menu", [
+    { label: "Infrarossi", right: "IR", action: openIr },
+    { label: "Radio 433 MHz", right: "RF", action: openRf },
+    { label: "NFC", right: "13,56", action: openNfc },
+    { label: "BadUSB", right: "USB", action: openBadUsb },
+    { label: "Bluetooth", right: "BLE", action: openBle },
+    { label: "Wi-Fi", right: "2,4 GHz", action: openWifi },
+    { label: "GPIO e I2C", right: "Grove", action: openGpio },
+    { label: "File", right: "SD", action: () => open(new Browser("File  /polpo", "/polpo", null, fileActions)) },
+    { label: "Diagnostica", action: openDiag },
+    { label: "Impostazioni", action: openSettings },
+    { label: "Info", action: openAbout }
+  ]));
+}
+
+// ======================= infrarossi =======================
+const LIB = {
+  "Accendi / spegni": ["Samsung", "LG", "Sony", "Philips RC5", "Philips RC6", "Panasonic", "Toshiba"],
+  "Volume +": ["Samsung", "LG", "Sony", "Philips RC5", "Philips RC6"], "Volume -": ["Samsung", "LG", "Sony", "Philips RC5", "Philips RC6"],
+  "Muto": ["Samsung", "LG", "Sony", "Philips RC5", "Philips RC6"], "Canale +": ["Samsung", "LG", "Sony", "Philips RC5"], "Canale -": ["Samsung", "LG", "Sony", "Philips RC5"]
+};
+const AUDIO = { "Accendi / spegni": ["Sony", "Yamaha"], "Volume +": ["Sony", "Yamaha"], "Volume -": ["Sony", "Yamaha"], "Muto": ["Sony", "Yamaha"] };
+const PROTO = { Samsung: "Samsung32", LG: "NEC", Sony: "SIRC", "Philips RC5": "RC5", "Philips RC6": "RC6", Panasonic: "Kaseikyo", Toshiba: "NEC", Yamaha: "NEC" };
+function irSend(what) { flash("led-ir", "on-ir"); sound.send(); hw("IR", what + (state.irRepeats > 1 ? ` (x${state.irRepeats})` : "")); }
+class UniSend {
+  constructor(btn, brands) { Object.assign(this, { btn, brands, i: 0, next: 0, interval: 100 }); }
+  onEvent(e) { if (["ok", "back", "backspace"].includes(e.key)) nav.pop(); }
+  tick(now) {
+    if (this.i >= this.brands.length || now < this.next) return;
+    const b = this.brands[this.i++];
+    irSend(`${PROTO[b]} · ${b} · ${this.btn}`);
+    this.next = now + 350;
+    if (this.i === this.brands.length) addXp(1);
+  }
+  draw() {
+    header("Universale: " + this.btn);
+    const n = this.brands.length, done = this.i >= n;
+    text(6, CY + 6, done ? "Fatto: inviati tutti i codici." : "Punta il Cardputer verso il dispositivo.", done ? C.ok : C.fg);
+    if (!done) text(6, CY + 26, "Marca: " + this.brands[this.i], C.accent);
+    progress(6, CY + 48, W - 12, 12, n ? this.i / n : 1);
+    textC(CY + 66, `${this.i} / ${n}`, C.dim);
+    footer(done ? "OK chiudi" : "Il dispositivo ha reagito?  OK = ferma");
+  }
+}
+const uni = (title, lib) => open(new Menu("Universale: " + title, Object.entries(lib).map(([btn, brands]) => ({ label: btn, right: brands.length + " marche", action: () => open(new UniSend(btn, brands)) }))));
+function openRemote(p, n) {
+  const content = fs.files[p] || "";
+  if (enc.encode(content).length > 48 * 1024) return err("Impossibile leggere il file (max 48 KB). Dividi i telecomandi grandi in più file.");
+  const buttons = parseIr(content);
+  const m = new Menu(n, buttons.map(b => ({ label: b.name, right: b.proto === "?" ? "" : b.proto, action: () => { irSend(`${b.proto} · ${b.name}`); m.sent = true; addXp(1); } })), "OK invia   ` indietro");
+  m.empty = "Nessun tasto valido nel file";
+  const base = m.draw.bind(m); m.draw = () => { base(); if (m.sent) textR(W - 30, 2, "inviato", C.ok); };
+  open(m);
+}
+class Learn {
+  constructor() { this.state = "listen"; this.since = performance.now(); this.interval = 200; }
+  tick() {
+    if (this.state !== "listen" || !sim.irPending) return;
+    const p = sim.irPending; sim.irPending = null;
+    if (p.at < this.since || state.grove !== "irunit") return;
+    this.sig = p.r; this.state = "got"; sound.ok();
+    hw("IR", this.sig.raw ? `ricevuto RAW (${this.sig.data.length} tempi) dalla IR Unit` : `ricevuto ${this.sig.proto} indirizzo 0x${this.sig.addr.toString(16).toUpperCase()} comando 0x${this.sig.cmd.toString(16).toUpperCase()}`);
+  }
+  onEvent(e) {
+    if (e.key === "back" || e.key === "backspace") return nav.pop();
+    if (this.state !== "got") return;
+    if (e.key === "ok") open(new TextInput("Nome del tasto", "Tasto", 24, "file", n => this.save(n)));
+    else if (e.ch === "t" || e.ch === "T") irSend("prova del tasto imparato: " + (this.sig.raw ? "RAW" : this.sig.proto));
+    else if (e.ch === "r" || e.ch === "R") { this.state = "listen"; this.since = performance.now(); }
+  }
+  save(raw) {
+    const name = safeName(raw), path = "/polpo/ir/imparati.ir";
+    const s = Object.assign({ name }, this.sig);
+    if (fs.files[path] !== undefined) fsAppend(path, irBlock(s));
+    else fsWrite(path, "Filetype: IR signals file\nVersion: 1\n" + irBlock(s).slice(1));
+    addXp(2); sound.ok();
+    msg("Salvato", `Tasto "${name}" aggiunto a /polpo/ir/imparati.ir`, C.ok);
+    this.state = "listen"; this.since = performance.now();
+  }
+  draw() {
+    header("Impara (IR Unit)");
+    if (this.state === "listen") {
+      wrap(6, CY + 6, W - 12, "Punta il telecomando verso la IR Unit da 5-10 cm e premi brevemente un tasto.");
+      if (state.grove !== "irunit") text(6, CY + 64, "(simulatore: collega la IR Unit nel pannello)", C.dim);
+      else text(6, CY + 64, "(simulatore: usa \"Telecomando a infrarossi\")", C.dim);
+      footer("in ascolto...   ` indietro"); return;
+    }
+    text(6, CY + 6, "Ricevuto!", C.ok);
+    if (this.sig.raw) text(6, CY + 22, `Segnale RAW (${this.sig.data.length} tempi)`);
+    else { text(6, CY + 22, "Protocollo " + this.sig.proto); text(6, CY + 38, `indirizzo 0x${this.sig.addr.toString(16).toUpperCase()}  comando 0x${this.sig.cmd.toString(16).toUpperCase()}`, C.dim); }
+    footer("OK salva   t prova   r riascolta");
+  }
+}
+function openIr() {
+  open(new Menu("Infrarossi", [
+    { label: "Universale: televisori", action: () => uni("televisori", LIB) },
+    { label: "Universale: audio", action: () => uni("audio", AUDIO) },
+    { label: "I miei telecomandi (.ir)", right: "SD", action: () => open(new Browser("Telecomandi", "/polpo/ir", ".ir", openRemote)) },
+    { label: "Impara un telecomando", right: "IR Unit", action: () => open(new Learn()) },
+    { label: "Come funziona", action: () => msg("Infrarossi", "Il LED IR è sul lato del Cardputer: puntalo verso il dispositivo (portata 3-5 m).\nCopia in /polpo/ir/ i file .ir: protocolli NEC, Samsung32, RC5, RC6, SIRC, Kaseikyo, RCA, Pioneer o RAW.\nPer imparare serve la IR Unit (ricevitore) sulla porta Grove.") }
+  ]));
+}
+
+// ======================= radio 433 =======================
+function budgetUsed() { const now = Date.now(); state.rfLog = state.rfLog.filter(e => now - e.t < 3600000); return state.rfLog.reduce((a, e) => a + e.ms, 0); }
+function rfTransmit(what, ms) {
+  if (ms > 2000) return err("trasmissione troppo lunga (max 2 s): riduci le ripetizioni");
+  if (budgetUsed() + ms > 288000) return err("limite orario di trasmissione raggiunto: riprova più tardi");
+  state.rfLog.push({ t: Date.now(), ms }); persist();
+  flash("led-rf", "on-rf", Math.min(1500, ms + 150)); sound.send(); hw("433", `${what} (${ms} ms in aria)`); addXp(1);
+}
+const codeText = c => `0x${c.v.toString(16).toUpperCase()}  ${c.bits} bit  P${c.p}  ${c.te} us`;
+function saveSub(content, suggested) {
+  open(new TextInput("Nome del segnale", suggested, 24, "file", n => {
+    const p = uniquePath("/polpo/rf433", safeName(n), ".sub");
+    fsWrite(p, content); addXp(2); sound.ok(); msg("Salvato", p, C.ok);
+  }));
+}
+function txCode(c) { const ms = Math.round(airtimeUs(c, state.rfRepeats) / 1000) + 1; rfTransmit(`trasmesso 0x${c.v.toString(16).toUpperCase()} (${c.bits} bit) x${state.rfRepeats}`, ms); }
+function txRaw(data) { const rep = Math.min(5, Math.max(3, state.rfRepeats)); const ms = Math.round(data.reduce((a, x) => a + Math.abs(x), 0) * rep / 1000) + 1; rfTransmit(`trasmesso RAW (${data.length} tempi) x${rep}`, ms); }
+class RfReceive extends Menu {
+  constructor() { super("Ricevi 433,92 MHz", [], "OK dettagli   ` indietro"); this.empty = "In ascolto... premi il tuo telecomando"; this.got = []; this.lastSeen = 0; this.interval = 300; }
+  tick(now) {
+    if (state.grove !== "rf433" || now > sim.rfUntil || now - this.lastSeen < 380) return;
+    this.lastSeen = now;
+    const r = REMOTE433[sim.rfRemote];
+    if (!r.code) { if (!this.warned) { hw("433", "segnale a codice variabile: nessun codice fisso decodificato"); this.warned = true; } return; }
+    this.warned = false;
+    const c = r.code;
+    if (this.got.length && this.got[0].c.v === c.v) this.got[0].n++;
+    else { this.got.unshift({ c, n: 1 }); if (this.got.length > 30) this.got.pop(); hw("433", "ricevuto " + codeText(c)); sound.click(); if (this.got.length > 1) this.sel++; }
+    this.setItems(this.got.map(({ c, n }) => ({ label: codeText(c), right: "x" + n, action: () => rfActions(c) })));
+  }
+  drawEmpty() { textC(CY + 34, this.empty, C.dim); textC(CY + 52, state.grove !== "rf433" ? "(simulatore: collega RF433R nel pannello)" : "(simulatore: pannello \"Telecomando a 433 MHz\")", C.dim); }
+}
+function rfActions(c) {
+  open(new Menu("Codice ricevuto", [
+    { label: "Salva su microSD", action: () => saveSub(subCode(c), "telecomando") },
+    { label: "Ritrasmetti (solo tuoi dispositivi)", action: () => txCode(c) },
+    { label: "Dettagli", action: () => msg("Codice", `Valore: 0x${c.v.toString(16).toUpperCase()}\nBit: ${c.bits}\nProtocollo rc-switch: ${c.p}${c.p === 1 ? " (PT2262/EV1527)" : ""}\nImpulso base (TE): ${c.te} us\nCodice fisso: chiunque lo registri può ripeterlo. Non è sicuro per porte e allarmi.`) }
+  ]));
+}
+function noise(n) { const d = []; for (let i = 0; i < n; i++) d.push((i % 2 ? -1 : 1) * Math.round(60 + Math.random() * 900)); return d; }
+function stats(d) {
+  const v = d.map(Math.abs).filter(x => x >= 50 && x <= 20000).sort((a, b) => a - b);
+  if (!v.length) return { n: 0 };
+  const cl = []; for (const x of v) { const last = cl[cl.length - 1]; if (!last || x > last.sum / last.n * 1.4) cl.push({ sum: x, n: 1 }); else { last.sum += x; last.n++; } }
+  const top = [...cl].sort((a, b) => b.n - a.n).slice(0, 2).map(c => Math.round(c.sum / c.n)).sort((a, b) => a - b);
+  const s = top[0], l = top[1] || top[0];
+  return { n: v.length, min: v[0], max: v[v.length - 1], s, l, ratio: l / s };
+}
+class RfRaw {
+  constructor() { this.frozen = false; this.edges = 0; this.interval = 200; this.off = 0; }
+  tick(now) { if (!this.frozen && state.grove === "rf433") this.edges += now < sim.rfUntil ? 480 + Math.floor(Math.random() * 120) : 30 + Math.floor(Math.random() * 40); }
+  onEvent(e) {
+    if (e.key === "back" || e.key === "backspace") return nav.pop();
+    if (e.key === "ok" && !this.frozen) {
+      const now = performance.now();
+      if (state.grove !== "rf433") this.data = [];
+      else if (now < sim.rfUntil) {
+        const r = REMOTE433[sim.rfRemote];
+        this.data = [];
+        if (r.code) for (let f = 0; f < 4; f++) this.data.push(...pt2262(r.code.v, r.code.bits, r.code.te).map(x => x + (x > 0 ? 1 : -1) * Math.round(Math.random() * 6)));
+        else for (let f = 0; f < 3; f++) { for (let b = 0; b < 66; b++) { const one = Math.random() < .5; this.data.push(one ? 400 : 800, one ? -800 : -400); } this.data.push(400, -15000); }
+      } else this.data = noise(300);
+      this.st = stats(this.data); this.frozen = true; sound.ok();
+      hw("433", `catturati ${this.data.length} tempi RAW` + (now < sim.rfUntil ? "" : " (solo rumore: nessun telecomando premuto)"));
+    } else if (e.key === "ok") {
+      if (!this.data.length) return err("Nessun dato catturato: collega l'RF433R.");
+      const d = this.data.slice(0, 4096); if (d.length % 2 === 0) d.pop();
+      open(new Menu("RAW", [
+        { label: "Salva su microSD", action: () => saveSub(subRaw(d), "registrazione") },
+        { label: "Ritrasmetti (solo tuoi dispositivi)", action: () => txRaw(d) }
+      ]));
+    } else if (e.ch === "r") { this.frozen = false; }
+    else if (this.frozen && e.key === "left") this.off = Math.max(0, this.off - 20);
+    else if (this.frozen && e.key === "right") this.off = Math.min(Math.max(0, this.data.length - 20), this.off + 20);
+  }
+  draw() {
+    header(this.frozen ? "RAW registrato" : "Registra RAW");
+    if (!this.frozen) { wrap(6, CY + 4, W - 12, "Tieni premuto il tasto del TUO telecomando vicino all'RF433R e, mentre lo tieni, premi OK.", C.fg, 14, 4); text(6, CY + 64, "fronti: " + this.edges, C.dim); footer("OK cattura   ` indietro"); return; }
+    const yh = CY + 8, yl = CY + 30; let x = 2;
+    for (let i = this.off; i < this.data.length && x < W - 2; i++) {
+      const v = this.data[i], w = Math.max(1, Math.min(60, Math.abs(v) / 100));
+      g.fillStyle = v > 0 ? C.accent : C.accent2; g.fillRect(x, v > 0 ? yh : yl, w, 1);
+      g.fillStyle = C.panel; g.fillRect(x + w, yh, 1, yl - yh); x += w;
+    }
+    const s = this.st;
+    if (!s.n) { text(4, CY + 40, "Nessun dato (modulo non collegato?)", C.warn); footer("r riprova   ` indietro"); return; }
+    text(4, CY + 40, `${this.data.length} tempi   min ${s.min} us   max ${s.max} us`);
+    text(4, CY + 56, `impulso base ~${s.s} us, lungo ~${s.l} us (x${s.ratio.toFixed(1)})`, C.dim);
+    text(4, CY + 72, s.ratio > 2.5 && s.ratio < 3.5 ? "Rapporto 1:3: probabile codice fisso PT2262/EV1527" : "", C.ok);
+    footer("OK azioni   , / scorri   r riprova");
+  }
+}
+function openSaved(p, n) {
+  const f = parseSub(fs.files[p] || "");
+  if (f.error) return err(f.error);
+  open(new Menu(n, [
+    { label: "Trasmetti", right: f.raw ? "RAW" : "codice", action: () => f.raw ? txRaw(f.data) : txCode(f.code) },
+    { label: "Informazioni", action: () => { if (f.raw) { const s = stats(f.data); msg("Segnale", `Registrazione RAW\n${f.data.length} tempi, durata ${Math.round(f.data.reduce((a, x) => a + Math.abs(x), 0) / 1000)} ms\nimpulso base ~${s.s || 0} us`); } else msg("Segnale", "Codice fisso\n" + codeText(f.code)); } },
+    { label: "Elimina", action: () => ask("Eliminare?", "Il segnale verrà cancellato dalla microSD.", y => { if (y) { fsRemove(p); nav.pop(); } }) }
+  ]));
+}
+function openRf() {
+  open(new Menu("Radio 433 MHz", [
+    { label: "Ricevi codici fissi", right: "RF433R", action: () => open(new RfReceive()) },
+    { label: "Registra RAW", right: "RF433R", action: () => open(new RfRaw()) },
+    { label: "Segnali salvati", right: "RF433T", action: () => open(new Browser("Segnali 433 MHz", "/polpo/rf433", ".sub", openSaved)) },
+    { label: "Limite di trasmissione", action: () => msg("Trasmissione", `Usati ${Math.round(budgetUsed() / 1000)} s su 288 s nell'ultima ora.\nLa norma europea per 433,05-434,79 MHz consente al massimo il 10% del tempo a 10 mW: il Polpo si ferma all'8%.`) },
+    { label: "Collegamenti e regole", action: () => msg("Radio 433 MHz", "RF433R (ricevitore) e RF433T (trasmettitore) vanno sulla porta Grove: uno alla volta, oppure insieme con una Unit HUB. Niente moduli I2C sulla stessa HUB.\nFunzionano solo i codici fissi (es. prese radiocomandate, campanelli). Cancelli e auto moderni usano codici variabili: non si possono e non si devono copiare.\nRitrasmetti solo segnali di dispositivi tuoi.") }
+  ]));
+}
+
+// ======================= NFC =======================
+const cardPresent = () => state.grove === "rfid2" && performance.now() < sim.cardUntil;
+const currentCard = () => document.getElementById("card").value;
+class NfcRead {
+  constructor() { this.have = false; this.interval = 250; }
+  tick() {
+    if (this.have || state.grove !== "rfid2" || !cardPresent()) return;
+    this.id = currentCard(); this.info = cardInfo(this.id); this.have = true;
+    sound.ok(); addXp(1); hw("NFC", `letto ${this.info.type2 ? this.info.t.model : "UID"} ${this.info.t.uid.match(/../g).join(":")}`);
+  }
+  onEvent(e) {
+    if (e.key === "back" || e.key === "backspace") nav.pop();
+    else if (this.have && e.key === "ok") open(new TextView("Tag NFC", this.info.text + (this.info.type2 ? `\n\nMemoria: ${this.info.t.model === "NTAG213" ? 45 : 135} pagine da 4 byte, lette tutte.` : "")));
+    else if (this.have && this.info.type2 && e.ch === "s") { const p = uniquePath("/polpo/nfc", "tag_" + this.info.t.uid, ".nfc"); fsWrite(p, nfcDump(this.id)); sound.ok(); msg("Salvato", p, C.ok); }
+    else if (this.have && e.ch === "s") err("Si salvano solo i tag NTAG/Ultralight letti.");
+    else if (this.have && e.ch === "r") { this.have = false; sim.cardUntil = 0; }
+  }
+  draw() {
+    header("Leggi NFC");
+    if (state.grove !== "rfid2") { wrap(6, CY + 6, W - 12, "Modulo RFID2 non trovato. Collegalo alla porta Grove (indirizzo I2C 0x28) e riapri.", C.err); footer("` indietro"); return; }
+    if (!this.have) { wrap(6, CY + 6, W - 12, "Appoggia la carta o il tag sul modulo RFID2 (distanza massima circa 2 cm)."); text(6, CY + 64, "(simulatore: pulsante \"Appoggia\" nel pannello)", C.dim); footer("in attesa...   ` indietro"); return; }
+    wrap(6, CY + 2, W - 12, this.info.text, C.fg, 14, 7); footer(this.info.type2 ? "OK tutto   s salva   r altra" : "OK tutto   r altra");
+  }
+}
+class NfcWrite {
+  constructor(ndef, what) { Object.assign(this, { ndef, what, done: false, interval: 250 }); }
+  tick() {
+    if (this.done || state.grove !== "rfid2" || !cardPresent()) return;
+    this.done = true;
+    const id = currentCard();
+    if (id === "classic" || id === "bank") { this.ok = false; this.res = "Questa carta non è un tag NFC Type 2: non si può scrivere."; }
+    else {
+      const t = state.tags[id], size = ndefTlv(this.ndef).length;
+      if (size > t.cap) { this.ok = false; this.res = "Scrittura rifiutata: contenuto troppo grande per questo tag."; }
+      else { t.ndef = this.ndef; persist(); this.ok = true; this.res = `Fatto! ${t.model} scritto e verificato (${size} byte).`; addXp(3); hw("NFC", `scritto e verificato su ${t.model}: ${this.what}`); }
+    }
+    this.ok ? sound.ok() : sound.error();
+  }
+  onEvent(e) { if (e.key === "back" || e.key === "backspace" || (this.done && e.key === "ok")) nav.pop(); if (this.done && e.ch === "r") { this.done = false; sim.cardUntil = 0; } }
+  draw() {
+    header("Scrivi NFC");
+    if (state.grove !== "rfid2") wrap(6, CY + 6, W - 12, "Modulo RFID2 non trovato sulla porta Grove.", C.err);
+    else if (!this.done) { wrap(6, CY + 4, W - 12, "Appoggia un tag NTAG213/215/216 TUO e tienilo fermo.\nContenuto: " + this.what, C.fg, 14, 5); text(6, CY + 76, "(simulatore: pulsante \"Appoggia\")", C.dim); }
+    else wrap(6, CY + 4, W - 12, this.res, this.ok ? C.ok : C.err, 14, 6);
+    footer(this.done ? "OK chiudi   r altro tag" : "` annulla");
+  }
+}
+function openNfc() {
+  open(new Menu("NFC", [
+    { label: "Leggi carta o tag", right: "RFID2", action: () => open(new NfcRead()) },
+    { label: "Scrivi un link", right: "NDEF", action: () => open(new TextInput("Link da scrivere", "https://", 120, "url", u => u.length < 4 ? err("Link troppo corto.") : open(new NfcWrite({ kind: "uri", value: u }, u)))) },
+    { label: "Scrivi un testo", right: "NDEF", action: () => open(new TextInput("Testo da scrivere", "", 120, "any", t => t ? open(new NfcWrite({ kind: "text", value: t }, t)) : err("Testo vuoto."))) },
+    { label: "Letture salvate", right: "SD", action: () => open(new Browser("Letture NFC", "/polpo/nfc", ".nfc", (p, n) => open(new TextView(n, fs.files[p] || "")))) },
+    { label: "Cosa può fare", action: () => msg("NFC", "Il modulo RFID2 legge carte ISO 14443-A a 13,56 MHz: identificativo di qualsiasi carta, contenuto di tag NTAG e Ultralight.\nScrive link e testi (NDEF) solo su tag scrivibili e non bloccati.\nNon emula carte, non legge carte crittografate e non funziona a 125 kHz.") }
+  ]));
+}
+
+// ======================= BadUSB (sottoinsieme DuckyScript, come polpo_core/ducky) =======================
+const NAMED = ["ENTER", "ESC", "ESCAPE", "TAB", "SPACE", "BACKSPACE", "DELETE", "DEL", "INSERT", "HOME", "END", "PAGEUP", "PAGEDOWN", "UP", "UPARROW", "DOWN", "DOWNARROW", "LEFT", "LEFTARROW", "RIGHT", "RIGHTARROW", "CAPSLOCK", "NUMLOCK", "SCROLLLOCK", "PRINTSCREEN", "PAUSE", "BREAK", "MENU", "APP"];
+const MODS = ["CTRL", "CONTROL", "SHIFT", "ALT", "ALTGR", "GUI", "WINDOWS", "COMMAND"];
+function ducky(src, layout) {
+  const out = { errors: [], lines: 0, chars: 0, delay: 0, typed: "", actions: 0 };
+  let dd = 0, last = null;
+  src.replace(/\r/g, "").split("\n").forEach((raw, i) => {
+    const no = i + 1; out.lines = no;
+    const l = raw.trim(); if (!l) return;
+    const sp = l.search(/\s/), cmd = (sp < 0 ? l : l.slice(0, sp)).toUpperCase(), arg = sp < 0 ? "" : l.slice(sp + 1);
+    if (cmd === "REM" || cmd === "//") return;
+    if (cmd === "DEFAULT_DELAY" || cmd === "DEFAULTDELAY") { dd = Number(arg.trim()); if (!(dd >= 0 && dd <= 10000)) out.errors.push(`riga ${no}: DEFAULT_DELAY richiede un numero 0-10000`); return; }
+    if (cmd === "REPEAT") { const n = Number(arg.trim()); if (!(n >= 1 && n <= 500)) out.errors.push(`riga ${no}: REPEAT richiede un numero 1-500`); else if (!last) out.errors.push(`riga ${no}: REPEAT senza un comando precedente`); else for (let k = 0; k < n; k++) apply(last); return; }
+    let act = null;
+    if (cmd === "DELAY") { const v = Number(arg.trim()); if (!(v >= 0 && v <= 60000)) { out.errors.push(`riga ${no}: DELAY richiede un numero 0-60000`); return; } act = { delay: v }; }
+    else if (cmd === "STRING" || cmd === "STRINGLN") {
+      const bad = [...arg].find(c => (layout === "IT" && (c === "`" || c === "~")) || (layout === "US" && /[àèéìòù°£§ç€]/.test(c)));
+      if (bad) { out.errors.push(`riga ${no}: carattere '${bad}' non digitabile con layout ${layout}`); return; }
+      act = { text: arg + (cmd === "STRINGLN" ? "\n" : ""), chars: [...arg].length };
+    } else {
+      const toks = l.split(/[\s]+|(?<=\w)-(?=\w)/);
+      let okc = true;
+      toks.forEach((t, k) => { const u = t.toUpperCase(); if (MODS.includes(u)) return; if (k !== toks.length - 1) okc = false; else if (!NAMED.includes(u) && !/^F([1-9]|1[0-2])$/.test(u) && [...t].length !== 1) okc = false; });
+      if (!okc) { out.errors.push(`riga ${no}: comando sconosciuto: ${toks.find(t => !MODS.includes(t.toUpperCase()))}`); return; }
+      act = { key: l.toUpperCase(), enter: l.toUpperCase() === "ENTER" };
+    }
+    apply(act); last = act;
+    if (dd && cmd !== "DELAY") out.delay += dd;
+  });
+  function apply(a) { out.actions++; if (a.delay) out.delay += a.delay; if (a.text !== undefined) { out.typed += a.text; out.chars += a.chars; } if (a.enter) out.typed += "\n"; if (a.key && !a.enter) out.typed += `[${a.key}]`; }
+  if (out.actions > 1200) out.errors.push("script troppo lungo (max 1200 azioni)");
+  return out;
+}
+class BadRun {
+  constructor(name, s) { Object.assign(this, { name, s, state: "count", t0: performance.now(), pos: 0, interval: 120 }); pcEl.textContent = ""; pcState.textContent = "pronto"; }
+  onEvent() { if (this.state !== "done") { this.state = "done"; this.stopped = true; pcState.textContent = "interrotto"; hw("USB", "script interrotto da tastiera"); return; } nav.pop(); }
+  tick(now) {
+    if (this.state === "count" && now - this.t0 > 3000) { this.state = "run"; pcState.textContent = "digitazione in corso"; hw("USB", "tastiera USB attiva, layout " + state.layout); }
+    if (this.state === "run") {
+      this.pos = Math.min(this.s.typed.length, this.pos + 2);
+      pcEl.textContent = this.s.typed.slice(0, this.pos); flash("led-usb", "on-usb", 80);
+      if (this.pos >= this.s.typed.length) { this.state = "done"; pcState.textContent = "completato"; hw("USB", `digitati ${this.s.chars} caratteri (${this.name})`); sound.ok(); addXp(2); }
+    }
+  }
+  draw() {
+    header("BadUSB: " + this.name, C.warn);
+    if (this.state === "count") { textC(CY + 12, "Avvio tra " + (3 - Math.min(3, Math.floor((performance.now() - this.t0) / 1000))) + "...", C.warn, BIG); textC(CY + 50, "Premi un tasto qualsiasi per annullare"); }
+    else if (this.state === "run") { text(6, CY + 8, "In esecuzione sul computer collegato"); text(6, CY + 28, `Riga ${Math.max(1, Math.round(this.pos / Math.max(1, this.s.typed.length) * this.s.lines))} di ${this.s.lines}`, C.accent); progress(6, CY + 50, W - 12, 12, this.pos / Math.max(1, this.s.typed.length)); }
+    else text(6, CY + 8, this.stopped ? "Interrotto." : "Completato.", this.stopped ? C.warn : C.ok);
+    footer(this.state === "done" ? "un tasto per chiudere" : "UN TASTO QUALSIASI = STOP");
+  }
+}
+function openScript(p, n) {
+  const src = fs.files[p] || "";
+  if (enc.encode(src).length > 32 * 1024) return err("File illeggibile o più grande di 32 KB.");
+  const s = ducky(src, state.layout);
+  if (s.errors.length) return open(new Message("Errori", `Lo script ha ${s.errors.length} errori e non verrà eseguito:\n` + s.errors.slice(0, 6).join("\n"), C.err));
+  open(new Confirm("Eseguire lo script?", `${n}: ${s.lines} righe, ${s.chars} caratteri, attese ${Math.floor(s.delay / 1000)} s, layout ${state.layout}.\nSolo sul TUO computer, con la finestra giusta in primo piano.`, y => { if (y) open(new BadRun(n, s)); }, "Esegui", "Annulla"));
+}
+function openBadUsb() {
+  const m = new Menu("BadUSB", []);
+  const build = () => m.setItems([
+    { label: "Script dalla microSD", action: () => open(new Browser("Script BadUSB", "/polpo/badusb", ".txt", openScript)) },
+    { label: "Layout tastiera", right: state.layout, action: () => { state.layout = state.layout === "IT" ? "US" : "IT"; persist(); build(); } },
+    { label: 'Prova: scrivi "Ciao"', action: () => open(new Confirm("Prova", 'Il Polpo scriverà "Ciao dal Polpo" nella finestra attiva del computer, dopo il solito conto alla rovescia annullabile.', y => { if (y) open(new BadRun("prova", ducky("STRING Ciao dal Polpo\n", state.layout))); })) },
+    { label: "Comandi supportati", action: () => open(new TextView("DuckyScript", "REM commento\nDELAY ms\nDEFAULT_DELAY ms\nSTRING testo\nSTRINGLN testo (+Invio)\nREPEAT n\nENTER TAB ESC SPACE BACKSPACE DELETE INSERT\nHOME END PAGEUP PAGEDOWN\nUP DOWN LEFT RIGHT  F1-F12\nCAPSLOCK NUMLOCK PRINTSCREEN PAUSE MENU\nCombinazioni: GUI r, CTRL ALT DELETE, CTRL-SHIFT ESC, ALT F4\nLimiti: 32 KB, 2000 righe, 1200 azioni, DELAY max 60 s.\nCon layout IT i caratteri ` e ~ non esistono e danno errore.")) }
+  ]);
+  build(); open(m);
+}
+
+// ======================= Bluetooth e Wi-Fi (dati variabili a ogni scansione) =======================
+const jitter = (v, d) => v + Math.round((Math.random() * 2 - 1) * d);
+const BLE_BASE = [["Auricolari", -48, "C4:1F:22:8A:01:9E", "?", 1], ["(Apple)", -61, "5A:31:C2:77:10:04", "Apple", .9], ["Smartwatch", -66, "E2:90:41:0B:6C:21", "Garmin", .9], ["(senza nome)", -79, "71:0D:9E:52:3A:88", "?", .6], ["TV Sala", -83, "A8:23:FE:14:7D:30", "Samsung", .8], ["(Microsoft)", -88, "33:1A:6E:90:CB:52", "Microsoft", .4], ["Bilancia", -90, "F0:08:D1:3C:22:47", "Xiaomi", .3]];
+class BleScan extends Menu {
+  constructor() { super("Dispositivi Bluetooth", [], "OK dettagli  r ripeti  s salva"); this.start(); this.interval = 300; }
+  start() { this.t0 = performance.now(); this.scanning = true; this.setItems([]); }
+  tick(now) {
+    if (!this.scanning || now - this.t0 < 5000) return;
+    this.scanning = false;
+    this.devs = BLE_BASE.filter(d => Math.random() < d[4]).map(([n, r, a, v]) => [n, jitter(r, 5), a, v]).sort((a, b) => b[1] - a[1]);
+    hw("BLE", `scansione: ${this.devs.length} dispositivi`); addXp(1); sound.ok();
+    this.setItems(this.devs.map(([n, r, a, v]) => ({ label: n, right: r + " dBm", action: () => msg("Dispositivo", `Nome: ${n.startsWith("(") ? "-" : n}\nIndirizzo: ${a}\nSegnale: ${r} dBm\nProduttore: ${v}\nConnettibile: sì`) })));
+  }
+  extra(e) {
+    if (e.ch === "r" && !this.scanning) { this.start(); return true; }
+    if (e.ch === "s" && !this.scanning) { const p = uniquePath("/polpo/logs", "ble", ".csv"); fsWrite(p, "nome,indirizzo,rssi,produttore\n" + this.devs.map(([n, r, a, v]) => `"${n}",${a},${r},${v}`).join("\n") + "\n"); msg("Salvato", p, C.ok); return true; }
+    return false;
+  }
+  drawEmpty() { textC(CY + 40, this.scanning ? "Scansione in corso (" + Math.max(0, 5 - Math.floor((performance.now() - this.t0) / 1000)) + " s)..." : "Nessun dispositivo trovato", C.dim); }
+}
+class Remote {
+  constructor() { this.t0 = performance.now(); this.last = ""; this.interval = 500; }
+  get conn() { return performance.now() - this.t0 > 2500; }
+  onEvent(e) {
+    if (e.key === "back" || e.key === "backspace") return nav.pop();
+    const map = { up: "Volume +", down: "Volume -", left: "Precedente", right: "Successivo", ok: "Play / pausa" };
+    const what = map[e.key] || (e.ch === "m" ? "Muto" : "");
+    if (what && this.conn) { this.last = what; sound.click(); hw("BLE", "telecomando: " + what); }
+  }
+  draw() {
+    header("Telecomando Bluetooth", C.accent2);
+    text(6, CY + 4, this.conn ? "Collegato" : "In attesa di abbinamento...", this.conn ? C.ok : C.warn);
+    wrap(6, CY + 20, W - 12, this.conn ? "; volume+  . volume-  , precedente  / successivo  OK play/pausa  m muto" : 'Sul telefono o PC apri Bluetooth e abbina "Polpo Remote".', C.fg, 14, 4);
+    if (this.last) text(6, CY + 80, "Inviato: " + this.last, C.accent);
+    footer("` indietro (scollega)");
+  }
+}
+function openBle() {
+  open(new Menu("Bluetooth", [
+    { label: "Scansione dispositivi", action: () => open(new BleScan()) },
+    { label: "Telecomando multimediale", right: "HID", action: () => open(new Remote()) },
+    { label: "Cosa fa", action: () => msg("Bluetooth", "La scansione ascolta gli annunci Bluetooth LE dei dispositivi vicini (nome, potenza, produttore): utile per trovare i tuoi auricolari o capire quanti dispositivi ci sono.\nIl telecomando si abbina al TUO telefono o PC e controlla musica e volume.") }
+  ]));
+}
+const NET_BASE = [["CasaRossi_5G", 6, -42, "WPA2/WPA3", 1], ["CasaRossi", 6, -45, "WPA2", 1], ["Vodafone-A71C2", 1, -63, "WPA2", .95], ["TIM-28813401", 11, -70, "WPA2", .9], ["(rete nascosta)", 1, -74, "WPA2", .8], ["Bar_Ospiti", 1, -81, "aperta", .7], ["DIRECT-TV-Sala", 6, -86, "WPA2", .5], ["iPhone di Luca", 11, -77, "WPA2/WPA3", .3], ["FASTWEB-4C1D", 13, -89, "WEP (insicura)", .35]];
+let lastNets = [];
+class Channels {
+  onEvent(e) { if (["back", "ok", "backspace"].includes(e.key)) nav.pop(); }
+  draw() {
+    header("Occupazione canali 2,4 GHz");
+    const load = Array(14).fill(0);
+    for (const [, ch, rssi] of lastNets) { const w = Math.max(.05, Math.min(1, (rssi + 100) / 70)); for (let d = -2; d <= 2; d++) { const c = ch + d; if (c >= 1 && c <= 13) load[c] += w * [1, .5, .25][Math.abs(d)]; } }
+    const best = [1, 6, 11].reduce((a, b) => load[b] < load[a] ? b : a, 1), max = Math.max(.5, ...load);
+    const base = CY + 80, top = CY + 14;
+    for (let ch = 1; ch <= 13; ch++) {
+      const x = 10 + (ch - 1) * 17, h = (base - top) * load[ch] / max;
+      g.fillStyle = ch === best ? C.ok : load[ch] > max * .66 ? C.err : C.accent2; g.fillRect(x, base - h, 16, h);
+      text(x + 3, base + 2, String(ch), [1, 6, 11].includes(ch) ? C.fg : C.dim, SMALL);
+    }
+    text(6, CY + 1, `${lastNets.length} reti. Canale consigliato: ${best}`, C.ok);
+    footer("Per il TUO router scegli 1, 6 o 11");
+  }
+}
+class WifiScan extends Menu {
+  constructor() { super("Reti Wi-Fi", [], "OK dettagli  c canali  r ripeti  s salva"); this.start(); this.interval = 300; }
+  start() { this.t0 = performance.now(); this.scanning = true; this.setItems([]); }
+  tick(now) {
+    if (!this.scanning || now - this.t0 < 2500) return;
+    this.scanning = false;
+    lastNets = NET_BASE.filter(n => Math.random() < n[4]).map(([n, ch, r, sec]) => [n, ch, jitter(r, 4), sec]).sort((a, b) => b[2] - a[2]);
+    hw("Wi-Fi", `scansione: ${lastNets.length} reti`); addXp(1); sound.ok();
+    this.setItems(lastNets.map(([n, ch, r, sec]) => ({ label: n, right: `c${ch} ${r}`, color: /aperta|WEP/.test(sec) ? C.warn : C.fg, action: () => msg("Rete", `Nome: ${n}\nCanale: ${ch}\nSegnale: ${r} dBm\nSicurezza: ${sec}`) })));
+  }
+  extra(e) {
+    if (this.scanning) return false;
+    if (e.ch === "c") { open(new Channels()); return true; }
+    if (e.ch === "r") { this.start(); return true; }
+    if (e.ch === "s") { const p = uniquePath("/polpo/logs", "wifi", ".csv"); fsWrite(p, "ssid,canale,rssi,sicurezza\n" + lastNets.map(([n, ch, r, sec]) => `"${n}",${ch},${r},${sec}`).join("\n") + "\n"); msg("Salvato", p, C.ok); return true; }
+    return false;
+  }
+  drawEmpty() { textC(CY + 40, this.scanning ? "Scansione in corso..." : "Nessuna rete trovata", C.dim); }
+}
+function openWifi() {
+  open(new Menu("Wi-Fi", [
+    { label: "Scansione reti", action: () => open(new WifiScan()) },
+    { label: "Cosa fa", action: () => msg("Wi-Fi", "Elenca le reti a 2,4 GHz con canale, segnale e sicurezza, e mostra quali canali sono più affollati: serve a scegliere il canale migliore per il TUO router.\nIl Polpo non si collega a reti altrui e non invia pacchetti di disturbo.") }
+  ]));
+}
+
+// ======================= GPIO, file, sistema =======================
+const i2cFound = () => state.grove === "rfid2" ? [[0x28, "M5 RFID2 (WS1850S)"]] : [];
+class I2cScan extends Menu {
+  // Scansione animata 0x08-0x77 come la scansione vera (circa 1,5 s)
+  constructor(title = "Scanner I2C (Grove)", asMessage = false) { super(title, [], "r ripeti   ` indietro"); this.asMessage = asMessage; this.interval = 50; this.start(); }
+  start() { this.t0 = performance.now(); this.done = false; this.setItems([]); }
+  tick(now) {
+    if (this.done || now - this.t0 < 1500) return;
+    this.done = true; sound.click();
+    const f = i2cFound();
+    hw("I2C", f.length ? "trovato " + f.map(([a]) => "0x" + hex2(a)).join(", ") : "nessun dispositivo I2C");
+    this.empty = state.grove === "rf433" ? "Nessun dispositivo (i moduli 433 non sono I2C)" : "Nessun dispositivo: controlla il cavo";
+    this.setItems(f.map(([a, n]) => ({ label: n, right: "0x" + hex2(a) })));
+  }
+  extra(e) { if (e.ch === "r" && this.done) { this.start(); return true; } return false; }
+  drawEmpty() {
+    if (this.done) return super.drawEmpty();
+    const addr = 0x08 + Math.floor(Math.min(1, (performance.now() - this.t0) / 1500) * (0x77 - 0x08));
+    textC(CY + 30, "Scansione 0x" + hex2(addr) + "...", C.dim); progress(30, CY + 52, W - 60, 10, (addr - 8) / (0x77 - 8));
+  }
+}
+class PinMon {
+  constructor() { this.interval = 100; this.cw = 0; this.cy = 0; this.w = false; this.y = false; }
+  tick(now) { const p = state.grove === "rf433" ? (now < sim.rfUntil ? .45 : .2) : state.grove === "irunit" ? .01 : .002; if (Math.random() < p) { this.w = !this.w; this.cw++; } }
+  onEvent(e) { if (["back", "ok", "backspace"].includes(e.key)) nav.pop(); }
+  draw() {
+    header("Monitor pin Grove");
+    const pin = (y, n, l, c) => { text(6, y, n); rr(120, y, 40, 14, 3, l ? C.ok : C.panel); text(126, y + 1, l ? "ALTO" : "basso", l ? C.bg : C.dim); text(168, y + 1, String(c), C.dim); };
+    pin(CY + 8, "G1 (filo bianco)", this.w, this.cw); pin(CY + 30, "G2 (filo giallo)", this.y, this.cy);
+    wrap(6, CY + 54, W - 12, "Ingressi a 3,3 V con resistenza verso massa. Non collegare mai 5 V ai pin di segnale.", C.dim, 13, 3);
+    footer("numero = cambi di livello   ` indietro");
+  }
+}
+function openGpio() {
+  open(new Menu("GPIO e I2C", [
+    { label: "Scanner I2C", action: () => open(new I2cScan()) },
+    { label: "Monitor pin G1 / G2", action: () => open(new PinMon()) },
+    { label: "Piedinatura Grove", action: () => msg("Porta Grove", "Nero: GND\nRosso: 5 V\nGiallo: G2 (SDA in I2C)\nBianco: G1 (SCL in I2C)\nI segnali lavorano a 3,3 V. Sul Cardputer Adv l'interruttore vicino alla porta deve essere su uscita 5 V per alimentare i moduli.") }
+  ]));
+}
+function fileActions(p, n) {
+  open(new Menu(n, [
+    { label: "Mostra contenuto", action: () => { const c = fs.files[p]; if (c === undefined) return err("File non trovato."); if (enc.encode(c).length > 24 * 1024) return err("File troppo grande o illeggibile (max 24 KB)."); open(new TextView(n, c)); } },
+    { label: "Elimina", action: () => ask("Eliminare?", `Il file "${n}" verrà cancellato dalla microSD.`, y => { if (y) { fsRemove(p); nav.pop(); sound.ok(); } }) }
+  ]));
+}
+class KeyTest {
+  constructor() { this.last = "-"; this.n = 0; }
+  onEvent(e) {
+    if (e.key === "back" && e.g0) return nav.pop();
+    const names = { up: "Su", down: "Giù", left: "Sinistra", right: "Destra", ok: "Invio", back: "Esc", backspace: "Cancella", tab: "Tab" };
+    this.n++;
+    this.last = `${names[e.key] || "Carattere"}  '${e.ch || " "}'${e.fn ? " +Fn" : ""}${e.shift ? " +Shift" : ""}${e.ctrl ? " +Ctrl" : ""}${e.alt ? " +Alt" : ""}${e.opt ? " +Opt" : ""}`;
+  }
+  draw() { header("Test tastiera"); text(6, CY + 6, "Premi i tasti uno alla volta.", C.dim); text(6, CY + 30, this.last, C.accent); text(6, CY + 54, "Tasti letti: " + this.n); footer("tasto G0 (laterale) per uscire"); }
+}
+class SdTest {
+  // Scrive, rilegge e cancella davvero un file nella microSD virtuale.
+  constructor() { this.t0 = performance.now(); this.step = 0; this.interval = 100; this.path = "/polpo/logs/test_sd.txt"; }
+  tick(now) {
+    const want = Math.min(4, Math.floor((now - this.t0) / 450));
+    while (this.step < want) {
+      this.step++;
+      if (this.step === 1) { this.data = "Polpo test " + Math.floor(now); fs.files[this.path] = this.data; }
+      if (this.step === 2) this.back = fs.files[this.path];
+      if (this.step === 3) this.ok = this.back === this.data;
+      if (this.step === 4) { delete fs.files[this.path]; hw("SD", "test scrittura/lettura riuscito"); sound.ok(); }
+    }
+  }
+  onEvent(e) { if (this.step >= 4 && ["ok", "back", "backspace"].includes(e.key)) nav.pop(); }
+  draw() {
+    header("microSD");
+    const steps = ["Scrittura file di prova", "Rilettura", "Confronto dei dati", "Pulizia"];
+    steps.forEach((s, i) => text(6, CY + 6 + i * 16, (i < this.step ? "✓ " : i === this.step ? "… " : "  ") + s, i < this.step ? C.ok : i === this.step ? C.fg : C.dim));
+    if (this.step >= 4) text(6, CY + 76, "Scrittura e lettura riuscite.", C.ok);
+    footer(this.step >= 4 ? "OK chiudi" : "attendere...");
+  }
+}
+class LedTest {
+  constructor() { this.t0 = performance.now(); this.n = 0; this.next = 0; this.interval = 100; }
+  tick(now) {
+    if (now - this.t0 >= 5000) { if (!this.done) { this.done = true; hw("IR", `test LED: ${this.n} segnali NEC innocui`); } return; }
+    if (now >= this.next) { this.n++; this.next = now + 120; flash("led-ir", "on-ir", 60); }
+  }
+  onEvent(e) { if (this.done && ["ok", "back", "backspace"].includes(e.key)) nav.pop(); }
+  draw() {
+    header("LED IR");
+    if (!this.done) { textC(CY + 10, "Invio in corso: " + Math.ceil(5 - (performance.now() - this.t0) / 1000) + " s", C.accent, BIG); textC(CY + 46, "Guarda il LED con la fotocamera del telefono", C.dim); progress(20, CY + 66, W - 40, 10, (performance.now() - this.t0) / 5000); footer("attendere..."); return; }
+    wrap(6, CY + 4, W - 12, `Inviati ${this.n} segnali. Guardando il LED con la fotocamera del telefono dovevi vedere un lampeggio viola.`);
+    footer("OK chiudi");
+  }
+}
+class RfCounter {
+  constructor() { this.interval = 250; this.rate = 0; this.last = 0; }
+  tick(now) {
+    if (now - this.last < 1000) return; this.last = now;
+    this.rate = state.grove !== "rf433" ? 0 : now < sim.rfUntil ? 2200 + Math.floor(Math.random() * 500) : 120 + Math.floor(Math.random() * 120);
+  }
+  onEvent(e) { if (["back", "ok", "backspace"].includes(e.key)) nav.pop(); }
+  draw() {
+    header("RF433R: fronti al secondo");
+    textC(CY + 14, this.rate + " /s", C.accent, BIG);
+    wrap(6, CY + 50, W - 12, "Collega l'RF433R. A riposo il numero oscilla (rumore); premendo un telecomando a 433 MHz vicino deve cambiare in modo evidente.", C.dim, 13, 4);
+    footer("` indietro");
+  }
+}
+function summary() {
+  return `Scheda: Cardputer Adv\nmicroSD: ok\nRFID2 (0x28): ${state.grove === "rfid2" ? "trovato" : "non collegato"}\nMemoria libera: ${130 + Math.floor(Math.random() * 20)} KB\nAvvii: ${state.boots}\nSe qualcosa non va, annota questi dati.`;
+}
+function openDiag() {
+  open(new Menu("Diagnostica", [
+    { label: "Tastiera", action: () => open(new KeyTest()) },
+    { label: "microSD: scrivi e rileggi", action: () => open(new SdTest()) },
+    { label: "Scansione I2C (Grove)", action: () => open(new I2cScan("I2C")) },
+    { label: "LED infrarosso", action: () => open(new LedTest()) },
+    { label: "Ricevitore RF433R", action: () => open(new RfCounter()) },
+    { label: "Riepilogo", action: () => msg("Riepilogo", summary()) }
+  ]));
+}
+function openSettings() {
+  const m = new Menu("Impostazioni", []);
+  const build = () => { const sel = m.sel; m.setItems([
+    { label: "Luminosità", right: `${state.brightness + 1}/5`, action: () => { state.brightness = (state.brightness + 1) % 5; applyBrightness(); persist(); build(); } },
+    { label: "Suoni", right: state.sound ? "sì" : "no", action: () => { state.sound = !state.sound; persist(); sound.ok(); build(); } },
+    { label: "Layout BadUSB", right: state.layout, action: () => { state.layout = state.layout === "IT" ? "US" : "IT"; persist(); build(); } },
+    { label: "Invii IR per tasto", right: String(state.irRepeats), action: () => { state.irRepeats = state.irRepeats % 5 + 1; persist(); build(); } },
+    { label: "Ripetizioni 433 MHz", right: String(state.rfRepeats), action: () => { state.rfRepeats = state.rfRepeats >= 20 ? 3 : state.rfRepeats + 1; persist(); build(); } },
+    { label: "Ricrea cartelle SD", action: () => { let n = 0; for (const [p, c] of Object.entries(SAMPLES)) if (fs.files[p] === undefined) { fs.files[p] = c; n++; } for (const d of freshFs().dirs) if (!fs.dirs.includes(d)) fs.dirs.push(d); persist(); hw("SD", n ? `ripristinati ${n} file di esempio` : "cartelle già presenti"); msg("microSD", "Cartelle /polpo e file di esempio pronti.", C.ok); } }
+  ]); m.sel = sel; m.fix(); };
+  build(); open(m);
+}
+function applyBrightness() { cv.style.filter = `brightness(${.55 + state.brightness * .12})`; }
+function openAbout() {
+  open({
+    onEvent(e) { if (["back", "ok", "backspace"].includes(e.key)) nav.pop(); },
+    draw() {
+      header("Info"); let y = CY + 2;
+      const used = Object.values(fs.files).reduce((a, c) => a + enc.encode(c).length, 0);
+      for (const [k, v] of [["Firmware", "Polpo 0.1.0"], ["Commit", "simulatore"], ["Scheda", "Cardputer Adv"], ["Memoria", `${130 + (Math.floor(performance.now() / 5000) % 15)} KB liberi`], ["microSD", `${size(used)} / 7.4 GB`], ["Licenza", "MIT (codice Polpo)"]]) { text(6, y, k, C.dim); text(96, y, v); y += 14; }
+      text(6, y + 2, "Usalo solo su dispositivi tuoi.", C.accent); footer("` indietro");
+    }
+  });
+}
+
+// ======================= input =======================
+const NAVMAP = { ";": "up", ".": "down", ",": "left", "/": "right" };
+let lastKey = performance.now();
+const mods = { fn: false, shift: false, ctrl: false, alt: false, opt: false };
+function dispatch(e) {
+  unlockAudio();
+  lastKey = performance.now();
+  Object.assign(e, { fn: e.fn || mods.fn, shift: e.shift || mods.shift, ctrl: mods.ctrl, alt: mods.alt, opt: mods.opt });
+  nav.top().onEvent(e);
+  // i modificatori della tastiera disegnata valgono per un solo tasto, come una pressione combinata
+  for (const k of Object.keys(mods)) mods[k] = false;
+  kbd.querySelectorAll(".held").forEach(x => x.classList.remove("held"));
+  persist();
+  render(true);
+}
+function fromKey(k, shift = false) {
+  if (k === "Enter") return { key: "ok" };
+  if (k === "Escape" || k === "`") return { key: "back", ch: k === "`" ? "`" : "" };
+  if (k === "Backspace") return { key: "backspace" };
+  if (k === "Tab") return { key: "tab" };
+  if (k === "ArrowUp") return { key: "up", nav: true };
+  if (k === "ArrowDown") return { key: "down", nav: true };
+  if (k === "ArrowLeft") return { key: "left", nav: true };
+  if (k === "ArrowRight") return { key: "right", nav: true };
+  if (k.length === 1) return NAVMAP[k] ? { key: NAVMAP[k], ch: k, nav: true, shift } : { key: "char", ch: k, shift };
+  return null;
+}
+document.addEventListener("keydown", e => {
+  // Tasti fisici: quando il focus è sullo schermo o sulla pagina (non su pulsanti e menu a tendina).
+  if (e.target !== cv && e.target !== document.body) return;
+  if (e.ctrlKey || e.metaKey || e.altKey) return;
+  const ev = fromKey(e.key, e.shiftKey);
+  if (!ev) return;
+  e.preventDefault(); dispatch(ev);
+});
+document.getElementById("g0").addEventListener("click", () => { dispatch({ key: "back", g0: true }); cv.focus({ preventScroll: true }); });
+
+const ROWS_KB = [
+  ["`|ESC", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "-", "=", "Backspace|del"],
+  ["Tab|tab", "q", "w", "e", "r", "t", "y", "u", "i", "o", "p", "[", "]", "\\"],
+  ["Fn|fn", "Shift|aa", "a", "s", "d", "f", "g", "h", "j", "k", "l", ";|↑", "'", "Enter|ok"],
+  ["Ctrl|ctrl", "Opt|opt", "Alt|alt", "z", "x", "c", "v", "b", "n", "m", ",|←", ".|↓", "/|→", " |spazio"]
+];
+const SHIFTED = { "1": "!", "2": "@", "3": "#", "4": "$", "5": "%", "6": "^", "7": "&", "8": "*", "9": "(", "0": ")", "-": "_", "=": "+", "[": "{", "]": "}", "\\": "|", ";": ":", "'": "\"", ",": "<", ".": ">", "/": "?" };
+const MODKEYS = { Fn: "fn", Shift: "shift", Ctrl: "ctrl", Alt: "alt", Opt: "opt" };
+const kbd = document.getElementById("kbd");
+for (const r of ROWS_KB) {
+  const rowEl = document.createElement("div"); rowEl.className = "row";
+  for (const k of r) {
+    const [v, lab] = k.split("|");
+    const b = document.createElement("button"); b.type = "button"; b.className = "key";
+    if (["Fn", "Shift", "Ctrl", "Opt", "Alt", "Tab", "Backspace", "Enter", " ", "`"].includes(v)) b.classList.add("mod");
+    if (lab && v.length === 1 && v !== " " && v !== "`") { b.append(v); const s = document.createElement("small"); s.textContent = lab; b.append(s); }
+    else b.textContent = lab || v;
+    b.setAttribute("aria-label", lab ? `${v.trim() || "spazio"} (${lab})` : v);
+    if (MODKEYS[v]) b.setAttribute("aria-pressed", "false");
+    b.addEventListener("click", () => {
+      unlockAudio();
+      const m = MODKEYS[v];
+      if (m) { mods[m] = !mods[m]; b.classList.toggle("held", mods[m]); b.setAttribute("aria-pressed", String(mods[m])); return; }
+      let key = v;
+      const shifted = mods.shift && v.length === 1;
+      if (shifted) key = /[a-z]/.test(v) ? v.toUpperCase() : (SHIFTED[v] || v);
+      // Con shift i tasti freccia diventano : > < ? e restano frecce (come nel firmware)
+      let ev = NAVMAP[v] ? { key: NAVMAP[v], ch: shifted ? key : v, nav: true } : fromKey(key, mods.shift);
+      if (ev) dispatch(ev);
+      kbd.querySelectorAll("[aria-pressed]").forEach(x => x.setAttribute("aria-pressed", "false"));
+    });
+    rowEl.append(b);
+  }
+  kbd.append(rowEl);
+}
+
+// ======================= ciclo =======================
+let lastDraw = 0, lastBattery = performance.now();
+function render(force = false) {
+  const now = performance.now(), s = nav.top();
+  s.tick?.(now);
+  const every = s.interval || 0;
+  if (force || (every && now - lastDraw >= every)) {
+    g.fillStyle = C.bg; g.fillRect(0, 0, W, H);
+    s.draw(); lastDraw = now;
+  }
+}
+function loop() {
+  const now = performance.now();
+  if (now - lastBattery > 1000) { state.battery = Math.max(12, state.battery - 1 / 90); lastBattery = now; if (Math.random() < .1) persist(); }
+  render(false); requestAnimationFrame(loop);
+}
+applyBrightness();
+nav.push(new Desktop());
+if (state.boots > 1) simNote(`ripresi i dati salvati (avvio n. ${state.boots}, ${Object.keys(fs.files).length} file sulla microSD)`);
+const start = () => { render(true); requestAnimationFrame(loop); };
+(document.fonts && document.fonts.load) ? Promise.all([document.fonts.load(FONT), document.fonts.load(BIG)]).then(start, start) : start();
+setInterval(() => render(true), 250);
+})();
+</script>
+</body>
+</html>

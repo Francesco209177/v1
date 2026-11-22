@@ -1,0 +1,14 @@
+{"name":"json non valido","send":"{oops","session":false,"busy":false,"expect":{"id":0,"ok":false,"error":{"code":"bad_json","msg":"JSON non valido"}}}
+{"name":"non è un oggetto","send":"[1,2]","session":false,"busy":false,"expect":{"id":0,"ok":false,"error":{"code":"bad_request","msg":"serve un oggetto JSON"}}}
+{"name":"manca id","send":"{\"cmd\":\"ping\"}","session":false,"busy":false,"expect":{"id":0,"ok":false,"error":{"code":"bad_request","msg":"manca un id numerico"}}}
+{"name":"id negativo","send":"{\"id\":-1,\"cmd\":\"ping\"}","session":false,"busy":false,"expect":{"id":0,"ok":false,"error":{"code":"bad_request","msg":"manca un id numerico"}}}
+{"name":"manca cmd","send":"{\"id\":3}","session":false,"busy":false,"expect":{"id":3,"ok":false,"error":{"code":"bad_request","msg":"manca il comando"}}}
+{"name":"args non oggetto","send":"{\"id\":4,\"cmd\":\"info\",\"args\":[1]}","session":true,"busy":false,"expect":{"id":4,"ok":false,"error":{"code":"bad_request","msg":"args deve essere un oggetto"}}}
+{"name":"comando sconosciuto","send":"{\"id\":5,\"cmd\":\"jam\"}","session":true,"busy":false,"expect":{"id":5,"ok":false,"error":{"code":"unknown_cmd","msg":"comando sconosciuto"}}}
+{"name":"ping senza sessione","send":"{\"id\":6,\"cmd\":\"ping\"}","session":false,"busy":false,"expect":{"id":6,"ok":true,"data":{"pong":true,"proto":1}}}
+{"name":"ping anche se occupato","send":"{\"id\":7,\"cmd\":\"ping\"}","session":true,"busy":true,"expect":{"id":7,"ok":true,"data":{"pong":true,"proto":1}}}
+{"name":"info senza sessione","send":"{\"id\":8,\"cmd\":\"info\"}","session":false,"busy":false,"expect":{"id":8,"ok":false,"error":{"code":"not_connected","msg":"collegamento non accettato sul Polpo: invia hello"}}}
+{"name":"occupato","send":"{\"id\":9,\"cmd\":\"info\"}","session":true,"busy":true,"expect":{"id":9,"ok":false,"error":{"code":"busy","msg":"un'altra richiesta è in corso"}}}
+{"name":"hello va al dispositivo","send":"{\"id\":10,\"cmd\":\"hello\",\"args\":{\"client\":\"Polpo Studio\"}}","session":false,"busy":false,"expect":null}
+{"name":"info va al dispositivo","send":"{\"id\":11,\"cmd\":\"info\"}","session":true,"busy":false,"expect":null}
+{"name":"rf.tx va al dispositivo","send":"{\"id\":12,\"cmd\":\"rf.tx\",\"args\":{\"file\":\"/polpo/rf433/presa.sub\"}}","session":true,"busy":false,"expect":null}
