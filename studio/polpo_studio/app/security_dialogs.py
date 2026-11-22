@@ -272,6 +272,14 @@ class SetupDialog(QDialog):
             pin, again = self.pin1.text(), self.pin2.text()
             ok = not pin or (pin.isdigit() and 4 <= len(pin) <= 12 and pin == again)
             self.next.setEnabled(ok)
+            if pin and not pin.isdigit():
+                self.err.setText(tr("Il PIN può contenere solo cifre (0-9). Oppure lascia vuote le due caselle.", "The PIN can only contain digits (0-9). Or leave both boxes empty."))
+            elif pin and not 4 <= len(pin) <= 12:
+                self.err.setText(tr("Il PIN deve avere da 4 a 12 cifre.", "The PIN must have 4 to 12 digits."))
+            elif pin and not again:
+                self.err.setText(tr("Ripeti il PIN nella seconda casella.", "Repeat the PIN in the second box."))
+            elif pin and pin != again:
+                self.err.setText(tr("I due PIN non coincidono.", "The two PINs differ."))
             self.next.setText(tr("Fine", "Finish"))
             self.back.setEnabled(False)
         else:

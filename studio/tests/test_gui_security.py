@@ -174,3 +174,23 @@ def test_activity_persisted_encrypted_across_restart(qtbot, tmp_path):
     ctx2.on_unlocked()
     assert any(e.message == "voce da ritrovare" for e in ctx2.activity.entries())
     assert b"ritrovare" not in (tmp_path / "r" / "cassaforte" / "registro.log").read_bytes()
+
+
+def test_setup_explains_why_finish_is_off(qtbot, tmp_path):
+    ctx = AppContext.create(tmp_path / "pin", kdf_n=2**10)
+    d = SetupDialog(ctx)
+    qtbot.addWidget(d)
+    d.next.click()
+    d.p1.setText(PASS)
+    d.p2.setText(PASS)
+    d.next.click()
+    d.kept.setChecked(True)
+    d.next.click()
+    d.pin1.setText("12ab34")
+    assert not d.next.isEnabled() and "solo cifre" in d.err.text()
+    d.pin1.setText("123456")
+    d.pin2.setText("123457")
+    assert not d.next.isEnabled() and "non coincidono" in d.err.text()
+    d.pin1.setText("")
+    d.pin2.setText("")
+    assert d.next.isEnabled() and d.err.text() == ""
