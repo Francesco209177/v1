@@ -1,0 +1,14 @@
+services:
+  iphone-backup:
+    build: .
+    image: iphone-backup:latest
+    container_name: iphone-backup
+    restart: unless-stopped
+    # Rete dell'host: il container usa la LAN e l'interfaccia Tailscale del NAS.
+    network_mode: host
+    env_file: .env
+    volumes:
+      - ./config:/config:ro
+      # Cambia il percorso di sinistra con la cartella del NAS dove salvare i backup.
+      - /volume1/backup/iPhone-completo:/backups
+    command: loop
