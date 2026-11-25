@@ -160,6 +160,14 @@ final class VCardPhotoTests: XCTestCase {
         let jpeg = Data([0xFF, 0xD8, 0xFF, 0xE0, 0x00, 0x10])
         let result = VCardPhoto.inject(into: card, imageData: jpeg)
         XCTAssertTrue(result.contains("PHOTO;ENCODING=b;TYPE=JPEG:\(jpeg.base64EncodedString())\r\nEND:VCARD"))
+        XCTAssertTrue(result.contains("FN:Mario Rossi\r\nPHOTO"), "nessuna riga vuota prima della foto")
+    }
+
+    func testInjectsPhotoWithLFLineEndings() {
+        let card = "BEGIN:VCARD\nVERSION:3.0\nFN:Anna\nEND:VCARD\n"
+        let png = Data([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A])
+        let result = VCardPhoto.inject(into: card, imageData: png)
+        XCTAssertTrue(result.contains("FN:Anna\nPHOTO;ENCODING=b;TYPE=PNG:"))
     }
 
     func testDoesNotDuplicateExistingPhoto() {

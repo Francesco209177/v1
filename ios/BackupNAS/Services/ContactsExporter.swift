@@ -57,15 +57,15 @@ enum ContactsExporter {
 /// Aggiunge la foto a una vCard se il serializzatore di sistema non l'ha inclusa.
 enum VCardPhoto {
     static func inject(into card: String, imageData: Data) -> String {
-        guard !card.uppercased().contains("\nPHOTO"), let endRange = card.range(of: "END:VCARD", options: .backwards) else {
+        // Nota: in Swift "\r\n" è un solo Character, quindi si ragiona per righe e non con contains("\nPHOTO").
+        let hasPhoto = card.components(separatedBy: .newlines).contains { $0.uppercased().hasPrefix("PHOTO") }
+        guard !hasPhoto, let endRange = card.range(of: "END:VCARD", options: .backwards) else {
             return card
         }
         let type = imageData.starts(with: [0x89, 0x50, 0x4E, 0x47]) ? "PNG" : "JPEG"
         let line = ICSWriter.fold("PHOTO;ENCODING=b;TYPE=\(type):\(imageData.base64EncodedString())")
-        var result = card
-        var prefix = String(result[..<endRange.lowerBound])
-        if !prefix.hasSuffix("\n") { prefix += "\r\n" }
-        result = prefix + line + "\r\n" + String(result[endRange.lowerBound...])
-        return result
+        var prefix = String(card[..<endRange.lowerBound])
+        if prefix.unicodeScalars.last != "\n" { prefix += "\r\n" }
+        return prefix + line + "\r\n" + String(card[endRange.lowerBound...])
     }
 }
