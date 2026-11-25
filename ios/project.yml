@@ -1,0 +1,91 @@
+# Progetto XcodeGen: il file BackupNAS.xcodeproj viene generato in CI con `xcodegen generate`.
+name: BackupNAS
+options:
+  bundleIdPrefix: it.backupnas
+  deploymentTarget:
+    iOS: "16.0"
+  createIntermediateGroups: true
+packages:
+  AMSMB2:
+    url: https://github.com/amosavian/AMSMB2
+    exactVersion: 4.0.3
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    MARKETING_VERSION: "1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    DEVELOPMENT_TEAM: ""
+targets:
+  BackupNAS:
+    type: application
+    platform: iOS
+    sources:
+      - path: BackupNAS
+    dependencies:
+      - package: AMSMB2
+        embed: true
+    info:
+      path: BackupNAS/Info.plist
+      properties:
+        CFBundleDisplayName: Backup NAS
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        ITSAppUsesNonExemptEncryption: false
+        UILaunchScreen: {}
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: false
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+        NSContactsUsageDescription: Serve per salvare una copia della rubrica sul tuo NAS.
+        NSCalendarsUsageDescription: Serve per salvare una copia dei calendari sul tuo NAS.
+        NSCalendarsFullAccessUsageDescription: Serve per salvare una copia dei calendari sul tuo NAS.
+        NSRemindersUsageDescription: Serve per salvare una copia dei promemoria sul tuo NAS.
+        NSRemindersFullAccessUsageDescription: Serve per salvare una copia dei promemoria sul tuo NAS.
+        NSLocalNetworkUsageDescription: Serve per raggiungere il NAS sulla rete di casa.
+        UIBackgroundModes:
+          - processing
+          - fetch
+        BGTaskSchedulerPermittedIdentifiers:
+          - it.backupnas.app.backup
+        LSSupportsOpeningDocumentsInPlace: false
+        CFBundleDocumentTypes:
+          - CFBundleTypeName: File da salvare sul NAS
+            CFBundleTypeRole: Viewer
+            LSHandlerRank: Alternate
+            LSItemContentTypes:
+              - public.item
+              - public.data
+              - public.content
+              - public.zip-archive
+              - public.plain-text
+              - public.archive
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: it.backupnas.app
+        PRODUCT_NAME: BackupNAS
+        TARGETED_DEVICE_FAMILY: "1"
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        ENABLE_PREVIEWS: true
+  BackupNASTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: BackupNASTests
+    dependencies:
+      - target: BackupNAS
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: true
+        PRODUCT_BUNDLE_IDENTIFIER: it.backupnas.app.tests
+        TARGETED_DEVICE_FAMILY: "1"
+schemes:
+  BackupNAS:
+    build:
+      targets:
+        BackupNAS: all
+        BackupNASTests: [test]
+    test:
+      config: Debug
+      targets:
+        - BackupNASTests

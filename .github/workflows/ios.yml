@@ -1,0 +1,154 @@
+name: iOS - Build IPA (Backup NAS)
+
+on:
+  push:
+    paths:
+      - "ios/**"
+      - ".github/workflows/ios.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ios-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: macos-15
+    timeout-minutes: 60
+    env:
+      SPM_DIR: ${{ github.workspace }}/.spm
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Versioni
+        run: |
+          xcodebuild -version
+          sw_vers
+
+      - name: Installa XcodeGen
+        run: brew install xcodegen
+
+      - name: Genera il progetto Xcode
+        working-directory: ios
+        run: xcodegen generate
+
+      - name: Scarica le dipendenze (AMSMB2)
+        working-directory: ios
+        run: |
+          xcodebuild -resolvePackageDependencies \
+            -project BackupNAS.xcodeproj -scheme BackupNAS \
+            -clonedSourcePackagesDirPath "$SPM_DIR"
+
+      - name: Test (simulatore)
+        working-directory: ios
+        run: |
+          set -o pipefail
+          UDID=$(xcrun simctl list devices available -j | python3 -c '
+          import json, re, sys
+          data = json.load(sys.stdin)["devices"]
+          def version(runtime):
+              return [int(x) for x in re.findall(r"\d+", runtime.split("iOS")[-1])]
+          runtimes = sorted((r for r in data if "iOS" in r and data[r]), key=version)
+          for runtime in reversed(runtimes):
+              phones = [d for d in data[runtime] if d["name"].startswith("iPhone")]
+              if phones:
+                  print(phones[0]["udid"]); break
+          ')
+          echo "Simulatore: $UDID"
+          xcodebuild test \
+            -project BackupNAS.xcodeproj -scheme BackupNAS \
+            -destination "id=$UDID" \
+            -clonedSourcePackagesDirPath "$SPM_DIR" \
+            -skipPackagePluginValidation -quiet
+
+      - name: Compila per iPhone (non firmata)
+        working-directory: ios
+        run: |
+          set -o pipefail
+          xcodebuild build \
+            -project BackupNAS.xcodeproj -scheme BackupNAS \
+            -configuration Release \
+            -sdk iphoneos -destination 'generic/platform=iOS' \
+            -derivedDataPath build \
+            -clonedSourcePackagesDirPath "$SPM_DIR" \
+            -skipPackagePluginValidation -quiet \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
+            CURRENT_PROJECT_VERSION=${{ github.run_number }}
+
+      - name: Crea BackupNAS.ipa
+        working-directory: ios
+        run: |
+          APP=build/Build/Products/Release-iphoneos/BackupNAS.app
+          echo "Contenuto dell'app:"; ls -la "$APP"; ls -la "$APP/Frameworks" || true
+          test -d "$APP/Frameworks/AMSMB2.framework" || { echo "AMSMB2.framework non incluso nell'app"; exit 1; }
+          /usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" -c "Print :CFBundleVersion" -c "Print :CFBundleIdentifier" "$APP/Info.plist"
+          rm -rf Payload && mkdir Payload && cp -R "$APP" Payload/
+          rm -f ../BackupNAS.ipa && zip -qry ../BackupNAS.ipa Payload
+          ls -la ../BackupNAS.ipa
+
+      - name: Sorgente per SideStore (source.json)
+        env:
+          REPO: ${{ github.repository }}
+          RUN: ${{ github.run_number }}
+          SHA: ${{ github.sha }}
+        run: |
+          python3 - <<'EOF'
+          import datetime, json, os
+          repo, run, sha = os.environ["REPO"], os.environ["RUN"], os.environ["SHA"]
+          tag = f"backupnas-v1.0.{run}"
+          source = {
+              "name": "Backup NAS",
+              "identifier": "it.backupnas.source",
+              "apps": [{
+                  "name": "Backup NAS",
+                  "bundleIdentifier": "it.backupnas.app",
+                  "developerName": "Backup NAS",
+                  "subtitle": "Backup dell'iPhone sul NAS via SMB e Tailscale",
+                  "localizedDescription": "Salva contatti, calendari, promemoria, cartelle dell'app File e file condivisi (come le chat WhatsApp esportate) sul tuo NAS.",
+                  "iconURL": f"https://raw.githubusercontent.com/{repo}/{sha}/ios/BackupNAS/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon.png",
+                  "tintColor": "007AE6",
+                  "versions": [{
+                      "version": "1.0",
+                      "buildVersion": run,
+                      "date": datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+                      "size": os.path.getsize("BackupNAS.ipa"),
+                      "downloadURL": f"https://github.com/{repo}/releases/download/{tag}/BackupNAS.ipa",
+                      "minOSVersion": "16.0",
+                  }],
+                  "appPermissions": {"entitlements": [], "privacy": {}},
+              }],
+              "news": [],
+          }
+          with open("source.json", "w") as f:
+              json.dump(source, f, indent=2, ensure_ascii=False)
+          EOF
+          cat source.json
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: BackupNAS-ipa
+          path: |
+            BackupNAS.ipa
+            source.json
+
+      - name: Pubblica la Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: backupnas-v1.0.${{ github.run_number }}
+          name: Backup NAS 1.0 (build ${{ github.run_number }})
+          target_commitish: ${{ github.sha }}
+          make_latest: true
+          files: |
+            BackupNAS.ipa
+            source.json
+          body: |
+            IPA **non firmata** da installare con SideStore (che la firma col tuo Apple ID).
+
+            - Sul telefono: scarica `BackupNAS.ipa` qui sotto, poi aprila con SideStore (Condividi → SideStore) oppure in SideStore tocca **+** e scegli il file.
+            - Link fisso all'ultima versione: `https://github.com/${{ github.repository }}/releases/latest/download/BackupNAS.ipa`
+            - Sorgente SideStore (aggiornamenti automatici): `https://github.com/${{ github.repository }}/releases/latest/download/source.json`
+
+            Commit: ${{ github.sha }}

@@ -1,0 +1,16 @@
+# Xcode / XcodeGen (il progetto si genera da ios/project.yml)
+ios/BackupNAS.xcodeproj/
+ios/BackupNAS/Info.plist
+ios/build/
+ios/Payload/
+.spm/
+*.ipa
+xcuserdata/
+DerivedData/
+.DS_Store
+
+# Backup completo dal NAS: segreti e dati locali
+nas-full-backup/.env
+nas-full-backup/config/
+nas-full-backup/backups/
+__pycache__/
