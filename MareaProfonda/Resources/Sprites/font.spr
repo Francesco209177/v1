@@ -1044,3 +1044,13 @@ sprite font_8230 5 7 font ax=0 ay=7
 .....
 w.w.w
 end
+
+sprite font_9733 7 7 font ax=0 ay=7
+...w...
+...w...
+wwwwwww
+.wwwww.
+..www..
+.ww.ww.
+.w...w.
+end

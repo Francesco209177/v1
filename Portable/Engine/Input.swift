@@ -114,39 +114,6 @@ final class Input {
         }
         pending.removeAll(keepingCapacity: true)
 
-        // Azioni di gioco: dita più controller.
-        var newMove: Vec2 = touchMove
-        var newHeld: GameButtons = touchHeld
-        var newAim: Vec2? = touchAim
-        if touchMove.lengthSquared > 0.0004 || !touchHeld.isEmpty || touches.contains(where: { $0.began }) {
-            usingController = false
-        }
-        padPressed = pad.buttons.subtracting(padButtonsBefore)
-        padButtonsBefore = pad.buttons
-        if pad.connected {
-            var stick: Vec2 = pad.move
-            if pad.dpadX != 0 || pad.dpadY != 0 { stick = Vec2(Double(pad.dpadX), Double(pad.dpadY)) }
-            if stick.length > 0.14 {
-                newMove = stick
-                usingController = true
-            }
-            if pad.aim.length > 0.3 {
-                newAim = pad.aim.normalized()
-                usingController = true
-            }
-            for action in GameButtons.all {
-                if let button: PadButton = mapping.button(for: action), pad.buttons.contains(button) {
-                    newHeld.insert(action)
-                    usingController = true
-                }
-            }
-        }
-        pressed = newHeld.subtracting(held)
-        released = held.subtracting(newHeld)
-        held = newHeld
-        move = newMove.clamped(maxLength: 1)
-        aim = newAim
-
         // Navigazione dei menu.
         var nx: Int = 0
         var ny: Int = 0
@@ -174,15 +141,51 @@ final class Input {
         }
         navLastX = nx
         navLastY = ny
+        padPressed = pad.buttons.subtracting(padButtonsBefore)
+        padButtonsBefore = pad.buttons
         confirm = padPressed.contains(PadButton.a)
         back = backQueued || padPressed.contains(PadButton.b)
         backQueued = false
         if nx != 0 || ny != 0 || confirm { usingController = true }
     }
 
+    /// Calcola le azioni di gioco del fotogramma (dita più controller). Va chiamata dopo che i comandi
+    /// a schermo hanno letto i tocchi, così una pressione vale già nel fotogramma in cui avviene.
+    func resolve() {
+        var newMove: Vec2 = touchMove
+        var newHeld: GameButtons = touchHeld
+        var newAim: Vec2? = touchAim
+        if touchMove.lengthSquared > 0.0004 || !touchHeld.isEmpty || touches.contains(where: { $0.began }) {
+            usingController = false
+        }
+        if pad.connected {
+            var stick: Vec2 = pad.move
+            if pad.dpadX != 0 || pad.dpadY != 0 { stick = Vec2(Double(pad.dpadX), Double(pad.dpadY)) }
+            if stick.length > 0.14 {
+                newMove = stick
+                usingController = true
+            }
+            if pad.aim.length > 0.3 {
+                newAim = pad.aim.normalized()
+                usingController = true
+            }
+            for action in GameButtons.all {
+                if let button: PadButton = mapping.button(for: action), pad.buttons.contains(button) {
+                    newHeld.insert(action)
+                    usingController = true
+                }
+            }
+        }
+        pressed = newHeld.subtracting(held)
+        released = held.subtracting(newHeld)
+        held = newHeld
+        move = newMove.clamped(maxLength: 1)
+        aim = newAim
+
+    }
+
     /// Azzera tutto: al cambio di schermata o quando l'app va in secondo piano.
     func reset() {
-        for index in touches.indices { touches[index].ended = true }
         touches.removeAll()
         pending.removeAll()
         touchMove = Vec2.zero

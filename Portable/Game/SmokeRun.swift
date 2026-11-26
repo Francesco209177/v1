@@ -13,6 +13,8 @@ final class SmokeRun {
     private var clock: Double = 0
     private(set) var finished: Bool = false
     private(set) var shots: Int = 0
+    /// Immersione in corso nella tappa attuale: a fine tappa se ne annota lo stato nel registro.
+    static weak var watched: DiveScreen? = nil
 
     init(directory: String) {
         self.directory = directory
@@ -31,7 +33,9 @@ final class SmokeRun {
             let name: String = stages[index].name
             let ok: Bool = app.saveSnapshot(to: "\(directory)/\(index < 10 ? "0" : "")\(index)_\(name).png")
             if ok { shots += 1 }
-            Log.note("SMOKE tappa \(name) \(ok ? "ok" : "SENZA ISTANTANEA")")
+            let detail: String = SmokeRun.watched?.debugSummary ?? ""
+            SmokeRun.watched = nil
+            Log.note("SMOKE tappa \(name) \(ok ? "ok" : "SENZA ISTANTANEA") \(detail)")
             advance(app)
         }
     }

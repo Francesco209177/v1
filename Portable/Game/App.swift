@@ -6,6 +6,9 @@ class Screen {
 
     func enter(_ app: App) {}
     func leave(_ app: App) {}
+    /// Lettura dei tocchi da parte dei comandi a schermo (joystick, pulsanti): avviene prima che
+    /// le azioni di gioco del fotogramma vengano calcolate.
+    func controls(_ app: App) {}
     func update(_ app: App, _ dt: Double) {}
     func drawWorld(_ app: App, _ g: Canvas) {}
     func drawUI(_ app: App, _ ui: UI) {}
@@ -277,6 +280,8 @@ final class App {
 
         var covering: Bool = false
         if case Wipe.cover = wipe { covering = true }
+        if !covering { screen.controls(self) }
+        input.resolve()
         if input.back && !covering {
             if !screen.back(self) { quitRequested = true }
         }

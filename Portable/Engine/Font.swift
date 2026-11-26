@@ -25,7 +25,7 @@ final class PixelFont {
     func load() {
         glyphs.removeAll()
         var code: UInt32 = 32
-        while code < 0x2100 {
+        while code < 0x2700 {
             if let image: Image = Sprites.shared.find("font_\(code)") { glyphs[code] = image }
             code += 1
         }
