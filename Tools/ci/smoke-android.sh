@@ -10,6 +10,12 @@ LIMIT_SECONDS="${LIMIT_SECONDS:-420}"
 mkdir -p "$OUT"
 
 adb install -r "$APK" || { echo "::error::installazione fallita"; exit 1; }
+# L'emulatore parte in verticale: lo si gira prima, così l'app nasce già in orizzontale; e si salta
+# l'avviso di sistema "schermo intero", che coprirebbe le fotografie dello schermo.
+adb shell settings put system accelerometer_rotation 0
+adb shell settings put system user_rotation 1
+adb shell settings put secure immersive_mode_confirmations confirmed
+sleep 2
 adb logcat -c
 adb shell am start -n "$PACKAGE/.MainActivity" --ez smoke true || { echo "::error::avvio fallito"; exit 1; }
 
