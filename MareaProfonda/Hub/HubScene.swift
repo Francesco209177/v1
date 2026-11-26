@@ -20,6 +20,7 @@ final class HubScene: BaseScene {
 
     override func setup() {
         backgroundColor = SKColor(PortBackdrop.skyStyle(phase).top)
+        AudioDirector.shared.music(phase == DayPhase.night ? "notte" : "porto")
         let forge: SpriteForge = SpriteForge.shared
 
         // Mare: lo stesso shader dell'immersione, con i colori dell'ora.

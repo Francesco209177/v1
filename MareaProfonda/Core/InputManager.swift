@@ -67,7 +67,8 @@ final class InputManager {
     }
 }
 
-/// Riscontro tattile: vibrazione dell'iPhone e, se c'è, del controller.
+/// Riscontro tattile e sonoro: un suono breve, la vibrazione dell'iPhone e, se c'è, quella del controller.
+/// Ogni funzione ha il suo suono; chi chiama può sceglierne un altro, o nessuno (`sound: nil`).
 enum Feedback {
     private static let light: UIImpactFeedbackGenerator = UIImpactFeedbackGenerator(style: UIImpactFeedbackGenerator.FeedbackStyle.light)
     private static let medium: UIImpactFeedbackGenerator = UIImpactFeedbackGenerator(style: UIImpactFeedbackGenerator.FeedbackStyle.medium)
@@ -77,35 +78,40 @@ enum Feedback {
     private static var enabled: Bool { return SettingsStore.shared.settings.haptics && !SmokeTest.isActive }
 
     /// Tocco leggero: pulsanti, bolle, piccoli urti.
-    static func tap() {
+    static func tap(sound: SFXKind? = SFXKind.tap) {
+        if let sound: SFXKind = sound { AudioDirector.shared.play(sound, volume: 0.55) }
         if !enabled { return }
         light.impactOccurred()
         ControllerSupport.shared.rumble(intensity: 0.25, sharpness: 0.7, duration: 0.04)
     }
 
     /// Colpo andato a segno, scatto.
-    static func hit() {
+    static func hit(sound: SFXKind? = SFXKind.hit) {
+        if let sound: SFXKind = sound { AudioDirector.shared.play(sound, volume: 0.8) }
         if !enabled { return }
         medium.impactOccurred()
         ControllerSupport.shared.rumble(intensity: 0.6, sharpness: 0.6, duration: 0.08)
     }
 
     /// Urto forte, danno subito.
-    static func thud() {
+    static func thud(sound: SFXKind? = SFXKind.thud) {
+        if let sound: SFXKind = sound { AudioDirector.shared.play(sound) }
         if !enabled { return }
         heavy.impactOccurred()
         ControllerSupport.shared.rumble(intensity: 1.0, sharpness: 0.3, duration: 0.16)
     }
 
     /// Cattura riuscita, obiettivo raggiunto.
-    static func success() {
+    static func success(sound: SFXKind? = SFXKind.success) {
+        if let sound: SFXKind = sound { AudioDirector.shared.play(sound, volume: 0.8) }
         if !enabled { return }
         notifier.notificationOccurred(UINotificationFeedbackGenerator.FeedbackType.success)
         ControllerSupport.shared.rumble(intensity: 0.7, sharpness: 0.9, duration: 0.12)
     }
 
     /// Avviso: fiato basso, carico eccessivo.
-    static func warning() {
+    static func warning(sound: SFXKind? = SFXKind.warning) {
+        if let sound: SFXKind = sound { AudioDirector.shared.play(sound, volume: 0.7) }
         if !enabled { return }
         notifier.notificationOccurred(UINotificationFeedbackGenerator.FeedbackType.warning)
         ControllerSupport.shared.rumble(intensity: 0.8, sharpness: 0.2, duration: 0.22)

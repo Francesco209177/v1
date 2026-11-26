@@ -110,7 +110,7 @@
     {"id": "s_citta", "place": "citta", "actors": [{"who": "tecla_sub", "x": -110}], "steps": [
       {"do": "move", "who": "tecla_sub", "x": -10, "time": 2.2},
       {"do": "say", "who": "tecla_sub", "text": {"it": "(Colonne. Scale. Una piazza. Non è una favola.)"}, "mood": "shock"},
-      {"do": "say", "who": "narratore", "text": {"it": "Sotto la Parete Blu, a duecentotrenta metri, dorme una città. Le sue strade scendono verso il cuore del vulcano."}},
+      {"do": "say", "who": "narratore", "text": {"it": "Sotto la Parete Blu, oltre i duecentoventi metri, dorme una città. Le sue strade scendono verso il cuore del vulcano."}},
       {"do": "move", "who": "tecla_sub", "x": 40, "time": 1.4},
       {"do": "say", "who": "tecla_sub", "text": {"it": "(Un mosaico: una donna davanti a una ruota di bronzo. E al collo porta un'onda dentro un cerchio.)"}, "mood": "calm"},
       {"do": "say", "who": "tecla_sub", "text": {"it": "(Nonna. Che cosa non mi hai detto?)"}, "mood": "sad"}

@@ -208,6 +208,7 @@ final class SmokeRunner {
         SmokeTest.log("START metal=\(device) view=\(Int(bounds.width))x\(Int(bounds.height)) scale=\(scale)")
         let forge: SpriteForge = SpriteForge.shared
         SmokeTest.log("FORGE sprites=\(forge.spriteCount) pages=\(forge.pageCount) cache=\(forge.loadedFromCache)")
+        SmokeTest.log("AUDIO \(AudioDirector.shared.status)")
         for problem in forge.problems {
             failures += 1
             SmokeTest.log("FAIL forge \(problem)")

@@ -132,9 +132,11 @@ struct ServiceResult: Equatable {
     var sold: [String: Int] = [:]
 
     var total: Int { return revenue + tips }
-    /// Fama guadagnata nella serata.
+    /// Fama guadagnata nella serata. I clienti persi pesano, ma una serata in cui si è servito
+    /// qualcuno non lascia mai a mani vuote: altrimenti un'osteria più grande smetterebbe di crescere.
     var fame: Int {
-        return max(0, served * 2 + bestCombo + perfectWines - lost * 3 + (vipDelighted ? 15 : 0))
+        let earned: Int = served * 2 + bestCombo + perfectWines - lost + (vipDelighted ? 15 : 0)
+        return max(earned, served > 0 ? max(1, served / 3) : 0)
     }
 }
 

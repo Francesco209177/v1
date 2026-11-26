@@ -15,6 +15,7 @@ final class TitleScene: BaseScene {
 
     override func setup() {
         backgroundColor = SKColor(red: 0.05, green: 0.22, blue: 0.36, alpha: 1)
+        AudioDirector.shared.music("porto")
 
         water.zPosition = -100
         water.shader = ShaderLibrary.water

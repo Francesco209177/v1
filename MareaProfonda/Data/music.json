@@ -1,0 +1,224 @@
+{
+  "songs": [
+    {"id": "porto", "bpm": 84, "beatsPerBar": 2, "stepsPerBeat": 3, "tracks": [
+      { "voice": "pluck", "volume": 0.55, "bars": [
+        "E5 . G5 E5 . C5",
+        "D5 . F5 D5 . B4",
+        "C5 . E5 G5 . E5",
+        "D5 - - G4 . .",
+        "E5 . G5 C6 . G5",
+        "A5 . F5 D5 . F5",
+        "E5 . D5 C5 . B4",
+        "C5 - - - . ."
+      ] },
+      { "voice": "bass", "volume": 0.6, "bars": [
+        "C3 . . G2 . .",
+        "G2 . . D3 . .",
+        "A2 . . E3 . .",
+        "G2 . . D3 . .",
+        "C3 . . G2 . .",
+        "F2 . . C3 . .",
+        "G2 . . G2 . .",
+        "C3 . . G2 . ."
+      ] },
+      { "voice": "pad", "volume": 0.28, "bars": [
+        "E4 - - - - -",
+        "D4 - - - - -",
+        "C4 - - - - -",
+        "B3 - - - - -",
+        "E4 - - - - -",
+        "F4 - - - - -",
+        "D4 - - - - -",
+        "E4 - - - - -"
+      ] }
+    ] },
+    {"id": "immersione", "bpm": 72, "beatsPerBar": 4, "stepsPerBeat": 2, "tracks": [
+      { "voice": "pad", "volume": 0.42, "bars": [
+        "A3 - - - - - - -",
+        "F3 - - - - - - -",
+        "C4 - - - - - - -",
+        "G3 - - - - - - -",
+        "A3 - - - - - - -",
+        "F3 - - - - - - -",
+        "D4 - - - - - - -",
+        "E4 - - - - - - -"
+      ] },
+      { "voice": "bell", "volume": 0.45, "bars": [
+        "A4 . E5 . C5 . E5 .",
+        "F4 . C5 . A4 . C5 .",
+        "C5 . G5 . E5 . G5 .",
+        "G4 . D5 . B4 . D5 .",
+        "A4 . E5 . A5 . E5 .",
+        "F4 . C5 . F5 . C5 .",
+        "D5 . A5 . F5 . D5 .",
+        "E5 . B4 . G#4 . . ."
+      ] },
+      { "voice": "bass", "volume": 0.5, "bars": [
+        "A2 - - - . . . .",
+        "F2 - - - . . . .",
+        "C3 - - - . . . .",
+        "G2 - - - . . . .",
+        "A2 - - - . . . .",
+        "F2 - - - . . . .",
+        "D3 - - - . . . .",
+        "E2 - - - . . . ."
+      ] }
+    ] },
+    {"id": "abisso", "bpm": 56, "beatsPerBar": 4, "stepsPerBeat": 2, "tracks": [
+      { "voice": "pad", "volume": 0.5, "bars": [
+        "D3 - - - - - - -",
+        "D3 - - - - - - -",
+        "Bb2 - - - - - - -",
+        "A2 - - - - - - -",
+        "D3 - - - - - - -",
+        "F3 - - - - - - -",
+        "G2 - - - - - - -",
+        "A2 - - - - - - -"
+      ] },
+      { "voice": "bell", "volume": 0.38, "bars": [
+        "A5 . . . . . F5 .",
+        ". . D5 . . . . .",
+        "D5 . . . F5 . . .",
+        "E5 . . . . . C#5 .",
+        "A5 . . . . . . .",
+        "C6 . . A5 . . . .",
+        "Bb5 . . . G5 . . .",
+        "E5 . . . . . . ."
+      ] },
+      { "voice": "bass", "volume": 0.45, "bars": [
+        "D2 - - - - - - -",
+        "D2 - - - - - - -",
+        "Bb1 - - - - - - -",
+        "A1 - - - - - - -"
+      ] }
+    ] },
+    {"id": "osteria", "bpm": 126, "beatsPerBar": 2, "stepsPerBeat": 3, "tracks": [
+      { "voice": "lead", "volume": 0.34, "bars": [
+        "A4 C5 E5 A5 E5 C5",
+        "B4 D5 E5 G#5 E5 D5",
+        "A4 C5 E5 A5 G5 F5",
+        "E5 - D5 C5 B4 .",
+        "C5 E5 G5 C6 G5 E5",
+        "D5 F5 A5 D6 A5 F5",
+        "E5 G#5 B5 E5 D5 B4",
+        "A4 - - A4 . .",
+        "C5 E5 G5 E5 G5 C6",
+        "B4 D5 G5 D5 G5 B5",
+        "A4 C5 E5 C5 E5 A5",
+        "G#4 B4 E5 B4 E5 .",
+        "F5 A5 C6 A5 F5 A5",
+        "E5 G5 C6 G5 E5 G5",
+        "D5 F5 B5 G#5 E5 D5",
+        "A4 - - A4 . ."
+      ] },
+      { "voice": "pluck", "volume": 0.4, "bars": [
+        "A3 . E4 A3 . E4",
+        "E3 . B3 E3 . B3",
+        "A3 . E4 A3 . E4",
+        "E3 . B3 E3 . B3",
+        "C4 . G4 C4 . G4",
+        "D4 . A4 D4 . A4",
+        "E3 . B3 E3 . B3",
+        "A3 . E4 A3 . .",
+        "C4 . G4 C4 . G4",
+        "G3 . D4 G3 . D4",
+        "A3 . E4 A3 . E4",
+        "E3 . B3 E3 . B3",
+        "F3 . C4 F3 . C4",
+        "C4 . G4 C4 . G4",
+        "E3 . B3 E3 . B3",
+        "A3 . E4 A3 . ."
+      ] },
+      { "voice": "bass", "volume": 0.55, "bars": [
+        "A2 . . E2 . .",
+        "E2 . . B2 . .",
+        "A2 . . E2 . .",
+        "E2 . . E2 . .",
+        "C3 . . G2 . .",
+        "D3 . . A2 . .",
+        "E2 . . E2 . .",
+        "A2 . . A2 . .",
+        "C3 . . G2 . .",
+        "G2 . . D3 . .",
+        "A2 . . E2 . .",
+        "E2 . . E2 . .",
+        "F2 . . C3 . .",
+        "C3 . . G2 . .",
+        "E2 . . E2 . .",
+        "A2 . . A2 . ."
+      ] },
+      { "voice": "drums", "volume": 0.5, "bars": [
+        "k . h s . h",
+        "k . h s h h"
+      ] }
+    ] },
+    {"id": "boss", "bpm": 148, "beatsPerBar": 4, "stepsPerBeat": 2, "tracks": [
+      { "voice": "bass", "volume": 0.62, "bars": [
+        "E2 E2 . E2 G2 . E2 .",
+        "E2 E2 . E2 A2 . G2 .",
+        "C3 C3 . C3 E3 . C3 .",
+        "B2 B2 . B2 D3 . F#2 ."
+      ] },
+      { "voice": "lead", "volume": 0.3, "bars": [
+        "E5 . . B4 . . G4 .",
+        "E5 . G5 . F#5 . . .",
+        "E5 . . C5 . . G4 .",
+        "F#5 . B5 . A5 . F#5 .",
+        "E5 . B5 . G5 . E5 .",
+        "A5 . G5 . F#5 . E5 .",
+        "C5 . E5 . G5 . C6 .",
+        "B5 - - - F#5 . . ."
+      ] },
+      { "voice": "pad", "volume": 0.22, "bars": [
+        "E4 - - - - - - -",
+        "E4 - - - - - - -",
+        "E4 - - - - - - -",
+        "D#4 - - - - - - -"
+      ] },
+      { "voice": "drums", "volume": 0.55, "bars": [
+        "k . h . s . h k",
+        "k . h k s . h h"
+      ] }
+    ] },
+    {"id": "scena", "bpm": 66, "beatsPerBar": 4, "stepsPerBeat": 2, "tracks": [
+      { "voice": "bell", "volume": 0.5, "bars": [
+        "A4 . C5 . F5 . C5 .",
+        "G4 . Bb4 . E5 . Bb4 .",
+        "F4 . A4 . D5 . A4 .",
+        "E4 . G4 . C5 . . .",
+        "A4 . C5 . F5 . A5 .",
+        "Bb4 . D5 . F5 . D5 .",
+        "C5 . E5 . G5 . E5 .",
+        "F5 - - - . . . ."
+      ] },
+      { "voice": "pad", "volume": 0.38, "bars": [
+        "F3 - - - - - - -",
+        "C3 - - - - - - -",
+        "D3 - - - - - - -",
+        "C3 - - - - - - -",
+        "F3 - - - - - - -",
+        "Bb2 - - - - - - -",
+        "C3 - - - - - - -",
+        "F3 - - - - - - -"
+      ] }
+    ] },
+    {"id": "notte", "bpm": 60, "beatsPerBar": 4, "stepsPerBeat": 2, "tracks": [
+      { "voice": "pad", "volume": 0.45, "bars": [
+        "E3 - - - - - - -",
+        "C3 - - - - - - -",
+        "A2 - - - - - - -",
+        "B2 - - - - - - -"
+      ] },
+      { "voice": "bell", "volume": 0.36, "bars": [
+        "B4 . . . G4 . . .",
+        "E5 . . . . . C5 .",
+        "A4 . . . E5 . . .",
+        "F#4 . . . . . . .",
+        "B4 . . . E5 . . .",
+        "G5 . . . . . E5 .",
+        "C5 . . . A4 . . .",
+        "B4 . . . . . . ."
+      ] }
+    ] }
+  ]
+}

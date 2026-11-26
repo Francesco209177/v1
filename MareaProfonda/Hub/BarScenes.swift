@@ -93,6 +93,7 @@ class BarGameScene: BaseScene {
 
     func setupHUD() {
         ControllerSupport.shared.start()
+        AudioDirector.shared.music("porto")
         controls.zPosition = 10
         controls.configure(actions: buttons)
         hud.addChild(controls)
@@ -530,6 +531,8 @@ final class RhythmScene: BarGameScene {
         hud.addChild(scoreLabel)
         titleLabel.attributedText = Theme.attributed(String(localized: "La sfida di Lustri"), size: 16, weight: UIFont.Weight.heavy, color: Theme.lime)
         setInfo(String(localized: "Arpione = coltello (sopra) · Azione = padella (sotto)"))
+        // Niente musica di fondo: il tempo lo tengono cassa e rullante.
+        AudioDirector.shared.music(nil)
     }
 
     override func layoutHUD() {
@@ -561,7 +564,7 @@ final class RhythmScene: BarGameScene {
         for event in sim.step(dt: dt, pressed: pressed) {
             switch event {
             case .hit(_, let judgement):
-                Feedback.hit()
+                Feedback.hit(sound: SFXKind.hat)
                 show(judgement == RhythmJudgement.perfect ? String(localized: "Perfetto!") : String(localized: "Bene"),
                      color: judgement == RhythmJudgement.perfect ? Theme.ochre : Theme.lime)
                 mood(tecla, "port_tecla_happy")
@@ -571,9 +574,9 @@ final class RhythmScene: BarGameScene {
             case .stray:
                 Feedback.thud()
                 mood(tecla, "port_tecla_shock")
-            case .beat:
-                // Il battito: una pulsazione della linea e un tocco leggero, come un metronomo.
-                Feedback.tap()
+            case .beat(let number):
+                // Il battito: cassa e rullante alternati, una pulsazione della linea e un tocco leggero.
+                Feedback.tap(sound: number % 2 == 0 ? SFXKind.kick : SFXKind.snare)
                 hitLine.removeAllActions()
                 hitLine.xScale = 2.2
                 hitLine.run(SKAction.scaleX(to: 1, duration: 0.18))

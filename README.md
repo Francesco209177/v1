@@ -4,7 +4,7 @@ Gioco per iPhone, offline, in italiano: di giorno ci si immerge con l'arpione ne
 
 È un gioco originale del genere "immersioni di giorno, ristorante la sera": personaggi, ambientazione, storia e grafica sono propri.
 
-> **Stato del lavoro.** Il gioco è in costruzione per milestone. La tabella [Milestone](#milestone) dice che cosa c'è già e che cosa manca: leggila prima di aspettarti il gioco completo.
+> **Stato del lavoro.** Tutte e sette le milestone sono nel repository e passano la CI (test, compilazione, avvio di ogni scena nel simulatore). Nessuno però ha ancora giocato su un iPhone vero: leggi [Che cosa non è stato verificato](#milestone) e la lista [Cosa provare](#cosa-provare) prima di giudicarlo.
 
 ## Scaricare e installare l'IPA
 
@@ -102,6 +102,10 @@ Tests/         test della logica
 
 Le cartelle `Model/` importano solo Foundation: per questo si compilano e si provano ovunque, senza simulatore. Le scene disegnano lo stato calcolato lì.
 
+## Audio generato dal codice
+
+Non c'è un solo file audio. `Audio/Synth/Synth.swift` (codice puro, provato dai test) contiene oscillatori, inviluppi e un filtro; con questi rende venti effetti e sette brani scritti come dati in `Data/music.json`: una riga di note per battuta, per esempio `"E5 . G5 E5 . C5"`. `Audio/AudioDirector.swift` li suona con `AVAudioEngine`: i buffer sono resi una volta sola fuori dal thread audio, la musica cambia con il luogo (porto, immersione, abissi, notte, osteria, boss, scene) e sott'acqua un passa-basso ovatta tutto. I volumi di musica ed effetti sono nelle Opzioni; l'audio rispetta l'interruttore del silenzioso.
+
 ## Grafica generata dal codice
 
 - **Sprite.** Sono matrici di caratteri con palette indicizzata, nei file `MareaProfonda/Resources/Sprites/*.spr`. Il gioco le legge all'avvio, le impacchetta in atlanti e le conserva in cache. Si disegnano con `Tools/forge` (forme, toni, contorni, animazioni parametriche) e si rigenerano con `python3 Tools/forge/build.py`, che scrive anche i fogli di anteprima in `Tools/forge/out/`.
@@ -151,11 +155,11 @@ I passi sono `say`, `move`, `wait`, `shake`, `show`, `hide`, `face`, `pose`, `ti
 | Rango dell'osteria | Fama | Tavoli | Piatti in menu | Un cliente ogni | Prezzi |
 |---|---|---|---|---|---|
 | Bettola | 0 | 3 | 2 | 7,5 s | ×1,00 |
-| Trattoria | 40 | 4 | 3 | 6,5 s | ×1,05 |
-| Osteria di paese | 110 | 5 | 3 | 5,6 s | ×1,10 |
-| Osteria rinomata | 230 | 6 | 4 | 4,8 s | ×1,16 |
-| Vanto dell'isola | 400 | 7 | 5 | 4,2 s | ×1,22 |
-| Leggenda del Tirreno | 650 | 8 | 6 | 3,7 s | ×1,30 |
+| Trattoria | 40 | 4 | 3 | 6,8 s | ×1,05 |
+| Osteria di paese | 110 | 5 | 3 | 6,2 s | ×1,10 |
+| Osteria rinomata | 230 | 6 | 4 | 5,6 s | ×1,16 |
+| Vanto dell'isola | 400 | 7 | 5 | 5,1 s | ×1,22 |
+| Leggenda del Tirreno | 650 | 8 | 6 | 4,6 s | ×1,30 |
 
 | Specie | Vita | Peso | Resistenza alla lenza | Valore |
 |---|---|---|---|---|
@@ -164,7 +168,9 @@ I passi sono `say`, `move`, `wait`, `shake`, `show`, `hide`, `face`, `pose`, `ti
 | Dentice | 28 | 3,5 kg | 0,45 | 60 |
 | Cernia bruna | 46 | 8 kg | 0,6 | 90 |
 
-L'arpione di partenza fa 10 danni; Fiato 120, sacca 10 kg, muta fino a 110 m. Tutti i valori sono in `balance.json` e `fish.json`.
+L'arpione di partenza fa 10 danni; Fiato 120, sacca 10 kg, muta fino a 110 m. Tutti i valori sono in `balance.json`, `fish.json`, `upgrades.json`, `bosses.json`.
+
+**Quanto dura.** Un test (`EconomyTests`) gioca la storia giorno per giorno: due immersioni stimate dal carico della sacca, un servizio vero affidato a un cameriere automatico, acquisti nell'ordine che la storia richiede. Con questo giocatore, che non sbaglia un colpo e non perde un boss, la storia si chiude in una ventina di giornate di gioco: sono circa cinque ore. Una persona ci metterà di più (pesci mancati, boss da ritentare, missioni, orto, bar), ma è probabile che resti sotto le 10–15 ore chieste: se dopo le prime prove sarà così, si allunga alzando i costi in `upgrades.json` e le soglie in `story.json`, senza toccare il codice.
 
 ## Scelte di progetto
 
@@ -173,11 +179,13 @@ L'arpione di partenza fa 10 danni; Fiato 120, sacca 10 kg, muta fino a 110 m. Tu
 - **Macchine a stati.** Ogni pesce ha una `GKStateMachine` di GameplayKit; le regole di passaggio e i movimenti sono in codice puro (`FishAI`), così i test li verificano senza simulatore. I banchi sono un'unica entità con membri leggeri.
 - **Menu in SwiftUI, HUD in SpriteKit.** I menu hanno testo che segue la dimensione scelta nelle impostazioni di iOS; l'HUD di gioco resta dentro la scena.
 - **Nomi dei dati nei JSON.** Le stringhe dell'interfaccia usano il catalogo `Localizable.xcstrings`; i nomi di pesci e ricette stanno accanto ai numeri, nei JSON.
+- **Solo italiano.** Il gioco è in italiano, come chiesto. Il catalogo contiene tutti i testi dell'interfaccia (lo riempie `python3 Tools/l10n/sync.py` leggendoli dal codice) ed è pronto per aggiungere una lingua da Xcode; i dialoghi e i nomi nei JSON hanno già la forma `{ "it": "…" }`. Nessuna traduzione è inclusa.
+- **Contatori di prestazioni.** L'opzione «Mostra fotogrammi al secondo» accende i contatori di SpriteKit (fotogrammi, nodi, disegni): servono a controllare i 60 fps sul telefono, cosa che da qui non si può misurare.
 - **Boss in codice puro.** Ogni boss è una piccola macchina a stati (attesa, avviso, attacco, recupero, stordito) con tre fasi a due terzi e a un terzo della vita. La logica sta in `BossSim.swift` e non importa SpriteKit: un giocatore automatico nei test batte tutti e sei i boss, così si sa che ogni scontro è vincibile prima ancora di provarlo sul telefono.
 - **Sale dei boss.** Lo scontro avviene nella mappa del giorno, in una camera scavata alla profondità del boss e sigillata: colori dell'acqua, roccia e buio sono quelli della zona.
 - **Nasse per zona.** Il prompt chiedeva trappole «posizionabili»: qui una nassa si cala in una zona scelta dalla schermata del paese, non in un punto della mappa, perché la mappa cambia a ogni immersione e un punto preciso il giorno dopo non esisterebbe più.
 - **Personale senza gestione.** Chi assumi non va comandato: ognuno fa una cosa sola (ordinazioni, tavoli, cucina, vino) dopo qualche secondo d'attesa, così chi è svelto in sala resta più bravo di loro.
-- **Sfida a ritmo senza musica, per ora.** Il tempo lo danno la linea che pulsa e un tocco leggero a ogni battito; la musica arriva con l'audio della milestone 7.
+- **Sfida a ritmo.** Il tempo lo danno cassa e rullante a ogni battito, la linea che pulsa e un tocco leggero: non c'è un brano sotto, perché tenere la musica allineata al gioco al millisecondo richiederebbe prove su un dispositivo vero.
 - **Storia a tappe.** Una tappa è un obiettivo con una scena prima e una dopo. Gli obiettivi «a livello» (fama, profondità, potenziamenti) contano anche ciò che è già stato fatto, così chi è più avanti non deve rifare nulla.
 
 ## Milestone
@@ -190,14 +198,29 @@ L'arpione di partenza fa 10 danni; Fiato 120, sacca 10 kg, muta fino a 110 m. Tu
 | M4 | potenziamenti, Giornale di bordo, Quaderno del Mare, missioni, zone profonde giocabili, notte | fatta |
 | M5 | trama in cinque capitoli, diciannove scene, sei boss, cast con ritratti | fatta |
 | M6 | personale, orto e vivaio, nasse, eventi, collezione, tre giochi del bar, ricette a livelli | fatta |
-| M7 | audio sintetizzato, bilanciamento, rifinitura, inglese | da fare |
+| M7 | audio sintetizzato (venti effetti, sette brani, filtro sott'acqua), simulazione dell'economia, istruzioni al primo avvio, catalogo delle stringhe, contatori di prestazioni | fatta |
 
-**Che cosa non è stato verificato.** Il gioco è sviluppato senza un Mac e senza un iPhone: la compilazione e l'avvio di ogni scena sono controllati in CI nel simulatore, la logica dai test. La resa su un telefono vero, la sensazione dei comandi, le prestazioni su modelli vecchi e la difficoltà non sono state provate da nessuno finché non installi l'IPA. In particolare la difficoltà dei boss è tarata su un giocatore automatico che non sbaglia mai un colpo: per una persona saranno più lunghi e più duri, e i numeri (`bosses.json`) vanno aggiustati dopo le prime prove.
+**Che cosa non è stato verificato.** Il gioco è sviluppato senza un Mac e senza un iPhone: la compilazione e l'avvio di ogni scena sono controllati in CI nel simulatore, la logica dai test. La resa su un telefono vero, la sensazione dei comandi, le prestazioni su modelli vecchi e la difficoltà non sono state provate da nessuno finché non installi l'IPA. In particolare la difficoltà dei boss è tarata su un giocatore automatico che non sbaglia mai un colpo: per una persona saranno più lunghi e più duri, e i numeri (`bosses.json`) vanno aggiustati dopo le prime prove. La musica e gli effetti sono controllati solo nei numeri (durata, volume, assenza di scatti): nessuno li ha mai ascoltati, e il simulatore della CI non ha un'uscita audio.
+
+## Cosa provare
+
+Sul telefono, in quest'ordine: sono le cose che da qui non si possono giudicare.
+
+1. **Comandi in immersione.** Il joystick compare sotto il pollice? La mira dell'arpione (tieni premuto, trascina, rilascia) è naturale? Il tiro alla lenza si capisce?
+2. **Fluidità.** Accendi i contatori nelle Opzioni e scendi in una zona affollata: i fotogrammi restano a 60?
+3. **Prima giornata.** La scena d'apertura, tre pesci, il menu, il primo servizio: si capisce che cosa fare senza leggere questo file?
+4. **Servizio.** Con quattro o cinque tavoli si riesce a stare dietro ai clienti? Il vino si versa bene?
+5. **Boss.** La Murena Baronessa: gli avvisi si vedono in tempo? È troppo facile o troppo dura con l'arpione di partenza?
+6. **Audio.** I brani sono gradevoli o stancano? Gli effetti sono troppo forti rispetto alla musica? Sott'acqua il suono si ovatta?
+7. **Paese.** Assumi qualcuno, semina, cala una nassa, gioca a bocce: i pulsanti piccoli si toccano bene?
+8. **Controller.** Con un pad collegato si naviga in tutti i menu? La rimappatura nelle Opzioni funziona?
+9. **Salvataggi.** Chiudi l'app a metà giornata e riaprila: riparte dalla fase giusta?
 
 ## Test
 
 ```
-swift test                                   # logica pura
+swift test                                   # logica pura: 92 test
 python3 Tools/forge/build.py                 # rigenera sprite e anteprime
+python3 Tools/l10n/sync.py                   # aggiorna il catalogo delle stringhe
 swift run -c release -Xswiftc -enable-testing preview terrain Tools/forge/out
 ```

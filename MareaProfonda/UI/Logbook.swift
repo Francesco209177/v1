@@ -557,6 +557,7 @@ struct SettingsTab: View {
 
     private func store() {
         SettingsStore.shared.settings = settings
+        AudioDirector.shared.applyVolumes()
     }
 
     /// Aspetta il prossimo tasto premuto sul controller e lo assegna all'azione.

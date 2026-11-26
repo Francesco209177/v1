@@ -60,6 +60,7 @@ final class GameViewController: UIViewController {
         started = true
         SpriteForge.shared.loadIfNeeded()
         ControllerSupport.shared.start()
+        AudioDirector.shared.start()
         SceneRouter.shared.view = skView
         if SmokeTest.isActive {
             let runner: SmokeRunner = SmokeRunner(view: skView)
@@ -78,10 +79,12 @@ final class GameViewController: UIViewController {
         GameSession.shared.save()
         InputManager.shared.reset()
         skView.isPaused = true
+        AudioDirector.shared.pause()
     }
 
     func applicationDidResume() {
         skView.isPaused = false
+        AudioDirector.shared.resume()
     }
 
     // MARK: - Aspetto

@@ -37,8 +37,14 @@ class BaseScene: SKScene {
 
     override func didMove(to view: SKView) {
         super.didMove(to: view)
+        // Contatori di fotogrammi, nodi e disegni, se richiesti nelle opzioni.
+        let performance: Bool = SettingsStore.shared.settings.showPerformance
+        view.showsFPS = performance
+        view.showsNodeCount = performance
+        view.showsDrawCount = performance
         if !didSetup {
             didSetup = true
+            AudioDirector.shared.setUnderwater(0, immediately: true)
             addChild(world)
             addChild(cam)
             camera = cam

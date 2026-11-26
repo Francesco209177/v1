@@ -132,6 +132,7 @@ final class RestaurantScene: BaseScene {
     override func setup() {
         backgroundColor = SKColor(hex: 0x1A1216)
         ControllerSupport.shared.start()
+        AudioDirector.shared.music("osteria")
         let forge: SpriteForge = SpriteForge.shared
         world.addChild(room)
 
@@ -219,6 +220,16 @@ final class RestaurantScene: BaseScene {
             room.addChild(plate)
             passPlates.append(plate)
             p += 1
+        }
+
+        // Le istruzioni della prima serata.
+        if !config.autopilot && GameSession.shared.firstTime("servizio") {
+            let hint: HintPanel = HintPanel()
+            hint.zPosition = 40
+            hint.position = CGPoint(x: 0, y: size.height * 0.20)
+            hud.addChild(hint)
+            hint.show(String(localized: "Vai dal cliente e premi la mano per prendere l'ordinazione. Ritira i piatti al passavivande e portali al tavolo giusto. Alla botte tieni premuto per versare il vino e molla nella fascia verde. I tavoli sporchi vanno puliti."),
+                      width: min(size.width * 0.62, 520), seconds: 14)
         }
 
         // Il personale assunto sta in sala, vicino alla botte: lavora da sé, ma si vede che c'è.
@@ -695,11 +706,11 @@ final class RestaurantScene: BaseScene {
                 Feedback.tap()
             case .dishReady:
                 inesShout = 0.9
-                Feedback.tap()
+                Feedback.tap(sound: SFXKind.bell)
             case .pickedUp:
                 Feedback.tap()
             case .served(let table, let gold, let tip):
-                Feedback.success()
+                Feedback.success(sound: SFXKind.coin)
                 pop("icon_coin", text: "+\(gold + tip)", at: sim.tables[table].x, color: SKColor(hex: 0xFFE27A))
             case .wineServed(let table, let perfect, let gold):
                 Feedback.hit()
@@ -713,7 +724,7 @@ final class RestaurantScene: BaseScene {
             case .leftEmptyHanded:
                 showToast(String(localized: "Finito tutto: il cliente torna un'altra sera"), color: Theme.ochre)
             case .pourStarted:
-                Feedback.tap()
+                Feedback.tap(sound: SFXKind.pour)
             case .pourSpilled:
                 Feedback.thud()
                 showToast(String(localized: "Traboccato! Riprova"), color: Theme.danger)

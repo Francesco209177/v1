@@ -236,6 +236,17 @@ final class GameSession {
         save()
     }
 
+    /// true la prima volta che viene chiesto per questa partita: serve a mostrare un'istruzione una volta sola.
+    func firstTime(_ key: String) -> Bool {
+        guard var s: GameState = state else { return false }
+        let flag: String = "visto_\(key)"
+        if s.flags[flag] ?? false { return false }
+        s.flags[flag] = true
+        state = s
+        save()
+        return true
+    }
+
     /// Affina una ricetta conosciuta: sale di livello e si vende a un prezzo più alto.
     func upgradeRecipe(_ id: String) -> Bool {
         guard var s: GameState = state, let recipe: Recipe = GameData.shared.recipes.find(id) else { return false }

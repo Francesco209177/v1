@@ -7,20 +7,20 @@
   "recipeLevelBonus": 0.08,
   "ranks": [
     { "name": { "it": "Bettola" }, "fame": 0, "tables": 3, "menuSlots": 2, "arrivalEvery": 7.5, "priceFactor": 1.0 },
-    { "name": { "it": "Trattoria" }, "fame": 40, "tables": 4, "menuSlots": 3, "arrivalEvery": 6.5, "priceFactor": 1.05 },
-    { "name": { "it": "Osteria di paese" }, "fame": 110, "tables": 5, "menuSlots": 3, "arrivalEvery": 5.6, "priceFactor": 1.1 },
-    { "name": { "it": "Osteria rinomata" }, "fame": 230, "tables": 6, "menuSlots": 4, "arrivalEvery": 4.8, "priceFactor": 1.16 },
-    { "name": { "it": "Vanto dell'isola" }, "fame": 400, "tables": 7, "menuSlots": 5, "arrivalEvery": 4.2, "priceFactor": 1.22 },
-    { "name": { "it": "Leggenda del Tirreno" }, "fame": 650, "tables": 8, "menuSlots": 6, "arrivalEvery": 3.7, "priceFactor": 1.3 }
+    { "name": { "it": "Trattoria" }, "fame": 40, "tables": 4, "menuSlots": 3, "arrivalEvery": 6.8, "priceFactor": 1.05 },
+    { "name": { "it": "Osteria di paese" }, "fame": 110, "tables": 5, "menuSlots": 3, "arrivalEvery": 6.2, "priceFactor": 1.1 },
+    { "name": { "it": "Osteria rinomata" }, "fame": 230, "tables": 6, "menuSlots": 4, "arrivalEvery": 5.6, "priceFactor": 1.16 },
+    { "name": { "it": "Vanto dell'isola" }, "fame": 400, "tables": 7, "menuSlots": 5, "arrivalEvery": 5.1, "priceFactor": 1.22 },
+    { "name": { "it": "Leggenda del Tirreno" }, "fame": 650, "tables": 8, "menuSlots": 6, "arrivalEvery": 4.6, "priceFactor": 1.3 }
   ],
   "service": {
     "duration": 110,
     "patienceOrder": 22,
-    "patienceFood": 30,
+    "patienceFood": 36,
     "eatTime": 5.0,
     "wineChance": 0.4,
     "winePrice": 5,
-    "walkSpeed": 78,
+    "walkSpeed": 86,
     "cleanTime": 0.8,
     "comboWindow": 12,
     "maxCombo": 10

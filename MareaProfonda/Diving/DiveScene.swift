@@ -100,6 +100,7 @@ final class DiveScene: BaseScene {
     private var victoryClock: Double = -1
     private var dyingClock: Double = 0
     private let inkVeil: SKSpriteNode = SKSpriteNode(color: SKColor(hex: 0x0A0614), size: CGSize(width: 10, height: 10))
+    private let hint: HintPanel = HintPanel()
 
     // Stato
     private var cameraPos: Vec2 = Vec2.zero
@@ -328,6 +329,14 @@ final class DiveScene: BaseScene {
         updateZone(force: true)
         if let boss: BossInfo = config.boss {
             diveHUD.announce(zone: boss.name.text(), range: boss.epithet.text())
+        }
+        // Le istruzioni della prima immersione.
+        hint.zPosition = 9
+        hud.addChild(hint)
+        if config.autopilot == nil && config.boss == nil && GameSession.shared.firstTime("immersione") {
+            hint.position = CGPoint(x: 0, y: size.height * 0.22)
+            hint.show(String(localized: "Pollice sinistro per nuotare. Tieni premuto l'arpione per mirare, rilascia per tirare; con un pesce agganciato tieni premuto per recuperare e molla durante gli strattoni. Il Fiato cala: risali o cerca una campana d'aria. Per finire torna alla barca e premi la mano."),
+                      width: min(size.width * 0.62, 520), seconds: 14)
         }
     }
 
@@ -661,7 +670,7 @@ final class DiveScene: BaseScene {
         for event in events {
             switch event {
             case .harpoonFired:
-                Feedback.tap()
+                Feedback.tap(sound: SFXKind.harpoon)
             case .harpoonHitRock(let at):
                 spawnSparks(at: at, color: SKColor(hex: 0xE8E0C8), count: 5)
             case .fishHit(let at, let damage, let killed):
@@ -683,19 +692,19 @@ final class DiveScene: BaseScene {
                 diveHUD.showToast(String(localized: "La lenza si è spezzata!"), color: Theme.danger)
                 Feedback.thud()
             case .caught(let item, let at):
-                Feedback.success()
+                Feedback.success(sound: SFXKind.catchFish)
                 let name: String = GameData.shared.fish.find(item.speciesId)?.name.text() ?? item.speciesId
                 diveHUD.showToast("\(name)  " + String(repeating: "★", count: item.stars), color: Theme.lime)
                 spawnSparks(at: at, color: SKColor(hex: 0xFFE27A), count: 10)
             case .diverHurt(let damage, let at):
                 shake = max(shake, 4.5)
-                Feedback.thud()
+                Feedback.thud(sound: SFXKind.hurt)
                 spawnNumber(Int(damage.rounded()), at: at, color: SKColor(hex: 0xFF6B60))
                 spawnSparks(at: at, color: SKColor(hex: 0xFF8A80), count: 8)
             case .telegraph(let at):
                 spawnSparks(at: at, color: SKColor(hex: 0xFF6B60), count: 3)
             case .pickedUp(let kind, let at):
-                Feedback.tap()
+                Feedback.tap(sound: kind == PickupPoint.Kind.maiolica ? SFXKind.coin : SFXKind.pickup)
                 for (index, node) in pickupNodes where sim.pickups[index].taken && !node.isHidden && sim.pickups[index].kind != PickupPoint.Kind.campana {
                     node.run(SKAction.sequence([
                         SKAction.group([SKAction.moveBy(x: 0, y: 14, duration: 0.22), SKAction.fadeOut(withDuration: 0.22)]),
@@ -705,7 +714,7 @@ final class DiveScene: BaseScene {
                 diveHUD.showToast(DiveScene.pickupName(kind), color: Theme.lime)
                 spawnSparks(at: at, color: SKColor(hex: 0xA8EC9A), count: 5)
             case .breathRefilled:
-                Feedback.success()
+                Feedback.success(sound: SFXKind.bell)
                 diveHUD.showToast(String(localized: "Fiato al massimo"), color: Theme.turquoise)
                 for (index, node) in pickupNodes where sim.pickups[index].taken && sim.pickups[index].kind == PickupPoint.Kind.campana {
                     node.texture = SpriteForge.shared.texture("pickup_campana_vuota")
@@ -723,7 +732,7 @@ final class DiveScene: BaseScene {
                 shake = max(shake, 1.5)
                 diveHUD.showToast(String(localized: "Troppa pressione per questa muta"), color: Theme.danger)
             case .dashed:
-                Feedback.hit()
+                Feedback.hit(sound: SFXKind.bubble)
                 var b: Int = 0
                 while b < 6 {
                     spawnBubble(spread: 7)
@@ -774,11 +783,11 @@ final class DiveScene: BaseScene {
                 spawnSparks(at: at, color: SKColor.white, count: 9)
                 spawnNumber(Int(damage.rounded()), at: at, color: SKColor(hex: 0xFFE27A))
             case .bossBlocked(let at):
-                Feedback.tap()
+                Feedback.tap(sound: SFXKind.clang)
                 spawnSparks(at: at, color: SKColor(hex: 0x9AA8B8), count: 4)
                 diveHUD.showToast(String(localized: "Parato!"), color: SKColor(hex: 0xBFC8D4))
             case .bossPhase(let phase):
-                Feedback.thud()
+                Feedback.thud(sound: SFXKind.roar)
                 shake = max(shake, 5)
                 diveHUD.showToast(phase == 2 ? String(localized: "Si infuria!") : String(localized: "È allo stremo: attenta!"), color: Theme.danger)
             case .bossStunned(let at):
@@ -789,7 +798,7 @@ final class DiveScene: BaseScene {
                 Feedback.thud()
                 shake = max(shake, 5.5)
             case .blast(let at, let radius):
-                Feedback.thud()
+                Feedback.thud(sound: SFXKind.blast)
                 shake = max(shake, 4)
                 spawnRing(at: at, radius: max(radius, 10), color: SKColor(hex: 0xFFB060))
                 spawnSparks(at: at, color: SKColor(hex: 0xFFD6A0), count: 14)
@@ -946,6 +955,8 @@ final class DiveScene: BaseScene {
             dark = boss.kind == BossKind.lanterna ? max(dark, 0.88) : min(dark, 0.28)
         }
         ShaderLibrary.setFloat(ShaderLibrary.terrainCaustics, "u_strength", config.night ? 0 : 1)
+        // Sott'acqua i suoni si ovattano; con la testa fuori tornano limpidi.
+        AudioDirector.shared.setUnderwater(sim.diver.atSurface && sim.arena == nil ? 0 : 1)
         FishAgent.darkness = dark
         darkness.isHidden = dark < 0.02
         if !darkness.isHidden {
@@ -1039,6 +1050,14 @@ final class DiveScene: BaseScene {
         let index: Int = worldData.zoneIndex(atDepth: sim.diver.depthMeters)
         if index == zoneIndex && !force { return }
         zoneIndex = index
+        // La musica segue il luogo: scontro, notte, abissi o acque chiare.
+        if config.boss != nil {
+            AudioDirector.shared.music("boss")
+        } else if config.night {
+            AudioDirector.shared.music("notte")
+        } else {
+            AudioDirector.shared.music(index >= 3 ? "abisso" : "immersione")
+        }
         if index >= 0 && index < worldData.zones.count {
             let zone: ZoneInfo = worldData.zones[index]
             let name: String = zone.name.text()

@@ -141,6 +141,7 @@ final class CutsceneScene: BaseScene {
     override func setup() {
         backgroundColor = SKColor(hex: 0x0E2238)
         ControllerSupport.shared.start()
+        AudioDirector.shared.music("scena")
 
         water.zPosition = -100
         water.shader = ShaderLibrary.water
@@ -620,6 +621,8 @@ final class CutsceneScene: BaseScene {
         guard shownStep >= 0, shownStep < cutscene.steps.count, cutscene.steps[shownStep].action == "say" else { return }
         let count: Int = min(cursor.shown, fullText.count)
         if count != shownLetters {
+            // Il ticchettio della macchina da scrivere, una lettera sì e una no.
+            if count > shownLetters && count % 2 == 0 { AudioDirector.shared.play(SFXKind.letter, volume: 0.5) }
             shownLetters = count
             let visible: String = String(fullText.prefix(count))
             textLabel.attributedText = Theme.attributed(visible, size: 17, weight: narrating ? UIFont.Weight.medium : UIFont.Weight.semibold,
