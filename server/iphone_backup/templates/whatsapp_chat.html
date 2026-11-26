@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}{{ chat.name }}{% endblock %}
+{% block content %}
+<div class="page-head">
+  <p><a href="/whatsapp?app_key={{ app_key }}">‹ Tutte le chat</a></p>
+  <h1>{{ chat.name }}</h1>
+  <p class="muted">{{ chat.count }} messaggi{% if chat.is_group %} · gruppo{% endif %}</p>
+  <div class="actions">
+    <a class="btn small" href="/whatsapp/{{ app_key }}/{{ chat.id }}/esporta.txt">Esporta .txt</a>
+    <a class="btn small" href="/whatsapp/{{ app_key }}/{{ chat.id }}/esporta.html">Esporta .html</a>
+  </div>
+</div>
+{% if truncated %}
+<div class="alert info">Sono mostrati gli ultimi 400 messaggi. <a href="?tutti=1">Mostra tutti</a> (può essere lento) oppure esporta la chat.</div>
+{% endif %}
+<div class="chat">
+  {% set ns = namespace(day='') %}
+  {% for m in messages %}
+    {% set day = (m.date or '')[:10] %}
+    {% if day != ns.day %}{% set ns.day = day %}
+    <div class="day"><span>{{ m.date | day }}</span></div>
+    {% endif %}
+    <div class="bubble {{ 'me' if m.from_me }}">
+      {% if chat.is_group and not m.from_me %}<div class="who">{{ m.sender }}</div>{% endif %}
+      {% if m.media_id and m.is_image %}
+        <a href="/whatsapp/{{ app_key }}/media/{{ m.media_id }}" target="_blank" rel="noopener"><img src="/whatsapp/{{ app_key }}/media/{{ m.media_id }}" alt="Foto" loading="lazy"></a>
+      {% endif %}
+      {% if m.kind %}<div class="kind">{{ m.kind }}{% if m.media_id and not m.is_image %} · <a href="/whatsapp/{{ app_key }}/media/{{ m.media_id }}">apri {{ m.media_name }}</a>{% endif %}</div>{% endif %}
+      {% if m.text %}<div class="text">{{ m.text }}</div>{% endif %}
+      <div class="meta">{{ (m.date or '')[11:16] }}</div>
+    </div>
+  {% endfor %}
+</div>
+{% endblock %}

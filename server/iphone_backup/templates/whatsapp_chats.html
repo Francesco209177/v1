@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}WhatsApp{% endblock %}
+{% block content %}
+<div class="page-head" style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:flex-start">
+  <div><h1>Chat WhatsApp</h1><p class="muted">{{ chats | length }} chat · da: {{ source }}</p></div>
+  <button class="btn small" id="wa-close" type="button">Chiudi e cancella la copia decifrata</button>
+</div>
+{% if apps | length > 1 %}
+<div class="tabs">{% for key, label in apps %}<a href="/whatsapp?app_key={{ key }}" class="{{ 'active' if key == current }}">{{ label }}</a>{% endfor %}</div>
+{% endif %}
+<div class="card">
+  <input id="chat-search" type="search" placeholder="Cerca una chat" aria-label="Cerca una chat" style="margin-bottom:8px">
+  <ul class="list">
+    {% for chat in chats %}
+    <li data-chat-name="{{ chat.name }}">
+      <a class="row" href="/whatsapp/{{ current }}/{{ chat.id }}">
+        <span class="avatar {{ 'group' if chat.is_group }}">{{ '👥' if chat.is_group else (chat.name[:1] | upper) }}</span>
+        <span class="grow">
+          <span class="title" style="display:block">{{ chat.name }}{% if chat.archived %} <span class="badge">archiviata</span>{% endif %}</span>
+          <span class="sub" style="display:block">{{ chat.count }} messaggi · ultimo {{ chat.last_date | when }}</span>
+        </span>
+        <span aria-hidden="true" class="muted">›</span>
+      </a>
+    </li>
+    {% else %}
+    <li><p class="muted" style="padding:12px 0">Nessuna chat trovata.</p></li>
+    {% endfor %}
+  </ul>
+</div>
+{% endblock %}

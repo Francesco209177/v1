@@ -1,0 +1,26 @@
+[Unit]
+Description=Backup iPhone (interfaccia web)
+Documentation=https://github.com/Francesco209177/v1/tree/ccr-bad433ea-g45kob/server
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=iphonebackup
+Group=iphonebackup
+EnvironmentFile=-/etc/default/iphone-backup
+ExecStart=/opt/iphone-backup/venv/bin/python -m iphone_backup
+Restart=on-failure
+RestartSec=5
+UMask=0077
+# Protezioni: /usr, /boot ed /etc in sola lettura, /tmp privata (lì finiscono i dati decifrati temporanei).
+PrivateTmp=true
+NoNewPrivileges=true
+ProtectSystem=full
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+
+[Install]
+WantedBy=multi-user.target

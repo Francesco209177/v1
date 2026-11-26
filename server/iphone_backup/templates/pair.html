@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% from "_macros.html" import job_panel %}
+{% block title %}Associa iPhone{% endblock %}
+{% block body_attrs %}data-reload-on-finish{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>Associa iPhone</h1>
+  <p class="muted">Serve una volta sola, con il cavo USB collegato al server.</p>
+</div>
+
+<div class="stack">
+<section class="card">
+  <h2>1 · Collega e autorizza</h2>
+  {% if device %}
+  <div class="alert ok"><strong>Associato: {{ device.name }}</strong>Associazione fatta {{ device.paired_at | when }}. Puoi rifare l'associazione se cambi iPhone o se il server non viene più riconosciuto.</div>
+  {% endif %}
+  <ol class="steps">
+    <li>Collega l'iPhone a una porta USB del server con il cavo e <b>sbloccalo</b>.</li>
+    <li>Tocca <b>Cerca iPhone collegati</b>, poi <b>Associa</b>.</li>
+    <li>Sull'iPhone compare "Vuoi autorizzare questo computer?": tocca <b>Autorizza</b> e inserisci il codice.</li>
+  </ol>
+  <button class="btn primary" id="pair-search" type="button" data-needs-idle>Cerca iPhone collegati</button>
+  <div id="pair-usb-list" data-pick-label="Associa" style="margin-top:12px"></div>
+</section>
+
+{{ job_panel() }}
+
+<section class="card {{ '' if device else 'hidden' }}">
+  <h2>2 · Password dei backup (consigliata)</h2>
+  <p>Con la cifratura il backup contiene <b>anche password, reti Wi-Fi, dati di Salute e cronologia</b>; senza, queste cose non vengono salvate.</p>
+  <div class="alert warn"><strong>Senza questa password il backup non si può ripristinare.</strong>Scrivila su carta o in un gestore di password. Non viene salvata sul server.</div>
+  {% if state.get('encryption_set_at') %}<p class="badge ok">Cifratura impostata {{ state.get('encryption_set_at') | when }}</p>{% endif %}
+  <form id="encryption-form" autocomplete="off">
+    <div class="field"><label for="enc-password">Password dei backup</label>
+      <input id="enc-password" type="password" minlength="6" required autocomplete="new-password"></div>
+    <div class="field"><label for="enc-confirm">Ripeti la password</label>
+      <input id="enc-confirm" type="password" minlength="6" required autocomplete="new-password"></div>
+    <div class="field"><label class="check"><input type="checkbox" id="enc-written"> L'ho scritta in un posto sicuro</label></div>
+    <button class="btn primary" type="submit" data-needs-idle>Attiva la cifratura</button>
+    <p class="hint">L'iPhone deve essere raggiungibile (cavo o Wi-Fi) e potrebbe chiederti il codice. Se la cifratura era già attiva (per esempio da iTunes), resta valida la password scelta allora.</p>
+  </form>
+</section>
+
+<section class="card {{ '' if device else 'hidden' }}">
+  <h2>3 · Primo backup</h2>
+  <p>Puoi farlo subito con il cavo collegato (più veloce) oppure staccare il cavo e lasciarlo fare via Wi-Fi.</p>
+  <button class="btn primary" data-start="/api/backup" data-needs-idle>Esegui il primo backup</button>
+  <p class="hint">Fuori casa: aggiungi l'IP Tailscale dell'iPhone in <a href="/impostazioni">Impostazioni</a> (funzione sperimentale).</p>
+</section>
+</div>
+{% endblock %}

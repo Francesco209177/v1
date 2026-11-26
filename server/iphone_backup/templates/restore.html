@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% from "_macros.html" import job_panel, backup_choices %}
+{% block title %}Ripristina{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>Ripristina sul nuovo iPhone</h1>
+  <p class="muted">Rimette chat WhatsApp, messaggi, impostazioni e app sul telefono nuovo, senza bisogno di quello vecchio.</p>
+</div>
+{% if not backups %}
+<div class="card"><p>Nessun backup completo disponibile.</p></div>
+{% else %}
+<div class="stack">
+<section class="card">
+  <h2>Prima di iniziare</h2>
+  <ol class="steps">
+    <li>Accendi il nuovo iPhone e segui la configurazione fino a <b>"Trasferisci app e dati"</b>: scegli <b>"Da Mac o PC"</b>.</li>
+    <li>Il nuovo iPhone deve avere una versione di iOS <b>uguale o più recente</b> di quella del backup (se serve, aggiornalo durante la configurazione).</li>
+    <li>Collega il nuovo iPhone al server con il cavo USB e tienilo sbloccato.</li>
+  </ol>
+</section>
+
+<form class="card" id="restore-form" autocomplete="off">
+  <h2>1 · Scegli il backup</h2>
+  {{ backup_choices(backups) }}
+
+  <h2 style="margin-top:18px">2 · Scegli il nuovo iPhone</h2>
+  <button class="btn" id="restore-search" type="button">Cerca iPhone collegati</button>
+  <div id="restore-usb-list" data-pick-label="Usa questo" style="margin-top:10px"></div>
+  <input type="hidden" id="restore-target">
+  <p class="hint">Scelto: <b id="restore-target-label">nessuno</b></p>
+
+  <h2 style="margin-top:18px">3 · Conferma</h2>
+  <div class="field"><label for="restore-password">Password del backup</label>
+    <input id="restore-password" type="password" autocomplete="off" placeholder="lascia vuoto se il backup non è cifrato"></div>
+  <div class="alert warn"><strong>Il contenuto del nuovo iPhone viene sostituito dal backup.</strong>Non scollegare il cavo finché l'iPhone non si riavvia.</div>
+  <div class="field"><label for="restore-confirm">Scrivi <b>RIPRISTINA</b> per confermare</label>
+    <input id="restore-confirm" type="text" autocomplete="off" autocapitalize="characters"></div>
+  <button class="btn danger" type="submit" data-needs-idle>Ripristina il backup</button>
+</form>
+{{ job_panel() }}
+<section class="card">
+  <h2>Dopo il ripristino</h2>
+  <p>L'iPhone si riavvia e riscarica le app dall'App Store (serve il Wi-Fi). Apri WhatsApp, verifica il tuo numero: le chat sono già lì. Se qualcosa va storto puoi sempre ripristinare da un computer scaricando lo zip dalla pagina <a href="/backup">Backup</a>.</p>
+</section>
+</div>
+{% endif %}
+{% endblock %}

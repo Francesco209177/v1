@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0a6cff">
+  <title>{% block title %}{% endblock %} · Backup iPhone</title>
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="icon" href="/static/icon-192.png">
+  <link rel="stylesheet" href="/static/app.css?v={{ version }}">
+</head>
+<body>
+  <div class="center-page">
+    <div class="card auth-card">
+      <img class="logo" src="/static/icon-192.png" alt="">
+      {% block content %}{% endblock %}
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Impostazioni{% endblock %}
+{% block content %}
+<div class="page-head"><h1>Impostazioni</h1></div>
+{% if saved %}<div class="alert ok">Salvato.</div>{% endif %}
+{% if error %}<div class="alert err">{{ error }}</div>{% endif %}
+<div class="stack">
+<form class="card" method="post" action="/impostazioni">
+  <h2>Backup automatico</h2>
+  <div class="field"><label class="check"><input type="checkbox" name="auto_backup" {{ 'checked' if settings.auto_backup }}> Fai il backup automaticamente</label></div>
+  <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr))">
+    <div class="field"><label for="interval">Ogni quante ore</label>
+      <input id="interval" name="interval_hours" type="number" min="1" max="720" step="1" value="{{ settings.interval_hours | round(0) | int }}"></div>
+    <div class="field"><label for="retry">Se non risponde, riprova dopo (minuti)</label>
+      <input id="retry" name="retry_minutes" type="number" min="5" max="1440" step="5" value="{{ settings.retry_minutes | round(0) | int }}"></div>
+  </div>
+  <div class="field"><label class="check"><input type="checkbox" name="keep_safe_copy" {{ 'checked' if settings.keep_safe_copy }}> Tieni una copia dell'ultimo backup riuscito</label>
+    <p class="hint">Consigliato: se un backup si interrompe a metà, la copia buona resta. Occupa circa il doppio dello spazio.</p></div>
+
+  <h2>Raggiungere l'iPhone fuori casa (sperimentale)</h2>
+  <div class="field"><label for="hosts">Indirizzi dell'iPhone, uno per riga</label>
+    <textarea id="hosts" name="extra_hosts" rows="3" placeholder="100.101.102.103">{{ settings.extra_hosts | join('\n') }}</textarea>
+    <p class="hint">In casa l'iPhone viene trovato da solo. Fuori casa metti qui il suo indirizzo Tailscale (100.x.y.z, lo vedi nell'app Tailscale). Funziona solo se iOS accetta la connessione: in casa è sempre più affidabile.</p></div>
+
+  <h2>Notifiche (facoltative)</h2>
+  <div class="field"><label for="notify">Indirizzo ntfy</label>
+    <input id="notify" name="notify_url" type="url" placeholder="https://ntfy.sh/un-nome-difficile" value="{{ settings.notify_url }}">
+    <p class="hint">Con l'app gratuita ntfy ricevi un avviso sul telefono a ogni backup. Lascia vuoto per non usarle.</p></div>
+  <button class="btn primary" type="submit">Salva</button>
+</form>
+
+<section class="card">
+  <h2>iPhone associato</h2>
+  {% if device %}
+  <dl class="kv"><dt>Nome</dt><dd>{{ device.name }}</dd><dt>Modello</dt><dd>{{ device.product_type }}</dd>
+    <dt>Identificativo</dt><dd><code>{{ device.udid }}</code></dd><dt>Associato</dt><dd>{{ device.paired_at | when }}</dd></dl>
+  <div class="actions"><a class="btn" href="/associa">Associa / cifratura</a>
+    <button class="btn" id="forget-device" type="button">Dimentica questo iPhone</button></div>
+  {% else %}<p>Nessuno. <a href="/associa">Associa un iPhone</a>.</p>{% endif %}
+</section>
+
+<form class="card" method="post" action="/impostazioni/password" autocomplete="off">
+  <h2>Password dell'interfaccia web</h2>
+  <div class="field"><label for="cur">Password attuale</label><input id="cur" name="current" type="password" required autocomplete="current-password"></div>
+  <div class="field"><label for="new">Nuova password</label><input id="new" name="password" type="password" minlength="8" required autocomplete="new-password"></div>
+  <div class="field"><label for="new2">Ripeti la nuova password</label><input id="new2" name="confirm" type="password" minlength="8" required autocomplete="new-password"></div>
+  <button class="btn" type="submit">Cambia password</button>
+</form>
+
+<section class="card">
+  <h2>Informazioni</h2>
+  <dl class="kv"><dt>Versione</dt><dd>{{ version }}{% if demo %} (demo){% endif %}</dd>
+    <dt>Dati</dt><dd><code>{{ paths.data }}</code></dd><dt>Backup</dt><dd><code>{{ paths.backups }}</code></dd></dl>
+  <div class="actions"><a class="btn" href="/registro">Registro eventi</a>
+    <form method="post" action="/logout"><button class="btn" type="submit">Esci</button></form></div>
+</section>
+</div>
+{% endblock %}

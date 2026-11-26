@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% from "_macros.html" import job_panel, result_badge %}
+{% block title %}Home{% endblock %}
+{% block body_attrs %}data-reload-on-finish{% endblock %}
+{% block content %}
+{% set ds = state.get('device_status') or {} %}
+<div class="page-head">
+  <h1>Backup completo dell'iPhone</h1>
+  <p class="muted">WhatsApp, messaggi, impostazioni e app, come un backup di Finder/iTunes: si ripristina su un iPhone nuovo anche senza quello vecchio.</p>
+</div>
+
+{% if demo %}
+<div class="alert warn"><strong>Modalità demo</strong>L'iPhone è simulato: puoi provare tutto senza rischi.</div>
+{% endif %}
+
+{% if not device %}
+<section class="card hero">
+  <h2>Per iniziare: associa l'iPhone (una volta sola)</h2>
+  <ol class="steps">
+    <li>Collega l'iPhone al server con il cavo USB e sbloccalo.</li>
+    <li>Apri <b>Associa</b>, tocca "Cerca" e poi "Associa": sull'iPhone tocca <b>Autorizza</b> e inserisci il codice.</li>
+    <li>Imposta la password dei backup, poi stacca il cavo: i backup successivi avvengono via Wi-Fi.</li>
+  </ol>
+  <a class="btn primary" href="/associa">Associa iPhone</a>
+</section>
+{% else %}
+{% set encrypted = state.get('last_encrypted') if state.get('last_encrypted') is not none else ds.get('encrypted') %}
+{% if encrypted == false %}
+<div class="alert warn"><strong>Backup non cifrati</strong>Senza cifratura il backup esclude password, Wi-Fi e dati di Salute.
+  <a href="/associa">Imposta la password dei backup</a>.</div>
+{% endif %}
+<div class="grid">
+  <section class="card">
+    <div class="card-title">iPhone</div>
+    <div class="big">{{ device.name }}</div>
+    <dl class="kv">
+      <dt>iOS</dt><dd>{{ ds.get('ios_version') or device.ios_version or '?' }}</dd>
+      <dt>Stato</dt><dd>
+        {% if ds.get('reachable') %}<span class="badge ok">Raggiungibile · {{ ds.get('via') }}</span>
+        {% elif ds.get('checked_at') %}<span class="badge warn">Non raggiungibile</span>
+        {% else %}<span class="badge">Non verificato</span>{% endif %}
+        {% if ds.get('checked_at') %}<br><small>verificato {{ ds.get('checked_at') | when }}</small>{% endif %}
+      </dd>
+      <dt>Cifratura</dt><dd>{% if encrypted %}<span class="badge ok">🔒 Attiva</span>{% elif encrypted == false %}<span class="badge warn">Spenta</span>{% else %}<span class="badge">?</span>{% endif %}</dd>
+    </dl>
+    <div class="actions"><button class="btn small" data-start="/api/check" data-needs-idle>Verifica connessione</button></div>
+  </section>
+
+  <section class="card">
+    <div class="card-title">Ultimo backup</div>
+    <div class="big">{{ state.get('last_success') | when }}</div>
+    <dl class="kv">
+      <dt>Esito</dt><dd>{{ result_badge(state.get('last_result')) }}</dd>
+      {% if state.get('last_size') %}<dt>Dimensione</dt><dd>{{ state.get('last_size') | size }}</dd>{% endif %}
+      {% if state.get('last_via') %}<dt>Collegamento</dt><dd>{{ state.get('last_via') }}</dd>{% endif %}
+      {% if state.get('last_result') and state.get('last_result') != 'ok' %}<dt>Ultimo tentativo</dt><dd>{{ state.get('last_attempt') | when }}</dd>{% endif %}
+    </dl>
+    {% if state.get('last_error') and state.get('last_result') != 'ok' %}<p class="hint">{{ state.get('last_error') }}</p>{% endif %}
+  </section>
+
+  <section class="card">
+    <div class="card-title">Backup automatico</div>
+    {% if settings.auto_backup %}
+    <div class="big" data-next-due>{{ next_due | when if next_due else '—' }}</div>
+    <p class="muted">Ogni {{ settings.interval_hours | round(0) | int }} ore. Se l'iPhone non risponde riprovo ogni {{ settings.retry_minutes | round(0) | int }} minuti.</p>
+    {% else %}
+    <div class="big">Spento</div>
+    <p class="muted">Attivalo in <a href="/impostazioni">Impostazioni</a>.</p>
+    {% endif %}
+    <p class="hint">Spazio libero: {{ disk.free | size }}</p>
+  </section>
+</div>
+
+<div class="stack" style="margin-top:14px">
+  <button class="btn primary block" data-start="/api/backup" data-needs-idle style="min-height:54px;font-size:1.05rem">Esegui backup ora</button>
+  {{ job_panel() }}
+  <p class="hint">Consiglio: tieni l'iPhone in carica e sul Wi-Fi di casa. Il primo backup è completo e può durare a lungo; i successivi sono più veloci.</p>
+</div>
+{% endif %}
+{% endblock %}

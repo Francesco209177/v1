@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% from "_macros.html" import job_panel, backup_choices %}
+{% block title %}WhatsApp{% endblock %}
+{% block body_attrs %}data-reload-on-finish{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>Chat WhatsApp</h1>
+  <p class="muted">Leggi tutte le chat salvate nel backup, direttamente qui, anche senza telefono.</p>
+</div>
+{% if not backups %}
+<div class="card"><p>Nessun backup disponibile: fai prima un backup dalla <a href="/">Home</a>.</p></div>
+{% else %}
+<div class="stack">
+<form class="card" data-backup-form="/api/whatsapp/open" autocomplete="off">
+  <h2>Apri le chat</h2>
+  {{ backup_choices(backups) }}
+  <div class="field" style="margin-top:12px"><label for="wa-password">Password del backup</label>
+    <input id="wa-password" name="password" type="password" autocomplete="off" placeholder="lascia vuoto se il backup non è cifrato"></div>
+  <button class="btn primary" type="submit" data-needs-idle>Apri le chat</button>
+  <p class="hint">Il backup viene decifrato sul server in una cartella privata, che viene cancellata quando chiudi o dopo 30 minuti di inattività. Le chat restano in sola lettura: non vengono mai modificate.</p>
+</form>
+{{ job_panel() }}
+</div>
+{% endif %}
+{% endblock %}

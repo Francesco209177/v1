@@ -1,0 +1,38 @@
+{% macro job_panel() %}
+<section class="card job" data-job-panel aria-live="polite">
+  <div class="job-head">
+    <h2 data-job-title>Lavoro in corso</h2>
+    <span><span class="badge" data-job-state></span> <small data-job-elapsed></small></span>
+  </div>
+  <div class="progress" data-job-bar><div></div></div>
+  <p class="job-msg" data-job-message></p>
+  <details>
+    <summary class="muted">Dettagli</summary>
+    <pre class="log-lines" data-job-lines></pre>
+  </details>
+</section>
+{% endmacro %}
+
+{% macro result_badge(result) %}
+{% if result == 'ok' %}<span class="badge ok">✓ Riuscito</span>
+{% elif result == 'non raggiungibile' %}<span class="badge warn">iPhone non raggiungibile</span>
+{% elif result %}<span class="badge err">Errore</span>
+{% else %}<span class="badge">Nessun backup</span>{% endif %}
+{% endmacro %}
+
+{% macro backup_choices(backups, name='backup') %}
+<ul class="list">
+  {% for b in backups %}
+  <li>
+    <label class="row check" style="font-weight:500">
+      <input type="radio" name="{{ name }}" value="{{ b.kind }}|{{ b.udid }}" {{ 'checked' if loop.first }}>
+      <span class="grow">
+        <span class="title wrap" style="display:block">{{ b.device_name }} — {{ b.label }}</span>
+        <span class="sub wrap" style="display:block">{{ b.date | when }} · iOS {{ b.ios_version or '?' }}
+          · {{ 'cifrato 🔒' if b.encrypted else 'non cifrato' }}{% if not b.complete %} · <b>incompleto</b>{% endif %}</span>
+      </span>
+    </label>
+  </li>
+  {% endfor %}
+</ul>
+{% endmacro %}

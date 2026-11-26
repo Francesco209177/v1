@@ -1,0 +1,12 @@
+{% extends "auth_base.html" %}
+{% block title %}Accesso{% endblock %}
+{% block content %}
+<h1>Backup iPhone</h1>
+<p class="lead">Inserisci la password dell'interfaccia.</p>
+{% if error %}<div class="alert err">{{ error }}</div>{% endif %}
+<form method="post" action="/login">
+  <div class="field"><label for="password">Password</label>
+    <input id="password" name="password" type="password" autocomplete="current-password" required autofocus></div>
+  <button class="btn primary block" type="submit">Entra</button>
+</form>
+{% endblock %}

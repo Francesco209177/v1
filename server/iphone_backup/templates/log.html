@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Registro{% endblock %}
+{% block content %}
+<div class="page-head"><h1>Registro eventi</h1><p class="muted">Ultimi {{ events | length }} eventi, dal più recente.</p></div>
+<div class="card table-wrap">
+  <table>
+    <thead><tr><th>Quando</th><th>Evento</th></tr></thead>
+    <tbody>
+    {% for e in events %}
+      <tr><td style="white-space:nowrap">{{ e.time | when }}</td>
+        <td>{% if e.level == 'error' %}<span class="badge err">Errore</span> {% elif e.level == 'warning' %}<span class="badge warn">Avviso</span> {% elif e.level == 'ok' %}<span class="badge ok">OK</span> {% endif %}{{ e.message }}</td></tr>
+    {% else %}
+      <tr><td colspan="2" class="muted">Nessun evento.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

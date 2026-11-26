@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0a6cff">
+  <title>{% block title %}Backup iPhone{% endblock %} · Backup iPhone</title>
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="icon" href="/static/icon-192.png">
+  <link rel="apple-touch-icon" href="/static/icon-192.png">
+  <link rel="stylesheet" href="/static/app.css?v={{ version }}">
+</head>
+<body {% block body_attrs %}{% endblock %}>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="/"><img src="/static/icon-192.png" alt="">Backup iPhone
+        {% if demo %}<span class="demo">DEMO</span>{% endif %}</a>
+      <nav class="nav" aria-label="Sezioni">
+        <a href="/" class="{{ 'active' if nav in ('dashboard', 'pair') }}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg><span>Home</span></a>
+        <a href="/backup" class="{{ 'active' if nav == 'backups' }}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h18v5H3zM5 9v11h14V9M10 13h4"/></svg><span>Backup</span></a>
+        <a href="/whatsapp" class="{{ 'active' if nav.startswith('whatsapp') }}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 12a8.5 8.5 0 0 1-12.3 7.6L3.5 20.5l1-4.5A8.5 8.5 0 1 1 20.5 12z"/></svg><span>WhatsApp</span></a>
+        <a href="/ripristina" class="{{ 'active' if nav == 'restore' }}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 12a8.5 8.5 0 1 0 2.6-6.1M3.5 4v5h5"/></svg><span>Ripristina</span></a>
+        <a href="/impostazioni" class="{{ 'active' if nav in ('settings', 'log') }}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/></svg><span>Impostazioni</span></a>
+      </nav>
+    </div>
+  </header>
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+  <script src="/static/app.js?v={{ version }}"></script>
+</body>
+</html>

@@ -1,0 +1,14 @@
+{% extends "auth_base.html" %}
+{% block title %}Primo avvio{% endblock %}
+{% block content %}
+<h1>Benvenuto</h1>
+<p class="lead">Scegli la password per entrare in questa pagina. Ti servirà da Chrome, in casa o tramite Tailscale.</p>
+{% if error %}<div class="alert err">{{ error }}</div>{% endif %}
+<form method="post" action="/setup">
+  <div class="field"><label for="password">Nuova password</label>
+    <input id="password" name="password" type="password" autocomplete="new-password" minlength="8" required></div>
+  <div class="field"><label for="confirm">Ripeti la password</label>
+    <input id="confirm" name="confirm" type="password" autocomplete="new-password" minlength="8" required></div>
+  <button class="btn primary block" type="submit">Salva e continua</button>
+</form>
+{% endblock %}

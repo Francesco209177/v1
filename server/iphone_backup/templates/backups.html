@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% from "_macros.html" import job_panel %}
+{% block title %}Backup{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>Backup salvati</h1>
+  <p class="muted">Cartella: <code>{{ service.paths.backups }}</code> · spazio libero {{ disk.free | size }} su {{ disk.total | size }}</p>
+</div>
+
+{% if not backups %}
+<div class="card"><p>Nessun backup ancora. Associa l'iPhone e fai il primo backup dalla <a href="/">Home</a>.</p></div>
+{% else %}
+<div class="stack">
+  {% for b in backups %}
+  <section class="card">
+    <div class="job-head" style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap">
+      <h2>{{ b.device_name }} — {{ b.label }}</h2>
+      <span>{% if b.complete %}<span class="badge ok">Completo</span>{% else %}<span class="badge warn">Incompleto</span>{% endif %}
+        {% if b.encrypted %}<span class="badge ok">🔒 Cifrato</span>{% else %}<span class="badge warn">Non cifrato</span>{% endif %}</span>
+    </div>
+    <dl class="kv">
+      <dt>Data</dt><dd>{{ b.date | when }}</dd>
+      <dt>Dimensione</dt><dd>{{ b.size | size }}</dd>
+      <dt>iOS</dt><dd>{{ b.ios_version or '?' }} ({{ b.product_type }})</dd>
+      <dt>Cartella</dt><dd><code>{{ b.path }}</code></dd>
+    </dl>
+    {% if b.kind == 'copia-sicura' %}<p class="hint">È la copia dell'ultimo backup andato a buon fine: resta intatta anche se il backup successivo si interrompe.</p>{% endif %}
+    <div class="actions">
+      <a class="btn" href="/backup/scarica/{{ b.kind }}/{{ b.udid }}">⬇︎ Scarica (.zip)</a>
+    </div>
+    {% if b.encrypted %}
+    <form class="actions" data-backup-form="/api/verify" autocomplete="off" style="align-items:flex-end">
+      <input type="hidden" name="backup" value="{{ b.kind }}|{{ b.udid }}">
+      <div style="flex:1 1 220px"><label for="pw-{{ loop.index }}">Verifica la password del backup</label>
+        <input id="pw-{{ loop.index }}" name="password" type="password" required autocomplete="off"></div>
+      <button class="btn" type="submit" data-needs-idle>Verifica</button>
+    </form>
+    {% endif %}
+  </section>
+  {% endfor %}
+  {{ job_panel() }}
+  <section class="card">
+    <h2>Ripristinare da un computer (alternativa)</h2>
+    <p>Scarica lo zip, estrailo e copia la cartella (il nome è l'identificativo dell'iPhone) in:</p>
+    <ul>
+      <li>Mac: <code>~/Library/Application Support/MobileSync/Backup/</code></li>
+      <li>Windows (iTunes): <code>%APPDATA%\Apple Computer\MobileSync\Backup\</code></li>
+      <li>Windows (app Apple Devices / iTunes Microsoft Store): <code>%USERPROFILE%\Apple\MobileSync\Backup\</code></li>
+    </ul>
+    <p>Poi collega il nuovo iPhone e scegli "Ripristina backup…" in Finder, iTunes o Apple Devices. Il modo più semplice resta la pagina <a href="/ripristina">Ripristina</a>, direttamente dal server.</p>
+  </section>
+</div>
+{% endif %}
+{% endblock %}
