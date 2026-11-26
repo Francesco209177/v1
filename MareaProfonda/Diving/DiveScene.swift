@@ -85,6 +85,8 @@ final class DiveScene: BaseScene {
     private let pauseLayer: SKNode = SKNode()
     private let pauseVeil: SKSpriteNode = SKSpriteNode(color: Theme.ink, size: CGSize(width: 10, height: 10))
     private let pauseTitle: PixelLabel = PixelLabel(text: "PAUSA", color: SKColor.white, alignment: PixelLabel.Alignment.center)
+    /// Il contenuto della sacca, da consultare in pausa.
+    private let pauseBag: SKLabelNode = SKLabelNode()
     private let resumeButton: PillButton = PillButton(text: String(localized: "Riprendi"), size: CGSize(width: 200, height: 48), fill: Theme.turquoise)
     private let quitButton: PillButton = PillButton(text: String(localized: "Abbandona l'immersione"), size: CGSize(width: 200, height: 48), fill: Theme.lime)
     /// Pausa chiesta dal giocatore (diversa da `isPaused` di SpriteKit, che ferma anche l'HUD).
@@ -314,6 +316,11 @@ final class DiveScene: BaseScene {
         pauseLayer.addChild(pauseVeil)
         pauseTitle.zPosition = 1
         pauseLayer.addChild(pauseTitle)
+        pauseBag.zPosition = 1
+        pauseBag.numberOfLines = 0
+        pauseBag.horizontalAlignmentMode = SKLabelHorizontalAlignmentMode.center
+        pauseBag.verticalAlignmentMode = SKLabelVerticalAlignmentMode.top
+        pauseLayer.addChild(pauseBag)
         resumeButton.zPosition = 1
         quitButton.zPosition = 1
         pauseLayer.addChild(resumeButton)
@@ -350,9 +357,11 @@ final class DiveScene: BaseScene {
         controls.layout(safe: safe, iconScale: hudIconScale(2.0))
         pauseVeil.size = CGSize(width: size.width + 4, height: size.height + 4)
         pauseTitle.setScale(unit * 4)
-        pauseTitle.position = CGPoint(x: 0, y: size.height * 0.22)
-        resumeButton.position = CGPoint(x: 0, y: 4)
-        quitButton.position = CGPoint(x: 0, y: -58)
+        pauseTitle.position = CGPoint(x: 0, y: size.height * 0.34)
+        pauseBag.preferredMaxLayoutWidth = min(size.width * 0.7, 520)
+        pauseBag.position = CGPoint(x: 0, y: size.height * 0.24)
+        resumeButton.position = CGPoint(x: -110, y: -size.height * 0.30)
+        quitButton.position = CGPoint(x: 110, y: -size.height * 0.30)
         results?.layout(sceneSize: size, safe: safe, pixelScale: unit)
         flash.size = CGSize(width: size.width + 4, height: size.height + 4)
         // Minimappa in alto a destra, sotto il tasto di pausa.
@@ -1140,8 +1149,35 @@ final class DiveScene: BaseScene {
 
     // MARK: - Pausa
 
+    /// Riassunto della sacca: specie per specie, con stelle e peso.
+    private func bagSummary() -> String {
+        let bag: DiveBag = sim.bag
+        var groups: [String: (count: Int, weight: Double)] = [:]
+        for item in bag.fish {
+            let name: String = GameData.shared.fish.find(item.speciesId)?.name.text() ?? item.speciesId
+            let key: String = "\(name) " + String(repeating: "★", count: item.stars)
+            let old: (count: Int, weight: Double) = groups[key] ?? (count: 0, weight: 0)
+            groups[key] = (count: old.count + 1, weight: old.weight + item.weight)
+        }
+        var lines: [String] = []
+        for key in groups.keys.sorted().prefix(8) {
+            let entry: (count: Int, weight: Double) = groups[key] ?? (count: 0, weight: 0)
+            lines.append("\(key) ×\(entry.count) · " + String(format: "%.1f kg", entry.weight))
+        }
+        for kind in bag.materials.keys.sorted() {
+            if let pickup: PickupPoint.Kind = PickupPoint.Kind(rawValue: kind) { lines.append("\(DiveScene.pickupName(pickup)) ×\(bag.materials[kind] ?? 0)") }
+        }
+        if !bag.relics.isEmpty { lines.append(String(localized: "Maioliche dei Nerei ×\(bag.relics.count)")) }
+        let total: String = String(format: "%.1f / %.0f kg", bag.totalWeight, bag.maxWeight)
+        let head: String = String(localized: "Sacca: \(total)")
+        return lines.isEmpty ? head + "\n" + String(localized: "Ancora vuota.") : head + "\n" + lines.joined(separator: "\n")
+    }
+
     private func setPaused(_ value: Bool) {
         userPaused = value
+        if value {
+            pauseBag.attributedText = Theme.attributed(bagSummary(), size: 14, weight: UIFont.Weight.semibold, color: Theme.lime)
+        }
         world.isPaused = value
         pauseLayer.isHidden = !value
         controls.releaseAll()
