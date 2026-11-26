@@ -42,7 +42,7 @@ struct VillageView: View {
                     Spacer(minLength: 0)
                     Chip(text: "\(state.gold)", icon: "icon_coin", tint: Palette.ochre)
                     TabChip(title: String(localized: "Chiudi"), selected: false, order: 9, focus: focus) {
-                        OverlayCenter.shared.show(OverlayScreen.hub)
+                        SceneRouter.shared.backToHub()
                     }
                 }
                 Divider()
@@ -67,7 +67,7 @@ struct VillageView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Palette.ink.opacity(0.6).ignoresSafeArea())
         .onAppear {
-            focus.onBack = { OverlayCenter.shared.show(OverlayScreen.hub) }
+            focus.onBack = { SceneRouter.shared.backToHub() }
             focus.start()
         }
         .onDisappear { focus.stop() }

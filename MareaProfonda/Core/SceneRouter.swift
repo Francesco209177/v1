@@ -42,6 +42,16 @@ final class SceneRouter {
         }
     }
 
+    /// Chiude un menu aperto sopra il porto. Se nel frattempo la storia è andata avanti
+    /// (un acquisto, una ricompensa), prima si mostra la scena che aspetta.
+    func backToHub() {
+        if GameSession.shared.pendingScene() != nil {
+            showHub()
+        } else {
+            OverlayCenter.shared.show(OverlayScreen.hub)
+        }
+    }
+
     func startDive() {
         guard let view: SKView = view else { return }
         OverlayCenter.shared.show(nil)

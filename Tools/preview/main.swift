@@ -92,6 +92,41 @@ do {
             try PNGWriter.write(canvas, to: "\(outDir)/terrain_\(zone.id).png")
             print("\(zone.id): finestra \(w)x\(h) dipinta in \(ms) ms")
         }
+    case "arena":
+        // Le sale dei boss, una sotto l'altra: roccia, tane, campane, punti di partenza.
+        let world: WorldData = try DataFiles.load(WorldData.self, file: "zones.json", in: root.appendingPathComponent("MareaProfonda/Data"))
+        let bosses: BossBook = try DataFiles.load(BossBook.self, file: "bosses.json", in: root.appendingPathComponent("MareaProfonda/Data"))
+        let styles: [TerrainStyle] = TerrainPainter.styles(for: world)
+        let w: Int = 800
+        let h: Int = 300
+        var sheet: PixelBuffer = PixelBuffer(width: w, height: h * bosses.bosses.count)
+        for (index, info) in bosses.bosses.enumerated() {
+            let built: (map: CaveMap, arena: Arena) = CaveGenerator.arena(seed: 7, world: world, boss: info)
+            let arena: Arena = built.arena
+            let ox: Int = Int(arena.center.x) - w / 2
+            let oy: Int = Int(arena.center.y) - h / 2
+            let zone: ZoneInfo = world.zone(atDepth: info.depth) ?? world.zones[0]
+            let water: RGBA = (RGBA(hexString: zone.waterTop) ?? RGBA.black).mixed(with: RGBA(hexString: zone.waterBottom) ?? RGBA.black, 0.5)
+            var canvas: PixelBuffer = PixelBuffer(width: w, height: h)
+            canvas.fillRect(x: 0, y: 0, width: w, height: h, water)
+            canvas.draw(TerrainPainter.paint(map: built.map, world: world, styles: styles, originX: ox, originY: oy, width: w, height: h).image, atX: 0, y: 0)
+            func mark(_ p: Vec2, _ color: RGBA, _ size: Int) {
+                canvas.fillRect(x: Int(p.x) - ox - size / 2, y: Int(p.y) - oy - size / 2, width: size, height: size, color)
+            }
+            for hole in arena.holes { mark(hole.position, RGBA(hex: 0xFFE040), 8) }
+            for bell in arena.bells { mark(bell, RGBA(hex: 0x60E0FF), 8) }
+            mark(arena.diverStart, RGBA(hex: 0x40FF90), 10)
+            mark(arena.bossStart, RGBA(hex: 0xFF5050), Int(info.radius * 2))
+            // Riquadro dello schermo (circa 520 x 240 pixel d'arte) attorno a Tecla.
+            for x in 0..<520 where x % 4 < 2 {
+                canvas.set(Int(arena.center.x) - ox - 260 + x, Int(arena.center.y) - oy - 120, RGBA(hex: 0xFFFFFF))
+                canvas.set(Int(arena.center.x) - ox - 260 + x, Int(arena.center.y) - oy + 120, RGBA(hex: 0xFFFFFF))
+            }
+            sheet.draw(canvas, atX: 0, y: index * h)
+            print("\(info.id): sala \(Int(arena.width)) x \(Int(arena.height)), tane \(arena.holes.count)")
+        }
+        try PNGWriter.write(sheet, to: "\(outDir)/arenas.png")
+
     case "backdrop":
         let far: PixelBuffer = BackdropPainter.rockLayer(size: 256, seed: 11, cellsX: 5, cellsY: 2, coverage: 0.42, softEdge: 0.03)
         let mid: PixelBuffer = BackdropPainter.rockLayer(size: 256, seed: 22, cellsX: 6, cellsY: 3, coverage: 0.36, softEdge: 0.015)
