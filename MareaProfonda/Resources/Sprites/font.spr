@@ -1,0 +1,566 @@
+# Font a pixel
+# Generato da Tools/forge: non modificare a mano, rigenera con `python3 Tools/forge/build.py`.
+
+palette font
+w ffffffff
+end
+
+sprite font_32 3 7 font ax=0 ay=7
+...
+...
+...
+...
+...
+...
+...
+end
+
+sprite font_33 1 7 font ax=0 ay=7
+w
+w
+w
+w
+w
+.
+w
+end
+
+sprite font_37 5 7 font ax=0 ay=7
+ww..w
+ww..w
+...w.
+..w..
+.w...
+w..ww
+w..ww
+end
+
+sprite font_39 1 7 font ax=0 ay=7
+w
+w
+.
+.
+.
+.
+.
+end
+
+sprite font_40 2 7 font ax=0 ay=7
+.w
+w.
+w.
+w.
+w.
+w.
+.w
+end
+
+sprite font_41 2 7 font ax=0 ay=7
+w.
+.w
+.w
+.w
+.w
+.w
+w.
+end
+
+sprite font_43 5 7 font ax=0 ay=7
+.....
+..w..
+..w..
+wwwww
+..w..
+..w..
+.....
+end
+
+sprite font_44 2 7 font ax=0 ay=7
+..
+..
+..
+..
+..
+.w
+w.
+end
+
+sprite font_45 3 7 font ax=0 ay=7
+...
+...
+...
+www
+...
+...
+...
+end
+
+sprite font_46 1 7 font ax=0 ay=7
+.
+.
+.
+.
+.
+.
+w
+end
+
+sprite font_47 5 7 font ax=0 ay=7
+....w
+....w
+...w.
+..w..
+.w...
+w....
+w....
+end
+
+sprite font_48 5 7 font ax=0 ay=7
+.www.
+w...w
+w..ww
+w.w.w
+ww..w
+w...w
+.www.
+end
+
+sprite font_49 3 7 font ax=0 ay=7
+.w.
+ww.
+.w.
+.w.
+.w.
+.w.
+www
+end
+
+sprite font_50 5 7 font ax=0 ay=7
+.www.
+w...w
+....w
+...w.
+..w..
+.w...
+wwwww
+end
+
+sprite font_51 5 7 font ax=0 ay=7
+.www.
+w...w
+....w
+..ww.
+....w
+w...w
+.www.
+end
+
+sprite font_52 5 7 font ax=0 ay=7
+...w.
+..ww.
+.w.w.
+w..w.
+wwwww
+...w.
+...w.
+end
+
+sprite font_53 5 7 font ax=0 ay=7
+wwwww
+w....
+wwww.
+....w
+....w
+w...w
+.www.
+end
+
+sprite font_54 5 7 font ax=0 ay=7
+.www.
+w....
+w....
+wwww.
+w...w
+w...w
+.www.
+end
+
+sprite font_55 5 7 font ax=0 ay=7
+wwwww
+....w
+...w.
+..w..
+..w..
+..w..
+..w..
+end
+
+sprite font_56 5 7 font ax=0 ay=7
+.www.
+w...w
+w...w
+.www.
+w...w
+w...w
+.www.
+end
+
+sprite font_57 5 7 font ax=0 ay=7
+.www.
+w...w
+w...w
+.wwww
+....w
+....w
+.www.
+end
+
+sprite font_58 1 7 font ax=0 ay=7
+.
+.
+w
+.
+.
+w
+.
+end
+
+sprite font_63 5 7 font ax=0 ay=7
+.www.
+w...w
+....w
+...w.
+..w..
+.....
+..w..
+end
+
+sprite font_65 5 7 font ax=0 ay=7
+.www.
+w...w
+w...w
+wwwww
+w...w
+w...w
+w...w
+end
+
+sprite font_66 5 7 font ax=0 ay=7
+wwww.
+w...w
+w...w
+wwww.
+w...w
+w...w
+wwww.
+end
+
+sprite font_67 5 7 font ax=0 ay=7
+.www.
+w...w
+w....
+w....
+w....
+w...w
+.www.
+end
+
+sprite font_68 5 7 font ax=0 ay=7
+wwww.
+w...w
+w...w
+w...w
+w...w
+w...w
+wwww.
+end
+
+sprite font_69 5 7 font ax=0 ay=7
+wwwww
+w....
+w....
+wwww.
+w....
+w....
+wwwww
+end
+
+sprite font_70 5 7 font ax=0 ay=7
+wwwww
+w....
+w....
+wwww.
+w....
+w....
+w....
+end
+
+sprite font_71 5 7 font ax=0 ay=7
+.www.
+w...w
+w....
+w.www
+w...w
+w...w
+.www.
+end
+
+sprite font_72 5 7 font ax=0 ay=7
+w...w
+w...w
+w...w
+wwwww
+w...w
+w...w
+w...w
+end
+
+sprite font_73 3 7 font ax=0 ay=7
+www
+.w.
+.w.
+.w.
+.w.
+.w.
+www
+end
+
+sprite font_74 5 7 font ax=0 ay=7
+..www
+...w.
+...w.
+...w.
+...w.
+w..w.
+.ww..
+end
+
+sprite font_75 5 7 font ax=0 ay=7
+w...w
+w..w.
+w.w..
+ww...
+w.w..
+w..w.
+w...w
+end
+
+sprite font_76 5 7 font ax=0 ay=7
+w....
+w....
+w....
+w....
+w....
+w....
+wwwww
+end
+
+sprite font_77 5 7 font ax=0 ay=7
+w...w
+ww.ww
+w.w.w
+w.w.w
+w...w
+w...w
+w...w
+end
+
+sprite font_78 5 7 font ax=0 ay=7
+w...w
+ww..w
+w.w.w
+w..ww
+w...w
+w...w
+w...w
+end
+
+sprite font_79 5 7 font ax=0 ay=7
+.www.
+w...w
+w...w
+w...w
+w...w
+w...w
+.www.
+end
+
+sprite font_80 5 7 font ax=0 ay=7
+wwww.
+w...w
+w...w
+wwww.
+w....
+w....
+w....
+end
+
+sprite font_81 5 7 font ax=0 ay=7
+.www.
+w...w
+w...w
+w...w
+w.w.w
+w..w.
+.ww.w
+end
+
+sprite font_82 5 7 font ax=0 ay=7
+wwww.
+w...w
+w...w
+wwww.
+w.w..
+w..w.
+w...w
+end
+
+sprite font_83 5 7 font ax=0 ay=7
+.wwww
+w....
+w....
+.www.
+....w
+....w
+wwww.
+end
+
+sprite font_84 5 7 font ax=0 ay=7
+wwwww
+..w..
+..w..
+..w..
+..w..
+..w..
+..w..
+end
+
+sprite font_85 5 7 font ax=0 ay=7
+w...w
+w...w
+w...w
+w...w
+w...w
+w...w
+.www.
+end
+
+sprite font_86 5 7 font ax=0 ay=7
+w...w
+w...w
+w...w
+w...w
+w...w
+.w.w.
+..w..
+end
+
+sprite font_87 5 7 font ax=0 ay=7
+w...w
+w...w
+w...w
+w.w.w
+w.w.w
+ww.ww
+w...w
+end
+
+sprite font_88 5 7 font ax=0 ay=7
+w...w
+w...w
+.w.w.
+..w..
+.w.w.
+w...w
+w...w
+end
+
+sprite font_89 5 7 font ax=0 ay=7
+w...w
+w...w
+.w.w.
+..w..
+..w..
+..w..
+..w..
+end
+
+sprite font_90 5 7 font ax=0 ay=7
+wwwww
+....w
+...w.
+..w..
+.w...
+w....
+wwwww
+end
+
+sprite font_192 5 7 font ax=0 ay=7
+.w...
+..w..
+.www.
+w...w
+wwwww
+w...w
+w...w
+end
+
+sprite font_200 5 7 font ax=0 ay=7
+.w...
+..w..
+wwwww
+w....
+wwww.
+w....
+wwwww
+end
+
+sprite font_201 5 7 font ax=0 ay=7
+...w.
+..w..
+wwwww
+w....
+wwww.
+w....
+wwwww
+end
+
+sprite font_204 3 7 font ax=0 ay=7
+w..
+.w.
+www
+.w.
+.w.
+.w.
+www
+end
+
+sprite font_210 5 7 font ax=0 ay=7
+.w...
+..w..
+.www.
+w...w
+w...w
+w...w
+.www.
+end
+
+sprite font_215 5 7 font ax=0 ay=7
+.....
+w...w
+.w.w.
+..w..
+.w.w.
+w...w
+.....
+end
+
+sprite font_217 5 7 font ax=0 ay=7
+.w...
+..w..
+w...w
+w...w
+w...w
+w...w
+.www.
+end

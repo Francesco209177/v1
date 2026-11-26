@@ -1,0 +1,127 @@
+name: Build IPA
+
+on:
+  push:
+    branches: ["**"]
+    tags: ["v*"]
+    paths-ignore:
+      - "**.md"
+      - "**.pine"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  SCHEME: MareaProfonda
+  BUNDLE_ID: it.mareaprofonda.game
+
+jobs:
+  logic:
+    name: Logica pura (swift test su Linux)
+    runs-on: ubuntu-latest
+    container: swift:6.2
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test
+        run: swift test 2>&1 | tail -n 60
+
+  ipa:
+    name: IPA non firmata
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Xcode
+        run: |
+          if [ -d /Applications/Xcode_26.6.app ]; then sudo xcode-select -s /Applications/Xcode_26.6.app; fi
+          xcodebuild -version
+          swift --version
+
+      - name: XcodeGen
+        run: |
+          command -v xcodegen >/dev/null || brew install xcodegen
+          xcodegen generate 2>&1 | tee xcodegen.log
+          if grep -qi "unknown key" xcodegen.log; then echo "::error::project.yml contiene chiavi sconosciute"; exit 1; fi
+
+      # Controllo dei tipi su tutti i file in una volta: elenca ogni errore in un solo giro.
+      - name: Controllo dei tipi
+        run: |
+          set -o pipefail
+          find MareaProfonda -name '*.swift' -print0 | xargs -0 \
+            xcrun --sdk iphonesimulator swiftc -typecheck -swift-version 5 \
+              -target arm64-apple-ios16.0-simulator -suppress-warnings 2>&1 | tee typecheck.log | tail -n 200
+          ! grep -q "error:" typecheck.log
+
+      - name: Archivio senza firma
+        run: |
+          set -o pipefail
+          xcodebuild archive \
+            -project MareaProfonda.xcodeproj -scheme "$SCHEME" \
+            -configuration Release -destination 'generic/platform=iOS' \
+            -archivePath "$RUNNER_TEMP/MareaProfonda.xcarchive" \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
+            SWIFT_SUPPRESS_WARNINGS=YES -quiet 2>&1 | tee archive.log | tail -n 200
+
+      - name: Crea MareaProfonda.ipa
+        run: |
+          APP="$RUNNER_TEMP/MareaProfonda.xcarchive/Products/Applications/MareaProfonda.app"
+          test -d "$APP"
+          plutil -p "$APP/Info.plist" | head -n 60
+          ls "$APP" | head -n 40
+          rm -rf Payload && mkdir Payload
+          cp -R "$APP" Payload/
+          zip -qry MareaProfonda.ipa Payload
+          ls -lh MareaProfonda.ipa
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: MareaProfonda-ipa
+          path: MareaProfonda.ipa
+          if-no-files-found: error
+
+      - name: Allega alla Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1 || gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --generate-notes
+          gh release upload "$GITHUB_REF_NAME" MareaProfonda.ipa --clobber
+
+  smoke:
+    name: Prova di avvio nel simulatore
+    runs-on: macos-26
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Xcode e XcodeGen
+        run: |
+          if [ -d /Applications/Xcode_26.6.app ]; then sudo xcode-select -s /Applications/Xcode_26.6.app; fi
+          command -v xcodegen >/dev/null || brew install xcodegen
+          xcodegen generate
+
+      - name: Compila per il simulatore
+        run: |
+          set -o pipefail
+          xcodebuild build \
+            -project MareaProfonda.xcodeproj -scheme "$SCHEME" \
+            -configuration Release -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath "$RUNNER_TEMP/dd" ARCHS=arm64 ONLY_ACTIVE_ARCH=NO \
+            SWIFT_SUPPRESS_WARNINGS=YES -quiet 2>&1 | tee simbuild.log | tail -n 200
+
+      - name: Avvia e percorri le scene
+        run: bash Tools/ci/smoke.sh "$RUNNER_TEMP/dd/Build/Products/Release-iphonesimulator/MareaProfonda.app"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: smoke
+          path: |
+            smoke-out/
+          if-no-files-found: warn

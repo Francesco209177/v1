@@ -1,0 +1,48 @@
+# Mare: particelle e oggetti
+# Generato da Tools/forge: non modificare a mano, rigenera con `python3 Tools/forge/build.py`.
+
+palette sea
+b d6f3fbe6
+i bfe9f748
+w ffffffff
+p e8f6d8b0
+q a8d8c880
+end
+
+sprite bubble_0 3 3 sea ax=1 ay=1
+.b.
+bib
+.b.
+end
+
+sprite bubble_1 5 5 sea ax=2 ay=2
+.bbb.
+bwiib
+biiib
+biiib
+.bbb.
+end
+
+sprite bubble_2 7 7 sea ax=3 ay=3
+..bbb..
+.bwwib.
+bwiiiib
+biiiiib
+biiiiib
+.biiib.
+..bbb..
+end
+
+sprite plankton_0 1 1 sea ax=0 ay=0
+p
+end
+
+sprite plankton_1 1 1 sea ax=0 ay=0
+q
+end
+
+sprite plankton_2 3 3 sea ax=1 ay=1
+.p.
+pqp
+.p.
+end

@@ -1,0 +1,66 @@
+{
+  "pixelsPerMeter": 16,
+  "mapWidthMeters": 96,
+  "zones": [
+    {
+      "id": "posidonia",
+      "name": { "it": "Prateria di Posidonia" },
+      "depthFrom": 0,
+      "depthTo": 40,
+      "waterTop": "58d6d0",
+      "waterBottom": "1f8fb0",
+      "light": 1.0,
+      "needsTorch": false
+    },
+    {
+      "id": "gorgonie",
+      "name": { "it": "Secca delle Gorgonie" },
+      "depthFrom": 40,
+      "depthTo": 110,
+      "waterTop": "1f8fb0",
+      "waterBottom": "125a94",
+      "light": 0.8,
+      "needsTorch": false
+    },
+    {
+      "id": "parete",
+      "name": { "it": "Parete Blu" },
+      "depthFrom": 110,
+      "depthTo": 220,
+      "waterTop": "125a94",
+      "waterBottom": "0b3068",
+      "light": 0.55,
+      "needsTorch": false
+    },
+    {
+      "id": "citta",
+      "name": { "it": "Città Sommersa" },
+      "depthFrom": 220,
+      "depthTo": 360,
+      "waterTop": "0b3068",
+      "waterBottom": "07173c",
+      "light": 0.3,
+      "needsTorch": true
+    },
+    {
+      "id": "fumarole",
+      "name": { "it": "Fumarole" },
+      "depthFrom": 360,
+      "depthTo": 520,
+      "waterTop": "07173c",
+      "waterBottom": "05060f",
+      "light": 0.12,
+      "needsTorch": true
+    },
+    {
+      "id": "santuario",
+      "name": { "it": "Santuario dei Nerei" },
+      "depthFrom": 520,
+      "depthTo": 600,
+      "waterTop": "05060f",
+      "waterBottom": "0a2a2a",
+      "light": 0.2,
+      "needsTorch": true
+    }
+  ]
+}

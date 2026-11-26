@@ -1,0 +1,71 @@
+name: MareaProfonda
+
+options:
+  bundleIdPrefix: it.mareaprofonda
+  developmentLanguage: it
+  createIntermediateGroups: true
+  deploymentTarget:
+    iOS: "16.0"
+
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    IPHONEOS_DEPLOYMENT_TARGET: "16.0"
+    TARGETED_DEVICE_FAMILY: "1"
+    MARKETING_VERSION: "0.1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    SWIFT_STRICT_CONCURRENCY: minimal
+    LOCALIZATION_PREFERS_STRING_CATALOGS: "YES"
+    ENABLE_USER_SCRIPT_SANDBOXING: "NO"
+
+targets:
+  MareaProfonda:
+    type: application
+    platform: iOS
+    sources:
+      - path: MareaProfonda
+        excludes:
+          - "Data"
+          - "Data/**"
+          - "Resources/Sprites"
+          - "Resources/Sprites/**"
+      # Cartelle copiate così come sono nel bundle (i nomi dei file restano liberi).
+      - path: MareaProfonda/Data
+        type: folder
+        buildPhase: resources
+      - path: MareaProfonda/Resources/Sprites
+        type: folder
+        buildPhase: resources
+    info:
+      path: MareaProfonda/App/Info.plist
+      properties:
+        CFBundleDisplayName: Marea Profonda
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        LSRequiresIPhoneOS: true
+        LSApplicationCategoryType: public.app-category.adventure-games
+        ITSAppUsesNonExemptEncryption: false
+        UILaunchScreen:
+          UIColorName: LaunchBackground
+        UIStatusBarHidden: true
+        UIViewControllerBasedStatusBarAppearance: true
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        CADisableMinimumFrameDurationOnPhone: true
+        GCSupportsControllerUserInteraction: true
+        GCSupportedGameControllers:
+          - ProfileName: ExtendedGamepad
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: false
+          UISceneConfigurations:
+            UIWindowSceneSessionRoleApplication:
+              - UISceneConfigurationName: Default
+                UISceneDelegateClassName: $(PRODUCT_MODULE_NAME).SceneDelegate
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: it.mareaprofonda.game
+        PRODUCT_NAME: MareaProfonda
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+    scheme:
+      gatherCoverageData: false
