@@ -51,21 +51,26 @@ jobs:
       # Controllo dei tipi su tutti i file in una volta: elenca ogni errore in un solo giro.
       - name: Controllo dei tipi
         run: |
-          set -o pipefail
+          set +e
           find MareaProfonda -name '*.swift' -print0 | xargs -0 \
             xcrun --sdk iphonesimulator swiftc -typecheck -swift-version 5 \
-              -target arm64-apple-ios16.0-simulator -suppress-warnings 2>&1 | tee typecheck.log | tail -n 200
+              -target arm64-apple-ios16.0-simulator -suppress-warnings > typecheck.log 2>&1
+          grep -E "error:" typecheck.log | cut -c 1-400 | sort -u | head -n 120
           ! grep -q "error:" typecheck.log
 
       - name: Archivio senza firma
         run: |
-          set -o pipefail
+          set +e
           xcodebuild archive \
             -project MareaProfonda.xcodeproj -scheme "$SCHEME" \
             -configuration Release -destination 'generic/platform=iOS' \
             -archivePath "$RUNNER_TEMP/MareaProfonda.xcarchive" \
             CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
-            SWIFT_SUPPRESS_WARNINGS=YES -quiet 2>&1 | tee archive.log | tail -n 200
+            SWIFT_SUPPRESS_WARNINGS=YES -quiet > archive.log 2>&1
+          status=$?
+          # In caso di errore mostra solo le righe utili, non l'intero comando del compilatore.
+          grep -E "error:|\*\* ARCHIVE" archive.log | cut -c 1-400 | sort -u | head -n 80
+          exit $status
 
       - name: Crea MareaProfonda.ipa
         run: |
@@ -94,6 +99,7 @@ jobs:
 
   smoke:
     name: Prova di avvio nel simulatore
+    needs: ipa
     runs-on: macos-26
     timeout-minutes: 40
     steps:
@@ -107,13 +113,16 @@ jobs:
 
       - name: Compila per il simulatore
         run: |
-          set -o pipefail
+          set +e
           xcodebuild build \
             -project MareaProfonda.xcodeproj -scheme "$SCHEME" \
             -configuration Release -sdk iphonesimulator \
             -destination 'generic/platform=iOS Simulator' \
             -derivedDataPath "$RUNNER_TEMP/dd" ARCHS=arm64 ONLY_ACTIVE_ARCH=NO \
-            SWIFT_SUPPRESS_WARNINGS=YES -quiet 2>&1 | tee simbuild.log | tail -n 200
+            SWIFT_SUPPRESS_WARNINGS=YES -quiet > simbuild.log 2>&1
+          status=$?
+          grep -E "error:|\*\* BUILD" simbuild.log | cut -c 1-400 | sort -u | head -n 80
+          exit $status
 
       - name: Avvia e percorri le scene
         run: bash Tools/ci/smoke.sh "$RUNNER_TEMP/dd/Build/Products/Release-iphonesimulator/MareaProfonda.app"

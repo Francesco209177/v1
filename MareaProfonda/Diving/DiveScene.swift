@@ -53,7 +53,8 @@ final class DiveScene: BaseScene {
     private let pauseTitle: PixelLabel = PixelLabel(text: "PAUSA", color: SKColor.white, alignment: PixelLabel.Alignment.center)
     private let resumeButton: PillButton = PillButton(text: String(localized: "Riprendi"), size: CGSize(width: 200, height: 48), fill: Theme.turquoise)
     private let quitButton: PillButton = PillButton(text: String(localized: "Torna al titolo"), size: CGSize(width: 200, height: 48), fill: Theme.lime)
-    private var paused: Bool = false
+    /// Pausa chiesta dal giocatore (diversa da `isPaused` di SpriteKit, che ferma anche l'HUD).
+    private var userPaused: Bool = false
     private var pressedPill: PillButton?
 
     // Stato
@@ -203,9 +204,9 @@ final class DiveScene: BaseScene {
         input.beginFrame()
 
         if input.pressed.contains(GameButtons.pause) {
-            setPaused(!paused)
+            setPaused(!userPaused)
         }
-        if paused {
+        if userPaused {
             if input.pressed.contains(GameButtons.interact) || input.pressed.contains(GameButtons.primary) { setPaused(false) }
             return
         }
@@ -379,7 +380,7 @@ final class DiveScene: BaseScene {
     // MARK: - Pausa
 
     private func setPaused(_ value: Bool) {
-        paused = value
+        userPaused = value
         world.isPaused = value
         pauseLayer.isHidden = !value
         controls.releaseAll()
@@ -391,7 +392,7 @@ final class DiveScene: BaseScene {
 
     /// Chiamata quando l'app perde il primo piano.
     func pauseForBackground() {
-        if !paused && !leaving { setPaused(true) }
+        if !userPaused && !leaving { setPaused(true) }
     }
 
     private func leaveToTitle() {
@@ -405,7 +406,7 @@ final class DiveScene: BaseScene {
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         for touch in touches {
             let point: CGPoint = touch.location(in: hud)
-            if paused {
+            if userPaused {
                 if resumeButton.contains(point: point) {
                     pressedPill = resumeButton
                 } else if quitButton.contains(point: point) {
@@ -419,7 +420,7 @@ final class DiveScene: BaseScene {
     }
 
     override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
-        if paused { return }
+        if userPaused { return }
         for touch in touches {
             controls.touchMoved(touch, at: touch.location(in: hud))
         }
@@ -427,7 +428,7 @@ final class DiveScene: BaseScene {
 
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
         for touch in touches {
-            if paused {
+            if userPaused {
                 let point: CGPoint = touch.location(in: hud)
                 let pill: PillButton? = pressedPill
                 pressedPill = nil
