@@ -1,0 +1,161 @@
+# Marea Profonda
+
+Gioco per iPhone, offline, in italiano: di giorno ci si immerge con l'arpione nel **Calderone**, il vulcano sommerso dell'isola di Pietrasale; la sera si serve il pescato all'**osteria di Nonna Ines**. Nativo in Swift e SpriteKit, tutta la grafica è generata dal codice.
+
+È un gioco originale del genere "immersioni di giorno, ristorante la sera": personaggi, ambientazione, storia e grafica sono propri.
+
+> **Stato del lavoro.** Il gioco è in costruzione per milestone. La tabella [Milestone](#milestone) dice che cosa c'è già e che cosa manca: leggila prima di aspettarti il gioco completo.
+
+## Scaricare e installare l'IPA
+
+1. Apri la scheda **Actions** del repository e scegli l'ultima esecuzione riuscita di **Build IPA**.
+2. In fondo alla pagina, sotto *Artifacts*, scarica **MareaProfonda-ipa**: è uno zip che contiene `MareaProfonda.ipa`.
+3. Estrai lo zip sull'iPhone (app File) o sul computer.
+4. In **SideStore** (o AltStore) tocca **+** nella scheda *My Apps* e scegli `MareaProfonda.ipa`.
+
+L'IPA non è firmata: è SideStore a firmarla con il tuo Apple ID. Con un account gratuito la firma dura 7 giorni e va rinnovata da SideStore; i salvataggi restano finché non disinstalli l'app.
+
+Per pubblicare una versione scaricabile dalla pagina *Releases*, crea un tag che comincia per `v` (per esempio `v0.3.0`): il workflow allega l'IPA alla Release.
+
+## Avviare la build
+
+La build parte da sola a ogni push. Per lanciarla a mano: **Actions → Build IPA → Run workflow**.
+
+Il workflow (`.github/workflows/build-ipa.yml`) fa tre cose:
+
+| Job | Che cosa fa |
+|---|---|
+| Logica pura | `swift test` su Linux: mappa, pesci, arpione, osteria, salvataggi |
+| IPA non firmata | genera il progetto con XcodeGen, compila con `CODE_SIGNING_ALLOWED=NO`, crea `Payload/MareaProfonda.app` e lo zippa in `MareaProfonda.ipa` |
+| Prova di avvio | avvia l'app nel simulatore con `-smoke`: l'app percorre da sola le scene, e il job fallisce se va in crash o se uno shader non compila; le schermate finiscono nell'artifact **smoke** |
+
+Usa il runner `macos-26` con Xcode 26.6 (il runner `macos-14` è stato ritirato a novembre 2026).
+
+Per compilare sul tuo Mac: `brew install xcodegen && xcodegen generate`, poi apri `MareaProfonda.xcodeproj`. Il progetto Xcode non è nel repository: lo genera `project.yml`.
+
+## Comandi
+
+**A schermo.** Il joystick compare dove appoggi il pollice sinistro. A destra: arpione (tieni premuto per mirare, trascina per scegliere la direzione, rilascia per tirare; con un pesce agganciato tieni premuto per recuperare e molla durante gli strattoni), azione (raccogli, respira alla campana d'aria, sali a bordo), scatto, pausa.
+
+**Controller** (MFi, DualSense, Xbox). Levetta sinistra per muoversi, levetta destra per mirare, grilletto destro per l'arpione, A/croce per l'azione, B/cerchio per lo scatto, Menu per la pausa. Nei menu la levetta sposta la selezione e A conferma.
+
+## Come si gioca
+
+Ogni giornata ha quattro fasi: **mattina** e **pomeriggio** (un'immersione ciascuna), **sera** (il servizio all'osteria), **notte**.
+
+- **Fiato.** È la salute di Tecla, che scende in apnea. Cala più in fretta in profondità e a ogni colpo subito; si riprende in superficie e alle campane d'aria. A zero Tecla sviene e può tenere un solo oggetto del bottino.
+- **Sacca.** Ha un limite di peso: oltre, si nuota sempre più lenti.
+- **Stelle.** Un pesce preso con un colpo pulito vale due stelle, uno crivellato una sola. Più stelle, prezzo più alto del piatto.
+- **Pesci.** Alcuni scappano se arrivi di corsa ma tollerano un avvicinamento lento; la cernia difende la tana, il barracuda attacca a vista, lo scorfano punge chi lo tocca. Chi sta per caricare si ferma un attimo e mostra un punto esclamativo.
+- **Osteria.** Scegli il menu con ciò che hai in dispensa, poi in sala: prendi gli ordini, porta i piatti dal passavivande, spilla il vino fermandoti nella fascia verde, pulisci i tavoli. Servire in fila fa salire la serie e le mance. La fama fa salire di rango l'osteria: più tavoli, più piatti in menu, prezzi più alti.
+
+## Struttura del codice
+
+```
+project.yml                     progetto Xcode (XcodeGen)
+Package.swift                   compila e testa la sola logica pura, anche su Linux
+MareaProfonda/
+  App/         avvio, controller della vista, prova automatica
+  Core/        scena di base, comandi, controller, partita e salvataggi
+    Model/     vettori, RNG con seme, stato di gioco, impostazioni
+  Diving/      scena di immersione, terreno, parallasse, pesci, HUD
+    Model/     mappa, generatore, nuoto, pesci, arpione, simulazione dell'immersione
+  Restaurant/  scena del servizio
+    Model/     ricette, menu, simulazione del servizio, cameriere automatico
+  Hub/         porto di Pietrasale
+  UI/          comandi a schermo, menu in SwiftUI, riepiloghi
+  Art/         fucina degli sprite, shader, testi a pixel
+    Model/     immagini in memoria, lettura dei file .spr, pittori di terreno e fondali
+  Data/        JSON: zone, pesci, ricette, bilanciamento
+  Resources/   sprite (.spr), icona, catalogo delle stringhe
+Tools/forge/   strumento Python che disegna gli sprite e ne fa le anteprime
+Tools/preview/ anteprime su PNG di terreno e fondali
+Tools/ci/      script della prova di avvio
+Tests/         test della logica
+```
+
+Le cartelle `Model/` importano solo Foundation: per questo si compilano e si provano ovunque, senza simulatore. Le scene disegnano lo stato calcolato lì.
+
+## Grafica generata dal codice
+
+- **Sprite.** Sono matrici di caratteri con palette indicizzata, nei file `MareaProfonda/Resources/Sprites/*.spr`. Il gioco le legge all'avvio, le impacchetta in atlanti e le conserva in cache. Si disegnano con `Tools/forge` (forme, toni, contorni, animazioni parametriche) e si rigenerano con `python3 Tools/forge/build.py`, che scrive anche i fogli di anteprima in `Tools/forge/out/`.
+- **Roccia e fondali.** Dipinti pixel per pixel a runtime dal campo di densità della mappa (`TerrainPainter`, `BackdropPainter`).
+- **Luce e acqua.** Shader: colore dell'acqua per profondità, raggi di luce, caustiche, buio degli abissi con torcia.
+- **Scala intera.** Ogni pixel d'arte occupa un numero intero di pixel fisici su qualunque iPhone; l'interfaccia è a risoluzione nativa.
+
+L'unico file immagine del repository è l'icona dell'app, generata anch'essa (`python3 Tools/forge/icon.py`).
+
+## Aggiungere pesci e ricette
+
+I dati di gioco stanno in `MareaProfonda/Data/`. I nomi sono dentro i JSON, per lingua (`"name": { "it": "Sardina" }`), così per tradurre basta aggiungere una chiave.
+
+**Un pesce** (`fish.json`):
+
+```json
+{ "id": "sardina", "name": { "it": "Sardina" }, "note": { "it": "Viaggia in banchi fitti." },
+  "behavior": "school", "depthMin": 2, "depthMax": 70, "night": false, "spawnWeight": 10,
+  "schoolMin": 7, "schoolMax": 12, "speed": 34, "fleeSpeed": 92, "hp": 5, "weight": 0.2,
+  "radius": 4, "sight": 46, "damage": 0, "pull": 0.0, "rarity": 1, "price": 4 }
+```
+
+`behavior` può essere `passive`, `shy`, `school`, `territorial`, `aggressive`, `ambush`. Servono anche gli sprite `<id>_swim_0..3`, `<id>_hurt_0`, `<id>_dead_0`: aggiungi la specie in `Tools/forge/fish.py` e rigenera.
+
+**Una ricetta** (`recipes.json`):
+
+```json
+{ "id": "orata_sale", "name": { "it": "Orata al sale" }, "note": { "it": "La crosta si rompe al tavolo." },
+  "ingredients": [ { "item": "orata", "count": 1 } ], "portions": 2, "price": 44, "taste": 4,
+  "cookTime": 5.5, "plate": "salt", "unlock": "catch:orata" }
+```
+
+`unlock` è `start` oppure `catch:<specie>`. I test controllano che ogni ingrediente esista e che ogni specie abbia almeno una ricetta.
+
+### Tabella di bilanciamento (estratto)
+
+| Rango dell'osteria | Fama | Tavoli | Piatti in menu | Un cliente ogni | Prezzi |
+|---|---|---|---|---|---|
+| Bettola | 0 | 3 | 2 | 7,5 s | ×1,00 |
+| Trattoria | 40 | 4 | 3 | 6,5 s | ×1,05 |
+| Osteria di paese | 110 | 5 | 3 | 5,6 s | ×1,10 |
+| Osteria rinomata | 230 | 6 | 4 | 4,8 s | ×1,16 |
+| Vanto dell'isola | 400 | 7 | 5 | 4,2 s | ×1,22 |
+| Leggenda del Tirreno | 650 | 8 | 6 | 3,7 s | ×1,30 |
+
+| Specie | Vita | Peso | Resistenza alla lenza | Valore |
+|---|---|---|---|---|
+| Sardina | 5 | 0,2 kg | 0 | 4 |
+| Orata | 16 | 1,6 kg | 0,25 | 28 |
+| Dentice | 28 | 3,5 kg | 0,45 | 60 |
+| Cernia bruna | 46 | 8 kg | 0,6 | 90 |
+
+L'arpione di partenza fa 10 danni; Fiato 120, sacca 10 kg, muta fino a 110 m. Tutti i valori sono in `balance.json` e `fish.json`.
+
+## Scelte di progetto
+
+- **Identità originale.** Ambientazione mediterranea, osteria al posto di un altro tipo di locale, cast e trama propri. Le meccaniche di genere (immersione, ristorante, potenziamenti) ci sono; nomi, personaggi, livelli e aspetto no.
+- **Fiato al posto dell'ossigeno.** Tecla è un'apneista: riprende fiato in superficie e alle campane d'aria. Il limite di un'immersione è il carico della sacca e la distanza dalla superficie.
+- **Macchine a stati.** Ogni pesce ha una `GKStateMachine` di GameplayKit; le regole di passaggio e i movimenti sono in codice puro (`FishAI`), così i test li verificano senza simulatore. I banchi sono un'unica entità con membri leggeri.
+- **Menu in SwiftUI, HUD in SpriteKit.** I menu hanno testo che segue la dimensione scelta nelle impostazioni di iOS; l'HUD di gioco resta dentro la scena.
+- **Nomi dei dati nei JSON.** Le stringhe dell'interfaccia usano il catalogo `Localizable.xcstrings`; i nomi di pesci e ricette stanno accanto ai numeri, nei JSON.
+
+## Milestone
+
+| | Contenuto | Stato |
+|---|---|---|
+| M1 | progetto, CI, fucina degli sprite, immersione, parallasse, luce, comandi e controller | fatta |
+| M2 | dodici specie con comportamento proprio, arpione con tiro alla lenza, Fiato, sacca, raccolta | fatta |
+| M3 | osteria, menu, servizio, vino, fama, giornata completa, tre slot di salvataggio | in verifica |
+| M4 | potenziamenti, Giornale di bordo, Quaderno del Mare, missioni, zone profonde giocabili, notte | da fare |
+| M5 | trama in cinque capitoli, cutscene, sei boss | da fare |
+| M6 | personale, orto e vivaio, nasse, eventi, collezionabili, giochi del bar | da fare |
+| M7 | audio sintetizzato, bilanciamento, rifinitura, inglese | da fare |
+
+**Che cosa non è stato verificato.** Il gioco è sviluppato senza un Mac e senza un iPhone: la compilazione e l'avvio di ogni scena sono controllati in CI nel simulatore, la logica dai test. La resa su un telefono vero, la sensazione dei comandi, le prestazioni su modelli vecchi e la difficoltà non sono state provate da nessuno finché non installi l'IPA.
+
+## Test
+
+```
+swift test                                   # logica pura
+python3 Tools/forge/build.py                 # rigenera sprite e anteprime
+swift run -c release -Xswiftc -enable-testing preview terrain Tools/forge/out
+```
