@@ -46,12 +46,6 @@ run_app() {
       line="${line%$'\r'}"
       echo "$line"
       echo "$line" >> "$OUT/$name.log"
-      case "$line" in
-        *"SMOKE SHOT "*)
-          shot="${line##*SMOKE SHOT }"
-          xcrun simctl io "$UDID" screenshot "$OUT/shots/$shot.png" >/dev/null 2>&1 || echo "schermata non riuscita: $shot"
-          ;;
-      esac
     done
   pkill -P "$watchdog" >/dev/null 2>&1 || true
   kill "$watchdog" >/dev/null 2>&1 || true
@@ -73,14 +67,12 @@ run_app canary -smoke -smoke-canary
 echo "righe riconosciute nel canarino: $(grep -E -c "$PATTERN" "$OUT/canary.log")"
 echo "::endgroup::"
 
-# Le schermate escono con l'orientamento del dispositivo: le raddrizzo se sono verticali.
-for f in "$OUT"/shots/*.png; do
-  [ -f "$f" ] || continue
-  w=$(sips -g pixelWidth "$f" | awk '/pixelWidth/ {print $2}')
-  h=$(sips -g pixelHeight "$f" | awk '/pixelHeight/ {print $2}')
-  if [ "$h" -gt "$w" ]; then sips -r -90 "$f" >/dev/null 2>&1; fi
-  echo "schermata: $(basename "$f") ${w}x${h}"
-done
+# Le schermate le salva l'app stessa, una per scena: le recupero dal suo contenitore.
+DATA=$(xcrun simctl get_app_container "$UDID" "$BUNDLE_ID" data 2>/dev/null)
+if [ -n "$DATA" ] && [ -d "$DATA/tmp/smoke" ]; then
+  cp "$DATA"/tmp/smoke/*.png "$OUT/shots/" 2>/dev/null
+fi
+echo "schermate recuperate: $(ls "$OUT/shots" 2>/dev/null | wc -l | tr -d ' ')"
 
 echo "::group::Rapporti di crash"
 CRASHES=$(ls -t ~/Library/Logs/DiagnosticReports/ 2>/dev/null | grep -i MareaProfonda | head -n 3)

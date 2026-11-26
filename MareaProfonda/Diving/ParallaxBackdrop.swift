@@ -28,7 +28,7 @@ final class ParallaxBackdrop {
         addLayer(parent: parent, image: BackdropPainter.rockLayer(size: 512, seed: seed &+ 33, cellsX: 7, cellsY: 4, coverage: 0.20, softEdge: 0),
                  scale: 1, factor: 0.48, strength: 0.38, z: -70, linear: false)
         // Primo piano: poche sagome scure che passano davanti a tutto.
-        addLayer(parent: parent, image: BackdropPainter.rockLayer(size: 512, seed: seed &+ 44, cellsX: 4, cellsY: 3, coverage: 0.05, softEdge: 0),
+        addLayer(parent: parent, image: BackdropPainter.rockLayer(size: 512, seed: seed &+ 44, cellsX: 4, cellsY: 3, coverage: 0.035, softEdge: 0),
                  scale: 1, factor: 1.28, strength: 0.86, z: 60, linear: false)
     }
 
@@ -46,7 +46,8 @@ final class ParallaxBackdrop {
             let sprite: SKSpriteNode = SKSpriteNode(texture: texture, size: CGSize(width: tile, height: tile))
             sprite.anchorPoint = CGPoint(x: 0, y: 0)
             sprite.colorBlendFactor = 1
-            if z > 0 { sprite.alpha = 0.72 }
+            // Il primo piano resta appena accennato: non deve mai nascondere il gioco.
+            if z > 0 { sprite.alpha = 0.22 }
             node.addChild(sprite)
             sprites.append(sprite)
             i += 1

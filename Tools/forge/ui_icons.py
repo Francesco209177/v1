@@ -109,6 +109,21 @@ ICONS = {
         ".ww.......ww",
         "............",
     ],
+    # peso della sacca
+    "icon_weight": [
+        "....wwww....",
+        "...w....w...",
+        "...w....w...",
+        "..wwwwwwww..",
+        ".wwwwwwwwww.",
+        ".wwwwwwwwww.",
+        "wwww.ww.wwww",
+        "wwww.ww.wwww",
+        "wwwwwwwwwwww",
+        "wwwwwwwwwwww",
+        "wwwwwwwwwwww",
+        ".wwwwwwwwww.",
+    ],
     # freccia di profondità
     "icon_depth": [
         ".....ww.....",

@@ -1,8 +1,8 @@
 import SpriteKit
 import UIKit
 
-/// Immersione nel Calderone: Tecla nuota in una mappa generata dal seme, tra fondali in
-/// parallasse, raggi di luce, caustiche e, più giù, il buio rischiarato dalla torcia.
+/// Immersione nel Calderone. La logica (Tecla, pesci, arpione, Fiato, sacca) vive in `DiveSim`;
+/// qui c'è tutto ciò che si vede e si tocca: fondali, luce, sprite, HUD, comandi, effetti.
 final class DiveScene: BaseScene {
 
     struct Config {
@@ -11,8 +11,10 @@ final class DiveScene: BaseScene {
         /// Profondità di partenza in metri (0 = dalla barca).
         var startDepthMeters: Double = 0
         var sky: BackdropPainter.SkyStyle = BackdropPainter.SkyStyle.morning
-        /// Direzione imposta dalla prova automatica, al posto dei comandi.
+        var night: Bool = false
+        /// Comandi imposti dalla prova automatica: direzione di nuoto e tiro continuo.
         var autopilot: Vec2? = nil
+        var autoFire: Bool = false
     }
 
     private struct Mote {
@@ -26,17 +28,14 @@ final class DiveScene: BaseScene {
     // Dati
     private let config: Config
     private let worldData: WorldData
-    private let map: CaveMap
-    private let tuning: DiverTuning = DiverTuning()
-    private var diver: DiverState
+    private var sim: DiveSim
     private var fx: SeededRNG
 
-    // Nodi
+    // Fondali e ambiente
     private let water: SKSpriteNode = SKSpriteNode(texture: TextureFactory.white)
     private let rays: SKSpriteNode = SKSpriteNode(texture: TextureFactory.white)
     private let darkness: SKSpriteNode = SKSpriteNode(texture: TextureFactory.white)
     private let terrain: TerrainLayer
-    private let diverNode: DiverNode = DiverNode()
     private let sky: SKSpriteNode = SKSpriteNode()
     private let surface: SKNode = SKNode()
     private var surfaceSprites: [SKSpriteNode] = []
@@ -44,10 +43,23 @@ final class DiveScene: BaseScene {
     private let boat: SKSpriteNode = SpriteForge.shared.node("gozzo")
     private var backdrop: ParallaxBackdrop?
     private var motes: [Mote] = []
+
+    // Creature e attrezzi
+    private let diverNode: DiverNode = DiverNode()
+    private let creatures: SKNode = SKNode()
+    private var agents: [Int: FishAgent] = [:]
+    private var schoolNodes: [Int: [SKSpriteNode]] = [:]
+    private var schoolFrames: [String: [SKTexture]] = [:]
+    private var pickupNodes: [Int: SKSpriteNode] = [:]
+    private let harpoonTip: SKSpriteNode = SpriteForge.shared.node("harpoon_tip")
+    private let harpoonRope: SKSpriteNode = SKSpriteNode(color: SKColor(hex: 0xE8E0C8), size: CGSize(width: 1, height: 1))
+    private let carried: SKSpriteNode = SKSpriteNode()
+    private let aimLine: SKSpriteNode = SKSpriteNode(color: SKColor(white: 1, alpha: 0.5), size: CGSize(width: 1, height: 1))
+    private let reticle: SKSpriteNode = SpriteForge.shared.node("alert")
+
+    // Interfaccia
     private let diveHUD: DiveHUD = DiveHUD()
     private let controls: TouchControls = TouchControls()
-
-    // Pausa
     private let pauseLayer: SKNode = SKNode()
     private let pauseVeil: SKSpriteNode = SKSpriteNode(color: Theme.ink, size: CGSize(width: 10, height: 10))
     private let pauseTitle: PixelLabel = PixelLabel(text: "PAUSA", color: SKColor.white, alignment: PixelLabel.Alignment.center)
@@ -56,6 +68,7 @@ final class DiveScene: BaseScene {
     /// Pausa chiesta dal giocatore (diversa da `isPaused` di SpriteKit, che ferma anche l'HUD).
     private var userPaused: Bool = false
     private var pressedPill: PillButton?
+    private var results: DiveResultsPanel?
 
     // Stato
     private var cameraPos: Vec2 = Vec2.zero
@@ -63,15 +76,31 @@ final class DiveScene: BaseScene {
     private var surfaceClock: Double = 0
     private var zoneIndex: Int = -1
     private var leaving: Bool = false
+    private var ended: Bool = false
+    private var aiming: Bool = false
+    private var aimDirection: Vec2 = Vec2(1, 0)
+    /// Ultima direzione scelta a mano durante la mira: resta valida nel fotogramma del rilascio.
+    private var manualAim: Vec2? = nil
+    private var hitStop: Double = 0
+    private var shake: Double = 0
+    private var autoFireClock: Double = 1.0
+    private var alarmClock: Double = 0
 
     init(size: CGSize, config: Config) {
         self.config = config
         let data: WorldData = GameData.shared.world
         worldData = data
         let generated: CaveMap = CaveGenerator.generate(seed: config.seed, world: data)
-        map = generated
-        let start: Vec2 = generated.channelPoint(depthMeters: max(config.startDepthMeters, 0.6))
-        diver = DiverState(position: generated.nearestOpenPoint(to: start, clearance: 10))
+        var simulation: DiveSim = DiveSim(map: generated, catalog: GameData.shared.fish, seed: config.seed, night: config.night,
+                                          startDepthMeters: config.startDepthMeters)
+        simulation.usesExternalBrains = true
+        if config.autopilot != nil {
+            // La prova automatica visita anche le zone profonde: niente limiti di pressione né di fiato.
+            simulation.maxSafeDepth = 9999
+            simulation.breathMax = 100_000
+            simulation.breath = 100_000
+        }
+        sim = simulation
         fx = SeededRNG(seed: config.seed &+ 404)
         terrain = TerrainLayer(map: generated, world: data, dynamicLights: SettingsStore.shared.settings.dynamicLights)
         super.init(size: size)
@@ -127,8 +156,7 @@ final class DiveScene: BaseScene {
         world.addChild(surface)
 
         // Il gozzo ancorato sopra il canale principale.
-        let anchorPoint: Vec2 = map.channelPoint(depthMeters: 0)
-        boat.position = CGPoint(x: anchorPoint.x, y: 1)
+        boat.position = CGPoint(x: sim.boat.x, y: 1)
         boat.zPosition = -20
         boat.run(SKAction.repeatForever(SKAction.sequence([
             SKAction.moveBy(x: 0, y: 1, duration: 0.9),
@@ -139,8 +167,48 @@ final class DiveScene: BaseScene {
         terrain.zPosition = 0
         world.addChild(terrain)
 
+        creatures.zPosition = 12
+        world.addChild(creatures)
+
+        // Oggetti da raccogliere e campane d'aria.
+        var p: Int = 0
+        while p < sim.pickups.count {
+            let pickup: PickupPoint = sim.pickups[p]
+            let node: SKSpriteNode = SpriteForge.shared.node("pickup_\(pickup.kind.rawValue)")
+            node.position = CGPoint(x: pickup.position.x, y: -pickup.position.y)
+            node.zPosition = 6
+            if pickup.kind == PickupPoint.Kind.campana {
+                node.run(SKAction.repeatForever(SKAction.sequence([
+                    SKAction.moveBy(x: 0, y: 2, duration: 1.2),
+                    SKAction.moveBy(x: 0, y: -2, duration: 1.2)
+                ])))
+            }
+            world.addChild(node)
+            pickupNodes[p] = node
+            p += 1
+        }
+
         diverNode.zPosition = 20
         world.addChild(diverNode)
+
+        // Arpione: lenza, punta, pesce trasportato, linea di mira.
+        harpoonRope.anchorPoint = CGPoint(x: 0, y: 0.5)
+        harpoonRope.zPosition = 18
+        harpoonRope.isHidden = true
+        world.addChild(harpoonRope)
+        harpoonTip.zPosition = 19
+        harpoonTip.isHidden = true
+        world.addChild(harpoonTip)
+        carried.zPosition = 19
+        carried.isHidden = true
+        world.addChild(carried)
+        aimLine.anchorPoint = CGPoint(x: 0, y: 0.5)
+        aimLine.zPosition = 17
+        aimLine.isHidden = true
+        world.addChild(aimLine)
+        reticle.zPosition = 22
+        reticle.isHidden = true
+        world.addChild(reticle)
 
         // Plancton sospeso che deriva piano.
         let moteNames: [String] = ["plankton_0", "plankton_1", "plankton_0", "plankton_2", "plankton_1"]
@@ -157,7 +225,7 @@ final class DiveScene: BaseScene {
         diveHUD.zPosition = 5
         hud.addChild(diveHUD)
         controls.zPosition = 10
-        controls.configure(actions: [GameButtons.dash, GameButtons.pause])
+        controls.configure(actions: [GameButtons.primary, GameButtons.interact, GameButtons.dash, GameButtons.pause])
         hud.addChild(controls)
 
         // Finestra di pausa.
@@ -174,12 +242,12 @@ final class DiveScene: BaseScene {
         hud.addChild(pauseLayer)
 
         // Primo fotogramma già completo: camera sul sub e terreno dipinto subito.
-        cameraPos = clampCamera(Vec2(diver.position.x, -diver.position.y))
+        cameraPos = clampCamera(Vec2(sim.diver.position.x, -sim.diver.position.y))
         setCamera(x: cameraPos.x, y: cameraPos.y)
         terrain.update(mapX: cameraPos.x, mapY: -cameraPos.y, viewWidth: Double(artSize.width), viewHeight: Double(artSize.height), synchronous: true)
-        diverNode.position = CGPoint(x: diver.position.x, y: -diver.position.y)
+        diverNode.position = CGPoint(x: sim.diver.position.x, y: -sim.diver.position.y)
         updateAtmosphere()
-        updateHUD(force: true)
+        updateZone(force: true)
     }
 
     override func layoutHUD() {
@@ -195,6 +263,7 @@ final class DiveScene: BaseScene {
         pauseTitle.position = CGPoint(x: 0, y: size.height * 0.22)
         resumeButton.position = CGPoint(x: 0, y: 4)
         quitButton.position = CGPoint(x: 0, y: -58)
+        results?.layout(sceneSize: size, safe: safe, pixelScale: unit)
     }
 
     // MARK: - Ciclo di gioco
@@ -203,6 +272,10 @@ final class DiveScene: BaseScene {
         let input: InputManager = InputManager.shared
         input.beginFrame()
 
+        if ended {
+            results?.handle(input: input)
+            return
+        }
         if input.pressed.contains(GameButtons.pause) {
             setPaused(!userPaused)
         }
@@ -211,39 +284,360 @@ final class DiveScene: BaseScene {
             return
         }
 
-        var move: Vec2 = Vec2(input.move.x, -input.move.y)
-        if let auto: Vec2 = config.autopilot { move = Vec2(auto.x, -auto.y) }
-        let wantsDash: Bool = input.pressed.contains(GameButtons.dash)
-        let result: DiverStepResult = DiverMotion.step(&diver, input: move, wantsDash: wantsDash, speedFactor: 1.0,
-                                                      map: map, tuning: tuning, dt: dt)
-        if result.startedDash {
-            Feedback.hit()
-            var b: Int = 0
-            while b < 6 {
-                spawnBubble(spread: 7)
-                b += 1
-            }
-        }
-        if result.hitWall && result.impactSpeed > 70 {
-            Feedback.tap()
+        // Fermo-immagine di pochi fotogrammi sui colpi andati a segno.
+        var simDt: Double = dt
+        if hitStop > 0 {
+            hitStop -= dt
+            simDt = 0
         }
 
-        let diverWorld: Vec2 = Vec2(diver.position.x, -diver.position.y)
+        var command: DiveInput = DiveInput()
+        command.move = Vec2(input.move.x, -input.move.y)
+        command.dash = input.pressed.contains(GameButtons.dash)
+        command.interact = input.pressed.contains(GameButtons.interact)
+        command.reelHeld = input.held.contains(GameButtons.primary)
+        if let auto: Vec2 = config.autopilot { command.move = Vec2(auto.x, -auto.y) }
+        updateAiming(input: input, command: &command, dt: dt)
+
+        // A bordo: in superficie, accanto al gozzo, il tasto azione chiude l'immersione.
+        if command.interact && sim.interaction() == DiveInteraction.boat && sim.harpoon.phase == HarpoonPhase.ready {
+            endDive(fainted: false)
+            return
+        }
+
+        syncBrains()
+        let events: [DiveEvent] = simDt > 0 ? sim.step(input: command, dt: simDt) : []
+        handle(events)
+
+        let diverWorld: Vec2 = Vec2(sim.diver.position.x, -sim.diver.position.y)
         diverNode.position = CGPoint(x: layout.snap(diverWorld.x), y: layout.snap(diverWorld.y))
-        diverNode.apply(state: diver, tuning: tuning, dt: dt)
+        diverNode.apply(state: sim.diver, tuning: sim.tuning, dt: simDt)
+        // Lampeggia finché dura l'invulnerabilità dopo un colpo.
+        diverNode.alpha = sim.invulnerable > 0 && Int(elapsed * 14) % 2 == 0 ? 0.45 : 1.0
 
-        // Camera: segue con un po' di anticipo nella direzione di nuoto.
-        let lead: Vec2 = Vec2(diver.velocity.x * 0.32, -diver.velocity.y * 0.26)
+        updateCreatures(dt: simDt)
+        updateHarpoonNodes()
+
+        // Camera: segue con un po' di anticipo nella direzione di nuoto, più eventuale scossa.
+        let lead: Vec2 = Vec2(sim.diver.velocity.x * 0.32, -sim.diver.velocity.y * 0.26)
         let target: Vec2 = clampCamera(diverWorld + lead)
         cameraPos = Vec2(MathUtil.damp(cameraPos.x, target.x, rate: 5.5, dt: dt), MathUtil.damp(cameraPos.y, target.y, rate: 5.5, dt: dt))
-        setCamera(x: cameraPos.x, y: cameraPos.y)
+        var shakeX: Double = 0
+        var shakeY: Double = 0
+        if shake > 0.05 {
+            shakeX = fx.range(-shake, shake)
+            shakeY = fx.range(-shake, shake)
+            shake *= exp(-dt * 12)
+        }
+        setCamera(x: cameraPos.x + shakeX, y: cameraPos.y + shakeY)
 
         terrain.update(mapX: cameraPos.x, mapY: -cameraPos.y, viewWidth: Double(artSize.width), viewHeight: Double(artSize.height), synchronous: false)
         updateAtmosphere()
         updateSurface(dt)
         updateMotes(dt)
         updateBubbles(dt)
-        updateHUD(force: false)
+        updateZone(force: false)
+        updateHUD(dt)
+
+        if sim.fainted && !ended {
+            endDive(fainted: true)
+        }
+    }
+
+    // MARK: - Arpione: mira e tiro
+
+    /// Tenere premuto il tasto dell'arpione mostra la mira; al rilascio parte il colpo.
+    /// Con la lenza agganciata lo stesso tasto serve a recuperare.
+    private func updateAiming(input: InputManager, command: inout DiveInput, dt: Double) {
+        let ready: Bool = sim.harpoon.phase == HarpoonPhase.ready
+        let settings: GameSettings = SettingsStore.shared.settings
+        if ready && input.pressed.contains(GameButtons.primary) {
+            aiming = true
+            manualAim = nil
+        }
+        if aiming {
+            if let a: Vec2 = input.aim { manualAim = Vec2(a.x, -a.y) }
+            aimDirection = sim.aimDirection(manual: manualAim, autoAim: settings.autoAim)
+            if !input.held.contains(GameButtons.primary) {
+                aiming = false
+                if ready { command.fire = aimDirection }
+            }
+        }
+        if !ready { aiming = false }
+
+        if config.autoFire && ready {
+            autoFireClock -= dt
+            if autoFireClock <= 0 {
+                autoFireClock = 1.1
+                command.fire = sim.aimDirection(manual: nil, autoAim: true)
+            }
+        }
+        if config.autoFire && sim.harpoon.phase == HarpoonPhase.reeling {
+            command.reelHeld = !sim.harpoon.isSurging && sim.harpoon.tension < 0.7
+        }
+    }
+
+    // MARK: - Pesci
+
+    /// Fa decidere a ogni pesce il prossimo stato e lo passa alla sua macchina a stati di GameplayKit.
+    private func syncBrains() {
+        let diver: Vec2 = sim.diver.position
+        let diverSpeed: Double = sim.diver.velocity.length
+        var i: Int = 0
+        while i < sim.fish.count {
+            let id: Int = sim.fishId(at: i)
+            let body: FishBody = sim.fish[i]
+            let agent: FishAgent
+            if let existing: FishAgent = agents[id] {
+                agent = existing
+            } else {
+                agent = FishAgent(id: id, species: body.species)
+                agent.onEnter = { [weak self] (fishId: Int, state: FishState) -> Void in
+                    self?.sim.enter(fishId: fishId, state: state)
+                }
+                creatures.addChild(agent.node)
+                agents[id] = agent
+            }
+            // La simulazione può aver imposto uno stato (colpo, aggancio): la macchina si allinea.
+            agent.sync(to: body.state)
+            if let next: FishState = FishAI.think(body, diver: diver, diverSpeed: diverSpeed) {
+                agent.request(next)
+            }
+            i += 1
+        }
+    }
+
+    private func updateCreatures(dt: Double) {
+        // Pesci singoli.
+        var alive: Set<Int> = []
+        var i: Int = 0
+        while i < sim.fish.count {
+            let id: Int = sim.fishId(at: i)
+            alive.insert(id)
+            agents[id]?.update(body: sim.fish[i], layout: layout, dt: dt)
+            i += 1
+        }
+        for (id, agent) in agents where !alive.contains(id) {
+            agent.node.removeFromParent()
+            agents[id] = nil
+        }
+
+        // Banchi: uno sprite per membro, senza macchina a stati.
+        var presentSchools: Set<Int> = []
+        var s: Int = 0
+        while s < sim.schools.count {
+            let schoolId: Int = sim.schoolIds[s]
+            let school: School = sim.schools[s]
+            presentSchools.insert(schoolId)
+            let frames: [SKTexture]
+            if let cached: [SKTexture] = schoolFrames[school.species.id] {
+                frames = cached
+            } else {
+                frames = SpriteForge.shared.frames("\(school.species.id)_swim")
+                schoolFrames[school.species.id] = frames
+            }
+            var nodes: [SKSpriteNode] = schoolNodes[schoolId] ?? []
+            if nodes.isEmpty {
+                var created: Int = 0
+                while created < school.members.count {
+                    let node: SKSpriteNode = SpriteForge.shared.node("\(school.species.id)_swim_0")
+                    creatures.addChild(node)
+                    nodes.append(node)
+                    created += 1
+                }
+                schoolNodes[schoolId] = nodes
+            }
+            var m: Int = 0
+            while m < school.members.count && m < nodes.count {
+                let member: SchoolMember = school.members[m]
+                let node: SKSpriteNode = nodes[m]
+                node.isHidden = !member.alive
+                if member.alive {
+                    node.position = CGPoint(x: layout.snap(member.position.x), y: layout.snap(-member.position.y))
+                    node.xScale = member.facingRight ? 1 : -1
+                    if !frames.isEmpty {
+                        let rate: Double = school.mode == School.Mode.scatter ? 14 : 6
+                        let texture: SKTexture = frames[Int(elapsed * rate + member.phase) % frames.count]
+                        if node.texture !== texture { node.texture = texture }
+                    }
+                }
+                m += 1
+            }
+            s += 1
+        }
+        for (schoolId, nodes) in schoolNodes where !presentSchools.contains(schoolId) {
+            for node in nodes { node.removeFromParent() }
+            schoolNodes[schoolId] = nil
+        }
+    }
+
+    private func updateHarpoonNodes() {
+        let harpoon: HarpoonState = sim.harpoon
+        let origin: CGPoint = diverNode.position
+        let out: Bool = harpoon.isOut
+        harpoonTip.isHidden = !out
+        harpoonRope.isHidden = !out
+        carried.isHidden = true
+        if out {
+            let tip: CGPoint = CGPoint(x: layout.snap(harpoon.tip.x), y: layout.snap(-harpoon.tip.y))
+            let dx: CGFloat = tip.x - origin.x
+            let dy: CGFloat = tip.y - origin.y
+            let length: CGFloat = (dx * dx + dy * dy).squareRoot()
+            let angle: CGFloat = atan2(dy, dx)
+            harpoonRope.position = origin
+            harpoonRope.size = CGSize(width: max(length, 1), height: 1)
+            harpoonRope.zRotation = angle
+            harpoonTip.position = tip
+            // In volo la punta guarda avanti; al ritorno resta girata verso l'esterno.
+            let flightAngle: CGFloat = CGFloat(atan2(-harpoon.direction.y, harpoon.direction.x))
+            harpoonTip.zRotation = harpoon.phase == HarpoonPhase.flying ? flightAngle : angle
+            harpoonTip.isHidden = harpoon.phase == HarpoonPhase.reeling
+            if let item: CatchItem = harpoon.carried {
+                carried.isHidden = false
+                let name: String = "\(item.speciesId)_dead_0"
+                carried.texture = SpriteForge.shared.texture(name)
+                carried.size = SpriteForge.shared.pixelSize(name)
+                carried.position = tip
+                carried.zRotation = angle + CGFloat.pi
+            }
+        }
+
+        // Linea di mira e bersaglio agganciato dalla mira automatica.
+        aimLine.isHidden = !aiming
+        reticle.isHidden = true
+        if aiming {
+            aimLine.position = origin
+            aimLine.size = CGSize(width: CGFloat(sim.harpoonTuning.range), height: 1)
+            aimLine.zRotation = CGFloat(atan2(-aimDirection.y, aimDirection.x))
+            if let target: (ref: TargetRef, position: Vec2) = sim.bestTarget(direction: aimDirection, cone: 0.97) {
+                reticle.isHidden = false
+                reticle.position = CGPoint(x: target.position.x, y: -target.position.y + 12)
+            }
+        }
+    }
+
+    // MARK: - Eventi della simulazione
+
+    private func handle(_ events: [DiveEvent]) {
+        for event in events {
+            switch event {
+            case .harpoonFired:
+                Feedback.tap()
+            case .harpoonHitRock(let at):
+                spawnSparks(at: at, color: SKColor(hex: 0xE8E0C8), count: 5)
+            case .fishHit(let at, let damage, let killed):
+                hitStop = killed ? 0.07 : 0.045
+                shake = max(shake, killed ? 2.4 : 1.4)
+                Feedback.hit()
+                spawnSparks(at: at, color: SKColor.white, count: 7)
+                spawnNumber(Int(damage.rounded()), at: at, color: SKColor(hex: 0xFFE27A))
+                for (_, agent) in agents {
+                    let p: CGPoint = agent.node.position
+                    if abs(Double(p.x) - at.x) < 3 && abs(Double(-p.y) - at.y) < 3 { agent.flashHurt() }
+                }
+            case .hookStarted:
+                diveHUD.showToast(String(localized: "Agganciato! Recupera la lenza"), color: Theme.ochre)
+            case .surge:
+                Feedback.warning()
+                shake = max(shake, 1.2)
+            case .lineBroke:
+                diveHUD.showToast(String(localized: "La lenza si è spezzata!"), color: Theme.danger)
+                Feedback.thud()
+            case .caught(let item, let at):
+                Feedback.success()
+                let name: String = GameData.shared.fish.find(item.speciesId)?.name.text() ?? item.speciesId
+                diveHUD.showToast("\(name)  " + String(repeating: "★", count: item.stars), color: Theme.lime)
+                spawnSparks(at: at, color: SKColor(hex: 0xFFE27A), count: 10)
+            case .diverHurt(let damage, let at):
+                shake = max(shake, 4.5)
+                Feedback.thud()
+                spawnNumber(Int(damage.rounded()), at: at, color: SKColor(hex: 0xFF6B60))
+                spawnSparks(at: at, color: SKColor(hex: 0xFF8A80), count: 8)
+            case .telegraph(let at):
+                spawnSparks(at: at, color: SKColor(hex: 0xFF6B60), count: 3)
+            case .pickedUp(let kind, let at):
+                Feedback.tap()
+                for (index, node) in pickupNodes where sim.pickups[index].taken && !node.isHidden && sim.pickups[index].kind != PickupPoint.Kind.campana {
+                    node.run(SKAction.sequence([
+                        SKAction.group([SKAction.moveBy(x: 0, y: 14, duration: 0.22), SKAction.fadeOut(withDuration: 0.22)]),
+                        SKAction.hide()
+                    ]))
+                }
+                diveHUD.showToast(DiveScene.pickupName(kind), color: Theme.lime)
+                spawnSparks(at: at, color: SKColor(hex: 0xA8EC9A), count: 5)
+            case .breathRefilled:
+                Feedback.success()
+                diveHUD.showToast(String(localized: "Fiato al massimo"), color: Theme.turquoise)
+                for (index, node) in pickupNodes where sim.pickups[index].taken && sim.pickups[index].kind == PickupPoint.Kind.campana {
+                    node.texture = SpriteForge.shared.texture("pickup_campana_vuota")
+                }
+                var b: Int = 0
+                while b < 10 {
+                    spawnBubble(spread: 10)
+                    b += 1
+                }
+            case .breathLow:
+                Feedback.warning()
+                diveHUD.showToast(String(localized: "Fiato agli sgoccioli: risali!"), color: Theme.danger)
+            case .pressure:
+                Feedback.warning()
+                shake = max(shake, 1.5)
+                diveHUD.showToast(String(localized: "Troppa pressione per questa muta"), color: Theme.danger)
+            case .dashed:
+                Feedback.hit()
+                var b: Int = 0
+                while b < 6 {
+                    spawnBubble(spread: 7)
+                    b += 1
+                }
+            case .hitWall:
+                Feedback.tap()
+            case .fainted:
+                Feedback.thud()
+            }
+        }
+    }
+
+    static func pickupName(_ kind: PickupPoint.Kind) -> String {
+        switch kind {
+        case .riccio: return String(localized: "Riccio di mare")
+        case .conchiglia: return String(localized: "Conchiglia")
+        case .alga: return String(localized: "Lattuga di mare")
+        case .campana: return String(localized: "Campana d'aria")
+        }
+    }
+
+    // MARK: - Effetti
+
+    private func spawnSparks(at point: Vec2, color: SKColor, count: Int) {
+        var i: Int = 0
+        while i < count {
+            let spark: SKSpriteNode = SKSpriteNode(color: color, size: CGSize(width: 1, height: 1))
+            spark.position = CGPoint(x: point.x, y: -point.y)
+            spark.zPosition = 26
+            world.addChild(spark)
+            let angle: Double = fx.range(0, 2 * Double.pi)
+            let reach: Double = fx.range(6, 16)
+            let fly: SKAction = SKAction.moveBy(x: CGFloat(cos(angle) * reach), y: CGFloat(sin(angle) * reach), duration: 0.28)
+            fly.timingMode = SKActionTimingMode.easeOut
+            spark.run(SKAction.sequence([SKAction.group([fly, SKAction.fadeOut(withDuration: 0.28)]), SKAction.removeFromParent()]))
+            i += 1
+        }
+    }
+
+    /// Numero di danno che sale e svanisce.
+    private func spawnNumber(_ value: Int, at point: Vec2, color: SKColor) {
+        let label: PixelLabel = PixelLabel(text: "\(value)", color: color, alignment: PixelLabel.Alignment.center)
+        label.shadowColor = SKColor(hex: 0x06142A)
+        label.position = CGPoint(x: point.x, y: -point.y + 8)
+        label.zPosition = 40
+        world.addChild(label)
+        let rise: SKAction = SKAction.moveBy(x: 0, y: 16, duration: 0.6)
+        rise.timingMode = SKActionTimingMode.easeOut
+        label.run(SKAction.sequence([
+            SKAction.group([rise, SKAction.sequence([SKAction.wait(forDuration: 0.35), SKAction.fadeOut(withDuration: 0.25)])]),
+            SKAction.removeFromParent()
+        ]))
     }
 
     private func clampCamera(_ p: Vec2) -> Vec2 {
@@ -251,9 +645,9 @@ final class DiveScene: BaseScene {
         let halfH: Double = Double(artSize.height) / 2
         let skyRoom: Double = 84
         let maxY: Double = skyRoom - halfH
-        let minY: Double = -(map.heightPixels - halfH)
-        let minX: Double = min(halfW, map.widthPixels / 2)
-        let maxX: Double = max(map.widthPixels - halfW, map.widthPixels / 2)
+        let minY: Double = -(sim.map.heightPixels - halfH)
+        let minX: Double = min(halfW, sim.map.widthPixels / 2)
+        let maxX: Double = max(sim.map.widthPixels - halfW, sim.map.widthPixels / 2)
         return Vec2(MathUtil.clamp(p.x, minX, maxX), MathUtil.clamp(p.y, minY, maxY))
     }
 
@@ -267,7 +661,7 @@ final class DiveScene: BaseScene {
         ShaderLibrary.setColor(ShaderLibrary.water, "u_top", worldData.waterColor(atDepth: topDepth))
         ShaderLibrary.setColor(ShaderLibrary.water, "u_bottom", worldData.waterColor(atDepth: bottomDepth))
 
-        let light: Double = worldData.light(atDepth: diver.depthMeters)
+        let light: Double = worldData.light(atDepth: sim.diver.depthMeters)
         ShaderLibrary.setFloat(ShaderLibrary.godRays, "u_strength", 0.42 * pow(light, 1.7))
         ShaderLibrary.setFloat(ShaderLibrary.godRays, "u_offset", cameraPos.x * 0.0016)
         rays.isHidden = light < 0.2
@@ -281,12 +675,12 @@ final class DiveScene: BaseScene {
         if !darkness.isHidden {
             let w: Double = Double(artSize.width)
             let h: Double = Double(artSize.height)
-            let u: Double = (diver.position.x - cameraPos.x) / w + 0.5
-            let v: Double = (-diver.position.y - cameraPos.y) / h + 0.5
-            let sign: Double = diver.facingRight ? 1 : -1
+            let u: Double = (sim.diver.position.x - cameraPos.x) / w + 0.5
+            let v: Double = (-sim.diver.position.y - cameraPos.y) / h + 0.5
+            let sign: Double = sim.diver.facingRight ? 1 : -1
             ShaderLibrary.setFloat(ShaderLibrary.darkness, "u_dark", dark)
             ShaderLibrary.setVector(ShaderLibrary.darkness, "u_center", u, v)
-            ShaderLibrary.setVector(ShaderLibrary.darkness, "u_dir", cos(diver.tilt) * sign, sin(diver.tilt))
+            ShaderLibrary.setVector(ShaderLibrary.darkness, "u_dir", cos(sim.diver.tilt) * sign, sin(sim.diver.tilt))
             ShaderLibrary.setFloat(ShaderLibrary.darkness, "u_aspect", w / max(h, 1))
             ShaderLibrary.setFloat(ShaderLibrary.darkness, "u_radius", 0.24)
             ShaderLibrary.setFloat(ShaderLibrary.darkness, "u_beam", 0.78)
@@ -297,7 +691,7 @@ final class DiveScene: BaseScene {
 
     private func updateSurface(_ dt: Double) {
         // Il cielo segue la camera quasi del tutto: è lontanissimo.
-        sky.position = CGPoint(x: layout.snap(cameraPos.x * 0.94 + map.widthPixels * 0.03), y: 0)
+        sky.position = CGPoint(x: layout.snap(cameraPos.x * 0.94 + sim.map.widthPixels * 0.03), y: 0)
         sky.isHidden = cameraPos.y + Double(artSize.height) / 2 < -4
         surface.isHidden = sky.isHidden
         if surface.isHidden { return }
@@ -337,13 +731,13 @@ final class DiveScene: BaseScene {
     private func updateBubbles(_ dt: Double) {
         bubbleTimer -= dt
         if bubbleTimer > 0 { return }
-        let speed: Double = diver.velocity.length
+        let speed: Double = sim.diver.velocity.length
         bubbleTimer = speed > 20 ? fx.range(0.35, 0.6) : fx.range(0.9, 1.5)
         spawnBubble(spread: 2)
     }
 
     private func spawnBubble(spread: Double) {
-        if diver.position.y < 10 { return }
+        if sim.diver.position.y < 10 { return }
         let names: [String] = ["bubble_0", "bubble_0", "bubble_1", "bubble_1", "bubble_2"]
         let bubble: SKSpriteNode = SpriteForge.shared.node(names[fx.int(0, names.count - 1)])
         let mouth: CGPoint = diverNode.mouthOffset
@@ -354,27 +748,73 @@ final class DiveScene: BaseScene {
         // Non oltre il pelo dell'acqua.
         let room: CGFloat = max(8, -bubble.position.y - 2)
         let climb: CGFloat = min(CGFloat(fx.range(55, 95)), room)
-        let rise: SKAction = SKAction.moveBy(x: CGFloat(fx.range(-9, 9)), y: climb, duration: Double(climb) / 38.0)
+        let time: Double = Double(climb) / 38.0
+        let rise: SKAction = SKAction.moveBy(x: CGFloat(fx.range(-9, 9)), y: climb, duration: time)
         rise.timingMode = SKActionTimingMode.easeOut
         bubble.run(SKAction.sequence([
-            SKAction.group([rise, SKAction.sequence([SKAction.wait(forDuration: Double(climb) / 38.0 * 0.65), SKAction.fadeOut(withDuration: Double(climb) / 38.0 * 0.35)])]),
+            SKAction.group([rise, SKAction.sequence([SKAction.wait(forDuration: time * 0.65), SKAction.fadeOut(withDuration: time * 0.35)])]),
             SKAction.removeFromParent()
         ]))
     }
 
-    private func updateHUD(force: Bool) {
-        let depth: Double = diver.depthMeters
-        diveHUD.setDepth(meters: depth)
-        let index: Int = worldData.zoneIndex(atDepth: depth)
-        if index != zoneIndex || force {
-            zoneIndex = index
-            if index >= 0 && index < worldData.zones.count {
-                let zone: ZoneInfo = worldData.zones[index]
-                let name: String = zone.name.text()
-                diveHUD.setZone(name: name)
-                diveHUD.announce(zone: name, range: "\(zone.depthFrom)–\(zone.depthTo) m")
+    private func updateZone(force: Bool) {
+        let index: Int = worldData.zoneIndex(atDepth: sim.diver.depthMeters)
+        if index == zoneIndex && !force { return }
+        zoneIndex = index
+        if index >= 0 && index < worldData.zones.count {
+            let zone: ZoneInfo = worldData.zones[index]
+            let name: String = zone.name.text()
+            diveHUD.setZone(name: name)
+            diveHUD.announce(zone: name, range: "\(zone.depthFrom)–\(zone.depthTo) m")
+        }
+    }
+
+    private func updateHUD(_ dt: Double) {
+        diveHUD.update(breath: sim.breathRatio, depthMeters: sim.diver.depthMeters, weight: sim.bag.totalWeight, maxWeight: sim.bag.maxWeight, dt: dt)
+        let harpoon: HarpoonState = sim.harpoon
+        diveHUD.setReel(visible: harpoon.phase == HarpoonPhase.reeling, progress: harpoon.progress, tension: harpoon.tension, surging: harpoon.isSurging)
+
+        // Suggerimento dell'azione, sopra la testa di Tecla.
+        var text: String? = nil
+        if let what: DiveInteraction = sim.interaction() {
+            switch what {
+            case .pickup: text = String(localized: "Raccogli")
+            case .bell: text = String(localized: "Respira")
+            case .boat: text = String(localized: "Sali a bordo")
             }
         }
+        let k: CGFloat = CGFloat(layout.pointsPerArtPixel)
+        let screen: CGPoint = CGPoint(x: (diverNode.position.x - cam.position.x) * k, y: (diverNode.position.y - cam.position.y) * k + 34)
+        diveHUD.setPrompt(text, at: screen)
+
+        // Allarme tattile ripetuto quando il Fiato è agli sgoccioli.
+        if sim.breathRatio < 0.25 && !sim.diver.atSurface {
+            alarmClock -= dt
+            if alarmClock <= 0 {
+                alarmClock = 1.4
+                Feedback.tap()
+            }
+        }
+    }
+
+    // MARK: - Fine dell'immersione
+
+    private func endDive(fainted: Bool) {
+        if ended { return }
+        ended = true
+        controls.releaseAll()
+        controls.isHidden = true
+        diveHUD.setPrompt(nil, at: CGPoint.zero)
+        diveHUD.setReel(visible: false, progress: 0, tension: 0, surging: false)
+        world.isPaused = true
+        let panel: DiveResultsPanel = DiveResultsPanel(bag: sim.bag, fainted: fainted, deepest: sim.deepest, catalog: GameData.shared.fish)
+        panel.zPosition = 700
+        panel.onDone = { [weak self] (_: DiveBag) -> Void in
+            self?.leaveToTitle()
+        }
+        hud.addChild(panel)
+        results = panel
+        panel.layout(sceneSize: size, safe: hudSafeRect, pixelScale: hudPixelScale(1))
     }
 
     // MARK: - Pausa
@@ -386,13 +826,14 @@ final class DiveScene: BaseScene {
         controls.releaseAll()
         controls.isHidden = value
         pressedPill = nil
+        aiming = false
         resumeButton.setPressed(false)
         quitButton.setPressed(false)
     }
 
     /// Chiamata quando l'app perde il primo piano.
     func pauseForBackground() {
-        if !userPaused && !leaving { setPaused(true) }
+        if !userPaused && !leaving && !ended { setPaused(true) }
     }
 
     private func leaveToTitle() {
@@ -406,7 +847,9 @@ final class DiveScene: BaseScene {
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         for touch in touches {
             let point: CGPoint = touch.location(in: hud)
-            if userPaused {
+            if ended {
+                results?.touchBegan(at: point)
+            } else if userPaused {
                 if resumeButton.contains(point: point) {
                     pressedPill = resumeButton
                 } else if quitButton.contains(point: point) {
@@ -420,7 +863,7 @@ final class DiveScene: BaseScene {
     }
 
     override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
-        if userPaused { return }
+        if userPaused || ended { return }
         for touch in touches {
             controls.touchMoved(touch, at: touch.location(in: hud))
         }
@@ -428,8 +871,10 @@ final class DiveScene: BaseScene {
 
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
         for touch in touches {
-            if userPaused {
-                let point: CGPoint = touch.location(in: hud)
+            let point: CGPoint = touch.location(in: hud)
+            if ended {
+                results?.touchEnded(at: point)
+            } else if userPaused {
                 let pill: PillButton? = pressedPill
                 pressedPill = nil
                 pill?.setPressed(false)
@@ -458,6 +903,8 @@ final class DiveScene: BaseScene {
     // MARK: - Diagnostica per la prova automatica
 
     override var debugSummary: String {
-        return "depth=\(Int(diver.depthMeters)) chunks=\(terrain.loadedChunkCount) x=\(Int(diver.position.x)) y=\(Int(diver.position.y))"
+        var members: Int = 0
+        for school in sim.schools { members += school.aliveCount }
+        return "depth=\(Int(sim.diver.depthMeters)) chunks=\(terrain.loadedChunkCount) fish=\(sim.fish.count) school=\(members) caught=\(sim.bag.fish.count) breath=\(Int(sim.breathRatio * 100))"
     }
 }

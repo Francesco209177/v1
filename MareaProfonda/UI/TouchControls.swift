@@ -115,7 +115,19 @@ final class TouchControls: SKNode {
     }
 
     func touchMoved(_ touch: UITouch, at point: CGPoint) {
-        if touch !== joyTouch { return }
+        if touch !== joyTouch {
+            // Trascinare il dito partendo dal tasto dell'arpione sceglie la direzione di tiro.
+            for button in buttons where button.touch === touch && button.action == GameButtons.primary {
+                let dx: CGFloat = point.x - button.node.position.x
+                let dy: CGFloat = point.y - button.node.position.y
+                if dx * dx + dy * dy > 20 * 20 {
+                    InputManager.shared.touchAim = Vec2(Double(dx), Double(dy)).normalized()
+                } else {
+                    InputManager.shared.touchAim = nil
+                }
+            }
+            return
+        }
         var dx: CGFloat = point.x - joyOrigin.x
         var dy: CGFloat = point.y - joyOrigin.y
         let dist: CGFloat = (dx * dx + dy * dy).squareRoot()
@@ -154,6 +166,7 @@ final class TouchControls: SKNode {
                 buttons[index].touch = nil
                 buttons[index].node.setPressed(false)
                 InputManager.shared.touchHeld.remove(buttons[index].action)
+                if buttons[index].action == GameButtons.primary { InputManager.shared.touchAim = nil }
             }
             index += 1
         }
@@ -171,5 +184,6 @@ final class TouchControls: SKNode {
             index += 1
         }
         InputManager.shared.touchHeld = []
+        InputManager.shared.touchAim = nil
     }
 }

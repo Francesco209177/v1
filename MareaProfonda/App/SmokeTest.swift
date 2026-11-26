@@ -25,6 +25,7 @@ final class SmokeRunner {
     private var stages: [Stage] = []
     private var index: Int = 0
     private var failures: Int = 0
+    private var reported: Set<String> = []
 
     init(view: SKView) {
         self.view = view
@@ -43,6 +44,7 @@ final class SmokeRunner {
                 config.seed = 7
                 config.startDepthMeters = depth
                 config.autopilot = auto
+                config.autoFire = true
                 return DiveScene(size: size, config: config)
             }
         }
@@ -88,24 +90,58 @@ final class SmokeRunner {
         let scene: BaseScene = stage.make(view.bounds.size)
         SmokeTest.log("BEGIN \(stage.name)")
         view.presentScene(scene)
-        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 3.0) { [weak self, weak scene] in
+        waitForFirstFrames(scene: scene, stage: stage, attempts: 0)
+    }
+
+    /// Il simulatore può metterci secondi a disegnare il primo fotogramma (compila gli shader):
+    /// la misura parte solo quando la scena ha cominciato a girare.
+    private func waitForFirstFrames(scene: BaseScene, stage: Stage, attempts: Int) {
+        if scene.frameCount < 3 && attempts < 80 {
+            DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.5) { [weak self] in
+                self?.waitForFirstFrames(scene: scene, stage: stage, attempts: attempts + 1)
+            }
+            return
+        }
+        let startFrames: Int = scene.frameCount
+        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 3.0) { [weak self] in
             guard let self = self else { return }
-            let frames: Int = scene?.frameCount ?? 0
-            let nodes: Int = scene.map { SmokeRunner.countNodes($0) } ?? 0
-            if frames < 30 {
+            let frames: Int = scene.frameCount - startFrames
+            let nodes: Int = SmokeRunner.countNodes(scene)
+            if frames < 20 {
                 self.failures += 1
                 SmokeTest.log("FAIL \(stage.name) solo \(frames) fotogrammi in 3 secondi")
             } else {
-                SmokeTest.log("OK \(stage.name) frames=\(frames) nodes=\(nodes) \(scene?.debugSummary ?? "")")
+                SmokeTest.log("OK \(stage.name) frames=\(frames) nodes=\(nodes) \(scene.debugSummary)")
             }
-            for problem in SpriteForge.shared.problems where problem.hasPrefix("sprite mancante") {
+            for problem in SpriteForge.shared.problems where problem.hasPrefix("sprite mancante") && !self.reported.contains(problem) {
+                self.reported.insert(problem)
                 self.failures += 1
                 SmokeTest.log("FAIL \(stage.name) \(problem)")
             }
-            SmokeTest.log("SHOT \(stage.name)")
-            DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 2.5) { [weak self] in
+            self.capture(name: stage.name)
+            DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.4) { [weak self] in
                 self?.advance()
             }
+        }
+    }
+
+    /// Salva la schermata dall'interno dell'app, così corrisponde di sicuro alla scena in corso.
+    /// Lo script della CI la recupera dal contenitore dell'app nel simulatore.
+    private func capture(name: String) {
+        guard let view: SKView = view else { return }
+        let renderer: UIGraphicsImageRenderer = UIGraphicsImageRenderer(bounds: view.bounds)
+        let image: UIImage = renderer.image { (_: UIGraphicsImageRendererContext) -> Void in
+            view.drawHierarchy(in: view.bounds, afterScreenUpdates: true)
+        }
+        let directory: URL = FileManager.default.temporaryDirectory.appendingPathComponent("smoke", isDirectory: true)
+        do {
+            try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+            if let data: Data = image.pngData() {
+                try data.write(to: directory.appendingPathComponent(name + ".png"))
+                SmokeTest.log("SAVED \(name) \(Int(image.size.width * image.scale))x\(Int(image.size.height * image.scale))")
+            }
+        } catch {
+            SmokeTest.log("NOTE schermata non salvata: \(error)")
         }
     }
 

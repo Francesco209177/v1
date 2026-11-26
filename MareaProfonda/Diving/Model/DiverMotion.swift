@@ -96,7 +96,8 @@ enum DiverMotion {
         }
         s.position = resolved.position
         if s.position.y < surfaceY { s.position.y = surfaceY }
-        s.atSurface = s.position.y < surfaceY + 5
+        // "In superficie" fino a poco meno di un metro: lì Tecla respira.
+        s.atSurface = s.position.y < surfaceY + 11
 
         let speed: Double = s.velocity.length
         if abs(s.velocity.x) > 6 { s.facingRight = s.velocity.x > 0 }

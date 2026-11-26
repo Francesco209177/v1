@@ -310,8 +310,143 @@ def gozzo() -> Grid:
     return g
 
 
+# ----------------------------------------------------------------------------
+# Attrezzi e oggetti da raccogliere
+# ----------------------------------------------------------------------------
+GEAR = Palette("gear", {
+    "o": "#141b2e",
+    "m": "#c9d3dc",  # acciaio
+    "M": "#7f8c9a",
+    "h": "#ffffff",
+    "n": "#9a6a3a",  # legno
+    "e": "#e8e0c8",  # lenza
+    "p": "#5b2a6e",  # riccio
+    "P": "#34173f",
+    "q": "#9a5ab0",
+    "c": "#f6d9d2",  # conchiglia
+    "C": "#e39aa0",
+    "d": "#b9656f",
+    "g": "#58c070",  # lattuga di mare
+    "G": "#2f8a4c",
+    "l": "#a8ec9a",
+    "b": "#c9923a",  # bronzo della campana
+    "B": "#8a5f22",
+    "y": "#f6d27a",
+    "a": "#bfeaf6b0",  # aria
+    "A": "#ffffffd0",
+    "k": "#7c858f",  # campana esaurita
+    "K": "#4d555e",
+    "r": "#e5484d",  # avviso
+    "w": "#ffffff",
+})
+
+HARPOON_TIP = [
+    "......o.....",
+    ".....omo....",
+    "ooooooMmoo..",
+    "nnnnMMmmmho.",
+    "ooooooMmoo..",
+    ".....omo....",
+    "......o.....",
+]
+
+ALERT = [
+    ".ooo.",
+    "orrro",
+    "orwro",
+    "orwro",
+    "orwro",
+    "orrro",
+    ".oro.",
+    "orrro",
+    "orwro",
+    ".ooo.",
+]
+
+STAR = [
+    "...o...",
+    "..oyo..",
+    "ooyyyoo",
+    "oyyyyyo",
+    ".oyyyo.",
+    "oyyoyyo",
+    "oo...oo",
+]
+
+
+def riccio() -> Grid:
+    c = Canvas(16, 13, GEAR)
+    for i in range(13):
+        a = math.pi + math.pi * i / 12
+        c.line(8, 9.5, 8 + math.cos(a) * 7.0, 9.5 + math.sin(a) * 7.5, 0.8, "P" if i % 2 else "q")
+    c.ellipse(8, 9.2, 4.6, 3.6, "p")
+    c.ellipse(6.6, 8.0, 1.6, 1.0, "q")
+    g = c.grid(threshold=0.3)
+    g.outline("o")
+    return g
+
+
+def conchiglia() -> Grid:
+    c = Canvas(15, 12, GEAR)
+    pts = [(7.5, 10.5)]
+    for i in range(11):
+        a = math.pi * 1.08 + (math.pi * 0.84) * i / 10
+        pts.append((7.5 + math.cos(a) * 6.0, 9.5 + math.sin(a) * 7.4))
+    c.poly(pts, "c")
+    for i in range(5):
+        a = math.pi * 1.18 + (math.pi * 0.64) * i / 4
+        c.line(7.5, 10.0, 7.5 + math.cos(a) * 5.4, 9.5 + math.sin(a) * 6.8, 0.8, "C")
+    c.rect(5.0, 9.6, 10.0, 11.0, "d")
+    g = c.grid()
+    g.outline("o")
+    return g
+
+
+def alga() -> Grid:
+    c = Canvas(15, 13, GEAR)
+    for cx, cy, r, key in ((4.5, 8.5, 3.6, "G"), (10.0, 8.0, 4.0, "g"), (7.5, 5.5, 3.8, "g"), (7.0, 9.5, 3.0, "G")):
+        c.ellipse(cx, cy, r, r * 0.8, key)
+    for cx, cy in ((6.5, 4.5), (10.5, 6.5), (4.0, 7.5)):
+        c.ellipse(cx, cy, 1.5, 0.9, "l")
+    g = c.grid()
+    g.outline("o")
+    return g
+
+
+def campana(full: bool) -> Grid:
+    """Campana d'aria: una cupola di bronzo con una bolla d'aria sotto, da cui Tecla respira."""
+    c = Canvas(26, 26, GEAR)
+    body, dark, light = ("b", "B", "y") if full else ("k", "K", "k")
+    pts = [(4.0, 17.0)]
+    for i in range(13):
+        a = math.pi + math.pi * i / 12
+        pts.append((13 + math.cos(a) * 9.0, 12.0 + math.sin(a) * 9.5))
+    pts.append((22.0, 17.0))
+    c.poly(pts, body)
+    c.poly([(13.0, 2.6), (22.0, 12.0), (22.0, 17.0), (15.0, 17.0)], dark)
+    c.rect(3.0, 16.0, 23.0, 18.4, dark)
+    c.rect(11.4, 0.5, 14.6, 3.0, dark)
+    c.ellipse(8.0, 8.5, 1.8, 2.8, light)
+    if full:
+        c.ellipse(13, 19.5, 7.5, 3.2, "a")
+        c.ellipse(10.5, 18.8, 2.2, 0.9, "A")
+    c.line(13, 21.5, 13, 25.5, 1.0, "e")
+    g = c.grid()
+    g.outline("o")
+    return g
+
+
 def build(out_dir: str) -> str:
     sheet = Sheet("Mare: particelle, flora, pietra, barca")
+    sheet.add_palette(GEAR)
+    tip = Grid.from_rows(HARPOON_TIP)
+    sheet.add("harpoon_tip", tip, GEAR, ax=4, ay=3)
+    sheet.add("alert", Grid.from_rows(ALERT), GEAR, ax=2, ay=9)
+    sheet.add("star", Grid.from_rows(STAR), GEAR)
+    for name, grid in (("riccio", riccio()), ("conchiglia", conchiglia()), ("alga", alga())):
+        sheet.add(f"pickup_{name}", grid, GEAR, ax=grid.w // 2, ay=grid.h - 1)
+    for name, grid in (("campana", campana(True)), ("campana_vuota", campana(False))):
+        sheet.add(f"pickup_{name}", grid, GEAR, ax=grid.w // 2, ay=18)
     for pal in (PAL, FLORA, STONE, BOAT):
         sheet.add_palette(pal)
     for i, rows in enumerate(BUBBLES):

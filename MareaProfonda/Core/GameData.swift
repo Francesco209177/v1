@@ -6,10 +6,12 @@ final class GameData {
     static let shared: GameData = GameData()
 
     let world: WorldData
+    let fish: FishCatalog
     private(set) var problems: [String] = []
 
     private init() {
         var loadedWorld: WorldData? = nil
+        var loadedFish: FishCatalog? = nil
         var notes: [String] = []
         if let directory: URL = Bundle.main.url(forResource: "Data", withExtension: nil) {
             do {
@@ -19,10 +21,18 @@ final class GameData {
             } catch {
                 notes.append("\(error)")
             }
+            do {
+                let value: FishCatalog = try DataFiles.load(FishCatalog.self, file: "fish.json", in: directory)
+                notes.append(contentsOf: value.problems())
+                loadedFish = value
+            } catch {
+                notes.append("\(error)")
+            }
         } else {
             notes.append("cartella Data assente dal bundle")
         }
         world = loadedWorld ?? GameData.fallbackWorld
+        fish = loadedFish ?? FishCatalog(species: [])
         problems = notes
     }
 

@@ -111,6 +111,21 @@ wwww.....www
 ............
 end
 
+sprite icon_weight 12 12 icon ax=6 ay=6
+....wwww....
+...w....w...
+...w....w...
+..wwwwwwww..
+.wwwwwwwwww.
+.wwwwwwwwww.
+wwww.ww.wwww
+wwww.ww.wwww
+wwwwwwwwwwww
+wwwwwwwwwwww
+wwwwwwwwwwww
+.wwwwwwwwww.
+end
+
 sprite icon_depth 12 12 icon ax=6 ay=6
 .....ww.....
 .....ww.....
