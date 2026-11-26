@@ -55,6 +55,63 @@ enum ShaderLibrary {
         return shader
     }()
 
+    /// Caustiche sul fondale: applicato ai blocchi di roccia delle zone luminose.
+    /// `a_origin` è l'angolo in alto a sinistra del blocco in pixel di mappa, così il disegno
+    /// continua senza giunture da un blocco all'altro; `a_fade` lo attenua con la profondità.
+    static let terrainCaustics: SKShader = {
+        let source: String = """
+        void main() {
+            vec4 tex = texture2D(u_texture, v_tex_coord);
+            vec2 pix = floor(vec2(v_tex_coord.x, 1.0 - v_tex_coord.y) * u_chunk);
+            vec2 p = (a_origin + pix) * 0.045;
+            float t = u_time * 0.55;
+            float c = sin(p.x * 1.7 + t + sin(p.y * 2.3 - t * 0.7) * 1.4) + sin(p.y * 1.9 - t * 0.8 + sin(p.x * 2.1 + t * 0.5) * 1.6);
+            c = smoothstep(1.15, 1.85, c);
+            vec3 lit = tex.rgb + vec3(0.46, 0.50, 0.36) * c * a_fade * tex.a;
+            gl_FragColor = vec4(min(lit, vec3(tex.a)), tex.a);
+        }
+        """
+        let shader: SKShader = SKShader(source: source)
+        shader.uniforms = [SKUniform(name: "u_chunk", float: 256.0)]
+        shader.attributes = [
+            SKAttribute(name: "a_origin", type: SKAttributeType.vectorFloat2),
+            SKAttribute(name: "a_fade", type: SKAttributeType.float)
+        ]
+        return shader
+    }()
+
+    /// Buio degli abissi: un velo scuro a tutto schermo con un alone attorno a Tecla e il
+    /// fascio della torcia nella direzione in cui guarda. La luce cala a gradini netti.
+    static let darkness: SKShader = {
+        let source: String = """
+        void main() {
+            vec2 d = (v_tex_coord - u_center) * vec2(u_aspect, 1.0);
+            float dist = length(d);
+            float glow = 1.0 - smoothstep(u_radius * 0.30, u_radius, dist);
+            float along = dot(d, u_dir);
+            float side = abs(d.x * u_dir.y - d.y * u_dir.x);
+            float reach = 1.0 - smoothstep(u_beam * 0.45, u_beam, along);
+            float cone = 1.0 - smoothstep(0.02 + along * 0.30, 0.05 + along * 0.44, side);
+            float beam = step(0.0, along) * reach * cone * u_torch;
+            float light = clamp(max(glow, beam), 0.0, 1.0);
+            light = floor(light * 6.0 + 0.5) / 6.0;
+            float a = u_dark * (1.0 - light);
+            gl_FragColor = vec4(vec3(0.0, 0.012, 0.045) * a, a);
+        }
+        """
+        let shader: SKShader = SKShader(source: source)
+        shader.uniforms = [
+            SKUniform(name: "u_dark", float: 0.0),
+            SKUniform(name: "u_center", vectorFloat2: vector_float2(0.5, 0.5)),
+            SKUniform(name: "u_dir", vectorFloat2: vector_float2(1.0, 0.0)),
+            SKUniform(name: "u_aspect", float: 2.0),
+            SKUniform(name: "u_radius", float: 0.22),
+            SKUniform(name: "u_beam", float: 0.75),
+            SKUniform(name: "u_torch", float: 1.0)
+        ]
+        return shader
+    }()
+
     /// Shader volutamente sbagliato: la CI lo usa per verificare di saper riconoscere
     /// un errore di compilazione degli shader nei log. Non è mai usato nel gioco.
     static func makeBrokenCanary() -> SKShader {
@@ -63,6 +120,10 @@ enum ShaderLibrary {
 
     static func setColor(_ shader: SKShader, _ name: String, _ value: RGBA) {
         shader.uniformNamed(name)?.vectorFloat4Value = color(value)
+    }
+
+    static func setVector(_ shader: SKShader, _ name: String, _ x: Double, _ y: Double) {
+        shader.uniformNamed(name)?.vectorFloat2Value = vector_float2(Float(x), Float(y))
     }
 
     static func setFloat(_ shader: SKShader, _ name: String, _ value: Double) {

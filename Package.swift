@@ -6,7 +6,8 @@ import PackageDescription
 // Cartelle con codice che importa solo Foundation.
 let pureSources: [String] = [
     "Core/Model",
-    "Art/Model"
+    "Art/Model",
+    "Diving/Model"
 ]
 
 let package = Package(

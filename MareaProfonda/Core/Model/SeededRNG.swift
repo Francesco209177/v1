@@ -138,4 +138,56 @@ enum Noise {
         }
         return norm > 0 ? sum / norm : 0
     }
+
+    // MARK: - Versione ripetibile (per texture che si affiancano senza giunture)
+
+    @inline(__always)
+    private static func wrap(_ v: Int, _ period: Int) -> Int {
+        if period <= 0 { return v }
+        let m: Int = v % period
+        return m < 0 ? m + period : m
+    }
+
+    /// Come `value`, ma si ripete ogni `periodX` × `periodY` celle.
+    static func tileValue(_ x: Double, _ y: Double, periodX: Int, periodY: Int, seed: UInt64) -> Double {
+        let x0: Double = x.rounded(.down)
+        let y0: Double = y.rounded(.down)
+        let ix: Int = Int(x0)
+        let iy: Int = Int(y0)
+        let fx: Double = x - x0
+        let fy: Double = y - y0
+        let sx: Double = fx * fx * (3 - 2 * fx)
+        let sy: Double = fy * fy * (3 - 2 * fy)
+        let xa: Int = wrap(ix, periodX)
+        let xb: Int = wrap(ix + 1, periodX)
+        let ya: Int = wrap(iy, periodY)
+        let yb: Int = wrap(iy + 1, periodY)
+        let a: Double = cell(xa, ya, seed)
+        let b: Double = cell(xb, ya, seed)
+        let c: Double = cell(xa, yb, seed)
+        let d: Double = cell(xb, yb, seed)
+        let top: Double = a + (b - a) * sx
+        let bottom: Double = c + (d - c) * sx
+        return top + (bottom - top) * sy
+    }
+
+    static func tileFbm(_ x: Double, _ y: Double, periodX: Int, periodY: Int, seed: UInt64, octaves: Int = 3) -> Double {
+        var amp: Double = 1
+        var freq: Double = 1
+        var px: Int = periodX
+        var py: Int = periodY
+        var sum: Double = 0
+        var norm: Double = 0
+        var i: Int = 0
+        while i < octaves {
+            sum += tileValue(x * freq, y * freq, periodX: px, periodY: py, seed: seed &+ UInt64(i) &* 7919) * amp
+            norm += amp
+            amp *= 0.5
+            freq *= 2
+            px *= 2
+            py *= 2
+            i += 1
+        }
+        return norm > 0 ? sum / norm : 0
+    }
 }

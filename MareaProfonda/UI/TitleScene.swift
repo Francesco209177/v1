@@ -57,6 +57,9 @@ final class TitleScene: BaseScene {
     }
 
     override func tick(_ dt: Double) {
+        let input: InputManager = InputManager.shared
+        input.beginFrame()
+        if !input.pressed.isEmpty { begin() }
         let halfWidth: Double = Double(artSize.width) / 2 + 40
         swimmerX += dt * 46
         if swimmerX > halfWidth { swimmerX = -halfWidth }
@@ -86,8 +89,13 @@ final class TitleScene: BaseScene {
     }
 
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+        begin()
+    }
+
+    private func begin() {
         if started { return }
         started = true
+        Feedback.tap()
         onStart?()
     }
 }

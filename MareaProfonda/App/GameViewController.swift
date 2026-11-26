@@ -40,23 +40,22 @@ final class GameViewController: UIViewController {
     private func startGame() {
         started = true
         SpriteForge.shared.loadIfNeeded()
+        ControllerSupport.shared.start()
+        SceneRouter.shared.view = skView
         if SmokeTest.isActive {
             let runner: SmokeRunner = SmokeRunner(view: skView)
             smoke = runner
             runner.start()
             return
         }
-        showTitle()
-    }
-
-    func showTitle() {
-        let scene: TitleScene = TitleScene(size: skView.bounds.size)
-        skView.presentScene(scene)
+        SceneRouter.shared.showTitle(animated: false)
     }
 
     // MARK: - Pausa e ripresa
 
     func applicationWillPause() {
+        (skView.scene as? DiveScene)?.pauseForBackground()
+        InputManager.shared.reset()
         skView.isPaused = true
     }
 

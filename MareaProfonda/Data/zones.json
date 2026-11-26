@@ -10,7 +10,15 @@
       "waterTop": "58d6d0",
       "waterBottom": "1f8fb0",
       "light": 1.0,
-      "needsTorch": false
+      "needsTorch": false,
+      "rock": ["3b3a55", "5c5770", "8a7f8c", "b9a99b", "e3d3b0"],
+      "cap": ["d9c58f", "f4e7b6"],
+      "outline": "2a2940",
+      "shape": "bowl",
+      "wallMin": 4,
+      "wallMax": 30,
+      "islands": 0.61,
+      "stretch": 3.2
     },
     {
       "id": "gorgonie",
@@ -20,7 +28,15 @@
       "waterTop": "1f8fb0",
       "waterBottom": "125a94",
       "light": 0.8,
-      "needsTorch": false
+      "needsTorch": false,
+      "rock": ["2d2244", "4b3260", "74466f", "a2607a", "cf8d8a"],
+      "cap": ["c75c6a", "f29a80"],
+      "outline": "1e1730",
+      "shape": "ledges",
+      "wallMin": 16,
+      "wallMax": 34,
+      "islands": 0.565,
+      "stretch": 2.6
     },
     {
       "id": "parete",
@@ -30,7 +46,15 @@
       "waterTop": "125a94",
       "waterBottom": "0b3068",
       "light": 0.55,
-      "needsTorch": false
+      "needsTorch": false,
+      "rock": ["121c3a", "1e3058", "2e4a7a", "44689a", "6a90b8"],
+      "cap": ["4f7ea8", "86b6d2"],
+      "outline": "0b1228",
+      "shape": "open",
+      "wallMin": 5,
+      "wallMax": 16,
+      "islands": 0.665,
+      "stretch": 1.2
     },
     {
       "id": "citta",
@@ -40,7 +64,15 @@
       "waterTop": "0b3068",
       "waterBottom": "07173c",
       "light": 0.3,
-      "needsTorch": true
+      "needsTorch": true,
+      "rock": ["1c2740", "2f3f5c", "4d6079", "7a8e9c", "aebcb8"],
+      "cap": ["3f8f7a", "74c49c"],
+      "outline": "101828",
+      "shape": "ruins",
+      "wallMin": 12,
+      "wallMax": 26,
+      "islands": 0.66,
+      "stretch": 2.2
     },
     {
       "id": "fumarole",
@@ -50,7 +82,15 @@
       "waterTop": "07173c",
       "waterBottom": "05060f",
       "light": 0.12,
-      "needsTorch": true
+      "needsTorch": true,
+      "rock": ["0c0b14", "1b1824", "2e2733", "463a44", "6b5656"],
+      "cap": ["b8902a", "ecca4c"],
+      "outline": "050409",
+      "shape": "chimneys",
+      "wallMin": 16,
+      "wallMax": 32,
+      "islands": 0.585,
+      "stretch": 1.0
     },
     {
       "id": "santuario",
@@ -60,7 +100,15 @@
       "waterTop": "05060f",
       "waterBottom": "0a2a2a",
       "light": 0.2,
-      "needsTorch": true
+      "needsTorch": true,
+      "rock": ["0a1c1e", "123234", "1f4f4c", "34746a", "5fa58c"],
+      "cap": ["c89b4a", "f2d27c"],
+      "outline": "041012",
+      "shape": "hall",
+      "wallMin": 14,
+      "wallMax": 22,
+      "islands": 0.80,
+      "stretch": 1.6
     }
   ]
 }

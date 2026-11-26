@@ -37,8 +37,22 @@ final class SmokeRunner {
 
     /// Elenco delle scene percorse dalla prova. Ogni nuova scena del gioco va aggiunta qui.
     static func gameStages() -> [Stage] {
+        func dive(_ depth: Double, _ auto: Vec2) -> (CGSize) -> BaseScene {
+            return { (size: CGSize) -> BaseScene in
+                var config: DiveScene.Config = DiveScene.Config()
+                config.seed = 7
+                config.startDepthMeters = depth
+                config.autopilot = auto
+                return DiveScene(size: size, config: config)
+            }
+        }
         return [
-            Stage(name: "title", make: { (size: CGSize) -> BaseScene in TitleScene(size: size) })
+            Stage(name: "title", make: { (size: CGSize) -> BaseScene in TitleScene(size: size) }),
+            Stage(name: "dive_surface", make: dive(0, Vec2(0.55, -0.45))),
+            Stage(name: "dive_posidonia", make: dive(24, Vec2(-0.7, -0.15))),
+            Stage(name: "dive_gorgonie", make: dive(72, Vec2(0.7, 0.1))),
+            Stage(name: "dive_citta", make: dive(290, Vec2(0.6, -0.2))),
+            Stage(name: "dive_fumarole", make: dive(440, Vec2(-0.6, -0.3)))
         ]
     }
 
@@ -52,6 +66,10 @@ final class SmokeRunner {
         for problem in forge.problems {
             failures += 1
             SmokeTest.log("FAIL forge \(problem)")
+        }
+        for problem in GameData.shared.problems {
+            failures += 1
+            SmokeTest.log("FAIL data \(problem)")
         }
         advance()
     }
@@ -78,7 +96,7 @@ final class SmokeRunner {
                 self.failures += 1
                 SmokeTest.log("FAIL \(stage.name) solo \(frames) fotogrammi in 3 secondi")
             } else {
-                SmokeTest.log("OK \(stage.name) frames=\(frames) nodes=\(nodes)")
+                SmokeTest.log("OK \(stage.name) frames=\(frames) nodes=\(nodes) \(scene?.debugSummary ?? "")")
             }
             for problem in SpriteForge.shared.problems where problem.hasPrefix("sprite mancante") {
                 self.failures += 1

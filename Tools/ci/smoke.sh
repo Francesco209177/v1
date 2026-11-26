@@ -39,7 +39,7 @@ run_app() {
     --predicate 'process == "MareaProfonda"' > "$OUT/$name.oslog.txt" 2>&1 &
   local logpid=$!
   sleep 2
-  ( sleep 300; echo "TIMEOUT: chiudo l'app"; xcrun simctl terminate "$UDID" "$BUNDLE_ID" >/dev/null 2>&1 ) &
+  ( sleep 420 & wait $!; echo "TIMEOUT: chiudo l'app"; xcrun simctl terminate "$UDID" "$BUNDLE_ID" >/dev/null 2>&1 ) &
   local watchdog=$!
   SIMCTL_CHILD_OS_ACTIVITY_DT_MODE=YES xcrun simctl launch --console-pty --terminate-running-process \
     "$UDID" "$BUNDLE_ID" "$@" 2>&1 | while IFS= read -r line; do
@@ -53,14 +53,16 @@ run_app() {
           ;;
       esac
     done
+  pkill -P "$watchdog" >/dev/null 2>&1 || true
   kill "$watchdog" >/dev/null 2>&1 || true
   sleep 2
   kill "$logpid" >/dev/null 2>&1 || true
   touch "$OUT/$name.log"
 }
 
-# Righe che indicano un problema negli shader o un arresto anomalo.
-PATTERN='Fatal error|Terminating app|precondition failed|shader.*(error|fail)|failed to compile|program_source|Compiler failed|MTLLibrary'
+# Righe che indicano un errore di compilazione degli shader o un arresto anomalo.
+# (Verificate sul simulatore: uno shader sbagliato stampa "SKShader failed to compile".)
+PATTERN='Fatal error|Terminating app|precondition failed|SKShader failed to compile|Compiler failed to build request|MTLLibraryErrorDomain'
 
 echo "::group::Prova principale"
 run_app app -smoke
@@ -68,10 +70,7 @@ echo "::endgroup::"
 
 echo "::group::Canarino: shader volutamente sbagliato"
 run_app canary -smoke -smoke-canary
-echo "--- righe sospette nel canarino (devono essercene) ---"
-grep -E -i "$PATTERN" "$OUT/canary.log" "$OUT/canary.oslog.txt" | head -n 30
-echo "--- os_log del canarino (prime righe con 'shader' o 'error') ---"
-grep -i -E "shader|error|metal" "$OUT/canary.oslog.txt" | head -n 40
+echo "righe riconosciute nel canarino: $(grep -E -c "$PATTERN" "$OUT/canary.log")"
 echo "::endgroup::"
 
 # Le schermate escono con l'orientamento del dispositivo: le raddrizzo se sono verticali.
@@ -103,16 +102,16 @@ if grep -q "SMOKE FAIL" "$OUT/app.log"; then
   grep "SMOKE FAIL" "$OUT/app.log"
   FAIL=1
 fi
-if grep -E -i -q "$PATTERN" "$OUT/app.log" "$OUT/app.oslog.txt"; then
+if grep -E -q "$PATTERN" "$OUT/app.log" "$OUT/app.oslog.txt"; then
   echo "::error::trovati errori di shader o arresti anomali nei log"
-  grep -E -i "$PATTERN" "$OUT/app.log" "$OUT/app.oslog.txt" | head -n 40
+  grep -E -A 6 "$PATTERN" "$OUT/app.log" | head -n 60
   FAIL=1
 fi
 if [ -n "$CRASHES" ]; then
   echo "::error::l'app ha generato un rapporto di crash"
   FAIL=1
 fi
-if ! grep -E -i -q "$PATTERN" "$OUT/canary.log" "$OUT/canary.oslog.txt"; then
+if ! grep -E -q "$PATTERN" "$OUT/canary.log" "$OUT/canary.oslog.txt"; then
   echo "::warning::il canarino non ha prodotto righe riconoscibili: il controllo degli shader via log non è affidabile"
 fi
 exit $FAIL

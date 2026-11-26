@@ -27,8 +27,8 @@ class BaseScene: SKScene {
         super.init(coder: aDecoder)
     }
 
-    /// Nome usato nei log della prova automatica.
-    var sceneName: String { return String(describing: type(of: self)) }
+    /// Riga di stato scritta nei log dalla prova automatica; le scene la arricchiscono.
+    var debugSummary: String { return "" }
 
     // MARK: - Ciclo di vita
 
