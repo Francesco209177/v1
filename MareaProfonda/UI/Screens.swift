@@ -200,6 +200,7 @@ struct HubPanelView: View {
         return VStack(spacing: 10) {
             HubStatusBar(state: state)
             Spacer(minLength: 0)
+            ObjectiveBanner(state: state, focus: focus)
             if !session.justCompleted.isEmpty {
                 QuestBanner(questIds: session.justCompleted)
             }
@@ -292,6 +293,50 @@ struct HubActions: View {
                 SceneRouter.shared.showTitle(animated: true)
             }
             .frame(maxWidth: 120)
+        }
+    }
+}
+
+/// L'obiettivo della storia, sempre in vista al porto. Quando la storia propone un boss,
+/// qui c'è anche il pulsante per affrontarlo (di mattina o di pomeriggio, al posto dell'immersione).
+struct ObjectiveBanner: View {
+    let state: GameState
+    @ObservedObject var focus: PadFocus
+
+    var body: some View {
+        let session: GameSession = GameSession.shared
+        let beat: StoryBeat? = session.storyBeat
+        let boss: BossInfo? = session.availableBoss
+        let canFight: Bool = state.phase == DayPhase.morning || state.phase == DayPhase.afternoon
+        return Group {
+            if let beat: StoryBeat = beat {
+                HStack(spacing: 10) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Capitolo \(beat.chapter) · \(beat.title.text())")
+                            .font(.system(.caption, design: .rounded).weight(.heavy))
+                            .foregroundColor(Palette.ochre)
+                        Text(beat.objective.text())
+                            .font(.system(.footnote, design: .rounded).weight(.semibold))
+                            .foregroundColor(Palette.lime)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    Spacer(minLength: 0)
+                    if let progress: (count: Int, goal: Int) = session.storyProgress, progress.goal > 1 {
+                        Text("\(progress.count)/\(progress.goal)")
+                            .font(.system(.subheadline, design: .rounded).weight(.heavy))
+                            .foregroundColor(Palette.ochre)
+                    }
+                    if let boss: BossInfo = boss {
+                        MenuButton(title: String(localized: "Affronta il boss"), subtitle: canFight ? boss.name.text() : String(localized: "Di mattina o di pomeriggio"),
+                                   fill: Palette.terracotta, textColor: Palette.lime, enabled: canFight, order: 4, focus: focus) {
+                            SceneRouter.shared.startBoss()
+                        }
+                        .frame(maxWidth: 210)
+                    }
+                }
+                .padding(10)
+                .background(RoundedRectangle(cornerRadius: 16, style: .continuous).fill(Palette.ink.opacity(0.78)))
+            }
         }
     }
 }

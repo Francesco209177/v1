@@ -16,8 +16,10 @@ AX, AY = 13, 32        # ancoraggio: tra i piedi
 class Look:
     def __init__(self, pid: str, skin: str, hair: str, top: str, bottom: str, *, shoes: str = "#3a2a2a",
                  accent: str = "#f2c23a", hair_style: str = "short", build: float = 1.0, height: float = 1.0,
-                 apron: str | None = None, hat: str | None = None, beard: bool = False, glasses: bool = False):
+                 apron: str | None = None, hat: str | None = None, beard: bool = False, glasses: bool = False,
+                 hat_style: str = "cap", sash: bool = False, moustache: bool = False):
         self.pid = pid
+        self.hat_style, self.sash, self.moustache = hat_style, sash, moustache
         self.skin, self.hair, self.top, self.bottom = skin, hair, top, bottom
         self.shoes, self.accent = shoes, accent
         self.hair_style, self.build, self.height = hair_style, build, height
@@ -132,7 +134,18 @@ def figure(look: Look, *, leg_a: float = 0.0, leg_b: float = 0.0, arm_near: floa
     else:  # short
         c.ellipse(head_x - 1.0, head_y - 1.8, head_r + 0.2, head_r * 0.78, "k")
         c.ellipse(head_x + 1.6, head_y + 1.2, head_r - 1.2, head_r - 1.5, "s")
-    if look.hat:
+    if look.hat and look.hat_style == "toque":
+        # cappello da cuoco, alto e gonfio in cima
+        c.rect(head_x - 3.6, head_y - 10.5, head_x + 3.4, head_y - 3.4, "c")
+        c.ellipse(head_x - 2.4, head_y - 10.6, 2.6, 2.2, "c")
+        c.ellipse(head_x + 2.0, head_y - 10.6, 2.6, 2.2, "c")
+    elif look.hat and look.hat_style == "straw":
+        c.ellipse(head_x - 0.2, head_y - 4.6, head_r - 0.6, 3.0, "c")
+        c.ellipse(head_x + 0.2, head_y - 3.0, head_r + 3.4, 1.3, "c")
+    elif look.hat and look.hat_style == "bandana":
+        c.ellipse(head_x - 0.4, head_y - 3.6, head_r + 0.3, 2.6, "c")
+        c.poly([(head_x - 5.0, head_y - 3.4), (head_x - 8.0, head_y - 1.4), (head_x - 5.6, head_y - 0.6)], "c")
+    elif look.hat:
         c.ellipse(head_x - 0.2, head_y - 4.2, head_r + 0.6, 2.6, "c")
         c.rect(head_x - 1.0, head_y - 2.6, head_x + head_r + 2.6, head_y - 1.4, "C")
     if look.beard:
@@ -158,6 +171,9 @@ def figure(look: Look, *, leg_a: float = 0.0, leg_b: float = 0.0, arm_near: floa
         c.poly([(hx - 1.0, hy), (hx + 3.6, hy - 0.6), (hx + 3.0, hy + 2.6), (hx - 0.4, hy + 2.2)], "p")
     elif carry == "fork":
         c.line(hx, hy, hx + 0.6, hy - 4.0, 0.8, "g")
+
+    if look.sash:
+        c.line(shoulder_x - 2.6, shoulder_y + 1.6, hip_x + 3.0, hip_y - 0.6, 1.5, "y")
 
     g = c.grid(threshold=0.46)
     g.rim(RAMPS)
@@ -207,6 +223,10 @@ def figure(look: Look, *, leg_a: float = 0.0, leg_b: float = 0.0, arm_near: floa
         g.set(ex_ + 1, my, "m")
         g.set(ex_ + 2, my, "m")
         g.set(ex_ + 3, my + 1, "m")
+    if look.moustache:
+        g.set(ex_ + 1, my - 1, "k")
+        g.set(ex_ + 2, my - 1, "k")
+        g.set(ex_ + 3, my - 1, "k")
     g.outline("o")
     return g
 
@@ -260,6 +280,29 @@ PINUCCIO = Look("pinuccio", "#f0c0a0", "#8a8a96", "#1e1e28", "#1e1e28", hair_sty
 CRITICO = Look("critico", "#e8c0a0", "#2a2a36", "#4a3a5a", "#2a2a36", hair_style="short", glasses=True, hat="#3a3a48", height=1.05)
 
 
+# Il resto del cast: compare nelle scene della storia.
+ZAIRA = Look("zaira", "#c98a5a", "#1f1a24", "#d99a3a", "#4a6a8a", hair_style="short", hat="#d8483a", hat_style="bandana",
+             apron="#4a6a8a", shoes="#3a2a2a", build=1.1)
+BIANCA = Look("bianca", "#f4c9a4", "#a8683a", "#f2c23a", "#b0453c", hair_style="curly", height=0.70, build=0.86, shoes="#f4efe2")
+SAVERIO = Look("saverio", "#c9905a", "#e8e0d0", "#5a8a4a", "#6a5a3a", hair_style="bald", hat="#e8c86a", hat_style="straw", beard=True, build=1.15)
+LUSTRI = Look("lustri", "#f4d2b8", "#1f1a24", "#f4efe2", "#2a2a36", hair_style="short", hat="#f7f4ec", hat_style="toque", moustache=True,
+              accent="#c8402f", height=1.06, build=0.92)
+FULGENZIO = Look("fulgenzio", "#eab090", "#3a2a22", "#2a2f4a", "#2a2f4a", hair_style="bald", build=1.42, moustache=True, sash=True,
+                 accent="#3a8a4a", shoes="#1a1626")
+
+STORY_CAST = [ZAIRA, BIANCA, SAVERIO, LUSTRI, FULGENZIO]
+
+
+def talk(look: Look) -> list[Grid]:
+    """Due fotogrammi: bocca aperta con la mano che accompagna, poi bocca chiusa."""
+    return [figure(look, arm_near=1.25, elbow_near=0.9, arm_far=0.2, mouth="open", bob=-0.4),
+            figure(look, arm_near=0.9, elbow_near=1.2, arm_far=0.1, mouth="smile")]
+
+
+def shock(look: Look) -> list[Grid]:
+    return [figure(look, arm_near=2.7, elbow_near=0.2, arm_far=2.5, mouth="open", eyes="wide", bob=b) for b in (0.0, -1.2)]
+
+
 def customer_frames(look: Look) -> dict[str, list[Grid]]:
     return {
         "walk": walk(look, n=4),
@@ -288,6 +331,7 @@ def build(out_dir: str) -> str:
                                     for s, e in ((0, "open"), (1, "open"), (0, "closed"), (-1, "open"))], pal, AX, AY)
     sheet.add_frames("tecla_shock", [figure(TECLA, arm_near=2.7, elbow_near=0.2, arm_far=2.5, mouth="open", eyes="wide", bob=b)
                                      for b in (0.0, -1.4, -0.6, 0.0)], pal, AX, AY)
+    sheet.add_frames("tecla_talk", talk(TECLA), pal, AX, AY)
 
     pal = sheet.add_palette(INES.palette())
     sheet.add_frames("ines_cook", [figure(INES, arm_near=1.25, elbow_near=0.5 + s * 0.35, arm_far=0.9, carry="spoon", eyes=e)
@@ -295,11 +339,24 @@ def build(out_dir: str) -> str:
     sheet.add_frames("ines_shout", [figure(INES, arm_near=2.4, elbow_near=0.4, arm_far=0.9, carry="spoon", mouth="open", eyes="angry", bob=b)
                                     for b in (0.0, -1.0)], pal, AX, AY)
     sheet.add_frames("ines_stand", idle(INES), pal, AX, AY)
+    sheet.add_frames("ines_walk", walk(INES, n=4), pal, AX, AY)
+    sheet.add_frames("ines_talk", talk(INES), pal, AX, AY)
+    sheet.add_frames("ines_shock", shock(INES), pal, AX, AY)
 
     for look in CUSTOMERS + [PINUCCIO, CRITICO]:
         pal = sheet.add_palette(look.palette())
         for name, frames in customer_frames(look).items():
             sheet.add_frames(f"{look.pid}_{name}", frames, pal, AX, AY)
+    for look in [PINUCCIO, CRITICO]:
+        sheet.add_frames(f"{look.pid}_stand", idle(look), look.pid, AX, AY)
+        sheet.add_frames(f"{look.pid}_talk", talk(look), look.pid, AX, AY)
+        sheet.add_frames(f"{look.pid}_shock", shock(look), look.pid, AX, AY)
+    for look in STORY_CAST:
+        pal = sheet.add_palette(look.palette())
+        sheet.add_frames(f"{look.pid}_stand", idle(look), pal, AX, AY)
+        sheet.add_frames(f"{look.pid}_walk", walk(look, n=4), pal, AX, AY)
+        sheet.add_frames(f"{look.pid}_talk", talk(look), pal, AX, AY)
+        sheet.add_frames(f"{look.pid}_shock", shock(look), pal, AX, AY)
 
     path = f"{out_dir}/people.spr"
     sheet.write(path)

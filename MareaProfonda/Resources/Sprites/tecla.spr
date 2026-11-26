@@ -451,3 +451,8 @@ sprite tecla_dash_2 56 30 tecla ax=30 ay=15
 ........................................................
 ........................................................
 end
+
+variant sub_stand tecla_idle tecla
+variant sub_walk tecla_swim tecla
+variant sub_talk tecla_idle tecla
+variant sub_shock tecla_dash tecla

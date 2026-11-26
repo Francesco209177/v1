@@ -34,13 +34,15 @@ final class DiveResultsPanel: SKNode {
     private var rowSize: CGSize = CGSize(width: 200, height: 30)
     private var iconScale: CGFloat = 1
 
-    init(bag: DiveBag, fainted: Bool, deepest: Double, catalog: FishCatalog) {
+    /// - Parameters:
+    ///   - headline, detail: titolo e sottotitolo diversi dal solito (vittoria o sconfitta contro un boss).
+    init(bag: DiveBag, fainted: Bool, deepest: Double, catalog: FishCatalog, headline: String? = nil, detail: String? = nil) {
         self.bag = bag
         self.fainted = fainted
-        title = Theme.label(fainted ? String(localized: "Sei svenuta!") : String(localized: "Bottino dell'immersione"),
+        title = Theme.label(headline ?? (fainted ? String(localized: "Sei svenuta!") : String(localized: "Bottino dell'immersione")),
                             size: 22, weight: UIFont.Weight.heavy, color: Theme.ink)
         let weightText: String = String(format: "%.1f", bag.totalWeight)
-        subtitle = Theme.label(String(localized: "Profondità massima \(Int(deepest.rounded())) m · Carico \(weightText) kg"),
+        subtitle = Theme.label(detail ?? String(localized: "Profondità massima \(Int(deepest.rounded())) m · Carico \(weightText) kg"),
                                size: 12, weight: UIFont.Weight.semibold, color: Theme.ink.withAlphaComponent(0.7))
         hint = Theme.label("", size: 12, weight: UIFont.Weight.semibold, color: Theme.terracotta)
         button = PillButton(text: fainted ? String(localized: "Tieni questo") : String(localized: "Continua"),

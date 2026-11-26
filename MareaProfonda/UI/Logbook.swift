@@ -13,12 +13,12 @@ enum LogbookTab: Int, CaseIterable {
     var title: String {
         switch self {
         case .quests: return String(localized: "Missioni")
-        case .fish: return String(localized: "Quaderno del Mare")
-        case .recipes: return String(localized: "Ricettario")
+        case .fish: return String(localized: "Quaderno")
+        case .recipes: return String(localized: "Ricette")
         case .yard: return String(localized: "Cantiere")
         case .ledger: return String(localized: "Conti")
         case .chart: return String(localized: "Carta")
-        case .settings: return String(localized: "Impostazioni")
+        case .settings: return String(localized: "Opzioni")
         }
     }
 }
@@ -184,6 +184,7 @@ struct QuestsTab: View {
         let state: GameState = session.state ?? GameState()
         let quests: [Quest] = session.questsToday().filter { QuestEngine.isActive($0, state: state) }
         return Group {
+            StoryCard()
             if quests.isEmpty {
                 Text("Nessuna missione in corso.")
                     .font(.system(.body, design: .rounded))
@@ -213,6 +214,42 @@ struct QuestsTab: View {
                             }
                         }
                     }
+                }
+            }
+        }
+    }
+}
+
+/// La storia in corso: capitolo, tappa, obiettivo e avanzamento.
+struct StoryCard: View {
+    var body: some View {
+        let session: GameSession = GameSession.shared
+        let chapter: ChapterInfo? = session.chapter
+        return RowBox {
+            VStack(alignment: .leading, spacing: 3) {
+                if let chapter: ChapterInfo = chapter {
+                    Text("Capitolo \(chapter.id) — \(chapter.title.text())")
+                        .font(.system(.caption, design: .rounded).weight(.heavy))
+                        .foregroundColor(Palette.cobalt)
+                }
+                if let beat: StoryBeat = session.storyBeat {
+                    Text(beat.title.text())
+                        .font(.system(.subheadline, design: .rounded).weight(.heavy))
+                        .foregroundColor(Palette.ink)
+                    Text(beat.objective.text())
+                        .font(.system(.footnote, design: .rounded))
+                        .foregroundColor(Palette.ink.opacity(0.8))
+                        .fixedSize(horizontal: false, vertical: true)
+                    if let progress: (count: Int, goal: Int) = session.storyProgress {
+                        let reward: String = beat.reward.map { rewardText($0) } ?? ""
+                        Text(reward.isEmpty ? "\(progress.count)/\(progress.goal)" : "\(progress.count)/\(progress.goal) · Ricompensa: \(reward)")
+                            .font(.system(.caption, design: .rounded).weight(.semibold))
+                            .foregroundColor(Palette.terracotta)
+                    }
+                } else {
+                    Text("La storia è conclusa. Il mare, però, continua.")
+                        .font(.system(.subheadline, design: .rounded).weight(.heavy))
+                        .foregroundColor(Palette.ink)
                 }
             }
         }

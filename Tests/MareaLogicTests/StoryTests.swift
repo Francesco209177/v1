@@ -139,6 +139,55 @@ final class StoryTests: XCTestCase {
         XCTAssertTrue(state.weapons.contains("coltello"))
     }
 
+    /// Ogni figura, ritratto e pezzo di boss che il gioco chiede per nome deve esistere nei file .spr.
+    func testStorySpritesExist() throws {
+        let b: (story: StoryBook, scenes: CutsceneBook, bosses: BossBook) = try books()
+        let library: SpriteLibrary = try TestSupport.loadSpriteLibrary()
+        var names: Set<String> = []
+        for sprite in library.expandedSprites() { names.insert(sprite.name) }
+        var missing: Set<String> = []
+        func need(_ name: String) {
+            if !names.contains(name) { missing.insert(name) }
+        }
+        for scene in b.scenes.scenes {
+            for actor in scene.actors {
+                let member: CastMember = try XCTUnwrap(b.story.member(actor.who))
+                need("\(member.body)_stand_0")
+            }
+            for step in scene.steps {
+                guard let who: String = step.who, let member: CastMember = b.story.member(who) else { continue }
+                switch step.action {
+                case "say":
+                    if let portrait: String = member.portrait { need("\(portrait)_\(step.mood ?? "calm")") }
+                    if !member.body.isEmpty, scene.actors.contains(where: { $0.who == who }) { need("\(member.body)_talk_0") }
+                case "move":
+                    need("\(member.body)_walk_0")
+                case "pose":
+                    need("\(member.body)_\(step.pose ?? "stand")_0")
+                default:
+                    break
+                }
+            }
+        }
+        for member in b.story.cast {
+            guard let portrait: String = member.portrait else { continue }
+            for mood in CutsceneStep.moods { need("\(portrait)_\(mood)") }
+        }
+        let bossSprites: [String] = [
+            "murena_boss_head_0", "murena_boss_head_1", "murena_boss_body_0", "murena_boss_body_1", "den_0", "den_1",
+            "granseola_walk_0", "granseola_charge_0", "granseola_rear_0", "granseola_flip_0",
+            "spadaccino_swim_0", "spadaccino_hurt_0",
+            "polpo_boss_head_0", "polpo_boss_head_1", "polpo_boss_head_2", "polpo_boss_arm_0", "polpo_boss_arm_1", "polpo_boss_arm_2", "polpo_boss_shield_0",
+            "lanterna_boss_0", "lanterna_boss_1", "lanterna_lure_0", "lanterna_lure_1",
+            "talpa_hull_0", "talpa_drill_0", "talpa_prop_0", "talpa_valve_0", "talpa_valve_1",
+            "hz_dust_0", "hz_rock_0", "hz_shard_0", "hz_amphora_0", "hz_bubble_0", "hz_ink_0", "hz_ink_1", "hz_spore_0", "hz_spore_1",
+            "hz_mine_0", "hz_mine_1", "hz_torpedo_0", "hz_wave_0", "hz_jet_0", "hz_jet_1",
+            "pickup_campana", "pickup_campana_vuota", "alert"
+        ]
+        for name in bossSprites { need(name) }
+        XCTAssertTrue(missing.isEmpty, "sprite mancanti: " + missing.sorted().joined(separator: ", "))
+    }
+
     func testSavedStoryRoundTrips() throws {
         var state: GameState = GameState()
         state.story.beat = 7

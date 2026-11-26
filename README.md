@@ -48,6 +48,20 @@ Ogni giornata ha quattro fasi: **mattina** e **pomeriggio** (un'immersione ciasc
 - **Stelle.** Un pesce preso con un colpo pulito vale due stelle, uno crivellato una sola. Più stelle, prezzo più alto del piatto.
 - **Pesci.** Alcuni scappano se arrivi di corsa ma tollerano un avvicinamento lento; la cernia difende la tana, il barracuda attacca a vista, lo scorfano punge chi lo tocca. Chi sta per caricare si ferma un attimo e mostra un punto esclamativo.
 - **Osteria.** Scegli il menu con ciò che hai in dispensa, poi in sala: prendi gli ordini, porta i piatti dal passavivande, spilla il vino fermandoti nella fascia verde, pulisci i tavoli. Servire in fila fa salire la serie e le mance. La fama fa salire di rango l'osteria: più tavoli, più piatti in menu, prezzi più alti.
+- **Cantiere e Giornale di bordo.** Dal porto si apre il Giornale di bordo: missioni, Quaderno del Mare, ricette, il cantiere di Zaira (nove potenziamenti e cinque armi secondarie), conti, carta del Calderone, opzioni. Rete e dardi soporiferi danno pesce vivo, a tre stelle.
+- **Storia.** Cinque capitoli. Al porto, in alto, c'è sempre l'obiettivo del momento; le scene si mandano avanti con un tocco e si saltano con «Salta».
+- **Boss.** Quando la storia ne propone uno, al porto compare «Affronta il boss» (di mattina o di pomeriggio, al posto dell'immersione). Si combatte in una sala chiusa: il Fiato cala piano e le due campane d'aria si ricaricano da sole. Ogni attacco è annunciato da una linea rossa o da un punto esclamativo; la barra in alto diventa gialla quando il punto debole è scoperto. Se svieni non perdi nulla, tranne la mezza giornata.
+
+### I sei boss
+
+| Boss | Dove | Come si batte |
+|---|---|---|
+| La Murena Baronessa | relitto delle anfore, 28 m | esce dalle tane a mordere: schiva l'allungo e colpiscile la testa finché resta fuori |
+| La Granseola Corazzata | Secca delle Gorgonie, 92 m | la corazza para tutto: falla schiantare contro la parete o colpiscila al ventre quando si impenna |
+| Lo Spadaccino | Parete Blu, 176 m | in guardia para; dopo l'affondo si scopre, e se la spada si pianta nella roccia il danno raddoppia |
+| Sua Eccellenza il Polpo | Città Sommersa, 300 m | si ripara dietro le anfore: colpiscigli la testa mentre attacca, e sta' fuori dall'inchiostro |
+| La Lanterna | Fumarole, 452 m | al buio si vede solo l'esca: colpiscila per stordirla, o mirale in bocca dopo il morso |
+| La Talpa d'Acciaio | Santuario dei Nerei, 562 m | scafo blindato: mira alla valvola che brilla (cambia posto a ogni fase); le mine feriscono anche lei |
 
 ## Struttura del codice
 
@@ -59,14 +73,16 @@ MareaProfonda/
   Core/        scena di base, comandi, controller, partita e salvataggi
     Model/     vettori, RNG con seme, stato di gioco, impostazioni
   Diving/      scena di immersione, terreno, parallasse, pesci, HUD
-    Model/     mappa, generatore, nuoto, pesci, arpione, simulazione dell'immersione
+    Model/     mappa, generatore, nuoto, pesci, arpione, boss, simulazione dell'immersione
   Restaurant/  scena del servizio
     Model/     ricette, menu, simulazione del servizio, cameriere automatico
   Hub/         porto di Pietrasale
+  Story/       riproduttore delle scene
+    Model/     missioni, capitoli e tappe della storia, formato delle scene
   UI/          comandi a schermo, menu in SwiftUI, riepiloghi
   Art/         fucina degli sprite, shader, testi a pixel
     Model/     immagini in memoria, lettura dei file .spr, pittori di terreno e fondali
-  Data/        JSON: zone, pesci, ricette, bilanciamento
+  Data/        JSON: zone, pesci, ricette, bilanciamento, potenziamenti, missioni, storia, scene, boss
   Resources/   sprite (.spr), icona, catalogo delle stringhe
 Tools/forge/   strumento Python che disegna gli sprite e ne fa le anteprime
 Tools/preview/ anteprime su PNG di terreno e fondali
@@ -110,6 +126,16 @@ I dati di gioco stanno in `MareaProfonda/Data/`. I nomi sono dentro i JSON, per 
 
 `unlock` è `start` oppure `catch:<specie>`. I test controllano che ogni ingrediente esista e che ogni specie abbia almeno una ricetta.
 
+**Una scena** (`cutscenes.json`) è un luogo, gli attori presenti e un elenco di passi:
+
+```json
+{ "id": "s_duello", "place": "porto_sera", "actors": [ { "who": "tecla", "x": -40 }, { "who": "bianca", "x": 32, "left": true } ],
+  "steps": [ { "do": "say", "who": "bianca", "mood": "calm", "text": { "it": "Sulla Parete c'è un pesce spada..." } },
+             { "do": "move", "who": "tecla", "x": 0, "time": 1.2 }, { "do": "shake", "time": 0.8 } ] }
+```
+
+I passi sono `say`, `move`, `wait`, `shake`, `show`, `hide`, `face`, `pose`, `title`, `flash`, `place`; gli umori dei ritratti `calm`, `happy`, `angry`, `shock`, `sad`. Una scena si mostra quando una tappa di `story.json` la indica come `intro` o `outro`. Le tappe hanno un obiettivo con le stesse parole delle missioni (`catch`, `serve`, `depth`, `fame`, `earn`, `upgrade`, `boss`).
+
 ### Tabella di bilanciamento (estratto)
 
 | Rango dell'osteria | Fama | Tavoli | Piatti in menu | Un cliente ogni | Prezzi |
@@ -137,6 +163,9 @@ L'arpione di partenza fa 10 danni; Fiato 120, sacca 10 kg, muta fino a 110 m. Tu
 - **Macchine a stati.** Ogni pesce ha una `GKStateMachine` di GameplayKit; le regole di passaggio e i movimenti sono in codice puro (`FishAI`), così i test li verificano senza simulatore. I banchi sono un'unica entità con membri leggeri.
 - **Menu in SwiftUI, HUD in SpriteKit.** I menu hanno testo che segue la dimensione scelta nelle impostazioni di iOS; l'HUD di gioco resta dentro la scena.
 - **Nomi dei dati nei JSON.** Le stringhe dell'interfaccia usano il catalogo `Localizable.xcstrings`; i nomi di pesci e ricette stanno accanto ai numeri, nei JSON.
+- **Boss in codice puro.** Ogni boss è una piccola macchina a stati (attesa, avviso, attacco, recupero, stordito) con tre fasi a due terzi e a un terzo della vita. La logica sta in `BossSim.swift` e non importa SpriteKit: un giocatore automatico nei test batte tutti e sei i boss, così si sa che ogni scontro è vincibile prima ancora di provarlo sul telefono.
+- **Sale dei boss.** Lo scontro avviene nella mappa del giorno, in una camera scavata alla profondità del boss e sigillata: colori dell'acqua, roccia e buio sono quelli della zona.
+- **Storia a tappe.** Una tappa è un obiettivo con una scena prima e una dopo. Gli obiettivi «a livello» (fama, profondità, potenziamenti) contano anche ciò che è già stato fatto, così chi è più avanti non deve rifare nulla.
 
 ## Milestone
 
@@ -144,13 +173,13 @@ L'arpione di partenza fa 10 danni; Fiato 120, sacca 10 kg, muta fino a 110 m. Tu
 |---|---|---|
 | M1 | progetto, CI, fucina degli sprite, immersione, parallasse, luce, comandi e controller | fatta |
 | M2 | dodici specie con comportamento proprio, arpione con tiro alla lenza, Fiato, sacca, raccolta | fatta |
-| M3 | osteria, menu, servizio, vino, fama, giornata completa, tre slot di salvataggio | in verifica |
-| M4 | potenziamenti, Giornale di bordo, Quaderno del Mare, missioni, zone profonde giocabili, notte | da fare |
-| M5 | trama in cinque capitoli, cutscene, sei boss | da fare |
+| M3 | osteria, menu, servizio, vino, fama, giornata completa, tre slot di salvataggio | fatta |
+| M4 | potenziamenti, Giornale di bordo, Quaderno del Mare, missioni, zone profonde giocabili, notte | fatta |
+| M5 | trama in cinque capitoli, diciannove scene, sei boss, cast con ritratti | fatta |
 | M6 | personale, orto e vivaio, nasse, eventi, collezionabili, giochi del bar | da fare |
 | M7 | audio sintetizzato, bilanciamento, rifinitura, inglese | da fare |
 
-**Che cosa non è stato verificato.** Il gioco è sviluppato senza un Mac e senza un iPhone: la compilazione e l'avvio di ogni scena sono controllati in CI nel simulatore, la logica dai test. La resa su un telefono vero, la sensazione dei comandi, le prestazioni su modelli vecchi e la difficoltà non sono state provate da nessuno finché non installi l'IPA.
+**Che cosa non è stato verificato.** Il gioco è sviluppato senza un Mac e senza un iPhone: la compilazione e l'avvio di ogni scena sono controllati in CI nel simulatore, la logica dai test. La resa su un telefono vero, la sensazione dei comandi, le prestazioni su modelli vecchi e la difficoltà non sono state provate da nessuno finché non installi l'IPA. In particolare la difficoltà dei boss è tarata su un giocatore automatico che non sbaglia mai un colpo: per una persona saranno più lunghi e più duri, e i numeri (`bosses.json`) vanno aggiustati dopo le prime prove.
 
 ## Test
 

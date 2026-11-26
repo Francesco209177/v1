@@ -27,6 +27,8 @@ final class DiveScene: BaseScene {
         var weapon: WeaponInfo? = nil
         /// Nome della fase del giorno, mostrato accanto alla zona.
         var phaseLabel: String = ""
+        /// Se valorizzato l'immersione è uno scontro: si comincia nella sala di questo boss.
+        var boss: BossInfo? = nil
     }
 
     private struct Mote {
@@ -87,8 +89,15 @@ final class DiveScene: BaseScene {
     private var userPaused: Bool = false
     private var pressedPill: PillButton?
     private var results: DiveResultsPanel?
-    /// Chiamata alla fine dell'immersione con ciò che Tecla porta a casa e la profondità massima.
-    var onFinished: ((DiveBag, Double) -> Void)?
+    /// Chiamata alla fine dell'immersione con ciò che Tecla porta a casa e com'è andata.
+    var onFinished: ((DiveOutcome) -> Void)?
+
+    // Scontro con un boss
+    private var bossView: BossView?
+    private var bossBar: BossBar?
+    private var victoryClock: Double = -1
+    private var dyingClock: Double = 0
+    private let inkVeil: SKSpriteNode = SKSpriteNode(color: SKColor(hex: 0x0A0614), size: CGSize(width: 10, height: 10))
 
     // Stato
     private var cameraPos: Vec2 = Vec2.zero
@@ -110,12 +119,21 @@ final class DiveScene: BaseScene {
         self.config = config
         let data: WorldData = GameData.shared.world
         worldData = data
-        let generated: CaveMap = CaveGenerator.generate(seed: config.seed, world: data)
         // La prova automatica visita anche le zone profonde: niente limiti di pressione né di fiato.
         let testing: Bool = config.autopilot != nil
-        var simulation: DiveSim = DiveSim(map: generated, catalog: GameData.shared.fish, seed: config.seed, night: config.night,
-                                          startDepthMeters: config.startDepthMeters, breathMax: testing ? 100_000 : config.breathMax,
-                                          maxSafeDepth: testing ? 640 : config.maxSafeDepth, bagWeight: config.bagWeight)
+        let generated: CaveMap
+        var simulation: DiveSim
+        if let boss: BossInfo = config.boss {
+            let built: (map: CaveMap, arena: Arena) = CaveGenerator.arena(seed: config.seed, world: data, boss: boss)
+            generated = built.map
+            simulation = DiveSim(map: built.map, arena: built.arena, boss: boss, catalog: GameData.shared.fish, seed: config.seed,
+                                 breathMax: testing ? 100_000 : config.breathMax, bagWeight: config.bagWeight)
+        } else {
+            generated = CaveGenerator.generate(seed: config.seed, world: data)
+            simulation = DiveSim(map: generated, catalog: GameData.shared.fish, seed: config.seed, night: config.night,
+                                 startDepthMeters: config.startDepthMeters, breathMax: testing ? 100_000 : config.breathMax,
+                                 maxSafeDepth: testing ? 640 : config.maxSafeDepth, bagWeight: config.bagWeight)
+        }
         simulation.usesExternalBrains = true
         simulation.harpoonTuning.damage = config.harpoonDamage
         simulation.harpoonTuning.range = config.harpoonRange
@@ -268,6 +286,24 @@ final class DiveScene: BaseScene {
         ammoLabel.isHidden = config.weapon == nil
         hud.addChild(ammoLabel)
 
+        // Scontro: il boss, i suoi pericoli, la barra della vita.
+        if let boss: BossBody = sim.boss, let arena: Arena = sim.arena {
+            let view: BossView = BossView(boss: boss, arena: arena)
+            world.addChild(view.node)
+            world.addChild(view.glowLayer)
+            bossView = view
+            let bar: BossBar = BossBar(info: boss.info)
+            bar.zPosition = 8
+            hud.addChild(bar)
+            bossBar = bar
+            minimap.isHidden = true
+            minimapFrame.isHidden = true
+            boat.isHidden = true
+            inkVeil.zPosition = 390
+            inkVeil.alpha = 0
+            cam.addChild(inkVeil)
+        }
+
         // Finestra di pausa.
         pauseLayer.zPosition = 600
         pauseLayer.isHidden = true
@@ -288,6 +324,9 @@ final class DiveScene: BaseScene {
         diverNode.position = CGPoint(x: sim.diver.position.x, y: -sim.diver.position.y)
         updateAtmosphere()
         updateZone(force: true)
+        if let boss: BossInfo = config.boss {
+            diveHUD.announce(zone: boss.name.text(), range: boss.epithet.text())
+        }
     }
 
     override func layoutHUD() {
@@ -313,6 +352,8 @@ final class DiveScene: BaseScene {
                                                        width: mapSize.width + 2, height: mapSize.height + 2), cornerWidth: 6, cornerHeight: 6, transform: nil)
         ammoLabel.setScale(hudIconScale(2.0))
         ammoLabel.position = CGPoint(x: safe.maxX - 44, y: safe.minY + 166)
+        bossBar?.layout(top: safe.maxY, maxWidth: safe.width * 0.42)
+        inkVeil.size = CGSize(width: size.width + 4, height: size.height + 4)
     }
 
     // MARK: - Ciclo di gioco
@@ -345,7 +386,10 @@ final class DiveScene: BaseScene {
         command.dash = input.pressed.contains(GameButtons.dash)
         command.interact = input.pressed.contains(GameButtons.interact)
         command.reelHeld = input.held.contains(GameButtons.primary)
-        if let auto: Vec2 = config.autopilot { command.move = Vec2(auto.x, -auto.y) }
+        if let auto: Vec2 = config.autopilot {
+            // Negli scontri la prova automatica nuota in tondo, per restare nella sala.
+            command.move = config.boss != nil ? Vec2(cos(elapsed * 0.9) * 0.8, sin(elapsed * 1.3) * 0.7) : Vec2(auto.x, -auto.y)
+        }
         updateAiming(input: input, command: &command, dt: dt)
         if input.pressed.contains(GameButtons.secondary) && config.weapon != nil {
             var manual: Vec2? = nil
@@ -372,6 +416,7 @@ final class DiveScene: BaseScene {
         updateCreatures(dt: simDt)
         updateHarpoonNodes()
         updateShots()
+        updateBoss(dt)
 
         // Camera: segue con un po' di anticipo nella direzione di nuoto, più eventuale scossa.
         let lead: Vec2 = Vec2(sim.diver.velocity.x * 0.32, -sim.diver.velocity.y * 0.26)
@@ -397,6 +442,37 @@ final class DiveScene: BaseScene {
 
         if sim.fainted && !ended {
             endDive(fainted: true)
+        }
+        // Vittoria: un attimo per godersela, poi il riepilogo.
+        if victoryClock >= 0 && !ended {
+            victoryClock -= dt
+            if victoryClock <= 0 { endDive(fainted: false) }
+        }
+    }
+
+    // MARK: - Boss
+
+    private func updateBoss(_ dt: Double) {
+        guard let boss: BossBody = sim.boss, let arena: Arena = sim.arena, let view: BossView = bossView else { return }
+        view.update(boss: boss, hazards: sim.hazards, arena: arena, layout: layout, elapsed: elapsed, dt: dt)
+        bossBar?.update(ratio: boss.hpRatio, vulnerable: boss.isVulnerable)
+        // Dentro l'inchiostro lo schermo si scurisce.
+        let target: CGFloat = sim.inked ? 0.62 : 0
+        inkVeil.alpha += (target - inkVeil.alpha) * CGFloat(min(1, dt * 6))
+        // Le campane d'aria dell'arena tornano piene: lo sprite segue lo stato.
+        for (index, node) in pickupNodes where index < sim.pickups.count {
+            let wanted: SKTexture = SpriteForge.shared.texture(sim.pickups[index].taken ? "pickup_campana_vuota" : "pickup_campana")
+            if node.texture !== wanted { node.texture = wanted }
+        }
+        if boss.move == BossMove.dying {
+            // Si spegne tra scintille e bolle.
+            dyingClock -= dt
+            if dyingClock <= 0 {
+                dyingClock = 0.16
+                let at: Vec2 = boss.position + Vec2(fx.range(-boss.info.radius, boss.info.radius), fx.range(-boss.info.radius, boss.info.radius))
+                spawnSparks(at: at, color: SKColor(hex: 0xFFE27A), count: 6)
+                shake = max(shake, 2.0)
+            }
         }
     }
 
@@ -678,6 +754,51 @@ final class DiveScene: BaseScene {
                 flash.run(SKAction.fadeOut(withDuration: 0.35))
                 let name: String = GameData.shared.fish.find(species)?.name.text() ?? species
                 diveHUD.showToast(String(localized: "Fotografia: \(name)"), color: Theme.lime)
+            case .bossTelegraph(let at, _):
+                Feedback.warning()
+                spawnSparks(at: at, color: SKColor(hex: 0xFF6B60), count: 5)
+            case .bossAttack:
+                Feedback.tap()
+            case .bossHit(let at, let damage):
+                hitStop = 0.05
+                shake = max(shake, 2.2)
+                Feedback.hit()
+                bossView?.flashHit()
+                spawnSparks(at: at, color: SKColor.white, count: 9)
+                spawnNumber(Int(damage.rounded()), at: at, color: SKColor(hex: 0xFFE27A))
+            case .bossBlocked(let at):
+                Feedback.tap()
+                spawnSparks(at: at, color: SKColor(hex: 0x9AA8B8), count: 4)
+                diveHUD.showToast(String(localized: "Parato!"), color: SKColor(hex: 0xBFC8D4))
+            case .bossPhase(let phase):
+                Feedback.thud()
+                shake = max(shake, 5)
+                diveHUD.showToast(phase == 2 ? String(localized: "Si infuria!") : String(localized: "È allo stremo: attenta!"), color: Theme.danger)
+            case .bossStunned(let at):
+                Feedback.success()
+                spawnSparks(at: at, color: SKColor(hex: 0xFFE27A), count: 12)
+                diveHUD.showToast(String(localized: "Scoperto: colpisci adesso!"), color: Theme.ochre)
+            case .quake:
+                Feedback.thud()
+                shake = max(shake, 5.5)
+            case .blast(let at, let radius):
+                Feedback.thud()
+                shake = max(shake, 4)
+                spawnRing(at: at, radius: max(radius, 10), color: SKColor(hex: 0xFFB060))
+                spawnSparks(at: at, color: SKColor(hex: 0xFFD6A0), count: 14)
+            case .bossDying:
+                Feedback.success()
+                hitStop = 0.25
+                shake = max(shake, 6)
+            case .bossDefeated:
+                Feedback.success()
+                flash.removeAllActions()
+                flash.alpha = 0.7
+                flash.run(SKAction.fadeOut(withDuration: 0.6))
+                diveHUD.showToast(String(localized: "Vittoria!"), color: Theme.lime)
+                victoryClock = 1.6
+            case .bellReady:
+                Feedback.tap()
             }
         }
     }
@@ -779,6 +900,15 @@ final class DiveScene: BaseScene {
         let minY: Double = -(sim.map.heightPixels - halfH)
         let minX: Double = min(halfW, sim.map.widthPixels / 2)
         let maxX: Double = max(sim.map.widthPixels - halfW, sim.map.widthPixels / 2)
+        if let arena: Arena = sim.arena {
+            // Nella sala di un boss la camera non esce dalle pareti.
+            let margin: Double = 28
+            let ax0: Double = min(arena.minX - margin + halfW, arena.center.x)
+            let ax1: Double = max(arena.maxX + margin - halfW, arena.center.x)
+            let ay0: Double = min(-(arena.maxY + margin) + halfH, -arena.center.y)
+            let ay1: Double = max(-(arena.minY - margin) - halfH, -arena.center.y)
+            return Vec2(MathUtil.clamp(p.x, ax0, ax1), MathUtil.clamp(p.y, ay0, ay1))
+        }
         return Vec2(MathUtil.clamp(p.x, minX, maxX), MathUtil.clamp(p.y, minY, maxY))
     }
 
@@ -803,6 +933,11 @@ final class DiveScene: BaseScene {
         // Buio: comincia sotto i 150 metri circa e si fa quasi totale negli abissi; di notte è buio ovunque.
         var dark: Double = MathUtil.clamp((0.60 - light) / 0.60, 0, 1) * 0.94
         if config.night { dark = max(dark, sim.diver.atSurface ? 0.35 : 0.66) }
+        if let boss: BossInfo = config.boss {
+            // Negli scontri si deve vedere che cosa succede; solo la Lanterna combatte al buio.
+            dark = boss.kind == BossKind.lanterna ? max(dark, 0.88) : min(dark, 0.45)
+        }
+        ShaderLibrary.setFloat(ShaderLibrary.terrainCaustics, "u_strength", config.night ? 0 : 1)
         FishAgent.darkness = dark
         darkness.isHidden = dark < 0.02
         if !darkness.isHidden {
@@ -816,7 +951,7 @@ final class DiveScene: BaseScene {
             ShaderLibrary.setVector(ShaderLibrary.darkness, "u_dir", cos(sim.diver.tilt) * sign, sin(sim.diver.tilt))
             ShaderLibrary.setFloat(ShaderLibrary.darkness, "u_aspect", w / max(h, 1))
             // Senza torcia resta solo un piccolo alone; con la torcia il raggio cresce e compare il fascio.
-            let hasTorch: Bool = config.torchRadius >= 0.18 || config.autopilot != nil
+            let hasTorch: Bool = config.torchRadius >= 0.18 || config.autopilot != nil || config.boss != nil
             ShaderLibrary.setFloat(ShaderLibrary.darkness, "u_radius", config.autopilot != nil ? 0.26 : config.torchRadius + 0.03)
             ShaderLibrary.setFloat(ShaderLibrary.darkness, "u_beam", 0.50 + config.torchRadius * 1.4)
             ShaderLibrary.setFloat(ShaderLibrary.darkness, "u_torch", hasTorch ? 1.0 : 0.0)
@@ -900,7 +1035,7 @@ final class DiveScene: BaseScene {
             let zone: ZoneInfo = worldData.zones[index]
             let name: String = zone.name.text()
             diveHUD.setZone(name: config.phaseLabel.isEmpty ? name : "\(name) · \(config.phaseLabel)")
-            diveHUD.announce(zone: name, range: "\(zone.depthFrom)–\(zone.depthTo) m")
+            if config.boss == nil { diveHUD.announce(zone: name, range: "\(zone.depthFrom)–\(zone.depthTo) m") }
         }
     }
 
@@ -948,13 +1083,25 @@ final class DiveScene: BaseScene {
         diveHUD.setPrompt(nil, at: CGPoint.zero)
         diveHUD.setReel(visible: false, progress: 0, tension: 0, surging: false)
         world.isPaused = true
-        let panel: DiveResultsPanel = DiveResultsPanel(bag: sim.bag, fainted: fainted, deepest: sim.deepest, catalog: GameData.shared.fish)
+        var headline: String? = nil
+        var detail: String? = nil
+        if let boss: BossInfo = config.boss {
+            if sim.bossDefeated {
+                headline = String(localized: "Vittoria!")
+                detail = String(localized: "\(boss.name.text()) non farà più paura a nessuno.")
+            } else {
+                headline = String(localized: "Sei svenuta!")
+                detail = String(localized: "\(boss.name.text()) ha vinto questa volta. Potenzia l'attrezzatura e riprova.")
+            }
+        }
+        let panel: DiveResultsPanel = DiveResultsPanel(bag: sim.bag, fainted: fainted, deepest: sim.deepest, catalog: GameData.shared.fish,
+                                                       headline: headline, detail: detail)
         panel.zPosition = 700
         panel.onDone = { [weak self] (kept: DiveBag) -> Void in
             guard let self = self, !self.leaving else { return }
             self.leaving = true
-            if let finished: ((DiveBag, Double) -> Void) = self.onFinished {
-                finished(kept, self.sim.deepest)
+            if let finished: ((DiveOutcome) -> Void) = self.onFinished {
+                finished(self.outcome(bag: kept, fainted: fainted))
             } else {
                 SceneRouter.shared.showTitle(animated: true)
             }
@@ -983,12 +1130,16 @@ final class DiveScene: BaseScene {
         if !userPaused && !leaving && !ended { setPaused(true) }
     }
 
+    private func outcome(bag: DiveBag, fainted: Bool) -> DiveOutcome {
+        return DiveOutcome(bag: bag, deepest: sim.deepest, fainted: fainted, boss: config.boss?.id, bossDefeated: sim.bossDefeated)
+    }
+
     /// Abbandono dalla pausa: l'immersione finisce senza bottino.
     private func leaveToTitle() {
         if leaving { return }
         leaving = true
-        if let finished: ((DiveBag, Double) -> Void) = onFinished {
-            finished(DiveBag(), sim.deepest)
+        if let finished: ((DiveOutcome) -> Void) = onFinished {
+            finished(outcome(bag: DiveBag(), fainted: false))
         } else {
             SceneRouter.shared.showTitle(animated: true)
         }
@@ -1057,6 +1208,10 @@ final class DiveScene: BaseScene {
     override var debugSummary: String {
         var members: Int = 0
         for school in sim.schools { members += school.aliveCount }
-        return "depth=\(Int(sim.diver.depthMeters)) chunks=\(terrain.loadedChunkCount) fish=\(sim.fish.count) school=\(members) caught=\(sim.bag.fish.count) breath=\(Int(sim.breathRatio * 100))"
+        var text: String = "depth=\(Int(sim.diver.depthMeters)) chunks=\(terrain.loadedChunkCount) fish=\(sim.fish.count) school=\(members) caught=\(sim.bag.fish.count) breath=\(Int(sim.breathRatio * 100))"
+        if let boss: BossBody = sim.boss {
+            text += " boss=\(boss.info.id) vita=\(Int(boss.hpRatio * 100)) mossa=\(boss.move.rawValue) pericoli=\(sim.hazards.count)"
+        }
+        return text
     }
 }

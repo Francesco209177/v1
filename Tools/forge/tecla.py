@@ -186,6 +186,11 @@ def build(out_dir: str) -> str:
     sheet.add_frames("tecla_swim", swim_frames(), PAL, AX, AY)
     sheet.add_frames("tecla_idle", idle_frames(), PAL, AX, AY)
     sheet.add_frames("tecla_dash", dash_frames(), PAL, AX, AY)
+    # Tecla nelle scene sott'acqua: gli stessi disegni, con i nomi delle pose delle cutscene.
+    sheet.add_variant("sub_stand", "tecla_idle", PAL)
+    sheet.add_variant("sub_walk", "tecla_swim", PAL)
+    sheet.add_variant("sub_talk", "tecla_idle", PAL)
+    sheet.add_variant("sub_shock", "tecla_dash", PAL)
     path = f"{out_dir}/tecla.spr"
     sheet.write(path)
     return path

@@ -11,6 +11,9 @@ final class GameData {
     let balance: Balance
     let upgrades: UpgradeBook
     let quests: QuestBook
+    let story: StoryBook
+    let cutscenes: CutsceneBook
+    let bosses: BossBook
     private(set) var problems: [String] = []
 
     private init() {
@@ -34,6 +37,9 @@ final class GameData {
         let loadedBalance: Balance? = load(Balance.self, "balance.json")
         let loadedUpgrades: UpgradeBook? = load(UpgradeBook.self, "upgrades.json")
         let loadedQuests: QuestBook? = load(QuestBook.self, "quests.json")
+        let loadedStory: StoryBook? = load(StoryBook.self, "story.json")
+        let loadedScenes: CutsceneBook? = load(CutsceneBook.self, "cutscenes.json")
+        let loadedBosses: BossBook? = load(BossBook.self, "bosses.json")
 
         world = loadedWorld ?? GameData.fallbackWorld
         fish = loadedFish ?? FishCatalog(species: [])
@@ -41,6 +47,11 @@ final class GameData {
         balance = loadedBalance ?? GameData.fallbackBalance
         upgrades = loadedUpgrades ?? UpgradeBook(upgrades: [], weapons: [])
         quests = loadedQuests ?? QuestBook(quests: [])
+        story = loadedStory ?? StoryBook(chapters: [], cast: [], beats: [])
+        cutscenes = loadedScenes ?? CutsceneBook(scenes: [])
+        bosses = loadedBosses ?? BossBook(bosses: [])
+        notes.append(contentsOf: bosses.problems(world: world))
+        notes.append(contentsOf: story.problems(scenes: cutscenes, bosses: bosses, fish: fish, recipes: recipes, upgrades: upgrades))
         notes.append(contentsOf: upgrades.problems())
         notes.append(contentsOf: quests.problems(fish: fish, recipes: recipes, upgrades: upgrades))
         notes.append(contentsOf: world.problems())
@@ -131,6 +142,10 @@ final class GameSession {
             fresh.gold = GameData.shared.balance.startGold
             _ = fresh.bank(bag: DiveBag(), deepest: 0, recipes: GameData.shared.recipes)
             state = fresh
+        }
+        if var s: GameState = state {
+            StoryEngine.settle(state: &s, book: GameData.shared.story)
+            state = s
         }
         persistent = true
         newlyLearned = []
@@ -228,7 +243,49 @@ final class GameSession {
                                                                     maxDepth: data.upgrades.value("suit", state: s, fallback: data.balance.startSafeDepth))
         for event in events {
             justCompleted.append(contentsOf: QuestEngine.record(event, state: &s, quests: quests))
+            StoryEngine.record(event, state: &s, book: data.story)
         }
+    }
+
+    // MARK: Storia
+
+    /// Tappa della storia in corso, se la storia non è finita.
+    var storyBeat: StoryBeat? {
+        guard let s: GameState = state else { return nil }
+        return StoryEngine.current(GameData.shared.story, state: s)
+    }
+
+    var chapter: ChapterInfo? {
+        guard let s: GameState = state else { return nil }
+        return StoryEngine.chapter(GameData.shared.story, state: s)
+    }
+
+    /// Scena da mostrare prima di tornare al porto.
+    func pendingScene() -> Cutscene? {
+        guard let s: GameState = state, let id: String = StoryEngine.pendingScene(GameData.shared.story, state: s) else { return nil }
+        return GameData.shared.cutscenes.find(id)
+    }
+
+    /// Da chiamare quando la scena in attesa è stata vista o saltata.
+    func sceneShown() {
+        guard var s: GameState = state else { return }
+        StoryEngine.sceneShown(state: &s, book: GameData.shared.story)
+        // Le ricompense della storia possono far scattare altre missioni (fama).
+        record([QuestEvent.fame(s.fame)], into: &s)
+        state = s
+        save()
+    }
+
+    /// Boss che la storia chiede di affrontare adesso.
+    var availableBoss: BossInfo? {
+        guard let s: GameState = state, let id: String = StoryEngine.availableBoss(GameData.shared.story, state: s) else { return nil }
+        return GameData.shared.bosses.find(id)
+    }
+
+    /// Avanzamento della tappa in corso, per il porto e il Giornale: (fatto, da fare).
+    var storyProgress: (count: Int, goal: Int)? {
+        guard let s: GameState = state, let beat: StoryBeat = storyBeat else { return nil }
+        return (count: s.story.count, goal: beat.goal.count)
     }
 
     func claim(_ quest: Quest) -> Bool {
@@ -247,13 +304,17 @@ final class GameSession {
     }
 
     /// Fine di un'immersione: il bottino va in dispensa e la giornata avanza.
-    func finishDive(bag: DiveBag, deepest: Double) {
+    func finishDive(_ outcome: DiveOutcome) {
         guard var s: GameState = state else { return }
+        let bag: DiveBag = outcome.bag
+        // Uno scontro con un boss non conta come profondità raggiunta nuotando.
+        let deepest: Double = outcome.boss == nil ? outcome.deepest : 0
         newlyLearned = s.bank(bag: bag, deepest: deepest, recipes: GameData.shared.recipes)
-        var events: [QuestEvent] = [QuestEvent.depth(deepest)]
+        var events: [QuestEvent] = outcome.boss == nil ? [QuestEvent.depth(deepest)] : []
         for fish in bag.fish { events.append(QuestEvent.caught(item: fish.speciesId, stars: fish.stars)) }
         for (kind, count) in bag.materials { events.append(QuestEvent.collected(item: kind, count: count)) }
         for species in bag.photos { events.append(QuestEvent.photo(species)) }
+        if let boss: String = outcome.boss, outcome.bossDefeated { events.append(QuestEvent.boss(boss)) }
         record(events, into: &s)
         s.advancePhase()
         if s.phase == DayPhase.morning { QuestEngine.pruneDaily(state: &s) }
@@ -341,6 +402,16 @@ final class GameSession {
         config.torchRadius = upgradeValue("torch", fallback: 0.10)
         config.phaseLabel = phaseName(s.phase)
         if let id: String = s.equipped { config.weapon = GameData.shared.upgrades.weapon(id) }
+        return config
+    }
+
+    /// Parametri dello scontro con un boss: stessa attrezzatura, ma nella sua sala.
+    func bossConfig(_ boss: BossInfo) -> DiveScene.Config {
+        var config: DiveScene.Config = diveConfig()
+        config.boss = boss
+        config.night = false
+        config.startDepthMeters = boss.depth
+        config.phaseLabel = ""
         return config
     }
 

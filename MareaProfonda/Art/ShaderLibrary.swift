@@ -65,16 +65,22 @@ enum ShaderLibrary {
             vec2 pix = floor(vec2(v_tex_coord.x, 1.0 - v_tex_coord.y) * u_chunk);
             vec2 p = (a_origin + pix) * 0.075;
             float t = u_time * 0.5;
-            // Rete di fili di luce: brillano dove una delle due onde passa per lo zero.
-            float a = abs(sin(p.x * 1.3 + sin(p.y * 1.7 + t) * 1.2 + t * 0.6));
-            float b = abs(sin(p.y * 1.5 + sin(p.x * 1.9 - t * 0.8) * 1.2 - t * 0.5));
-            float c = pow(1.0 - min(a, b), 7.0);
-            vec3 lit = tex.rgb + vec3(0.34, 0.38, 0.26) * c * a_fade * tex.a;
+            // Fili di luce spezzati: ogni famiglia di onde brilla dove passa per lo zero,
+            // ma solo a tratti, così non si forma una rete regolare.
+            float a = abs(sin(p.x * 1.1 + sin(p.y * 1.3 + t) * 1.5 + sin(p.y * 2.9 - t * 0.7) * 0.5 + t * 0.6));
+            float b = abs(sin(p.y * 1.2 + sin(p.x * 1.6 - t * 0.8) * 1.5 + sin(p.x * 3.1 + t * 0.5) * 0.5 - t * 0.5));
+            float ca = pow(1.0 - a, 6.0) * smoothstep(0.25, 0.75, b);
+            float cb = pow(1.0 - b, 6.0) * smoothstep(0.25, 0.75, a);
+            float c = max(ca, cb);
+            // La luce si posa sulle superfici chiare (sabbia, creste), quasi niente sulla roccia in ombra.
+            float luma = dot(tex.rgb, vec3(0.30, 0.50, 0.20));
+            float catchLight = 0.25 + 0.75 * smoothstep(0.32, 0.62, luma);
+            vec3 lit = tex.rgb + vec3(0.22, 0.26, 0.17) * c * catchLight * a_fade * u_strength * tex.a;
             gl_FragColor = vec4(min(lit, vec3(tex.a)), tex.a);
         }
         """
         let shader: SKShader = SKShader(source: source)
-        shader.uniforms = [SKUniform(name: "u_chunk", float: 256.0)]
+        shader.uniforms = [SKUniform(name: "u_chunk", float: 256.0), SKUniform(name: "u_strength", float: 1.0)]
         shader.attributes = [
             SKAttribute(name: "a_origin", type: SKAttributeType.vectorFloat2),
             SKAttribute(name: "a_fade", type: SKAttributeType.float)

@@ -116,7 +116,59 @@ final class SmokeRunner {
                 return DiveScene(size: size, config: config)
             }),
             Stage(name: "service", seconds: 24, make: service)
+        ] + storyStages()
+    }
+
+    /// Scene della storia e scontri con i boss: una scena per tipo di luogo, e tutti e sei i boss.
+    private static func storyStages() -> [Stage] {
+        func cutscene(_ id: String) -> (CGSize) -> BaseScene {
+            return { (size: CGSize) -> BaseScene in
+                guard let found: Cutscene = GameData.shared.cutscenes.find(id) else {
+                    SmokeTest.log("FAIL scena assente: \(id)")
+                    return TitleScene(size: size)
+                }
+                let scene: CutsceneScene = CutsceneScene(size: size, cutscene: found)
+                scene.autoAdvance = 0.9
+                return scene
+            }
+        }
+        func boss(_ id: String) -> (CGSize) -> BaseScene {
+            return { (size: CGSize) -> BaseScene in
+                guard let info: BossInfo = GameData.shared.bosses.find(id) else {
+                    SmokeTest.log("FAIL boss assente: \(id)")
+                    return TitleScene(size: size)
+                }
+                var config: DiveScene.Config = DiveScene.Config()
+                config.seed = 7
+                config.boss = info
+                config.startDepthMeters = info.depth
+                config.autopilot = Vec2(0.5, 0)
+                config.autoFire = true
+                config.harpoonDamage = 30
+                config.torchRadius = 0.27
+                return DiveScene(size: size, config: config)
+            }
+        }
+        var stages: [Stage] = [
+            Stage(name: "scena_porto", seconds: 7, make: cutscene("s_ritorno")),
+            Stage(name: "scena_osteria", seconds: 5, make: cutscene("s_prima_sera")),
+            Stage(name: "scena_citta", seconds: 6, make: cutscene("s_citta")),
+            Stage(name: "scena_sagra", seconds: 5, make: cutscene("s_sagra")),
+            Stage(name: "hub_storia", overlay: OverlayScreen.hub, make: { (size: CGSize) -> BaseScene in
+                var state: GameState = GameState()
+                state.seed = 7
+                state.gold = 220
+                state.fame = 60
+                state.story.beat = 4
+                state.story.introSeen = true
+                GameSession.shared.startEphemeral(state)
+                return HubScene(size: size, phase: DayPhase.morning)
+            })
         ]
+        for info in GameData.shared.bosses.bosses {
+            stages.append(Stage(name: "boss_\(info.id)", seconds: 9, make: boss(info.id)))
+        }
+        return stages
     }
 
     func start() {

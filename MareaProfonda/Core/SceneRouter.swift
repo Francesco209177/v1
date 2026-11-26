@@ -26,6 +26,16 @@ final class SceneRouter {
             return
         }
         OverlayCenter.shared.show(nil)
+        // Prima del porto, le scene della storia che aspettano di essere viste.
+        if let pending: Cutscene = GameSession.shared.pendingScene() {
+            let scene: CutsceneScene = CutsceneScene(size: view.bounds.size, cutscene: pending)
+            scene.onFinished = {
+                GameSession.shared.sceneShown()
+                SceneRouter.shared.showHub()
+            }
+            present(scene, animated: true)
+            return
+        }
         let scene: HubScene = HubScene(size: view.bounds.size, phase: state.phase)
         present(scene, animated: true) {
             OverlayCenter.shared.show(OverlayScreen.hub)
@@ -36,8 +46,23 @@ final class SceneRouter {
         guard let view: SKView = view else { return }
         OverlayCenter.shared.show(nil)
         let scene: DiveScene = DiveScene(size: view.bounds.size, config: GameSession.shared.diveConfig())
-        scene.onFinished = { (bag: DiveBag, deepest: Double) -> Void in
-            GameSession.shared.finishDive(bag: bag, deepest: deepest)
+        scene.onFinished = { (outcome: DiveOutcome) -> Void in
+            GameSession.shared.finishDive(outcome)
+            SceneRouter.shared.showHub()
+        }
+        present(scene, animated: true)
+    }
+
+    /// Lo scontro con il boss che la storia propone adesso.
+    func startBoss() {
+        guard let view: SKView = view, let boss: BossInfo = GameSession.shared.availableBoss else {
+            showHub()
+            return
+        }
+        OverlayCenter.shared.show(nil)
+        let scene: DiveScene = DiveScene(size: view.bounds.size, config: GameSession.shared.bossConfig(boss))
+        scene.onFinished = { (outcome: DiveOutcome) -> Void in
+            GameSession.shared.finishDive(outcome)
             SceneRouter.shared.showHub()
         }
         present(scene, animated: true)
