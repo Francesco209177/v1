@@ -10,6 +10,8 @@
 #   APK_NAME      nome del file prodotto in build/android/ (predefinito: MareaProfonda.apk)
 #   VERSION_CODE  numero di build (predefinito: 1; in CI è il numero della run)
 #   SWIFT         comando swift da usare (predefinito: swift)
+#   KEYSTORE      chiave di firma (predefinito: build/android/chiave-di-prova.keystore, creata se manca)
+#   KEYSTORE_PASSWORD  password della chiave (predefinito: quella delle chiavi di prova)
 #
 # Servono: Swift 6.4.3 con lo "Swift SDK for Android" installato (swift sdk install ...),
 # NDK r27 o successivo, build-tools e una piattaforma dell'SDK Android, un JDK.
@@ -22,6 +24,8 @@ ABIS="${ABIS:-arm64-v8a armeabi-v7a}"
 APK_NAME="${APK_NAME:-MareaProfonda.apk}"
 VERSION_CODE="${VERSION_CODE:-1}"
 SWIFT="${SWIFT:-swift}"
+KEYSTORE="${KEYSTORE:-$OUT/chiave-di-prova.keystore}"
+KEYSTORE_PASSWORD="${KEYSTORE_PASSWORD:-android}"
 MIN_API=24
 TARGET_API=36
 
@@ -127,9 +131,16 @@ echo "== Pacchetto"
     --version-code "$VERSION_CODE" --version-name "$VERSION_NAME" "$OUT/stage/res.zip"
 (cd "$OUT/stage" && zip -q -r base.apk classes.dex lib)
 "$BUILD_TOOLS/zipalign" -f 4 "$OUT/stage/base.apk" "$OUT/stage/aligned.apk"
-# Chiave di prova versionata nel repository (non è un segreto): firmando sempre con la stessa,
-# una versione nuova si installa sopra la vecchia senza perdere i salvataggi.
-"$BUILD_TOOLS/apksigner" sign --ks "$HERE/debug.keystore" --ks-pass pass:android --key-pass pass:android \
+# Firma. Android installa un aggiornamento sopra la versione precedente solo se la firma è la stessa:
+# per questo la chiave va conservata tra una build e l'altra (in CI lo fa la cache, oppure un secret).
+# Se la chiave non c'è ne viene creata una di prova.
+if [ ! -f "$KEYSTORE" ]; then
+    mkdir -p "$(dirname "$KEYSTORE")"
+    keytool -genkeypair -keystore "$KEYSTORE" -storepass "$KEYSTORE_PASSWORD" -keypass "$KEYSTORE_PASSWORD" -alias marea \
+        -keyalg RSA -keysize 2048 -validity 12000 -dname "CN=Marea Profonda build di prova, O=Marea Profonda" > /dev/null 2>&1
+    echo "   creata una chiave di prova nuova: $KEYSTORE"
+fi
+"$BUILD_TOOLS/apksigner" sign --ks "$KEYSTORE" --ks-pass "pass:$KEYSTORE_PASSWORD" --key-pass "pass:$KEYSTORE_PASSWORD" \
     --ks-key-alias marea --out "$OUT/$APK_NAME" "$OUT/stage/aligned.apk"
 "$BUILD_TOOLS/apksigner" verify "$OUT/$APK_NAME"
 rm -f "$OUT/$APK_NAME.idsig"

@@ -182,6 +182,32 @@ jobs:
           yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-36" "build-tools;36.0.0" > /dev/null
           ls "$ANDROID_HOME/build-tools" | tail -n 3
 
+      # Android installa un aggiornamento sopra la versione precedente (tenendo i salvataggi) solo se
+      # la firma è la stessa. La chiave di prova è creata alla prima build e conservata nella cache;
+      # per una chiave propria e stabile si possono definire i secret ANDROID_KEYSTORE_BASE64
+      # (il file .keystore in base64, alias "marea") e ANDROID_KEYSTORE_PASSWORD.
+      - name: Chiave di firma conservata tra le build
+        uses: actions/cache@v4
+        with:
+          path: ~/firma-marea
+          key: marea-android-firma-v1
+
+      - name: Chiave di firma
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KEYSTORE_SECRET_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+        run: |
+          mkdir -p "$HOME/firma-marea"
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/marea.keystore"
+            echo "KEYSTORE=$RUNNER_TEMP/marea.keystore" >> "$GITHUB_ENV"
+            echo "KEYSTORE_PASSWORD=$KEYSTORE_SECRET_PASSWORD" >> "$GITHUB_ENV"
+            echo "Firma con la chiave definita nei secret."
+          else
+            echo "KEYSTORE=$HOME/firma-marea/marea.keystore" >> "$GITHUB_ENV"
+            echo "Firma con la chiave di prova conservata nella cache."
+          fi
+
       - name: APK per i telefoni (arm64 e arm a 32 bit)
         run: VERSION_CODE="${{ github.run_number }}" Android/build.sh
 
