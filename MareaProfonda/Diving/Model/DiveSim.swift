@@ -163,6 +163,8 @@ struct HarpoonTuning: Codable, Equatable {
 enum TargetRef: Equatable {
     case fish(id: Int)
     case member(school: Int, index: Int)
+    /// Il punto debole del boss (o la sua esca).
+    case boss
 }
 
 enum HarpoonPhase: Equatable {
@@ -220,6 +222,29 @@ enum DiveEvent: Equatable {
     case outOfAmmo
     case asleep(at: Vec2)
     case photographed(species: String)
+    // Scontri con i boss
+    case bossTelegraph(at: Vec2, attack: String)
+    case bossAttack(String)
+    case bossHit(at: Vec2, damage: Double)
+    /// Colpo fermato dalla corazza.
+    case bossBlocked(at: Vec2)
+    case bossPhase(Int)
+    case bossStunned(at: Vec2)
+    case quake
+    case blast(at: Vec2, radius: Double)
+    case bossDying
+    case bossDefeated
+    case bellReady
+}
+
+/// Com'è finita un'immersione.
+struct DiveOutcome: Equatable {
+    var bag: DiveBag = DiveBag()
+    var deepest: Double = 0
+    var fainted: Bool = false
+    /// Boss affrontato in questa immersione, e se è stato sconfitto.
+    var boss: String? = nil
+    var bossDefeated: Bool = false
 }
 
 struct DiveInput {
@@ -289,6 +314,16 @@ struct DiveSim {
     var ammo: Int = 0
     var shots: [SecondaryShot] = []
     private var secondaryCooldown: Double = 0
+    /// Scontro con un boss: la sala, il boss, ciò che ha messo in acqua.
+    private(set) var arena: Arena? = nil
+    var boss: BossBody? = nil
+    var hazards: [Hazard] = []
+    /// Tecla è dentro una nuvola d'inchiostro: nuota piano e vede poco.
+    private(set) var inked: Bool = false
+    private(set) var bossDefeated: Bool = false
+    private var nextHazardId: Int = 1
+    private var bellClocks: [Double] = []
+    static let bellRefill: Double = 20
 
     private var rng: SeededRNG
     private var nextId: Int = 1
@@ -316,6 +351,29 @@ struct DiveSim {
         self.maxSafeDepth = maxSafeDepth
         rng = SeededRNG(seed: seed &+ 31337)
         bag.maxWeight = bagWeight
+    }
+
+    /// Immersione in un'arena: niente pesci, il boss al centro, campane d'aria che si ricaricano.
+    init(map: CaveMap, arena: Arena, boss info: BossInfo, catalog: FishCatalog, seed: UInt64,
+         breathMax: Double = 120, bagWeight: Double = 10) {
+        self.map = map
+        self.catalog = catalog
+        night = false
+        spawns = []
+        var bells: [PickupPoint] = []
+        for p in arena.bells { bells.append(PickupPoint(kind: PickupPoint.Kind.campana, position: p)) }
+        pickups = bells
+        bellClocks = [Double](repeating: 0, count: bells.count)
+        boat = map.channelPoint(depthMeters: 0)
+        diver = DiverState(position: arena.diverStart)
+        breath = breathMax
+        self.breathMax = breathMax
+        maxSafeDepth = Double(map.rows)
+        rng = SeededRNG(seed: seed &+ 31337)
+        bag.maxWeight = bagWeight
+        self.arena = arena
+        boss = BossBody(info: info, arena: arena, seed: seed)
+        deepest = info.depth
     }
 
     /// Aggiunge un pesce in un punto preciso: serve ai test e alle scene preparate (boss, tutorial).
@@ -347,6 +405,8 @@ struct DiveSim {
         case .member(let school, let index):
             guard let s: Int = schoolIds.firstIndex(of: school), index < schools[s].members.count else { return nil }
             return schools[s].members[index].position
+        case .boss:
+            return boss?.weakPoint
         }
     }
 
@@ -395,6 +455,14 @@ struct DiveSim {
             }
             s += 1
         }
+        if let b: BossBody = boss {
+            // La mira cerca il punto debole quando è scoperto, altrimenti l'esca della lanterna.
+            if b.isVulnerable {
+                consider(TargetRef.boss, b.weakPoint)
+            } else if let lure: Vec2 = b.lure, b.lureExposed {
+                consider(TargetRef.boss, lure)
+            }
+        }
         return best
     }
 
@@ -432,7 +500,7 @@ struct DiveSim {
         if let index: Int = best {
             return pickups[index].kind == PickupPoint.Kind.campana ? DiveInteraction.bell(index: index) : DiveInteraction.pickup(index: index)
         }
-        if diver.atSurface && abs(diver.position.x - boat.x) < 44 { return DiveInteraction.boat }
+        if arena == nil && diver.atSurface && abs(diver.position.x - boat.x) < 44 { return DiveInteraction.boat }
         var f: Int = 0
         while f < fish.count {
             let species: FishSpecies = fish[f].species
@@ -455,7 +523,7 @@ struct DiveSim {
 
         // Tecla
         let reeling: Bool = harpoon.phase == HarpoonPhase.reeling
-        let factor: Double = bag.speedFactor * (reeling ? 0.55 : 1.0)
+        let factor: Double = bag.speedFactor * (reeling ? 0.55 : 1.0) * (inked ? 0.6 : 1.0)
         let motion: DiverStepResult = DiverMotion.step(&diver, input: input.move, wantsDash: input.dash && breath > 6, speedFactor: factor, map: map, tuning: tuning, dt: dt)
         if motion.startedDash {
             breath -= 2.5
@@ -466,7 +534,10 @@ struct DiveSim {
         if depth > deepest { deepest = depth }
 
         // Fiato: in superficie si riprende, sott'acqua cala più in fretta scendendo.
-        if diver.atSurface {
+        if arena != nil {
+            // Nelle sale dei boss si resta in fondo: il Fiato cala piano e si riprende alle campane.
+            breath -= 0.8 * dt
+        } else if diver.atSurface {
             breath = min(breathMax, breath + 45 * dt)
             lowBreathWarned = false
         } else {
@@ -527,6 +598,7 @@ struct DiveSim {
                 events.append(DiveEvent.pickedUp(kind: pickups[index].kind, at: pickups[index].position))
             case .bell(let index):
                 pickups[index].taken = true
+                if index < bellClocks.count { bellClocks[index] = DiveSim.bellRefill }
                 breath = breathMax
                 lowBreathWarned = false
                 events.append(DiveEvent.breathRefilled)
@@ -542,6 +614,7 @@ struct DiveSim {
         }
 
         stepSecondary(input: input, dt: dt, events: &events)
+        stepBoss(dt: dt, events: &events)
 
         if breath <= 0 {
             breath = 0
@@ -602,6 +675,8 @@ struct DiveSim {
                 if let i: Int = fishIndex(id: id), fish[i].spawnIndex == index { return }
             case .member(let school, _):
                 if let s: Int = schoolIds.firstIndex(of: school), schools[s].spawnIndex == index { return }
+            case .boss:
+                break
             }
         }
         spawns[index].active = false
@@ -693,6 +768,10 @@ struct DiveSim {
     /// Controlla se la punta ha toccato un pesce. Ritorna true se il volo è finito.
     private mutating func hitSomething(events: inout [DiveEvent]) -> Bool {
         let tip: Vec2 = harpoon.tip
+        if hitBoss(at: tip, reach: 3, damage: harpoonTuning.damage, events: &events) {
+            harpoon.phase = HarpoonPhase.retracting
+            return true
+        }
         var i: Int = 0
         while i < fish.count {
             if fish[i].isTargetable && !fish[i].species.isProtected && fish[i].position.distance(to: tip) < fish[i].species.radius + 3 {
@@ -826,6 +905,128 @@ struct DiveSim {
         }
     }
 
+    // MARK: Boss
+
+    /// true se in questo punto c'è il boss (punto debole, corazza o esca).
+    private func bossTouches(_ point: Vec2, reach: Double) -> Bool {
+        guard let b: BossBody = boss, b.isAlive, b.move != BossMove.hidden else { return false }
+        if point.distance(to: b.weakPoint) < b.weakRadius + reach { return true }
+        if let lure: Vec2 = b.lure, point.distance(to: lure) < 7 + reach { return true }
+        return b.blocks(point)
+    }
+
+    /// Un colpo arrivato in un punto: ferisce il boss se tocca il punto debole scoperto,
+    /// rimbalza sulla corazza altrimenti. Fa anche scoppiare le mine. Ritorna true se ha toccato qualcosa.
+    private mutating func hitBoss(at point: Vec2, reach: Double, damage: Double, events: inout [DiveEvent]) -> Bool {
+        guard var b: BossBody = boss, b.isAlive else { return false }
+        // Mine: un colpo le fa brillare, e lo scoppio ferisce anche chi le ha posate.
+        var h: Int = 0
+        while h < hazards.count {
+            if hazards[h].kind == Hazard.Kind.mine && hazards[h].position.distance(to: point) < hazards[h].radius + reach + 2 {
+                let mine: Hazard = hazards[h]
+                hazards.remove(at: h)
+                events.append(DiveEvent.blast(at: mine.position, radius: mine.blast))
+                if mine.position.distance(to: b.position) < mine.blast + b.info.radius {
+                    let outcome: [BossEvent] = BossAI.damage(&b, amount: 30, hazards: &hazards)
+                    apply(outcome, events: &events)
+                    events.append(DiveEvent.bossHit(at: b.position, damage: 30))
+                    if !b.isAlive { events.append(DiveEvent.bossDying) }
+                }
+                if mine.position.distance(to: diver.position) < mine.blast + DiveSim.diverHitRadius { hurtDiver(damage: mine.damage, from: mine.position, events: &events) }
+                boss = b
+                return true
+            }
+            h += 1
+        }
+        if b.move == BossMove.hidden { return false }
+        // L'esca della lanterna: colpirla accende tutto e la stordisce.
+        if let lure: Vec2 = b.lure, !b.isVulnerable, point.distance(to: lure) < 7 + reach {
+            if b.lureExposed, BossAI.stun(&b, seconds: 2.6) {
+                events.append(DiveEvent.bossStunned(at: b.position))
+            } else {
+                events.append(DiveEvent.bossBlocked(at: point))
+            }
+            boss = b
+            return true
+        }
+        if point.distance(to: b.weakPoint) < b.weakRadius + reach {
+            if b.isVulnerable {
+                let dealt: Double = damage * b.damageFactor
+                let outcome: [BossEvent] = BossAI.damage(&b, amount: damage, hazards: &hazards)
+                apply(outcome, events: &events)
+                events.append(DiveEvent.bossHit(at: point, damage: dealt))
+                if !b.isAlive { events.append(DiveEvent.bossDying) }
+            } else {
+                events.append(DiveEvent.bossBlocked(at: point))
+            }
+            boss = b
+            return true
+        }
+        if b.blocks(point) {
+            events.append(DiveEvent.bossBlocked(at: point))
+            return true
+        }
+        return false
+    }
+
+    private mutating func stunBoss(center: Vec2, radius: Double, seconds: Double, events: inout [DiveEvent]) {
+        guard var b: BossBody = boss, b.isAlive, b.position.distance(to: center) < radius + b.info.radius else { return }
+        if BossAI.stun(&b, seconds: seconds) { events.append(DiveEvent.bossStunned(at: b.position)) }
+        boss = b
+    }
+
+    private mutating func hurtDiver(damage: Double, from point: Vec2, events: inout [DiveEvent]) {
+        if invulnerable > 0 { return }
+        breath -= damage
+        invulnerable = 1.0
+        let away: Vec2 = diver.position - point
+        if away.lengthSquared > 1e-6 { diver.velocity = away.normalized() * 120 }
+        events.append(DiveEvent.diverHurt(damage: damage, at: diver.position))
+    }
+
+    private mutating func apply(_ bossEvents: [BossEvent], events: inout [DiveEvent]) {
+        for event in bossEvents {
+            switch event {
+            case .telegraph(let at, let attack): events.append(DiveEvent.bossTelegraph(at: at, attack: attack))
+            case .attack(let name): events.append(DiveEvent.bossAttack(name))
+            case .hitDiver(let damage, let at): hurtDiver(damage: damage, from: at, events: &events)
+            case .phase(let phase): events.append(DiveEvent.bossPhase(phase))
+            case .stunned(let at): events.append(DiveEvent.bossStunned(at: at))
+            case .quake: events.append(DiveEvent.quake)
+            case .blast(let at, let radius): events.append(DiveEvent.blast(at: at, radius: radius))
+            case .defeated:
+                bossDefeated = true
+                events.append(DiveEvent.bossDefeated)
+            }
+        }
+    }
+
+    private mutating func stepBoss(dt: Double, events: inout [DiveEvent]) {
+        guard let arena: Arena = arena, var b: BossBody = boss else { return }
+        let wasAlive: Bool = b.isAlive
+        let moves: [BossEvent] = BossAI.step(&b, diver: diver.position, diverRadius: DiveSim.diverHitRadius, arena: arena, map: map,
+                                             hazards: &hazards, nextId: &nextHazardId, dt: dt)
+        boss = b
+        apply(moves, events: &events)
+        var nowInked: Bool = false
+        let flying: [BossEvent] = BossAI.stepHazards(&hazards, diver: diver.position, diverRadius: DiveSim.diverHitRadius,
+                                                     canHurt: invulnerable <= 0 && wasAlive, map: map, dt: dt, inked: &nowInked)
+        apply(flying, events: &events)
+        inked = nowInked
+        // Le campane d'aria dell'arena tornano piene dopo un po'.
+        var i: Int = 0
+        while i < bellClocks.count && i < pickups.count {
+            if pickups[i].taken {
+                bellClocks[i] -= dt
+                if bellClocks[i] <= 0 {
+                    pickups[i].taken = false
+                    events.append(DiveEvent.bellReady)
+                }
+            }
+            i += 1
+        }
+    }
+
     // MARK: Armi secondarie
 
     private mutating func stepSecondary(input: DiveInput, dt: Double, events: inout [DiveEvent]) {
@@ -843,6 +1044,7 @@ struct DiveSim {
                     let center: Vec2 = diver.position + d * (weapon.range * 0.6)
                     events.append(DiveEvent.secondaryUsed(kind: weapon.kind, at: center, radius: weapon.range * 0.6))
                     strike(center: center, radius: weapon.range * 0.7, damage: weapon.damage, events: &events)
+                    _ = hitBoss(at: center, reach: weapon.range * 0.7, damage: weapon.damage, events: &events)
                 case .net:
                     let center: Vec2 = diver.position + d * weapon.range
                     events.append(DiveEvent.secondaryUsed(kind: weapon.kind, at: center, radius: weapon.radius))
@@ -866,12 +1068,22 @@ struct DiveSim {
                 shot.traveled += stepLength
                 let blocked: Bool = map.isSolid(x: shot.position.x, y: shot.position.y) || shot.position.y < 0
                 let target: Int? = firstFish(near: shot.position, extra: 3)
+                let onBoss: Bool = bossTouches(shot.position, reach: 3)
                 if shot.kind == WeaponKind.stun {
-                    if blocked || target != nil || shot.traveled >= weapon.range {
+                    if blocked || target != nil || onBoss || shot.traveled >= weapon.range {
                         events.append(DiveEvent.secondaryUsed(kind: WeaponKind.stun, at: shot.position, radius: weapon.radius))
                         putToSleep(center: shot.position, radius: weapon.radius, seconds: weapon.duration, alive: false, events: &events)
+                        stunBoss(center: shot.position, radius: weapon.radius, seconds: min(weapon.duration, 1.8), events: &events)
                         done = true
                     }
+                } else if onBoss {
+                    // I dardi soporiferi non fanno nulla a bestie di questa taglia; l'asta sì.
+                    if shot.kind == WeaponKind.bolt {
+                        _ = hitBoss(at: shot.position, reach: 3, damage: weapon.damage, events: &events)
+                    } else {
+                        events.append(DiveEvent.bossBlocked(at: shot.position))
+                    }
+                    done = true
                 } else if let i: Int = target {
                     if shot.kind == WeaponKind.sleep {
                         fish[i].sleepFor = weapon.duration

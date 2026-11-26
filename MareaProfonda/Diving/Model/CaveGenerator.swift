@@ -103,6 +103,142 @@ enum CaveGenerator {
         return map
     }
 
+    // MARK: - Arena dei boss
+
+    /// La sala chiusa di uno scontro: la mappa del giorno, con una camera scavata alla profondità
+    /// del boss e sigillata sopra e sotto. Forma e ostacoli dipendono dal boss.
+    static func arena(seed: UInt64, world: WorldData, boss: BossInfo) -> (map: CaveMap, arena: Arena) {
+        var map: CaveMap = generate(seed: seed, world: world)
+        let cols: Int = map.cols
+        let ts: Double = Double(map.tileSize)
+        let halfW: Int = min(22, cols / 2 - 4)
+        let halfH: Int = 9
+        let centerRow: Int = MathUtil.clampInt(Int(boss.depth), halfH + 12, map.rows - halfH - 14)
+        let c0: Int = cols / 2 - halfW
+        let c1: Int = cols / 2 + halfW
+        let r0: Int = centerRow - halfH
+        let r1: Int = centerRow + halfH
+
+        // Una fascia di roccia piena, poi la camera con gli angoli arrotondati.
+        var r: Int = r0 - 11
+        while r < r1 + 11 {
+            var c: Int = 0
+            while c < cols {
+                map.setSolid(c, r, true)
+                c += 1
+            }
+            if r >= 0 && r < map.channel.count { map.channel[r] = Double(cols) / 2 - 0.5 }
+            r += 1
+        }
+        let corner: Int = 4
+        r = r0
+        while r < r1 {
+            var c: Int = c0
+            while c < c1 {
+                let dx: Int = max(max(c0 + corner - c, c - (c1 - 1 - corner)), 0)
+                let dy: Int = max(max(r0 + corner - r, r - (r1 - 1 - corner)), 0)
+                if dx * dx + dy * dy <= corner * corner { map.setSolid(c, r, false) }
+                c += 1
+            }
+            r += 1
+        }
+
+        func block(_ column: Int, _ row: Int, width: Int, height: Int) {
+            var rr: Int = row
+            while rr < row + height {
+                var cc: Int = column
+                while cc < column + width {
+                    map.setSolid(cc, rr, true)
+                    cc += 1
+                }
+                rr += 1
+            }
+        }
+
+        let mid: Int = cols / 2
+        switch boss.kind {
+        case .murena:
+            // Lo scafo del relitto delle anfore, adagiato sul fondo.
+            block(mid - 7, r1 - 3, width: 14, height: 3)
+            block(mid - 4, r1 - 5, width: 8, height: 2)
+        case .spada:
+            // Due scogli e una stalattite: è qui che la spada si pianta.
+            block(mid - 12, r1 - 7, width: 2, height: 7)
+            block(mid + 10, r1 - 7, width: 2, height: 7)
+            block(mid - 1, r0, width: 2, height: 5)
+        case .lanterna:
+            block(mid - 14, r1 - 5, width: 2, height: 5)
+            block(mid + 1, r1 - 4, width: 2, height: 4)
+            block(mid + 13, r1 - 6, width: 2, height: 6)
+        case .granseola, .polpo, .talpa:
+            break
+        }
+        map.rebuildField()
+
+        let inset: Double = 10
+        var arena: Arena = Arena(minX: Double(c0) * ts + inset, maxX: Double(c1) * ts - inset, minY: Double(r0) * ts + inset, maxY: Double(r1) * ts - inset)
+        let center: Vec2 = arena.center
+        arena.diverStart = map.nearestOpenPoint(to: Vec2(arena.minX + 80, center.y - 20), clearance: 10)
+        switch boss.kind {
+        case .murena:
+            arena.bossStart = Vec2(arena.maxX, center.y)
+        case .granseola:
+            arena.bossStart = Vec2(arena.maxX - 90, arena.maxY - boss.radius)
+        case .polpo:
+            arena.bossStart = Vec2(center.x, arena.maxY - boss.radius - 14)
+        case .spada, .lanterna, .talpa:
+            arena.bossStart = map.nearestOpenPoint(to: Vec2(arena.maxX - 110, center.y), clearance: boss.radius)
+        }
+        // Campane d'aria in alto, ai due lati.
+        arena.bells = [Vec2(arena.minX + 46, arena.minY + 40), Vec2(arena.maxX - 46, arena.minY + 40)]
+
+        if boss.kind == BossKind.murena {
+            // Tane: sulle pareti, sul soffitto e sul relitto. Ognuna sta sul bordo della roccia.
+            let seeds: [(Vec2, Vec2)] = [
+                (Vec2(arena.minX, center.y - 34), Vec2(1, 0)),
+                (Vec2(arena.maxX, center.y + 26), Vec2(-1, 0)),
+                (Vec2(center.x - 120, arena.minY), Vec2(0, 1)),
+                (Vec2(center.x + 130, arena.minY), Vec2(0, 1)),
+                (Vec2(center.x, Double(r1 - 5) * ts), Vec2(0, -1))
+            ]
+            for (start, normal) in seeds {
+                var p: Vec2 = start + normal * 30
+                var steps: Int = 0
+                while steps < 40 && map.density(x: p.x, y: p.y) < 0.5 {
+                    p -= normal * 2
+                    steps += 1
+                }
+                arena.holes.append(ArenaHole(position: p + normal * 3, normal: normal))
+            }
+        }
+
+        // Flora e oggetti: via quelli sepolti dalla fascia di roccia, poi quelli della sala.
+        let bandTop: Double = Double(r0 - 11) * ts
+        let bandBottom: Double = Double(r1 + 11) * ts
+        var props: [MapProp] = map.props.filter { $0.y < bandTop || $0.y > bandBottom }
+        var rng: SeededRNG = SeededRNG(seed: seed &+ 8080)
+        var x: Double = arena.minX + 14
+        while x < arena.maxX - 14 {
+            if rng.chance(0.55) && map.density(x: x, y: arena.maxY - 12) < 0.4 {
+                let y: Double = surfaceY(map, x: x, from: arena.maxY - 12, direction: 1)
+                let kind: MapProp.Kind
+                switch boss.kind {
+                case .murena: kind = MapProp.Kind.posidonia
+                case .granseola: kind = rng.chance(0.6) ? MapProp.Kind.gorgonia : MapProp.Kind.sponge
+                case .spada: kind = rng.chance(0.5) ? MapProp.Kind.gorgonia : MapProp.Kind.anemone
+                case .polpo: kind = rng.chance(0.5) ? MapProp.Kind.column : MapProp.Kind.anemone
+                case .lanterna: kind = rng.chance(0.5) ? MapProp.Kind.vent : MapProp.Kind.crystal
+                case .talpa: kind = MapProp.Kind.crystal
+                }
+                let variants: Int = (kind == MapProp.Kind.posidonia || kind == MapProp.Kind.gorgonia) ? 2 : 1
+                props.append(MapProp(kind: kind, x: x, y: y, variant: rng.int(0, variants), hanging: false))
+            }
+            x += rng.range(18, 34)
+        }
+        map.props = props
+        return (map: map, arena: arena)
+    }
+
     // MARK: - Forme delle zone
 
     private static func wallThickness(zone: ZoneInfo, local: Double, row: Int, seed: UInt64) -> (left: Double, right: Double) {

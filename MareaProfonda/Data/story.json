@@ -1,0 +1,44 @@
+{
+  "chapters": [
+    {"id": 1, "title": {"it": "Si riapre!"}, "tagline": {"it": "Un'osteria piena di debiti e un mare che trema."}},
+    {"id": 2, "title": {"it": "La Guida"}, "tagline": {"it": "Un cuoco famoso, un ispettore in incognito, una bestia sulla Secca."}},
+    {"id": 3, "title": {"it": "Sotto la Parete"}, "tagline": {"it": "Il Consorzio trivella. Sotto la Parete Blu dorme una città."}},
+    {"id": 4, "title": {"it": "Il fiato del vulcano"}, "tagline": {"it": "Le fumarole si svegliano. Nonna Ines sa più di quanto dice."}},
+    {"id": 5, "title": {"it": "Marea profonda"}, "tagline": {"it": "Giù, fino al Santuario dei Nerei."}}
+  ],
+  "cast": [
+    {"id": "tecla", "name": {"it": "Tecla"}, "body": "tecla", "portrait": "port_tecla", "color": "2bb7b3"},
+    {"id": "tecla_sub", "name": {"it": "Tecla"}, "body": "sub", "portrait": "port_tecla", "color": "2bb7b3"},
+    {"id": "ines", "name": {"it": "Nonna Ines"}, "body": "ines", "portrait": "port_ines", "color": "e06a7a"},
+    {"id": "zaira", "name": {"it": "Zaira"}, "body": "zaira", "portrait": "port_zaira", "color": "f2b84b"},
+    {"id": "bianca", "name": {"it": "Bianca"}, "body": "bianca", "portrait": "port_bianca", "color": "7fb86a"},
+    {"id": "pinuccio", "name": {"it": "Don Pinuccio"}, "body": "pinuccio", "portrait": "port_pinuccio", "color": "b8b8c8"},
+    {"id": "saverio", "name": {"it": "Saverio"}, "body": "saverio", "portrait": "port_saverio", "color": "c9a05a"},
+    {"id": "lustri", "name": {"it": "Chef Lustri"}, "body": "lustri", "portrait": "port_lustri", "color": "e8e8f0"},
+    {"id": "fulgenzio", "name": {"it": "Il sindaco Fulgenzio"}, "body": "fulgenzio", "portrait": "port_fulgenzio", "color": "d8553b"},
+    {"id": "critico", "name": {"it": "L'ispettore"}, "body": "critico", "portrait": "port_critico", "color": "9a8ac0"},
+    {"id": "narratore", "name": {"it": ""}, "body": "", "color": "f7f1e3"}
+  ],
+  "beats": [
+    {"id": "c1_pesca", "chapter": 1, "title": {"it": "Qualcosa da mettere in padella"}, "objective": {"it": "Scendi nel Calderone e porta su tre pesci."}, "goal": {"kind": "catch", "count": 3}, "reward": {"gold": 20}, "intro": "s_ritorno"},
+    {"id": "c1_serata", "chapter": 1, "title": {"it": "Si riapre"}, "objective": {"it": "Prepara il menu, apri l'osteria e servi sei porzioni."}, "goal": {"kind": "serve", "count": 6}, "reward": {"gold": 40}, "intro": "s_cucina", "outro": "s_prima_sera"},
+    {"id": "c1_cantiere", "chapter": 1, "title": {"it": "Il cantiere di Zaira"}, "objective": {"it": "Compra un potenziamento da Zaira: lo trovi nel Giornale di bordo, alla voce Cantiere."}, "goal": {"kind": "upgrade", "count": 1}, "reward": {"weapon": "coltello"}},
+    {"id": "c1_fama", "chapter": 1, "title": {"it": "Da bettola a trattoria"}, "objective": {"it": "Porta l'osteria a 40 punti di fama."}, "goal": {"kind": "fame", "count": 40}, "outro": "s_scossa"},
+    {"id": "c1_baronessa", "chapter": 1, "title": {"it": "La Baronessa"}, "objective": {"it": "Affronta la Murena Baronessa nel relitto delle anfore."}, "goal": {"kind": "boss", "count": 1, "target": "murena"}, "reward": {"gold": 150, "pearls": 1}, "outro": "s_maiolica"},
+    {"id": "c2_secca", "chapter": 2, "title": {"it": "La Secca delle Gorgonie"}, "objective": {"it": "Scendi fino a 60 metri."}, "goal": {"kind": "depth", "count": 60}, "reward": {"weapon": "rete"}, "intro": "s_lustri"},
+    {"id": "c2_vivo", "chapter": 2, "title": {"it": "Pesce che si muove"}, "objective": {"it": "Prendi tre pesci vivi, da tre stelle: con la rete o con i dardi soporiferi."}, "goal": {"kind": "catch", "count": 3, "minStars": 3}, "reward": {"gold": 80}},
+    {"id": "c2_fama", "chapter": 2, "title": {"it": "Un nome in paese"}, "objective": {"it": "Arriva a 110 punti di fama: l'ispettore della Guida si farà vivo."}, "goal": {"kind": "fame", "count": 110}, "outro": "s_ispettore"},
+    {"id": "c2_granseola", "chapter": 2, "title": {"it": "La Corazzata"}, "objective": {"it": "Affronta la Granseola Corazzata sulla Secca."}, "goal": {"kind": "boss", "count": 1, "target": "granseola"}, "reward": {"gold": 300, "pearls": 2}, "outro": "s_stella"},
+    {"id": "c3_parete", "chapter": 3, "title": {"it": "La Parete Blu"}, "objective": {"it": "Fatti cucire da Zaira una muta più robusta e scendi a 130 metri."}, "goal": {"kind": "depth", "count": 130}, "reward": {"gold": 120}, "intro": "s_consorzio"},
+    {"id": "c3_spada", "chapter": 3, "title": {"it": "In guardia"}, "objective": {"it": "Affronta lo Spadaccino sulla Parete Blu."}, "goal": {"kind": "boss", "count": 1, "target": "spada"}, "reward": {"gold": 450, "pearls": 2}, "intro": "s_duello"},
+    {"id": "c3_citta", "chapter": 3, "title": {"it": "Più giù"}, "objective": {"it": "Con una torcia e una muta migliore, scendi a 230 metri."}, "goal": {"kind": "depth", "count": 230}, "outro": "s_citta"},
+    {"id": "c3_fama", "chapter": 3, "title": {"it": "Un'osteria come si deve"}, "objective": {"it": "Arriva a 230 punti di fama: solo allora Nonna Ines parlerà."}, "goal": {"kind": "fame", "count": 230}, "reward": {"gold": 200}, "intro": "s_ciondolo"},
+    {"id": "c3_polpo", "chapter": 3, "title": {"it": "Sua Eccellenza"}, "objective": {"it": "Affronta Sua Eccellenza il Polpo nell'archivio della Città Sommersa."}, "goal": {"kind": "boss", "count": 1, "target": "polpo"}, "reward": {"gold": 700, "pearls": 3}, "outro": "s_tavoletta"},
+    {"id": "c4_fumarole", "chapter": 4, "title": {"it": "Dove il mare scotta"}, "objective": {"it": "Scendi a 370 metri, tra le Fumarole."}, "goal": {"kind": "depth", "count": 370}, "reward": {"gold": 300}, "intro": "s_fumarole"},
+    {"id": "c4_incasso", "chapter": 4, "title": {"it": "La muta dei cinquecento"}, "objective": {"it": "Incassa 1200 monete all'osteria: l'attrezzatura per il fondo costa."}, "goal": {"kind": "earn", "count": 1200}, "reward": {"pearls": 2}},
+    {"id": "c4_lanterna", "chapter": 4, "title": {"it": "La luce che morde"}, "objective": {"it": "Affronta la Lanterna nella sala delle ruote."}, "goal": {"kind": "boss", "count": 1, "target": "lanterna"}, "reward": {"gold": 1000, "pearls": 4}, "intro": "s_buio", "outro": "s_segreto"},
+    {"id": "c5_santuario", "chapter": 5, "title": {"it": "Il Santuario"}, "objective": {"it": "Scendi a 530 metri, all'ingresso del Santuario dei Nerei."}, "goal": {"kind": "depth", "count": 530}, "reward": {"gold": 400}, "intro": "s_talpa_scende"},
+    {"id": "c5_talpa", "chapter": 5, "title": {"it": "Acciaio contro fiato"}, "objective": {"it": "Ferma la Talpa d'Acciaio nel Santuario."}, "goal": {"kind": "boss", "count": 1, "target": "talpa"}, "reward": {"gold": 2000, "pearls": 6}, "outro": "s_valvole"},
+    {"id": "c5_sagra", "chapter": 5, "title": {"it": "La sagra di Pietrasale"}, "objective": {"it": "Tutta l'isola è a tavola: servi venti porzioni."}, "goal": {"kind": "serve", "count": 20}, "reward": {"gold": 500, "fame": 40}, "outro": "s_sagra"}
+  ]
+}

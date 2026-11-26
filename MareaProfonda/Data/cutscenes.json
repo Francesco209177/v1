@@ -1,0 +1,198 @@
+{
+  "scenes": [
+    {"id": "s_ritorno", "place": "porto_mattina", "actors": [{"who": "tecla", "x": -170}, {"who": "ines", "x": 96, "left": true}], "steps": [
+      {"do": "title", "text": {"it": "Capitolo 1 — Si riapre!"}, "sub": {"it": "Un'osteria piena di debiti e un mare che trema."}},
+      {"do": "move", "who": "tecla", "x": -30, "time": 1.8},
+      {"do": "say", "who": "ines", "text": {"it": "Tre anni! Tre anni in giro per il mondo a trattenere il fiato, e torni a mani vuote?"}, "mood": "angry"},
+      {"do": "say", "who": "tecla", "text": {"it": "Ho portato una medaglia, nonna."}, "mood": "calm"},
+      {"do": "say", "who": "ines", "text": {"it": "La medaglia non si frigge. Il Consorzio rivuole i suoi soldi entro l'estate, o si prende l'osteria."}, "mood": "angry"},
+      {"do": "pose", "who": "tecla", "pose": "shock"},
+      {"do": "say", "who": "tecla", "text": {"it": "L'osteria? Ma è qui da prima del faro!"}, "mood": "shock"},
+      {"do": "say", "who": "ines", "text": {"it": "E ci resta, se tu peschi e io cucino. Il Calderone è pieno di pesce: scendi e portami qualcosa da mettere in padella."}, "mood": "calm"},
+      {"do": "shake", "time": 0.7},
+      {"do": "say", "who": "tecla", "text": {"it": "...Ha tremato la banchina?"}, "mood": "shock"},
+      {"do": "say", "who": "ines", "text": {"it": "È il vulcano che si stiracchia. Lo fa da un po'. Tu pensa al pesce."}, "mood": "sad"},
+      {"do": "say", "who": "narratore", "text": {"it": "Il Calderone cambia a ogni marea: frane e correnti ne ridisegnano i passaggi. Tecla scende in apnea, e il Fiato è tutto quello che ha: si riprende in superficie e alle campane d'aria."}}
+    ] },
+    {"id": "s_cucina", "place": "osteria", "actors": [{"who": "tecla", "x": -40}, {"who": "ines", "x": 36, "left": true}], "steps": [
+      {"do": "say", "who": "ines", "text": {"it": "Ecco, questo è pesce. Stasera si riapre!"}, "mood": "happy"},
+      {"do": "say", "who": "tecla", "text": {"it": "Cucino io?"}, "mood": "calm"},
+      {"do": "say", "who": "ines", "text": {"it": "Tu i miei fornelli non li tocchi. Tu stai in sala: prendi le ordinazioni, porti i piatti, spilli il vino."}, "mood": "angry"},
+      {"do": "say", "who": "tecla", "text": {"it": "Preferivo gli squali."}, "mood": "sad"},
+      {"do": "say", "who": "ines", "text": {"it": "Scegli il menu con quello che c'è in dispensa. E sorridi, che i clienti non mordono. Quasi mai."}, "mood": "calm"}
+    ] },
+    {"id": "s_prima_sera", "place": "osteria", "actors": [{"who": "tecla", "x": -60}, {"who": "ines", "x": 6, "left": true}, {"who": "pinuccio", "x": 80, "left": true, "hidden": true}, {"who": "zaira", "x": 130, "left": true, "hidden": true}], "steps": [
+      {"do": "show", "who": "pinuccio"},
+      {"do": "say", "who": "pinuccio", "text": {"it": "Benedetta questa casa e chi ci frigge! Ines, il vino è annacquato come una volta: bentornata."}, "mood": "happy"},
+      {"do": "say", "who": "ines", "text": {"it": "Don Pinuccio, lei beve a credito dal Sessantotto."}, "mood": "angry"},
+      {"do": "say", "who": "pinuccio", "text": {"it": "E continuerò, a Dio piacendo. Tecla, figliola: giù al cantiere c'è Zaira che ti aspetta. Dice che con quell'arpione non prendi nemmeno un'acciuga."}, "mood": "calm"},
+      {"do": "show", "who": "zaira"},
+      {"do": "say", "who": "zaira", "text": {"it": "Confermo. Te lo sistemo io: punta, elastici, muta. Niente elettronica, solo roba che galleggia. Passa quando hai due monete."}, "mood": "calm"},
+      {"do": "say", "who": "tecla", "text": {"it": "Affare fatto."}, "mood": "happy"},
+      {"do": "say", "who": "narratore", "text": {"it": "Il cantiere di Zaira è nel Giornale di bordo, insieme alle missioni e al Quaderno del Mare."}}
+    ] },
+    {"id": "s_scossa", "place": "porto_sera", "actors": [{"who": "tecla", "x": -50}, {"who": "ines", "x": 40, "left": true}, {"who": "pinuccio", "x": 112, "left": true}, {"who": "bianca", "x": -150, "hidden": true}], "steps": [
+      {"do": "shake", "time": 1.1},
+      {"do": "pose", "who": "tecla", "pose": "shock"},
+      {"do": "say", "who": "pinuccio", "text": {"it": "Madonna del Faro! Questa l'hanno sentita fino in continente."}, "mood": "shock"},
+      {"do": "show", "who": "bianca"},
+      {"do": "move", "who": "bianca", "x": -100, "time": 0.9},
+      {"do": "say", "who": "bianca", "text": {"it": "Terzo grado e mezzo! L'ho segnato sul quaderno. È la quarta scossa del mese."}, "mood": "happy"},
+      {"do": "say", "who": "ines", "text": {"it": "Bianca, a casa, che è tardi."}, "mood": "calm"},
+      {"do": "say", "who": "bianca", "text": {"it": "Prima la notizia: i pescatori dicono che nel relitto delle anfore c'è una murena grossa come una barca. Ha svuotato tutte le nasse. La chiamano la Baronessa."}, "mood": "calm"},
+      {"do": "say", "who": "tecla", "text": {"it": "Una murena è una murena."}, "mood": "calm"},
+      {"do": "say", "who": "bianca", "text": {"it": "Questa ha mangiato un'ancora."}, "mood": "angry"},
+      {"do": "say", "who": "ines", "text": {"it": "Senza le nasse mezza isola non mangia. E non viene a cena da noi."}, "mood": "sad"},
+      {"do": "say", "who": "tecla", "text": {"it": "Allora ci vado a parlare io, con la Baronessa."}, "mood": "angry"}
+    ] },
+    {"id": "s_maiolica", "place": "porto_mattina", "actors": [{"who": "tecla", "x": -60}, {"who": "bianca", "x": 0, "left": true}, {"who": "ines", "x": 84, "left": true}], "steps": [
+      {"do": "say", "who": "tecla", "text": {"it": "È andata. E guardate che cosa teneva nella tana."}, "mood": "happy"},
+      {"do": "say", "who": "bianca", "text": {"it": "Una maiolica! Ma questi segni non sono in italiano... Sono dei Nerei! Quelli della città che non si trova!"}, "mood": "shock"},
+      {"do": "say", "who": "tecla", "text": {"it": "I Nerei sono una favola per far dormire i bambini."}, "mood": "calm"},
+      {"do": "say", "who": "bianca", "text": {"it": "Io infatti non dormo mai."}, "mood": "angry"},
+      {"do": "pose", "who": "ines", "pose": "shock"},
+      {"do": "say", "who": "ines", "text": {"it": "...Dove l'hai presa? Fammela vedere."}, "mood": "shock"},
+      {"do": "say", "who": "tecla", "text": {"it": "Nonna? Sei diventata bianca."}, "mood": "shock"},
+      {"do": "say", "who": "ines", "text": {"it": "È l'età. Mettetela via, quella roba. E a tavola non se ne parla."}, "mood": "calm"},
+      {"do": "say", "who": "narratore", "text": {"it": "Sulla maiolica, un'onda dentro un cerchio. Lo stesso segno del ciondolo che Nonna Ines non toglie mai."}}
+    ] },
+    {"id": "s_lustri", "place": "porto_mattina", "actors": [{"who": "tecla", "x": -90}, {"who": "ines", "x": -30}, {"who": "lustri", "x": 170, "left": true, "hidden": true}, {"who": "zaira", "x": -160, "hidden": true}], "steps": [
+      {"do": "title", "text": {"it": "Capitolo 2 — La Guida"}, "sub": {"it": "Un cuoco famoso, un ispettore in incognito, una bestia sulla Secca."}},
+      {"do": "show", "who": "lustri"},
+      {"do": "move", "who": "lustri", "x": 50, "time": 1.4},
+      {"do": "say", "who": "lustri", "text": {"it": "Buongiorno, colleghe! Lustri. Chef Lustri. Mi avrete visto in televisione."}, "mood": "happy"},
+      {"do": "say", "who": "ines", "text": {"it": "Non abbiamo la televisione."}, "mood": "calm"},
+      {"do": "say", "who": "lustri", "text": {"it": "Apro qui di fronte: «Lustri Mare». Cucina di ricerca. Spuma di scoglio, aria di ricciola."}, "mood": "happy"},
+      {"do": "say", "who": "ines", "text": {"it": "Aria. Fa pagare l'aria."}, "mood": "angry"},
+      {"do": "say", "who": "lustri", "text": {"it": "Quarantadue euro. Ah, gira voce che un ispettore della Guida del Tirreno sia sull'isola, in incognito. Vinca il migliore!"}, "mood": "calm"},
+      {"do": "move", "who": "lustri", "x": 190, "time": 1.2},
+      {"do": "hide", "who": "lustri"},
+      {"do": "say", "who": "ines", "text": {"it": "Tecla. Voglio pesce che in padella si muova ancora."}, "mood": "angry"},
+      {"do": "show", "who": "zaira"},
+      {"do": "move", "who": "zaira", "x": -130, "time": 0.8},
+      {"do": "say", "who": "zaira", "text": {"it": "Per quello ti serve una rete, non un arpione. Prendi quella di mio padre. E scendi sulla Secca: là il pesce è più grosso."}, "mood": "calm"}
+    ] },
+    {"id": "s_ispettore", "place": "osteria", "actors": [{"who": "tecla", "x": -50}, {"who": "ines", "x": 10, "left": true}, {"who": "critico", "x": 92, "left": true}], "steps": [
+      {"do": "say", "who": "critico", "text": {"it": "Buonasera. Un tavolo per uno. Non sono nessuno, non scrivo per nessuno, e questo non è un taccuino."}, "mood": "calm"},
+      {"do": "say", "who": "tecla", "text": {"it": "Certo. Da questa parte, signor Nessuno."}, "mood": "happy"},
+      {"do": "say", "who": "critico", "text": {"it": "Sull'isola dicevano che qui si mangia la granseola alla povera. Non la vedo in menu."}, "mood": "calm"},
+      {"do": "say", "who": "ines", "text": {"it": "Non la vede perché di granseole non ce n'è più. Sulla Secca ne è rimasta una sola, grande come un furgone, e ha sfondato tutte le nasse."}, "mood": "sad"},
+      {"do": "say", "who": "critico", "text": {"it": "Peccato. Sarei tornato volentieri. Per una granseola."}, "mood": "sad"},
+      {"do": "say", "who": "tecla", "text": {"it": "Torni tra qualche giorno."}, "mood": "angry"}
+    ] },
+    {"id": "s_stella", "place": "osteria", "actors": [{"who": "tecla", "x": -70}, {"who": "ines", "x": -10, "left": true}, {"who": "critico", "x": 62, "left": true}, {"who": "lustri", "x": 126, "left": true}], "steps": [
+      {"do": "say", "who": "critico", "text": {"it": "Ispettore Ardizzone, Guida del Tirreno. Ora posso dirlo. Signora Ines: una stella marina. La prima dell'isola."}, "mood": "happy"},
+      {"do": "pose", "who": "ines", "pose": "shock"},
+      {"do": "say", "who": "ines", "text": {"it": "Una... a me?"}, "mood": "shock"},
+      {"do": "say", "who": "lustri", "text": {"it": "Ma è una bettola! Non ha nemmeno il sifone!"}, "mood": "angry"},
+      {"do": "say", "who": "critico", "text": {"it": "Ha il pesce, chef. Lei ha l'aria."}, "mood": "calm"},
+      {"do": "shake", "time": 1.2},
+      {"do": "say", "who": "tecla", "text": {"it": "Questa non era una scossa. Era un rumore. Come un trapano."}, "mood": "shock"},
+      {"do": "say", "who": "critico", "text": {"it": "Viene dal largo. Dalle piattaforme del Consorzio."}, "mood": "sad"}
+    ] },
+    {"id": "s_consorzio", "place": "porto_mattina", "actors": [{"who": "fulgenzio", "x": 60, "left": true}, {"who": "tecla", "x": -60}, {"who": "zaira", "x": -10}, {"who": "pinuccio", "x": 128, "left": true}, {"who": "ines", "x": -120}], "steps": [
+      {"do": "title", "text": {"it": "Capitolo 3 — Sotto la Parete"}, "sub": {"it": "Il Consorzio trivella. Sotto la Parete Blu dorme una città."}},
+      {"do": "say", "who": "fulgenzio", "text": {"it": "Concittadini! Il Consorzio Tonnara Nuova porta il futuro a Pietrasale: terme, alberghi, un casinò galleggiante!"}, "mood": "happy"},
+      {"do": "say", "who": "zaira", "text": {"it": "E per le terme bucate il Calderone, sindaco?"}, "mood": "angry"},
+      {"do": "say", "who": "fulgenzio", "text": {"it": "Sondaggi! Piccoli sondaggi geotermici. Roba da niente."}, "mood": "calm"},
+      {"do": "say", "who": "pinuccio", "text": {"it": "Fulgenzio, ieri il campanile mi si è spostato di due dita."}, "mood": "sad"},
+      {"do": "say", "who": "fulgenzio", "text": {"it": "Assestamenti! E chi ha debiti col Consorzio farebbe bene a non fare domande. Vero, signora Ines?"}, "mood": "angry"},
+      {"do": "say", "who": "ines", "text": {"it": "Vero che se non scende dalla mia banchina la butto a mare."}, "mood": "angry"},
+      {"do": "say", "who": "tecla", "text": {"it": "Zaira, fin dove regge la muta migliore che sai fare?"}, "mood": "calm"},
+      {"do": "say", "who": "zaira", "text": {"it": "Dipende da quanto mi paghi. Sotto i centodieci metri c'è la Parete Blu. Se trivellano, è lì sotto."}, "mood": "calm"}
+    ] },
+    {"id": "s_duello", "place": "porto_sera", "actors": [{"who": "tecla", "x": -40}, {"who": "bianca", "x": 32, "left": true}], "steps": [
+      {"do": "say", "who": "bianca", "text": {"it": "Sulla Parete c'è un pesce spada che taglia i cavi del Consorzio. I sommozzatori lo chiamano lo Spadaccino. Non ci scendono più."}, "mood": "calm"},
+      {"do": "say", "who": "tecla", "text": {"it": "Uno dalla nostra parte, quindi."}, "mood": "happy"},
+      {"do": "say", "who": "bianca", "text": {"it": "Non credo che faccia differenze. Però ho calcolato una cosa: prima di caricare si ferma sempre un attimo. E se sbaglia, la spada gli resta nella roccia."}, "mood": "calm"},
+      {"do": "say", "who": "tecla", "text": {"it": "Tu da grande fai l'allenatrice."}, "mood": "happy"}
+    ] },
+    {"id": "s_citta", "place": "citta", "actors": [{"who": "tecla_sub", "x": -110}], "steps": [
+      {"do": "move", "who": "tecla_sub", "x": -10, "time": 2.2},
+      {"do": "say", "who": "tecla_sub", "text": {"it": "(Colonne. Scale. Una piazza. Non è una favola.)"}, "mood": "shock"},
+      {"do": "say", "who": "narratore", "text": {"it": "Sotto la Parete Blu, a duecentotrenta metri, dorme una città. Le sue strade scendono verso il cuore del vulcano."}},
+      {"do": "move", "who": "tecla_sub", "x": 40, "time": 1.4},
+      {"do": "say", "who": "tecla_sub", "text": {"it": "(Un mosaico: una donna davanti a una ruota di bronzo. E al collo porta un'onda dentro un cerchio.)"}, "mood": "calm"},
+      {"do": "say", "who": "tecla_sub", "text": {"it": "(Nonna. Che cosa non mi hai detto?)"}, "mood": "sad"}
+    ] },
+    {"id": "s_ciondolo", "place": "osteria", "actors": [{"who": "tecla", "x": -36}, {"who": "ines", "x": 40, "left": true}], "steps": [
+      {"do": "say", "who": "tecla", "text": {"it": "Nonna, quel ciondolo. Da dove viene?"}, "mood": "calm"},
+      {"do": "say", "who": "ines", "text": {"it": "Da mia madre. E da sua madre. Passami il prezzemolo."}, "mood": "calm"},
+      {"do": "say", "who": "tecla", "text": {"it": "È sul mosaico di una città in fondo al mare!"}, "mood": "angry"},
+      {"do": "say", "who": "ines", "text": {"it": "Allora sarà una città di buon gusto. Finché non siamo un'osteria come si deve, io di favole non parlo. Lavora."}, "mood": "angry"},
+      {"do": "say", "who": "narratore", "text": {"it": "Bianca, intanto, ha ricopiato i segni. Dice che l'archivio dei Nerei è una sala piena di anfore. Dice anche che è «abitata»."}}
+    ] },
+    {"id": "s_tavoletta", "place": "porto_notte", "actors": [{"who": "tecla", "x": -60}, {"who": "bianca", "x": 4, "left": true}, {"who": "zaira", "x": 70, "left": true}], "steps": [
+      {"do": "say", "who": "bianca", "text": {"it": "L'ho tradotta! Quasi tutta. «Noi teniamo il fiato del monte. Sette ruote lo stringono, sette lo sciolgono.»"}, "mood": "happy"},
+      {"do": "say", "who": "zaira", "text": {"it": "Ruote. Valvole. Hanno messo un rubinetto a un vulcano?"}, "mood": "shock"},
+      {"do": "say", "who": "bianca", "text": {"it": "E poi: «Chi fora il monte sveglia la marea profonda.»"}, "mood": "calm"},
+      {"do": "say", "who": "tecla", "text": {"it": "Il Consorzio sta trivellando proprio lì."}, "mood": "shock"},
+      {"do": "say", "who": "zaira", "text": {"it": "Ecco perché il mare scotta. Fulgenzio ci sta cuocendo vivi per un casinò."}, "mood": "angry"},
+      {"do": "say", "who": "bianca", "text": {"it": "Manca un pezzo. Le misure delle ruote non ci sono. C'è scritto solo: «le custodisce chi cucina»."}, "mood": "sad"},
+      {"do": "say", "who": "tecla", "text": {"it": "...Chi cucina."}, "mood": "calm"}
+    ] },
+    {"id": "s_fumarole", "place": "porto_mattina", "actors": [{"who": "tecla", "x": -70}, {"who": "saverio", "x": 10, "left": true}, {"who": "fulgenzio", "x": 96, "left": true}, {"who": "ines", "x": -130}], "steps": [
+      {"do": "title", "text": {"it": "Capitolo 4 — Il fiato del vulcano"}, "sub": {"it": "Le fumarole si svegliano. Nonna Ines sa più di quanto dice."}},
+      {"do": "say", "who": "saverio", "text": {"it": "Alle saline l'acqua fuma. I pomodori mi si sono lessati sulla pianta. In quarant'anni, mai vista una cosa così."}, "mood": "sad"},
+      {"do": "say", "who": "fulgenzio", "text": {"it": "Microclima! Fa benissimo al turismo."}, "mood": "happy"},
+      {"do": "say", "who": "saverio", "text": {"it": "Fulgenzio, ho le orate del vivaio che nuotano a pancia in su."}, "mood": "angry"},
+      {"do": "say", "who": "fulgenzio", "text": {"it": "Allarmismo! Il Consorzio ha tutto sotto controllo. E ha una macchina nuova, bellissima. La vedrete."}, "mood": "angry"},
+      {"do": "say", "who": "tecla", "text": {"it": "Saverio, da dove sale il caldo?"}, "mood": "calm"},
+      {"do": "say", "who": "saverio", "text": {"it": "Da sotto la città vecchia, dicevano i nonni. Dalle Fumarole. Ma lì non è mai scesa anima viva."}, "mood": "calm"},
+      {"do": "say", "who": "tecla", "text": {"it": "Finora."}, "mood": "calm"}
+    ] },
+    {"id": "s_buio", "place": "porto_notte", "actors": [{"who": "tecla", "x": -40}, {"who": "ines", "x": 34, "left": true}], "steps": [
+      {"do": "say", "who": "ines", "text": {"it": "Bianca dice che vuoi scendere nella sala delle ruote."}, "mood": "sad"},
+      {"do": "say", "who": "tecla", "text": {"it": "Qualcuno deve."}, "mood": "calm"},
+      {"do": "say", "who": "ines", "text": {"it": "Là sotto è buio pesto. E c'è una cosa che ha una luce sola, e la usa per farsi venire incontro il pranzo."}, "mood": "calm"},
+      {"do": "say", "who": "tecla", "text": {"it": "E tu come lo sai?"}, "mood": "shock"},
+      {"do": "say", "who": "ines", "text": {"it": "...Torna su intera. Poi ti dico tutto. Parola."}, "mood": "sad"}
+    ] },
+    {"id": "s_segreto", "place": "osteria", "actors": [{"who": "tecla", "x": -50}, {"who": "ines", "x": 24, "left": true}, {"who": "bianca", "x": 104, "left": true}], "steps": [
+      {"do": "say", "who": "ines", "text": {"it": "Siediti. I Nerei non sono spariti. Sono saliti sull'isola e si sono messi a cucinare."}, "mood": "sad"},
+      {"do": "say", "who": "tecla", "text": {"it": "Tu sei..."}, "mood": "shock"},
+      {"do": "say", "who": "ines", "text": {"it": "L'ultima custode. Come mia madre. Le misure delle ruote non si potevano scrivere: chi le trovava poteva aprire il monte. Così le abbiamo nascoste dove nessuno guarda."}, "mood": "calm"},
+      {"do": "pose", "who": "bianca", "pose": "shock"},
+      {"do": "say", "who": "bianca", "text": {"it": "Nel quaderno delle ricette!"}, "mood": "shock"},
+      {"do": "say", "who": "ines", "text": {"it": "Sette cucchiai, tre giri a sinistra, un pizzico. Ogni ricetta è una ruota. Perché credi che io urli, se qualcuno cambia le dosi?"}, "mood": "happy"},
+      {"do": "say", "who": "tecla", "text": {"it": "Potevi dirmelo."}, "mood": "sad"},
+      {"do": "say", "who": "ines", "text": {"it": "Volevo che tu avessi una vita, non una ruota da girare. Ma adesso quelli hanno bucato il monte, e le ruote vanno strette tutte e sette. Da sotto. In apnea."}, "mood": "sad"},
+      {"do": "say", "who": "tecla", "text": {"it": "Per fortuna in famiglia c'è una campionessa."}, "mood": "happy"}
+    ] },
+    {"id": "s_talpa_scende", "place": "porto_sera", "actors": [{"who": "tecla", "x": -80}, {"who": "zaira", "x": -20}, {"who": "fulgenzio", "x": 84, "left": true}, {"who": "pinuccio", "x": 140, "left": true}], "steps": [
+      {"do": "title", "text": {"it": "Capitolo 5 — Marea profonda"}, "sub": {"it": "Giù, fino al Santuario dei Nerei."}},
+      {"do": "shake", "time": 1.4},
+      {"do": "say", "who": "fulgenzio", "text": {"it": "Eccola! La Talpa d'Acciaio! Quattrocento tonnellate di progresso, dritte nel cuore del Calderone!"}, "mood": "happy"},
+      {"do": "say", "who": "zaira", "text": {"it": "Un sommergibile con la trivella. Fulgenzio, se quella cosa buca il Santuario, l'isola salta come un tappo."}, "mood": "shock"},
+      {"do": "say", "who": "fulgenzio", "text": {"it": "Sciocchezze da cantiere. Il pilota automatico ha ordini precisi: scavare."}, "mood": "calm"},
+      {"do": "say", "who": "pinuccio", "text": {"it": "Io intanto suono le campane. Tutti in collina!"}, "mood": "shock"},
+      {"do": "say", "who": "tecla", "text": {"it": "Zaira. Mi serve la muta più robusta che tu abbia mai cucito."}, "mood": "angry"},
+      {"do": "say", "who": "zaira", "text": {"it": "L'ho già tagliata: cinquecento metri e passa. E senti: lo scafo è blindato, mira alle valvole. Quelle le so costruire, e so anche come si rompono."}, "mood": "calm"}
+    ] },
+    {"id": "s_valvole", "place": "santuario", "actors": [{"who": "tecla_sub", "x": -110}], "steps": [
+      {"do": "say", "who": "narratore", "text": {"it": "La Talpa giace spenta sul fondo del Santuario. Intorno, sette ruote di bronzo grandi come macine."}},
+      {"do": "move", "who": "tecla_sub", "x": -40, "time": 1.6},
+      {"do": "say", "who": "tecla_sub", "text": {"it": "(Zuppa di scorfano: sette cucchiai. Sette giri.)"}, "mood": "calm"},
+      {"do": "shake", "time": 0.5},
+      {"do": "say", "who": "tecla_sub", "text": {"it": "(Sarde a beccafico: tre a sinistra e un pizzico. Tre giri, e un quarto.)"}, "mood": "calm"},
+      {"do": "move", "who": "tecla_sub", "x": 40, "time": 1.6},
+      {"do": "say", "who": "tecla_sub", "text": {"it": "(E l'ultima. Spaghetti ai ricci: «quanto basta».)"}, "mood": "happy"},
+      {"do": "say", "who": "tecla_sub", "text": {"it": "(...Nonna. «Quanto basta» non è una misura.)"}, "mood": "angry"},
+      {"do": "shake", "time": 1.3},
+      {"do": "flash"},
+      {"do": "say", "who": "narratore", "text": {"it": "La settima ruota si ferma dove si ferma il cuore di chi la gira. Il monte tira un lungo respiro. Poi tace."}}
+    ] },
+    {"id": "s_sagra", "place": "porto_sera", "actors": [{"who": "tecla", "x": -40}, {"who": "ines", "x": 24, "left": true}, {"who": "bianca", "x": -104}, {"who": "zaira", "x": 84, "left": true}, {"who": "pinuccio", "x": 136, "left": true}, {"who": "lustri", "x": -160}, {"who": "saverio", "x": 184, "left": true}], "steps": [
+      {"do": "say", "who": "pinuccio", "text": {"it": "Il campanile è tornato dritto! Di un dito, almeno."}, "mood": "happy"},
+      {"do": "say", "who": "zaira", "text": {"it": "Il Consorzio ha fatto le valigie. Fulgenzio giura che lui non c'era, e se c'era dormiva."}, "mood": "happy"},
+      {"do": "say", "who": "saverio", "text": {"it": "Alle saline l'acqua è tornata fresca. Ho ripiantato i pomodori."}, "mood": "happy"},
+      {"do": "say", "who": "lustri", "text": {"it": "Signora Ines... il mio locale è vuoto. Mi insegnerebbe a friggere un'acciuga?"}, "mood": "sad"},
+      {"do": "say", "who": "ines", "text": {"it": "In cucina mia, ai miei ordini, senza spume. Lavi i piatti per un mese e ne riparliamo."}, "mood": "happy"},
+      {"do": "say", "who": "bianca", "text": {"it": "Ho finito il Quaderno del Mare! La maestra dice che è troppo lungo. Ne comincio un altro."}, "mood": "happy"},
+      {"do": "say", "who": "ines", "text": {"it": "Tecla. Il quaderno delle ricette, un giorno, è tuo."}, "mood": "calm"},
+      {"do": "say", "who": "tecla", "text": {"it": "Io non so cucinare, nonna."}, "mood": "shock"},
+      {"do": "say", "who": "ines", "text": {"it": "Lo so. Ma sai trattenere il fiato. Il resto è quanto basta."}, "mood": "happy"},
+      {"do": "title", "text": {"it": "Fine"}, "sub": {"it": "Il mare, però, continua: il Calderone cambia a ogni marea."}}
+    ] }
+  ]
+}

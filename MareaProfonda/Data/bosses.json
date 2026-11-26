@@ -1,0 +1,10 @@
+{
+  "bosses": [
+    {"id": "murena", "kind": "murena", "name": {"it": "La Murena Baronessa"}, "epithet": {"it": "Padrona del relitto delle anfore"}, "hint": {"it": "Esce dalle tane per mordere. Schiva l'allungo, poi colpiscile la testa finché resta fuori."}, "depth": 28, "hp": 240, "radius": 10, "damage": 18, "speed": 60},
+    {"id": "granseola", "kind": "granseola", "name": {"it": "La Granseola Corazzata"}, "epithet": {"it": "Guardiana della Secca"}, "hint": {"it": "La corazza ferma l'arpione. Falla schiantare contro la parete, o colpiscila al ventre quando si impenna."}, "depth": 92, "hp": 300, "radius": 20, "damage": 20, "speed": 30},
+    {"id": "spada", "kind": "spada", "name": {"it": "Lo Spadaccino"}, "epithet": {"it": "Duellante della Parete Blu"}, "hint": {"it": "In guardia para ogni colpo. Schiva l'affondo: se la spada si pianta nella roccia, il danno raddoppia."}, "depth": 176, "hp": 440, "radius": 14, "damage": 22, "speed": 80},
+    {"id": "polpo", "kind": "polpo", "name": {"it": "Sua Eccellenza il Polpo"}, "epithet": {"it": "Archivista della Città Sommersa"}, "hint": {"it": "Dietro le anfore è al riparo. Colpiscigli la testa mentre i tentacoli sono impegnati, e sta' fuori dall'inchiostro."}, "depth": 300, "hp": 480, "radius": 22, "damage": 22, "speed": 20},
+    {"id": "lanterna", "kind": "lanterna", "name": {"it": "La Lanterna"}, "epithet": {"it": "La luce che morde"}, "hint": {"it": "Nel buio si vede solo l'esca. Colpisci l'esca per stordirla, o aspetta il morso e mirale in bocca."}, "depth": 452, "hp": 560, "radius": 17, "damage": 26, "speed": 46},
+    {"id": "talpa", "kind": "talpa", "name": {"it": "La Talpa d'Acciaio"}, "epithet": {"it": "Trivella del Consorzio"}, "hint": {"it": "Lo scafo è blindato: mira alla valvola che brilla. Le mine scoppiano anche addosso a lei."}, "depth": 562, "hp": 700, "radius": 24, "damage": 26, "speed": 40}
+  ]
+}

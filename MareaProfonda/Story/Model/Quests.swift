@@ -121,81 +121,68 @@ enum QuestEngine {
         return active(book, state: state).filter { state.quests.progress[$0.id]?.done ?? false }
     }
 
+    /// Applica un fatto a un obiettivo. Ritorna il nuovo conteggio, o nil se il fatto non lo riguarda.
+    static func advance(goal: QuestGoal, event: QuestEvent, count: Int) -> Int? {
+        switch (goal.kind, event) {
+        case ("catch", .caught(let item, let stars)):
+            if (goal.target == nil || goal.target == item) && stars >= (goal.minStars ?? 0) { return count + 1 }
+        case ("serve", .served(let recipe, let served)):
+            if goal.target == nil || goal.target == recipe { return count + served }
+        case ("collect", .collected(let item, let collected)):
+            if goal.target == nil || goal.target == item { return count + collected }
+        case ("earn", .earned(let gold)):
+            return count + gold
+        case ("depth", .depth(let meters)):
+            return max(count, Int(meters))
+        case ("fame", .fame(let total)):
+            return max(count, total)
+        case ("photo", .photo(let species)):
+            if goal.target == nil || goal.target == species { return count + 1 }
+        case ("upgrade", .upgraded(let id, let level)):
+            if goal.target == nil || goal.target == id { return max(count, level) }
+        case ("boss", .boss(let id)):
+            if goal.target == nil || goal.target == id { return count + 1 }
+        default:
+            break
+        }
+        return nil
+    }
+
     /// Registra un fatto. Ritorna le missioni completate in questo momento.
     static func record(_ event: QuestEvent, state: inout GameState, quests: [Quest]) -> [String] {
         var finished: [String] = []
         for q in quests where isActive(q, state: state) {
             var p: QuestProgress = state.quests.progress[q.id] ?? QuestProgress()
             if p.done { continue }
-            let goal: QuestGoal = q.goal
-            var touched: Bool = false
-            switch (goal.kind, event) {
-            case ("catch", .caught(let item, let stars)):
-                if (goal.target == nil || goal.target == item) && stars >= (goal.minStars ?? 0) {
-                    p.count += 1
-                    touched = true
-                }
-            case ("serve", .served(let recipe, let count)):
-                if goal.target == nil || goal.target == recipe {
-                    p.count += count
-                    touched = true
-                }
-            case ("collect", .collected(let item, let count)):
-                if goal.target == nil || goal.target == item {
-                    p.count += count
-                    touched = true
-                }
-            case ("earn", .earned(let gold)):
-                p.count += gold
-                touched = true
-            case ("depth", .depth(let meters)):
-                p.count = max(p.count, Int(meters))
-                touched = true
-            case ("fame", .fame(let total)):
-                p.count = max(p.count, total)
-                touched = true
-            case ("photo", .photo(let species)):
-                if goal.target == nil || goal.target == species {
-                    p.count += 1
-                    touched = true
-                }
-            case ("upgrade", .upgraded(let id, let level)):
-                if goal.target == nil || goal.target == id {
-                    p.count = max(p.count, level)
-                    touched = true
-                }
-            case ("boss", .boss(let id)):
-                if goal.target == nil || goal.target == id {
-                    p.count += 1
-                    touched = true
-                }
-            default:
-                break
+            guard let next: Int = advance(goal: q.goal, event: event, count: p.count) else { continue }
+            p.count = next
+            if p.count >= q.goal.count {
+                p.count = q.goal.count
+                p.done = true
+                finished.append(q.id)
             }
-            if touched {
-                if p.count >= goal.count {
-                    p.count = goal.count
-                    p.done = true
-                    finished.append(q.id)
-                }
-                state.quests.progress[q.id] = p
-            }
+            state.quests.progress[q.id] = p
         }
         return finished
+    }
+
+    /// Consegna una ricompensa: oro, perle, fama, ricetta, arma, interruttore di trama.
+    static func grant(_ reward: QuestReward, state: inout GameState) {
+        state.gold += reward.gold ?? 0
+        state.pearls += reward.pearls ?? 0
+        state.fame += reward.fame ?? 0
+        if let recipe: String = reward.recipe, state.recipes[recipe] == nil { state.recipes[recipe] = 1 }
+        if let weapon: String = reward.weapon, !state.weapons.contains(weapon) {
+            state.weapons.append(weapon)
+            if state.equipped == nil { state.equipped = weapon }
+        }
+        if let flag: String = reward.flag { state.flags[flag] = true }
     }
 
     /// Ritira la ricompensa di una missione completata.
     static func claim(_ q: Quest, state: inout GameState) -> Bool {
         guard isActive(q, state: state), state.quests.progress[q.id]?.done ?? false else { return false }
-        state.gold += q.reward.gold ?? 0
-        state.pearls += q.reward.pearls ?? 0
-        state.fame += q.reward.fame ?? 0
-        if let recipe: String = q.reward.recipe, state.recipes[recipe] == nil { state.recipes[recipe] = 1 }
-        if let weapon: String = q.reward.weapon, !state.weapons.contains(weapon) {
-            state.weapons.append(weapon)
-            if state.equipped == nil { state.equipped = weapon }
-        }
-        if let flag: String = q.reward.flag { state.flags[flag] = true }
+        grant(q.reward, state: &state)
         state.quests.claimed.append(q.id)
         return true
     }

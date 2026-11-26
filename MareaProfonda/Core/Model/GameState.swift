@@ -132,6 +132,8 @@ struct GameState: Codable, Equatable {
     /// Specie protette già fotografate.
     var photos: [String] = []
     var quests: QuestLog = QuestLog()
+    /// Punto della storia.
+    var story: StoryLog = StoryLog()
     var playSeconds: Double = 0
     var totalEarned: Int = 0
     var deepestDive: Double = 0
@@ -160,6 +162,7 @@ struct GameState: Codable, Equatable {
         equipped = try c.decodeIfPresent(String.self, forKey: .equipped)
         photos = try c.decodeIfPresent([String].self, forKey: .photos) ?? d.photos
         quests = try c.decodeIfPresent(QuestLog.self, forKey: .quests) ?? d.quests
+        story = try c.decodeIfPresent(StoryLog.self, forKey: .story) ?? d.story
         playSeconds = try c.decodeIfPresent(Double.self, forKey: .playSeconds) ?? d.playSeconds
         totalEarned = try c.decodeIfPresent(Int.self, forKey: .totalEarned) ?? d.totalEarned
         deepestDive = try c.decodeIfPresent(Double.self, forKey: .deepestDive) ?? d.deepestDive
