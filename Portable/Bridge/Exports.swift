@@ -25,9 +25,10 @@ public enum MareaHost {
         App.shared.input.hostBack()
     }
 
-    /// Avvia la prova automatica: istantanee in `directory`.
-    public static func startSmoke(directory: String) {
-        App.shared.smoke = SmokeRun(directory: directory)
+    /// Avvia la prova automatica: istantanee in `directory`. Con `filter` si percorrono solo le tappe
+    /// il cui nome lo contiene.
+    public static func startSmoke(directory: String, filter: String = "") {
+        App.shared.smoke = SmokeRun(directory: directory, filter: filter)
     }
 
     public static var smokeFinished: Bool {

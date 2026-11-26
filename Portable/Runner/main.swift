@@ -4,9 +4,10 @@ import MareaLogic
 // Strumento su Linux: fa girare la versione portabile del gioco senza schermo e salva istantanee PNG.
 // È lo stesso codice che gira su Android, quindi ciò che si vede qui è ciò che si vedrà sul telefono.
 //
-//   swift run runner smoke <cartella-istantanee> [larghezza altezza]
+//   swift run runner smoke <cartella-istantanee> [larghezza altezza [filtro]]
 //
-// Esegue la prova automatica (tutte le schermate) simulando uno schermo delle dimensioni date.
+// Esegue la prova automatica (tutte le schermate, o solo le tappe il cui nome contiene il filtro)
+// simulando uno schermo delle dimensioni date.
 
 let arguments: [String] = CommandLine.arguments
 let mode: String = arguments.count > 1 ? arguments[1] : "smoke"
@@ -28,7 +29,7 @@ MareaHost.setLog { (text: String) -> Void in print(text) }
 MareaHost.boot(assets: assets, saves: saves, width: width, height: height)
 
 if mode == "smoke" {
-    MareaHost.startSmoke(directory: output)
+    MareaHost.startSmoke(directory: output, filter: arguments.count > 5 ? arguments[5] : "")
     var frames: Int = 0
     var audio: [Int16] = [Int16](repeating: 0, count: 368)
     while !MareaHost.smokeFinished && frames < 60 * 60 * 20 {

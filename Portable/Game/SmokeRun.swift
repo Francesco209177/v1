@@ -16,9 +16,10 @@ final class SmokeRun {
     /// Immersione in corso nella tappa attuale: a fine tappa se ne annota lo stato nel registro.
     static weak var watched: DiveScreen? = nil
 
-    init(directory: String) {
+    /// - Parameter filter: se non è vuoto, si percorrono solo le tappe il cui nome lo contiene.
+    init(directory: String, filter: String = "") {
         self.directory = directory
-        stages = SmokeRun.script()
+        stages = SmokeRun.script().filter { (stage: Stage) -> Bool in filter.isEmpty || stage.name.contains(filter) }
         try? FileManager.default.createDirectory(atPath: directory, withIntermediateDirectories: true)
     }
 
