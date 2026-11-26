@@ -15,6 +15,8 @@ struct CatchItem: Codable, Equatable {
 struct DiveBag: Codable, Equatable {
     var fish: [CatchItem] = []
     var materials: [String: Int] = [:]
+    /// Specie protette fotografate in questa immersione.
+    var photos: [String] = []
     var maxWeight: Double = 10
 
     static let materialWeights: [String: Double] = ["riccio": 0.3, "conchiglia": 0.2, "alga": 0.1]
@@ -35,7 +37,7 @@ struct DiveBag: Codable, Equatable {
         return max(0.4, 1 - (ratio - 1) * 1.5)
     }
 
-    var isEmpty: Bool { return fish.isEmpty && materials.isEmpty }
+    var isEmpty: Bool { return fish.isEmpty && materials.isEmpty && photos.isEmpty }
 }
 
 // MARK: - Punti di comparsa e oggetti da raccogliere
@@ -85,8 +87,8 @@ enum SpawnPlanner {
                         let species: FishSpecies = options[index]
                         var position: Vec2 = candidate
                         var valid: Bool = true
-                        if species.behavior == FishBehavior.ambush {
-                            // Le specie d'agguato stanno posate sul fondo.
+                        if species.livesOnFloor {
+                            // Le specie di fondo stanno posate sulla roccia.
                             if let floor: Double = floorBelow(map, candidate, maxDrop: 110) {
                                 position = Vec2(candidate.x, floor - species.radius * 0.7)
                             } else {
@@ -213,6 +215,11 @@ enum DiveEvent: Equatable {
     case dashed
     case hitWall(speed: Double)
     case fainted
+    /// Arma secondaria usata: tipo, punto d'effetto e raggio (0 se non ha area).
+    case secondaryUsed(kind: WeaponKind, at: Vec2, radius: Double)
+    case outOfAmmo
+    case asleep(at: Vec2)
+    case photographed(species: String)
 }
 
 struct DiveInput {
@@ -224,6 +231,8 @@ struct DiveInput {
     /// Tasto dell'arpione tenuto premuto: recupera la lenza.
     var reelHeld: Bool = false
     var interact: Bool = false
+    /// Direzione dell'arma secondaria, nel fotogramma in cui viene usata.
+    var secondary: Vec2? = nil
 }
 
 /// Che cosa può fare Tecla qui col tasto azione.
@@ -231,6 +240,16 @@ enum DiveInteraction: Equatable {
     case pickup(index: Int)
     case bell(index: Int)
     case boat
+    /// Specie protetta a tiro di macchina fotografica.
+    case photo(fishId: Int)
+}
+
+/// Colpo in volo di un'arma secondaria (dardo, asta, bomba).
+struct SecondaryShot: Equatable {
+    let kind: WeaponKind
+    var position: Vec2
+    let direction: Vec2
+    var traveled: Double = 0
 }
 
 // MARK: - Simulazione
@@ -265,6 +284,11 @@ struct DiveSim {
     let boat: Vec2
     /// true se le transizioni dei pesci sono decise fuori (dalle macchine a stati di GameplayKit).
     var usesExternalBrains: Bool = false
+    /// Arma secondaria portata in immersione, colpi rimasti, colpi in volo.
+    var secondary: WeaponInfo? = nil
+    var ammo: Int = 0
+    var shots: [SecondaryShot] = []
+    private var secondaryCooldown: Double = 0
 
     private var rng: SeededRNG
     private var nextId: Int = 1
@@ -292,6 +316,21 @@ struct DiveSim {
         self.maxSafeDepth = maxSafeDepth
         rng = SeededRNG(seed: seed &+ 31337)
         bag.maxWeight = bagWeight
+    }
+
+    /// Aggiunge un pesce in un punto preciso: serve ai test e alle scene preparate (boss, tutorial).
+    @discardableResult
+    mutating func addFishForTesting(species: FishSpecies, at position: Vec2) -> Int {
+        fish.append(FishBody(species: species, spawnIndex: -1, position: position, seed: UInt64(nextId) &* 7919))
+        fishIds.append(nextId)
+        nextId += 1
+        return nextId - 1
+    }
+
+    /// Equipaggia l'arma secondaria per questa immersione.
+    mutating func equip(_ weapon: WeaponInfo?) {
+        secondary = weapon
+        ammo = weapon?.ammo ?? 0
     }
 
     // MARK: Accesso per identificativo
@@ -344,7 +383,7 @@ struct DiveSim {
 
         var i: Int = 0
         while i < fish.count {
-            if fish[i].isTargetable { consider(TargetRef.fish(id: fishIds[i]), fish[i].position) }
+            if fish[i].isTargetable && !fish[i].species.isProtected { consider(TargetRef.fish(id: fishIds[i]), fish[i].position) }
             i += 1
         }
         var s: Int = 0
@@ -394,6 +433,15 @@ struct DiveSim {
             return pickups[index].kind == PickupPoint.Kind.campana ? DiveInteraction.bell(index: index) : DiveInteraction.pickup(index: index)
         }
         if diver.atSurface && abs(diver.position.x - boat.x) < 44 { return DiveInteraction.boat }
+        var f: Int = 0
+        while f < fish.count {
+            let species: FishSpecies = fish[f].species
+            if species.isProtected && fish[f].isAlive && !bag.photos.contains(species.itemId)
+                && fish[f].position.distance(to: diver.position) < 52 {
+                return DiveInteraction.photo(fishId: fishIds[f])
+            }
+            f += 1
+        }
         return nil
     }
 
@@ -484,8 +532,16 @@ struct DiveSim {
                 events.append(DiveEvent.breathRefilled)
             case .boat:
                 break
+            case .photo(let id):
+                if let index: Int = fishIndex(id: id) {
+                    let species: String = fish[index].species.itemId
+                    if !bag.photos.contains(species) { bag.photos.append(species) }
+                    events.append(DiveEvent.photographed(species: species))
+                }
             }
         }
+
+        stepSecondary(input: input, dt: dt, events: &events)
 
         if breath <= 0 {
             breath = 0
@@ -639,12 +695,24 @@ struct DiveSim {
         let tip: Vec2 = harpoon.tip
         var i: Int = 0
         while i < fish.count {
-            if fish[i].isTargetable && fish[i].position.distance(to: tip) < fish[i].species.radius + 3 {
+            if fish[i].isTargetable && !fish[i].species.isProtected && fish[i].position.distance(to: tip) < fish[i].species.radius + 3 {
                 let species: FishSpecies = fish[i].species
+                // Un pesce addormentato o stordito si prende al primo colpo, senza rovinarlo.
+                if fish[i].state == FishState.asleep {
+                    events.append(DiveEvent.fishHit(at: fish[i].position, damage: 0, killed: true))
+                    if species.isEdible {
+                        harpoon.carried = CatchItem(speciesId: species.itemId, stars: fish[i].sleepAlive ? 3 : 2, weight: species.weight)
+                    }
+                    removeFish(at: i)
+                    harpoon.phase = HarpoonPhase.retracting
+                    return true
+                }
                 let killed: Bool = FishAI.damage(&fish[i], amount: harpoonTuning.damage, diver: diver.position)
                 events.append(DiveEvent.fishHit(at: fish[i].position, damage: harpoonTuning.damage, killed: killed))
                 if killed {
-                    harpoon.carried = CatchItem(speciesId: species.id, stars: DiveSim.stars(hits: fish[i].hits), weight: species.weight)
+                    if species.isEdible {
+                        harpoon.carried = CatchItem(speciesId: species.itemId, stars: DiveSim.stars(hits: fish[i].hits), weight: species.weight)
+                    }
                     removeFish(at: i)
                     harpoon.phase = HarpoonPhase.retracting
                 } else if species.pull > 0.01 {
@@ -675,7 +743,9 @@ struct DiveSim {
                     events.append(DiveEvent.fishHit(at: schools[s].members[m].position, damage: harpoonTuning.damage, killed: killed))
                     if killed {
                         schools[s].members[m].alive = false
-                        harpoon.carried = CatchItem(speciesId: species.id, stars: 2, weight: species.weight)
+                        if species.isEdible {
+                            harpoon.carried = CatchItem(speciesId: species.itemId, stars: 2, weight: species.weight)
+                        }
                         let spawn: Int = schools[s].spawnIndex
                         if spawn >= 0 && spawn < spawns.count { spawns[spawn].remaining = max(0, spawns[spawn].remaining - 1) }
                     }
@@ -747,10 +817,207 @@ struct DiveSim {
             events.append(DiveEvent.lineBroke)
         } else if harpoon.progress >= 1 {
             let species: FishSpecies = fish[i].species
-            harpoon.carried = CatchItem(speciesId: species.id, stars: DiveSim.stars(hits: fish[i].hits), weight: species.weight)
+            if species.isEdible {
+                harpoon.carried = CatchItem(speciesId: species.itemId, stars: DiveSim.stars(hits: fish[i].hits), weight: species.weight)
+            }
             removeFish(at: i)
             harpoon.hooked = nil
             harpoon.phase = HarpoonPhase.retracting
+        }
+    }
+
+    // MARK: Armi secondarie
+
+    private mutating func stepSecondary(input: DiveInput, dt: Double, events: inout [DiveEvent]) {
+        if secondaryCooldown > 0 { secondaryCooldown = max(0, secondaryCooldown - dt) }
+        if let dir: Vec2 = input.secondary, let weapon: WeaponInfo = secondary, secondaryCooldown <= 0, dir.lengthSquared > 1e-6 {
+            if weapon.ammo > 0 && ammo <= 0 {
+                events.append(DiveEvent.outOfAmmo)
+                secondaryCooldown = 0.4
+            } else {
+                if weapon.ammo > 0 { ammo -= 1 }
+                secondaryCooldown = weapon.cooldown
+                let d: Vec2 = dir.normalized()
+                switch weapon.kind {
+                case .melee:
+                    let center: Vec2 = diver.position + d * (weapon.range * 0.6)
+                    events.append(DiveEvent.secondaryUsed(kind: weapon.kind, at: center, radius: weapon.range * 0.6))
+                    strike(center: center, radius: weapon.range * 0.7, damage: weapon.damage, events: &events)
+                case .net:
+                    let center: Vec2 = diver.position + d * weapon.range
+                    events.append(DiveEvent.secondaryUsed(kind: weapon.kind, at: center, radius: weapon.radius))
+                    castNet(center: center, weapon: weapon, events: &events)
+                case .sleep, .bolt, .stun:
+                    shots.append(SecondaryShot(kind: weapon.kind, position: diver.position + d * 10, direction: d))
+                    events.append(DiveEvent.secondaryUsed(kind: weapon.kind, at: diver.position, radius: 0))
+                }
+            }
+        }
+        guard let weapon: WeaponInfo = secondary, !shots.isEmpty else { return }
+        var index: Int = shots.count - 1
+        while index >= 0 {
+            var shot: SecondaryShot = shots[index]
+            var remaining: Double = weapon.speed * dt
+            var done: Bool = false
+            while remaining > 0 && !done {
+                let stepLength: Double = min(remaining, 5)
+                remaining -= stepLength
+                shot.position += shot.direction * stepLength
+                shot.traveled += stepLength
+                let blocked: Bool = map.isSolid(x: shot.position.x, y: shot.position.y) || shot.position.y < 0
+                let target: Int? = firstFish(near: shot.position, extra: 3)
+                if shot.kind == WeaponKind.stun {
+                    if blocked || target != nil || shot.traveled >= weapon.range {
+                        events.append(DiveEvent.secondaryUsed(kind: WeaponKind.stun, at: shot.position, radius: weapon.radius))
+                        putToSleep(center: shot.position, radius: weapon.radius, seconds: weapon.duration, alive: false, events: &events)
+                        done = true
+                    }
+                } else if let i: Int = target {
+                    if shot.kind == WeaponKind.sleep {
+                        fish[i].sleepFor = weapon.duration
+                        fish[i].sleepAlive = true
+                        FishAI.enter(&fish[i], state: FishState.asleep, diver: diver.position)
+                        events.append(DiveEvent.asleep(at: fish[i].position))
+                    } else {
+                        hitWithBolt(index: i, damage: weapon.damage, events: &events)
+                    }
+                    done = true
+                } else if blocked || shot.traveled >= weapon.range {
+                    done = true
+                }
+            }
+            if done {
+                shots.remove(at: index)
+            } else {
+                shots[index] = shot
+            }
+            index -= 1
+        }
+    }
+
+    /// Primo pesce singolo colpibile vicino a un punto.
+    private func firstFish(near point: Vec2, extra: Double) -> Int? {
+        var i: Int = 0
+        while i < fish.count {
+            if fish[i].isTargetable && !fish[i].species.isProtected && fish[i].position.distance(to: point) < fish[i].species.radius + extra { return i }
+            i += 1
+        }
+        return nil
+    }
+
+    /// Colpo ravvicinato: fa danno a tutto ciò che ha davanti; ciò che uccide finisce in sacca, rovinato.
+    private mutating func strike(center: Vec2, radius: Double, damage: Double, events: inout [DiveEvent]) {
+        var i: Int = fish.count - 1
+        while i >= 0 {
+            if fish[i].isTargetable && !fish[i].species.isProtected && fish[i].position.distance(to: center) < radius + fish[i].species.radius {
+                let species: FishSpecies = fish[i].species
+                let killed: Bool = FishAI.damage(&fish[i], amount: damage, diver: diver.position)
+                events.append(DiveEvent.fishHit(at: fish[i].position, damage: damage, killed: killed))
+                if killed {
+                    if species.isEdible {
+                        let item: CatchItem = CatchItem(speciesId: species.itemId, stars: 1, weight: species.weight)
+                        bag.fish.append(item)
+                        events.append(DiveEvent.caught(item: item, at: fish[i].position))
+                    }
+                    removeFish(at: i)
+                }
+            }
+            i -= 1
+        }
+        var s: Int = 0
+        while s < schools.count {
+            var m: Int = 0
+            while m < schools[s].members.count {
+                if schools[s].members[m].alive && schools[s].members[m].position.distance(to: center) < radius + schools[s].species.radius {
+                    let species: FishSpecies = schools[s].species
+                    schools[s].members[m].alive = false
+                    events.append(DiveEvent.fishHit(at: schools[s].members[m].position, damage: damage, killed: true))
+                    if species.isEdible {
+                        let item: CatchItem = CatchItem(speciesId: species.itemId, stars: 1, weight: species.weight)
+                        bag.fish.append(item)
+                        events.append(DiveEvent.caught(item: item, at: schools[s].members[m].position))
+                    }
+                    let spawn: Int = schools[s].spawnIndex
+                    if spawn >= 0 && spawn < spawns.count { spawns[spawn].remaining = max(0, spawns[spawn].remaining - 1) }
+                    schools[s].scatter()
+                }
+                m += 1
+            }
+            s += 1
+        }
+    }
+
+    /// Rete: prende vivi (tre stelle) i pesci leggeri dentro il cerchio.
+    private mutating func castNet(center: Vec2, weapon: WeaponInfo, events: inout [DiveEvent]) {
+        var i: Int = fish.count - 1
+        while i >= 0 {
+            let species: FishSpecies = fish[i].species
+            if fish[i].isTargetable && species.isEdible && species.weight <= weapon.maxWeight
+                && fish[i].position.distance(to: center) < weapon.radius + species.radius {
+                let item: CatchItem = CatchItem(speciesId: species.itemId, stars: 3, weight: species.weight)
+                bag.fish.append(item)
+                events.append(DiveEvent.caught(item: item, at: fish[i].position))
+                removeFish(at: i)
+            }
+            i -= 1
+        }
+        var s: Int = 0
+        while s < schools.count {
+            let species: FishSpecies = schools[s].species
+            if species.isEdible && species.weight <= weapon.maxWeight {
+                var taken: Int = 0
+                var m: Int = 0
+                while m < schools[s].members.count {
+                    if schools[s].members[m].alive && schools[s].members[m].position.distance(to: center) < weapon.radius + species.radius {
+                        schools[s].members[m].alive = false
+                        let item: CatchItem = CatchItem(speciesId: species.itemId, stars: 3, weight: species.weight)
+                        bag.fish.append(item)
+                        events.append(DiveEvent.caught(item: item, at: schools[s].members[m].position))
+                        taken += 1
+                    }
+                    m += 1
+                }
+                if taken > 0 {
+                    let spawn: Int = schools[s].spawnIndex
+                    if spawn >= 0 && spawn < spawns.count { spawns[spawn].remaining = max(0, spawns[spawn].remaining - taken) }
+                    schools[s].scatter()
+                }
+            }
+            s += 1
+        }
+    }
+
+    /// Addormenta o stordisce i pesci singoli in un'area.
+    private mutating func putToSleep(center: Vec2, radius: Double, seconds: Double, alive: Bool, events: inout [DiveEvent]) {
+        var i: Int = 0
+        while i < fish.count {
+            if fish[i].isTargetable && !fish[i].species.isProtected && fish[i].position.distance(to: center) < radius + fish[i].species.radius {
+                fish[i].sleepFor = seconds
+                fish[i].sleepAlive = alive
+                FishAI.enter(&fish[i], state: FishState.asleep, diver: diver.position)
+                events.append(DiveEvent.asleep(at: fish[i].position))
+            }
+            i += 1
+        }
+        var s: Int = 0
+        while s < schools.count {
+            if schools[s].center.distance(to: center) < radius + 30 { schools[s].scatter() }
+            s += 1
+        }
+    }
+
+    /// Asta del fucile: danno a distanza; il pesce ucciso sale da solo verso Tecla.
+    private mutating func hitWithBolt(index i: Int, damage: Double, events: inout [DiveEvent]) {
+        let species: FishSpecies = fish[i].species
+        let killed: Bool = FishAI.damage(&fish[i], amount: damage, diver: diver.position)
+        events.append(DiveEvent.fishHit(at: fish[i].position, damage: damage, killed: killed))
+        if killed {
+            if species.isEdible {
+                let item: CatchItem = CatchItem(speciesId: species.itemId, stars: DiveSim.stars(hits: fish[i].hits), weight: species.weight)
+                bag.fish.append(item)
+                events.append(DiveEvent.caught(item: item, at: fish[i].position))
+            }
+            removeFish(at: i)
         }
     }
 }

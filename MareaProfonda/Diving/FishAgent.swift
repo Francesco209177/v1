@@ -62,14 +62,41 @@ final class FishAgent {
     var onEnter: ((Int, FishState) -> Void)?
     private var syncing: Bool = false
     private(set) var state: FishState = FishState.wander
+    private let sleepMark: PixelLabel = PixelLabel(text: "ZZ", color: SKColor(hex: 0xBFE9F7), alignment: PixelLabel.Alignment.center)
+    private var glow: SKSpriteNode?
+    /// Quanto è buio intorno (0 giorno pieno, 1 abisso): regola il bagliore delle specie luminose.
+    static var darkness: Double = 0
+
+    static let glowTexture: SKTexture = {
+        let size: Int = 48
+        var image: PixelBuffer = PixelBuffer(width: size, height: size)
+        let c: Double = Double(size) / 2
+        var y: Int = 0
+        while y < size {
+            var x: Int = 0
+            while x < size {
+                let dx: Double = Double(x) + 0.5 - c
+                let dy: Double = Double(y) + 0.5 - c
+                let d: Double = (dx * dx + dy * dy).squareRoot() / c
+                if d < 1 {
+                    let a: Double = (1 - d) * (1 - d)
+                    image.set(x, y, RGBA(r: 130, g: 240, b: 225, a: UInt8(max(0, min(255, a * 255)))))
+                }
+                x += 1
+            }
+            y += 1
+        }
+        return TextureFactory.texture(from: image, filtering: SKTextureFilteringMode.linear)
+    }()
 
     init(id: Int, species: FishSpecies) {
         self.id = id
         let forge: SpriteForge = SpriteForge.shared
-        swimFrames = forge.frames("\(species.id)_swim")
-        hurtFrame = forge.texture("\(species.id)_hurt_0")
-        deadFrame = forge.texture("\(species.id)_dead_0")
-        sprite = forge.node("\(species.id)_swim_0")
+        let art: String = species.spriteId
+        swimFrames = forge.frames("\(art)_swim")
+        hurtFrame = forge.texture("\(art)_hurt_0")
+        deadFrame = forge.texture("\(art)_dead_0")
+        sprite = forge.node("\(art)_swim_0")
         let states: [FishStateNode] = [
             FishWanderState(), FishFleeState(), FishChaseState(), FishWindupState(), FishChargeState(), FishRecoverState(),
             FishReturnState(), FishStunnedState(), FishHookedState(), FishAsleepState(), FishDeadState()
@@ -80,6 +107,22 @@ final class FishAgent {
         alert.isHidden = true
         alert.zPosition = 2
         node.addChild(alert)
+        sleepMark.position = CGPoint(x: 2, y: CGFloat(species.radius) + 4)
+        sleepMark.zPosition = 2
+        sleepMark.isHidden = true
+        sleepMark.shadowColor = SKColor(hex: 0x06142A)
+        node.addChild(sleepMark)
+        if species.isGlowing {
+            // Bagliore proprio, disegnato sopra il velo del buio.
+            let halo: SKSpriteNode = SKSpriteNode(texture: FishAgent.glowTexture)
+            let side: CGFloat = CGFloat(species.radius) * 5 + 14
+            halo.size = CGSize(width: side, height: side)
+            halo.blendMode = SKBlendMode.add
+            halo.zPosition = 500
+            halo.alpha = 0
+            node.addChild(halo)
+            glow = halo
+        }
         for s in states { s.agent = self }
         machine.enter(FishWanderState.self)
     }
@@ -151,10 +194,16 @@ final class FishAgent {
             }
         case .dead:
             rotation = Double.pi
+        case .asleep:
+            rotation = 0.5
         default:
             break
         }
         sprite.zRotation = CGFloat(rotation)
         sprite.position = CGPoint(x: offsetX, y: 0)
+        sleepMark.isHidden = body.state != FishState.asleep
+        if let halo: SKSpriteNode = glow {
+            halo.alpha = CGFloat(MathUtil.clamp(FishAgent.darkness, 0, 1) * (0.55 + 0.2 * sin(clock * 0.8)))
+        }
     }
 }

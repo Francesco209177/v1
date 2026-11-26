@@ -47,6 +47,32 @@ struct FishSpecies: Codable, Equatable {
     let rarity: Int
     /// Valore di riferimento in oro.
     let price: Int
+    // Campi facoltativi: se mancano valgono i comportamenti predefiniti.
+    /// true: sta sempre posata sul fondo.
+    let floor: Bool?
+    /// true: una specie d'agguato che però galleggia a mezz'acqua (medusa, pesce scorpione).
+    let midwater: Bool?
+    /// true: specie protetta, si può solo fotografare.
+    let protected: Bool?
+    /// false: non finisce in cucina (se colpita non dà bottino).
+    let edible: Bool?
+    /// true: brilla nel buio.
+    let glow: Bool?
+    /// Sprite da usare se diverso dall'identificativo (varianti notturne).
+    let sprite: String?
+    /// Ingrediente che si ottiene, se diverso dall'identificativo.
+    let item: String?
+
+    var spriteId: String { return sprite ?? id }
+    var itemId: String { return item ?? id }
+    var isProtected: Bool { return protected ?? false }
+    var isEdible: Bool { return (edible ?? true) && !isProtected }
+    var isGlowing: Bool { return glow ?? false }
+    /// Va posata sul fondo quando compare?
+    var livesOnFloor: Bool {
+        if let f: Bool = floor { return f }
+        return behavior == FishBehavior.ambush && !(midwater ?? false)
+    }
 }
 
 struct FishCatalog: Codable, Equatable {
@@ -69,12 +95,15 @@ struct FishCatalog: Codable, Equatable {
             seen.insert(s.id)
             if s.name.text().isEmpty { out.append("\(s.id): nome mancante") }
             if s.depthMax <= s.depthMin { out.append("\(s.id): profondità non valide") }
+            if s.isEdible && s.price <= 0 { out.append("\(s.id): una specie da cucina deve avere un valore") }
             if s.hp <= 0 || s.weight <= 0 || s.radius <= 0 { out.append("\(s.id): hp, peso e raggio devono essere positivi") }
             if s.speed <= 0 || s.fleeSpeed < s.speed { out.append("\(s.id): la velocità di fuga non può essere minore di quella normale") }
             if s.schoolMin < 1 || s.schoolMax < s.schoolMin { out.append("\(s.id): dimensioni del banco non valide") }
             if s.pull < 0 || s.pull > 1 { out.append("\(s.id): pull deve stare tra 0 e 1") }
             if s.rarity < 1 || s.rarity > 5 { out.append("\(s.id): rarità tra 1 e 5") }
             if s.spawnWeight <= 0 { out.append("\(s.id): spawnWeight deve essere positivo") }
+            if let other: String = s.item, find(other) == nil { out.append("\(s.id): ingrediente sconosciuto '\(other)'") }
+            if let other: String = s.sprite, find(other) == nil { out.append("\(s.id): sprite sconosciuto '\(other)'") }
             if (s.behavior == .territorial || s.behavior == .aggressive || s.behavior == .ambush) && s.damage <= 0 {
                 out.append("\(s.id): una specie che attacca deve avere damage > 0")
             }

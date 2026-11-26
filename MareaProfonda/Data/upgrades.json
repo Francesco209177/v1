@@ -1,0 +1,43 @@
+{
+  "upgrades": [
+    { "id": "breath", "name": { "it": "Polmoni d'acciaio" }, "note": { "it": "Esercizi di apnea con Zaira che cronometra: più Fiato per ogni immersione." },
+      "unit": { "it": "di Fiato" }, "base": 120,
+      "levels": [ { "cost": 90, "value": 150 }, { "cost": 240, "value": 185 }, { "cost": 520, "value": 225 }, { "cost": 1100, "value": 270 }, { "cost": 2200, "value": 320 } ] },
+    { "id": "suit", "name": { "it": "Muta" }, "note": { "it": "Neoprene più spesso, cuciture stagne: regge la pressione più in basso." },
+      "unit": { "it": "metri" }, "base": 110,
+      "levels": [ { "cost": 160, "value": 160 }, { "cost": 420, "value": 240 }, { "cost": 950, "value": 370 }, { "cost": 2000, "value": 530 }, { "cost": 3600, "value": 620 } ] },
+    { "id": "bag", "name": { "it": "Sacca" }, "note": { "it": "Tela da vela cucita doppia: porta più peso senza rallentarti." },
+      "unit": { "it": "kg" }, "base": 10,
+      "levels": [ { "cost": 70, "value": 14 }, { "cost": 200, "value": 19 }, { "cost": 480, "value": 26 }, { "cost": 1000, "value": 34 }, { "cost": 1900, "value": 44 } ] },
+    { "id": "harpoon", "name": { "it": "Punta dell'arpione" }, "note": { "it": "Acciaio temprato alla forgia del cantiere: ogni colpo fa più male." },
+      "unit": { "it": "di danno" }, "base": 10,
+      "levels": [ { "cost": 110, "value": 14 }, { "cost": 300, "value": 19 }, { "cost": 700, "value": 25 }, { "cost": 1500, "value": 33 }, { "cost": 2800, "value": 42 } ] },
+    { "id": "elastic", "name": { "it": "Elastici" }, "note": { "it": "Gomma nuova: l'arpione parte più forte e arriva più lontano." },
+      "unit": { "it": "pixel di gittata" }, "base": 150,
+      "levels": [ { "cost": 130, "value": 175 }, { "cost": 380, "value": 205 }, { "cost": 900, "value": 240 } ] },
+    { "id": "fins", "name": { "it": "Pinne lunghe" }, "note": { "it": "Pale in carbonio: una pinneggiata, tre metri." },
+      "unit": { "it": "di velocità" }, "base": 66,
+      "levels": [ { "cost": 150, "value": 72 }, { "cost": 450, "value": 79 }, { "cost": 1200, "value": 87 } ] },
+    { "id": "torch", "name": { "it": "Torcia" }, "note": { "it": "Senza luce, sotto i duecento metri non si vede la propria mano." },
+      "unit": { "it": "di raggio" }, "base": 0.10,
+      "levels": [ { "cost": 180, "value": 0.20 }, { "cost": 600, "value": 0.27 }, { "cost": 1400, "value": 0.34 } ] },
+    { "id": "tray", "name": { "it": "Vassoio" }, "note": { "it": "Due mani sono poche: col vassoio porti più piatti alla volta." },
+      "unit": { "it": "piatti" }, "base": 1,
+      "levels": [ { "cost": 140, "value": 2 }, { "cost": 600, "value": 3 } ] },
+    { "id": "stove", "name": { "it": "Fuochi della cucina" }, "note": { "it": "Nonna Ines brontola, ma con i fuochi nuovi cucina più in fretta." },
+      "unit": { "it": "di velocità" }, "base": 1.0,
+      "levels": [ { "cost": 200, "value": 1.25 }, { "cost": 650, "value": 1.55 }, { "cost": 1600, "value": 1.9 } ] }
+  ],
+  "weapons": [
+    { "id": "coltello", "name": { "it": "Coltello da sub" }, "note": { "it": "Per ciò che ti arriva addosso. Rovina il pesce: una stella sola." },
+      "kind": "melee", "price": 60, "ammo": 0, "range": 28, "radius": 0, "damage": 16, "speed": 0, "duration": 0, "maxWeight": 0, "cooldown": 0.45 },
+    { "id": "rete", "name": { "it": "Rete da lancio" }, "note": { "it": "Prende vivi i pesci piccoli: tre stelle garantite." },
+      "kind": "net", "price": 150, "ammo": 3, "range": 64, "radius": 34, "damage": 0, "speed": 0, "duration": 0, "maxWeight": 2.0, "cooldown": 0.8 },
+    { "id": "dardi", "name": { "it": "Dardi soporiferi" }, "note": { "it": "Il pesce si addormenta: poi lo arpioni vivo, tre stelle." },
+      "kind": "sleep", "price": 320, "ammo": 4, "range": 180, "radius": 0, "damage": 0, "speed": 380, "duration": 9, "maxWeight": 0, "cooldown": 0.6 },
+    { "id": "fucile", "name": { "it": "Fucile subacqueo" }, "note": { "it": "Asta d'acciaio, colpo secco e lontano. Poche munizioni." },
+      "kind": "bolt", "price": 520, "ammo": 6, "range": 250, "radius": 0, "damage": 30, "speed": 620, "duration": 0, "maxWeight": 0, "cooldown": 0.7 },
+    { "id": "bombe", "name": { "it": "Bombe a bolle" }, "note": { "it": "Uno scoppio di bolle stordisce tutto ciò che ha intorno." },
+      "kind": "stun", "price": 420, "ammo": 3, "range": 110, "radius": 60, "damage": 0, "speed": 210, "duration": 3.5, "maxWeight": 0, "cooldown": 0.9 }
+  ]
+}

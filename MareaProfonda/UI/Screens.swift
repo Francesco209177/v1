@@ -200,6 +200,9 @@ struct HubPanelView: View {
         return VStack(spacing: 10) {
             HubStatusBar(state: state)
             Spacer(minLength: 0)
+            if !session.justCompleted.isEmpty {
+                QuestBanner(questIds: session.justCompleted)
+            }
             if !learned.isEmpty {
                 LearnedBanner(recipeIds: learned)
             }
@@ -256,7 +259,7 @@ struct HubActions: View {
             case .evening:
                 if state.tonight.isEmpty {
                     MenuButton(title: String(localized: "Prepara il menu"), subtitle: String(localized: "Scegli i piatti di stasera"), fill: Palette.ochre, order: 0, focus: focus) {
-                        GameSession.shared.clearLearned()
+                        GameSession.shared.clearAnnouncements()
                         OverlayCenter.shared.show(OverlayScreen.menu)
                     }
                 } else {
@@ -269,18 +272,45 @@ struct HubActions: View {
                     SceneRouter.shared.showHub()
                 }
             case .night:
-                MenuButton(title: String(localized: "Vai a dormire"), subtitle: String(localized: "Comincia un nuovo giorno"), fill: Palette.cobalt, textColor: Palette.lime, order: 0, focus: focus) {
+                if GameSession.shared.canDiveAtNight {
+                    MenuButton(title: String(localized: "Immersione notturna"), subtitle: String(localized: "Altre specie, più pericoli"), order: 0, focus: focus) {
+                        SceneRouter.shared.startDive()
+                    }
+                }
+                MenuButton(title: String(localized: "Vai a dormire"), subtitle: String(localized: "Comincia un nuovo giorno"), fill: Palette.cobalt, textColor: Palette.lime, order: 1, focus: focus) {
                     GameSession.shared.skipPhase()
                     SceneRouter.shared.showHub()
                 }
             }
-            MenuButton(title: String(localized: "Menu principale"), subtitle: String(localized: "La partita è salvata"), fill: Palette.ink.opacity(0.8), textColor: Palette.lime,
-                       order: state.phase == DayPhase.night ? 1 : 2, focus: focus) {
+            MenuButton(title: String(localized: "Giornale di bordo"), subtitle: String(localized: "Missioni, cantiere, ricette"), fill: Palette.turquoise.opacity(0.85), order: 2, focus: focus) {
+                GameSession.shared.clearAnnouncements()
+                OverlayCenter.shared.show(OverlayScreen.logbook)
+            }
+            .frame(maxWidth: 190)
+            MenuButton(title: String(localized: "Esci"), subtitle: String(localized: "La partita è salvata"), fill: Palette.ink.opacity(0.8), textColor: Palette.lime, order: 3, focus: focus) {
                 GameSession.shared.close()
                 SceneRouter.shared.showTitle(animated: true)
             }
-            .frame(maxWidth: 190)
+            .frame(maxWidth: 120)
         }
+    }
+}
+
+/// Avviso al porto: missioni appena completate, da ritirare nel Giornale di bordo.
+struct QuestBanner: View {
+    let questIds: [String]
+
+    var body: some View {
+        var names: [String] = []
+        for quest in GameSession.shared.questsToday() where questIds.contains(quest.id) { names.append(quest.title.text()) }
+        return HStack(spacing: 10) {
+            Text("Missione compiuta: \(names.joined(separator: ", ")). Ritira la ricompensa nel Giornale di bordo.")
+                .font(.system(.footnote, design: .rounded).weight(.heavy))
+                .foregroundColor(Palette.ink)
+            Spacer(minLength: 0)
+        }
+        .padding(10)
+        .background(RoundedRectangle(cornerRadius: 16, style: .continuous).fill(Palette.turquoise))
     }
 }
 

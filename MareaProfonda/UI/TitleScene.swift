@@ -96,6 +96,10 @@ final class TitleScene: BaseScene {
         if started { return }
         started = true
         Feedback.tap()
+        // Il titolo lascia spazio alla scelta della partita.
+        title.run(SKAction.fadeAlpha(to: 0.0, duration: 0.25))
+        prompt.removeAllActions()
+        prompt.run(SKAction.fadeOut(withDuration: 0.2))
         onStart?()
     }
 }

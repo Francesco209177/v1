@@ -341,8 +341,8 @@ final class RestaurantScene: BaseScene {
 
     override func layoutHUD() {
         let safe: CGRect = hudSafeRect
-        let unit: CGFloat = hudPixelScale(1)
-        controls.layout(safe: safe, pixelScale: unit)
+        let unit: CGFloat = hudIconScale(1.0)
+        controls.layout(safe: safe, iconScale: hudIconScale(2.0))
         pause.layout(sceneSize: size, pixelScale: unit)
 
         let panelWidth: CGFloat = min(safe.width - 70, 150 + CGFloat(dishIcons.count) * 58)
@@ -351,7 +351,7 @@ final class RestaurantScene: BaseScene {
         topPanel.path = CGPath(roundedRect: CGRect(x: origin.x, y: origin.y, width: panelWidth, height: panelHeight),
                                cornerWidth: 12, cornerHeight: 12, transform: nil)
         let midY: CGFloat = origin.y + panelHeight / 2
-        let textScale: CGFloat = max(1, (16 / (7 * unit)).rounded(.down)) * unit
+        let textScale: CGFloat = hudIconScale(2.0)
         timerLabel.setScale(textScale)
         timerLabel.position = CGPoint(x: origin.x + 12, y: midY - 3.5 * textScale)
         coinIcon.setScale(textScale)
@@ -367,8 +367,9 @@ final class RestaurantScene: BaseScene {
             dishCounts[i].position = CGPoint(x: x + 18, y: midY - 3.5 * textScale)
             i += 1
         }
-        comboLabel.setScale(textScale * 1.5)
-        comboLabel.position = CGPoint(x: safe.minX + 8, y: origin.y - 34)
+        comboLabel.alignment = PixelLabel.Alignment.center
+        comboLabel.setScale(hudIconScale(3.0))
+        comboLabel.position = CGPoint(x: 0, y: origin.y - 30)
         toast.position = CGPoint(x: 0, y: safe.maxY - safe.height * 0.30)
         pourPanel.position = CGPoint(x: 0, y: 6)
         let zoneHeight: CGFloat = pourGlassSize.height * CGFloat(ServiceSim.pourLimit - (ServiceSim.pourTarget - 0.06))

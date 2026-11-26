@@ -126,6 +126,12 @@ struct GameState: Codable, Equatable {
     /// Potenziamenti acquistati e loro livello.
     var upgrades: [String: Int] = [:]
     var flags: [String: Bool] = [:]
+    /// Armi secondarie possedute e quella portata in immersione.
+    var weapons: [String] = []
+    var equipped: String? = nil
+    /// Specie protette già fotografate.
+    var photos: [String] = []
+    var quests: QuestLog = QuestLog()
     var playSeconds: Double = 0
     var totalEarned: Int = 0
     var deepestDive: Double = 0
@@ -150,6 +156,10 @@ struct GameState: Codable, Equatable {
         tonight = try c.decodeIfPresent([PreparedDish].self, forKey: .tonight) ?? d.tonight
         upgrades = try c.decodeIfPresent([String: Int].self, forKey: .upgrades) ?? d.upgrades
         flags = try c.decodeIfPresent([String: Bool].self, forKey: .flags) ?? d.flags
+        weapons = try c.decodeIfPresent([String].self, forKey: .weapons) ?? d.weapons
+        equipped = try c.decodeIfPresent(String.self, forKey: .equipped)
+        photos = try c.decodeIfPresent([String].self, forKey: .photos) ?? d.photos
+        quests = try c.decodeIfPresent(QuestLog.self, forKey: .quests) ?? d.quests
         playSeconds = try c.decodeIfPresent(Double.self, forKey: .playSeconds) ?? d.playSeconds
         totalEarned = try c.decodeIfPresent(Int.self, forKey: .totalEarned) ?? d.totalEarned
         deepestDive = try c.decodeIfPresent(Double.self, forKey: .deepestDive) ?? d.deepestDive
@@ -165,6 +175,7 @@ struct GameState: Codable, Equatable {
     /// Ritorna gli identificativi delle ricette appena imparate.
     mutating func bank(bag: DiveBag, deepest: Double, recipes book: RecipeBook) -> [String] {
         pantry.add(bag: bag)
+        for species in bag.photos where !photos.contains(species) { photos.append(species) }
         for fish in bag.fish {
             var record: FishRecord = fishLog[fish.speciesId] ?? FishRecord()
             record.caught += 1

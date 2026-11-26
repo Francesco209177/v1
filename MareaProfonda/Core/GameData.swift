@@ -9,6 +9,8 @@ final class GameData {
     let fish: FishCatalog
     let recipes: RecipeBook
     let balance: Balance
+    let upgrades: UpgradeBook
+    let quests: QuestBook
     private(set) var problems: [String] = []
 
     private init() {
@@ -30,11 +32,17 @@ final class GameData {
         let loadedFish: FishCatalog? = load(FishCatalog.self, "fish.json")
         let loadedRecipes: RecipeBook? = load(RecipeBook.self, "recipes.json")
         let loadedBalance: Balance? = load(Balance.self, "balance.json")
+        let loadedUpgrades: UpgradeBook? = load(UpgradeBook.self, "upgrades.json")
+        let loadedQuests: QuestBook? = load(QuestBook.self, "quests.json")
 
         world = loadedWorld ?? GameData.fallbackWorld
         fish = loadedFish ?? FishCatalog(species: [])
         recipes = loadedRecipes ?? RecipeBook(recipes: [])
         balance = loadedBalance ?? GameData.fallbackBalance
+        upgrades = loadedUpgrades ?? UpgradeBook(upgrades: [], weapons: [])
+        quests = loadedQuests ?? QuestBook(quests: [])
+        notes.append(contentsOf: upgrades.problems())
+        notes.append(contentsOf: quests.problems(fish: fish, recipes: recipes, upgrades: upgrades))
         notes.append(contentsOf: world.problems())
         notes.append(contentsOf: fish.problems())
         notes.append(contentsOf: recipes.problems(fish: fish))
@@ -97,6 +105,8 @@ final class GameSession {
     /// Risultato dell'ultimo servizio, per il riepilogo della sera.
     private(set) var lastService: ServiceResult?
     private(set) var lastFameBefore: Int = 0
+    /// Missioni completate da poco, da annunciare al porto.
+    private(set) var justCompleted: [String] = []
 
     private init() {
         let base: URL = FileManager.default.urls(for: FileManager.SearchPathDirectory.applicationSupportDirectory,
@@ -162,11 +172,91 @@ final class GameSession {
         state?.playSeconds += seconds
     }
 
+    // MARK: Potenziamenti
+
+    /// Valore attuale di un potenziamento (o `fallback` se non esiste).
+    func upgradeValue(_ id: String, fallback: Double) -> Double {
+        guard let s: GameState = state else { return fallback }
+        return GameData.shared.upgrades.value(id, state: s, fallback: fallback)
+    }
+
+    var maxDepth: Double {
+        return upgradeValue("suit", fallback: GameData.shared.balance.startSafeDepth)
+    }
+
+    func buyUpgrade(_ id: String) -> Shop.Outcome {
+        guard var s: GameState = state else { return Shop.Outcome.unknown }
+        let outcome: Shop.Outcome = Shop.buyUpgrade(id, state: &s, book: GameData.shared.upgrades)
+        if outcome == Shop.Outcome.bought {
+            record([QuestEvent.upgraded(id: id, level: s.upgrades[id] ?? 0)], into: &s)
+            state = s
+            save()
+        }
+        return outcome
+    }
+
+    func buyWeapon(_ id: String) -> Shop.Outcome {
+        guard var s: GameState = state else { return Shop.Outcome.unknown }
+        let outcome: Shop.Outcome = Shop.buyWeapon(id, state: &s, book: GameData.shared.upgrades)
+        if outcome == Shop.Outcome.bought {
+            state = s
+            save()
+        }
+        return outcome
+    }
+
+    func equip(_ id: String?) {
+        guard var s: GameState = state else { return }
+        if let id: String = id, !s.weapons.contains(id) { return }
+        s.equipped = id
+        state = s
+        save()
+    }
+
+    // MARK: Missioni
+
+    /// Tutte le missioni che contano oggi: quelle dei personaggi più le due commissioni del giorno.
+    func questsToday() -> [Quest] {
+        guard let s: GameState = state else { return [] }
+        let data: GameData = GameData.shared
+        return data.quests.quests + QuestEngine.daily(state: s, fish: data.fish, recipes: data.recipes, maxDepth: maxDepth)
+    }
+
+    private func record(_ events: [QuestEvent], into s: inout GameState) {
+        let data: GameData = GameData.shared
+        let quests: [Quest] = data.quests.quests + QuestEngine.daily(state: s, fish: data.fish, recipes: data.recipes,
+                                                                    maxDepth: data.upgrades.value("suit", state: s, fallback: data.balance.startSafeDepth))
+        for event in events {
+            justCompleted.append(contentsOf: QuestEngine.record(event, state: &s, quests: quests))
+        }
+    }
+
+    func claim(_ quest: Quest) -> Bool {
+        guard var s: GameState = state else { return false }
+        if !QuestEngine.claim(quest, state: &s) { return false }
+        record([QuestEvent.fame(s.fame)], into: &s)
+        state = s
+        justCompleted.removeAll(where: { $0 == quest.id })
+        save()
+        return true
+    }
+
+    func clearAnnouncements() {
+        newlyLearned = []
+        justCompleted = []
+    }
+
     /// Fine di un'immersione: il bottino va in dispensa e la giornata avanza.
     func finishDive(bag: DiveBag, deepest: Double) {
         guard var s: GameState = state else { return }
         newlyLearned = s.bank(bag: bag, deepest: deepest, recipes: GameData.shared.recipes)
+        var events: [QuestEvent] = [QuestEvent.depth(deepest)]
+        for fish in bag.fish { events.append(QuestEvent.caught(item: fish.speciesId, stars: fish.stars)) }
+        for (kind, count) in bag.materials { events.append(QuestEvent.collected(item: kind, count: count)) }
+        for species in bag.photos { events.append(QuestEvent.photo(species)) }
+        record(events, into: &s)
         s.advancePhase()
+        if s.phase == DayPhase.morning { QuestEngine.pruneDaily(state: &s) }
         state = s
         save()
     }
@@ -174,6 +264,7 @@ final class GameSession {
     func skipPhase() {
         guard var s: GameState = state else { return }
         s.advancePhase()
+        if s.phase == DayPhase.morning { QuestEngine.pruneDaily(state: &s) }
         state = s
         newlyLearned = []
         save()
@@ -208,6 +299,9 @@ final class GameSession {
         s.totalEarned += result.total
         s.fame += result.fame
         if result.vipDelighted { s.pearls += 1 }
+        var events: [QuestEvent] = [QuestEvent.earned(result.total), QuestEvent.fame(s.fame)]
+        for (recipe, count) in result.sold { events.append(QuestEvent.served(recipe: recipe, count: count)) }
+        record(events, into: &s)
         s.tonight = []
         if s.phase == DayPhase.evening { s.advancePhase() }
         state = s
@@ -218,15 +312,40 @@ final class GameSession {
     func serviceSetup() -> ServiceSetup? {
         guard let s: GameState = state, !s.tonight.isEmpty, let rank: RankInfo = rank else { return nil }
         let seed: UInt64 = SeededRNG.combine([s.seed, UInt64(max(s.day, 0)), 99])
-        return ServiceSetup(dishes: s.tonight, recipes: GameData.shared.recipes, tuning: GameData.shared.balance.service,
-                            tables: rank.tables, arrivalEvery: rank.arrivalEvery, seed: seed)
+        var setup: ServiceSetup = ServiceSetup(dishes: s.tonight, recipes: GameData.shared.recipes, tuning: GameData.shared.balance.service,
+                                               tables: rank.tables, arrivalEvery: rank.arrivalEvery, seed: seed)
+        setup.carryCapacity = Int(upgradeValue("tray", fallback: 1))
+        setup.cookSpeed = upgradeValue("stove", fallback: 1)
+        return setup
     }
 
+    /// Parametri dell'immersione di adesso: mappa del giorno, ora, attrezzatura posseduta.
     func diveConfig() -> DiveScene.Config {
         var config: DiveScene.Config = DiveScene.Config()
         guard let s: GameState = state else { return config }
+        let balance: Balance = GameData.shared.balance
         config.seed = s.diveSeed()
-        config.sky = s.phase == DayPhase.afternoon ? BackdropPainter.SkyStyle.afternoon : BackdropPainter.SkyStyle.morning
+        config.night = s.phase == DayPhase.night
+        switch s.phase {
+        case .morning: config.sky = BackdropPainter.SkyStyle.morning
+        case .afternoon: config.sky = BackdropPainter.SkyStyle.afternoon
+        case .evening: config.sky = BackdropPainter.SkyStyle.evening
+        case .night: config.sky = BackdropPainter.SkyStyle.night
+        }
+        config.breathMax = upgradeValue("breath", fallback: balance.startBreath)
+        config.maxSafeDepth = upgradeValue("suit", fallback: balance.startSafeDepth)
+        config.bagWeight = upgradeValue("bag", fallback: balance.startBagWeight)
+        config.harpoonDamage = upgradeValue("harpoon", fallback: 10)
+        config.harpoonRange = upgradeValue("elastic", fallback: 150)
+        config.swimSpeed = upgradeValue("fins", fallback: 66)
+        config.torchRadius = upgradeValue("torch", fallback: 0.10)
+        config.phaseLabel = phaseName(s.phase)
+        if let id: String = s.equipped { config.weapon = GameData.shared.upgrades.weapon(id) }
         return config
+    }
+
+    /// L'immersione notturna si sblocca con la prima torcia.
+    var canDiveAtNight: Bool {
+        return (state?.upgrades["torch"] ?? 0) >= 1
     }
 }

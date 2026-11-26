@@ -63,12 +63,13 @@ enum ShaderLibrary {
         void main() {
             vec4 tex = texture2D(u_texture, v_tex_coord);
             vec2 pix = floor(vec2(v_tex_coord.x, 1.0 - v_tex_coord.y) * u_chunk);
-            vec2 p = (a_origin + pix) * 0.085;
-            float t = u_time * 0.55;
-            float c = sin(p.x * 1.7 + t + sin(p.y * 2.3 - t * 0.7) * 1.4) + sin(p.y * 1.9 - t * 0.8 + sin(p.x * 2.1 + t * 0.5) * 1.6);
-            // Solo la cresta dell'onda: fili sottili di luce, non chiazze.
-            c = smoothstep(1.55, 1.95, c);
-            vec3 lit = tex.rgb + vec3(0.30, 0.34, 0.24) * c * a_fade * tex.a;
+            vec2 p = (a_origin + pix) * 0.075;
+            float t = u_time * 0.5;
+            // Rete di fili di luce: brillano dove una delle due onde passa per lo zero.
+            float a = abs(sin(p.x * 1.3 + sin(p.y * 1.7 + t) * 1.2 + t * 0.6));
+            float b = abs(sin(p.y * 1.5 + sin(p.x * 1.9 - t * 0.8) * 1.2 - t * 0.5));
+            float c = pow(1.0 - min(a, b), 7.0);
+            vec3 lit = tex.rgb + vec3(0.34, 0.38, 0.26) * c * a_fade * tex.a;
             gl_FragColor = vec4(min(lit, vec3(tex.a)), tex.a);
         }
         """

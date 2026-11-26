@@ -42,11 +42,22 @@ final class FishingTests: XCTestCase {
     func testFishCatalogIsValidAndCoversTheFirstTwoZones() throws {
         let c: FishCatalog = try catalog()
         XCTAssertTrue(c.problems().isEmpty, c.problems().joined(separator: "\n"))
-        XCTAssertGreaterThanOrEqual(c.species.count, 12)
+        XCTAssertGreaterThanOrEqual(c.species.count, 40)
         var depth: Double = 3
         while depth < 110 {
             XCTAssertGreaterThanOrEqual(c.candidates(depthMeters: depth, night: false).count, 3, "poche specie a \(depth) m")
             depth += 5
+        }
+        // Ogni profondità ha qualcosa da pescare, di giorno; di notte fino alla Città Sommersa.
+        depth = 110
+        while depth < 590 {
+            XCTAssertGreaterThanOrEqual(c.candidates(depthMeters: depth, night: false).filter { $0.isEdible }.count, 2, "poche specie a \(depth) m")
+            depth += 10
+        }
+        depth = 12
+        while depth < 300 {
+            XCTAssertGreaterThanOrEqual(c.candidates(depthMeters: depth, night: true).filter { $0.isEdible }.count, 2, "poche specie notturne a \(depth) m")
+            depth += 10
         }
     }
 
@@ -55,7 +66,7 @@ final class FishingTests: XCTestCase {
         let names: Set<String> = Set(library.expandedSprites().map { $0.name })
         for species in try catalog().species {
             for suffix in ["_swim_0", "_swim_3", "_hurt_0", "_dead_0"] {
-                XCTAssertTrue(names.contains(species.id + suffix), "manca lo sprite \(species.id)\(suffix)")
+                XCTAssertTrue(names.contains(species.spriteId + suffix), "manca lo sprite \(species.spriteId)\(suffix)")
             }
         }
     }
@@ -104,34 +115,35 @@ final class FishingTests: XCTestCase {
     func testReelingWithCareLandsTheFishAndGreedSnapsTheLine() throws {
         for careful in [true, false] {
             var sim: DiveSim = try makeSim()
-            guard let target: Vec2 = place(&sim, near: "cernia", distance: 80) ?? place(&sim, near: "dentice", distance: 80) else {
-                XCTFail("nessun pesce grosso raggiungibile nella mappa di prova")
-                return
-            }
-            _ = sim.step(input: DiveInput(), dt: 1.0 / 60.0)
+            let species: FishSpecies = try XCTUnwrap(sim.catalog.find("cernia"))
+            let p: Vec2 = sim.map.nearestOpenPoint(to: sim.map.channelPoint(depthMeters: 30), clearance: 40)
+            sim.diver.position = p
+            sim.fish.removeAll()
+            sim.schools.removeAll()
+            sim.schoolIds.removeAll()
+            for i in 0..<sim.spawns.count { sim.spawns[i].remaining = 0 }
+            sim.addFishForTesting(species: species, at: Vec2(p.x + 70, p.y))
             var outcome: String = "nessuno"
+            var hooked: Bool = false
             var frame: Int = 0
-            while frame < 60 * 90 && outcome == "nessuno" {
+            while frame < 60 * 120 && outcome == "nessuno" {
                 var input: DiveInput = DiveInput()
-                if sim.harpoon.phase == HarpoonPhase.ready && !sim.fish.isEmpty {
-                    input.fire = sim.aimDirection(manual: target - sim.diver.position, autoAim: true)
+                if sim.harpoon.phase == HarpoonPhase.ready, let fish: FishBody = sim.fish.first {
+                    input.fire = (fish.position - sim.diver.position).normalized()
                 }
                 if sim.harpoon.phase == HarpoonPhase.reeling {
+                    hooked = true
                     input.reelHeld = careful ? (!sim.harpoon.isSurging && sim.harpoon.tension < 0.7) : true
                 }
                 for event in sim.step(input: input, dt: 1.0 / 60.0) {
                     if case DiveEvent.caught = event { outcome = "preso" }
                     if event == DiveEvent.lineBroke { outcome = "spezzata" }
                 }
-                // Un pesce grosso richiede più colpi: se scappa lo si lascia perdere.
                 if sim.fish.isEmpty && sim.harpoon.phase == HarpoonPhase.ready { break }
                 frame += 1
             }
-            if careful {
-                XCTAssertEqual(outcome, "preso")
-            } else {
-                XCTAssertEqual(outcome, "spezzata")
-            }
+            XCTAssertTrue(hooked)
+            XCTAssertEqual(outcome, careful ? "preso" : "spezzata")
         }
     }
 

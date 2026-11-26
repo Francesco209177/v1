@@ -88,8 +88,8 @@ final class RestaurantTests: XCTestCase {
         let recipes: RecipeBook = try book()
         var used: Set<String> = []
         for r in recipes.recipes { for i in r.ingredients { used.insert(i.item) } }
-        for species in try fish().species {
-            XCTAssertTrue(used.contains(species.id), "nessuna ricetta usa \(species.id)")
+        for species in try fish().species where species.isEdible {
+            XCTAssertTrue(used.contains(species.itemId), "nessuna ricetta usa \(species.itemId)")
         }
         for material in DiveBag.materialWeights.keys {
             XCTAssertTrue(used.contains(material), "nessuna ricetta usa \(material)")

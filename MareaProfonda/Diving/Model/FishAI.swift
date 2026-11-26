@@ -44,6 +44,10 @@ struct FishBody {
     var hits: Int = 0
     /// Direzione fissata al momento dello scatto.
     var chargeDirection: Vec2 = Vec2(1, 0)
+    /// Durata del sonno (o dello stordimento) in corso.
+    var sleepFor: Double = 0
+    /// true se addormentato da un dardo: catturato così vale tre stelle.
+    var sleepAlive: Bool = false
     var rng: SeededRNG
 
     init(species: FishSpecies, spawnIndex: Int, position: Vec2, seed: UInt64) {
@@ -82,7 +86,7 @@ enum FishAI {
         if from == FishState.dead { return false }
         switch to {
         case .dead, .stunned, .hooked, .asleep: return true
-        case .wander: return from != FishState.charge && from != FishState.windup
+        case .wander: return from != FishState.charge && from != FishState.windup || from == FishState.asleep
         case .flee: return from != FishState.charge
         case .chase: return from == FishState.wander || from == FishState.recover || from == FishState.stunned || from == FishState.returnHome || from == FishState.flee
         case .windup: return from == FishState.chase
@@ -145,7 +149,9 @@ enum FishAI {
             case .ambush: return FishState.wander
             case .passive, .shy, .school: return FishState.flee
             }
-        case .hooked, .asleep, .dead:
+        case .asleep:
+            return f.stateTime >= f.sleepFor ? FishState.wander : nil
+        case .hooked, .dead:
             return nil
         }
     }
@@ -232,9 +238,12 @@ enum FishAI {
         if f.state != FishState.hooked {
             let a: Double = 1 - exp(-rate * dt)
             f.velocity = f.velocity + (desired - f.velocity) * a
-            if f.state == FishState.dead || f.state == FishState.asleep {
+            if f.state == FishState.dead {
                 // Affonda piano.
                 f.velocity = Vec2(f.velocity.x * 0.9, 9)
+            } else if f.state == FishState.asleep {
+                // Addormentato: resta sospeso, appena alla deriva.
+                f.velocity = Vec2(f.velocity.x * 0.9, 2)
             }
             let next: Vec2 = f.position + f.velocity * dt
             let resolved: (position: Vec2, normal: Vec2?) = map.resolve(center: next, radius: s.radius * 0.8)

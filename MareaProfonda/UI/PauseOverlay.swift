@@ -33,7 +33,7 @@ final class PauseOverlay: SKNode {
 
     func layout(sceneSize: CGSize, pixelScale: CGFloat) {
         veil.size = CGSize(width: sceneSize.width + 4, height: sceneSize.height + 4)
-        title.setScale(pixelScale * 4)
+        title.setScale(pixelScale * 5)
         title.position = CGPoint(x: 0, y: sceneSize.height * 0.22)
         resumeButton.position = CGPoint(x: 0, y: 4)
         secondaryButton.position = CGPoint(x: 0, y: -58)

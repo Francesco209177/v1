@@ -108,6 +108,13 @@ class BaseScene: SKScene {
         return CGFloat(layout.pointsPerArtPixel) * CGFloat(max(multiple, 1))
     }
 
+    /// Scala per le icone a pixel dell'HUD: circa `points` punti per pixel dell'icona, arrotondati
+    /// a un numero intero di pixel fisici. Non dipende dallo zoom della scena.
+    func hudIconScale(_ points: CGFloat) -> CGFloat {
+        let s: CGFloat = CGFloat(layout.screenScale)
+        return max(1, (points * s).rounded()) / s
+    }
+
     /// Sposta la camera su un punto del mondo, allineandola ai pixel fisici.
     func setCamera(x: Double, y: Double) {
         cam.position = CGPoint(x: layout.snap(x), y: layout.snap(y))

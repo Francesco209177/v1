@@ -40,6 +40,8 @@ class Species:
         self.spiny = spiny
         self.extras = extras
         self.pad = canvas_pad
+        # spazio davanti al muso per ciò che sporge (la spada)
+        self.nose_room = 0.0
 
     def palette(self) -> Palette:
         base = {
@@ -73,12 +75,12 @@ def _interp(profile, t: float) -> tuple[float, float]:
 def render(sp: Species, phase: float, pose: str = "swim") -> Grid:
     pal = sp.palette()
     tail_px = sp.length * sp.tail_len
-    w = int(math.ceil(sp.length + tail_px)) + sp.pad * 2 + 2
+    w = int(math.ceil(sp.length + tail_px + sp.nose_room)) + sp.pad * 2 + 2
     fin_room = sp.height * 0.55
     h = int(math.ceil(sp.height + fin_room * 2)) + sp.pad * 2
     c = Canvas(w, h, pal)
     cy = h / 2
-    nose_x = w - sp.pad - 1.0
+    nose_x = w - sp.pad - 1.0 - sp.nose_room
     amp = sp.height * 0.11 * sp.wave
     if pose == "hurt":
         amp *= 2.2
@@ -365,6 +367,133 @@ SPECIES: list[Species] = [
             dorsal=(0.34, 0.44, 0.34), dorsal2=(0.68, 0.78, 0.30), anal=(0.70, 0.80, 0.28), pectoral=0.22, eye=0.10, eye_size=2,
             tail_len=0.16, tail_h=1.3, pattern=bands("e", [0.26, 0.36, 0.46, 0.56, 0.66, 0.76, 0.86], 0.022, 0.5), wave=1.1),
 ]
+
+# ----------------------------------------------------------------------------
+# Specie delle zone profonde e della notte
+# ----------------------------------------------------------------------------
+def finlets(c: Canvas, sp: Species, spine, upper, lower, phase: float) -> None:
+    """Pinnule gialle del tonno, sopra e sotto il peduncolo."""
+    for t in (0.74, 0.80, 0.86, 0.92):
+        i = min(int(t * 24), 24)
+        (x, yu), (_, yl) = upper[i], lower[i]
+        c.poly([(x + 1.0, yu + 0.3), (x - 0.8, yu - 1.9), (x - 1.4, yu + 0.3)], "e")
+        c.poly([(x + 1.0, yl - 0.3), (x - 0.8, yl + 1.9), (x - 1.4, yl - 0.3)], "e")
+
+
+def lure(c: Canvas, sp: Species, spine, upper, lower, phase: float) -> None:
+    """Esca luminosa della rana pescatrice."""
+    x, y = upper[3]
+    wob = math.sin(phase) * 1.2
+    c.curve([(x, y), (x + 2.5, y - 5.0), (x + 6.5 + wob, y - 6.5)], 0.8, "D")
+    c.ellipse(x + 7.2 + wob, y - 6.3, 1.5, 1.5, "h")
+
+
+def fangs(c: Canvas, sp: Species, spine, upper, lower, phase: float) -> None:
+    x, y = spine(0.02)
+    c.poly([(x - 0.5, y + 0.2), (x - 1.2, y + 3.4), (x - 2.0, y + 0.4)], "h")
+    c.poly([(x - 2.6, y + 0.6), (x - 3.2, y + 3.0), (x - 4.0, y + 0.8)], "h")
+
+
+def tall_fins(c: Canvas, sp: Species, spine, upper, lower, phase: float) -> None:
+    """Le due grandi pinne opposte del pesce luna."""
+    i = int(0.78 * 24)
+    (x, yu), (_, yl) = upper[i], lower[i]
+    sway = math.sin(phase) * 2.0
+    c.poly([(x + 5.0, yu + 1.0), (x - 1.0 + sway, yu - sp.height * 0.62), (x - 6.0, yu + 1.0)], "d")
+    c.poly([(x + 5.0, yl - 1.0), (x - 1.0 - sway, yl + sp.height * 0.62), (x - 6.0, yl - 1.0)], "d")
+
+
+def fan_spines(c: Canvas, sp: Species, spine, upper, lower, phase: float) -> None:
+    """Raggi a ventaglio del pesce scorpione."""
+    for t in (0.20, 0.30, 0.40, 0.50, 0.60, 0.70):
+        i = min(int(t * 24), 24)
+        x, y = upper[i]
+        c.line(x, y, x - 1.5 + math.sin(phase + t * 5) * 0.6, y - sp.height * 0.42, 0.75, "e")
+    x, y = spine(0.30)
+    for a in (-0.9, -0.5, -0.1, 0.3):
+        c.line(x, y + 1.0, x - math.cos(a) * sp.height * 0.55, y + 1.0 + math.sin(a + 0.9) * sp.height * 0.5, 0.75, "f")
+
+
+EEL = [(0.0, 0.30, 0.34), (0.08, 0.50, 0.50), (0.30, 0.50, 0.50), (0.70, 0.44, 0.44), (0.92, 0.26, 0.26), (1.0, 0.12, 0.12)]
+
+SPECIES += [
+    # Tonno rosso: siluro scuro, pinnule gialle, coda a mezzaluna
+    Species("tonno", 58, 18.0, {"back": "#16305a", "side": "#8fa8c4", "belly": "#eef3f8", "fin": "#1f3f6e", "accent": "#f2c22e", "outline": "#0c1830"},
+            profile=[(0.0, 0.06, 0.08), (0.12, 0.38, 0.34), (0.36, 0.52, 0.50), (0.68, 0.36, 0.36), (0.92, 0.08, 0.08), (1.0, 0.05, 0.05)],
+            dorsal=(0.30, 0.44, 0.34), dorsal2=(0.54, 0.64, 0.30), anal=(0.58, 0.68, 0.28), pectoral=0.24, eye=0.09, eye_size=3,
+            tail="lunate", tail_len=0.18, tail_h=1.35, extras=finlets, wave=1.0),
+    # Palamita: tonnetto con righe oblique sul dorso
+    Species("palamita", 34, 9.0, {"back": "#1d4a78", "side": "#a8c0d4", "belly": "#f0f5f8", "fin": "#2a5a88", "accent": "#0f2a48", "outline": "#0c1c30"},
+            profile=[(0.0, 0.06, 0.08), (0.14, 0.38, 0.34), (0.38, 0.50, 0.50), (0.70, 0.34, 0.34), (0.92, 0.09, 0.09), (1.0, 0.06, 0.06)],
+            dorsal=(0.28, 0.44, 0.30), dorsal2=(0.56, 0.68, 0.22), anal=(0.60, 0.70, 0.20), pectoral=0.22, eye=0.10, eye_size=2,
+            tail="lunate", tail_len=0.20, tail_h=1.3, pattern=tiger("e", 8, 0.22, 0.90, 0.7), wave=1.2),
+    # Lampuga: fronte alta, giallo-verde, dorsale azzurra lunga quanto il corpo
+    Species("lampuga", 46, 13.0, {"back": "#2a8a8a", "side": "#b8d84a", "belly": "#f4f0a8", "fin": "#2a6ad0", "accent": "#2a6ad0", "outline": "#143a3a"},
+            profile=[(0.0, 0.34, 0.20), (0.06, 0.52, 0.40), (0.24, 0.52, 0.46), (0.66, 0.34, 0.32), (0.90, 0.13, 0.12), (1.0, 0.08, 0.08)],
+            dorsal=(0.08, 0.92, 0.26), anal=(0.50, 0.90, 0.14), pectoral=0.20, eye=0.09, eye_size=2,
+            tail_len=0.24, tail_h=1.5, pattern=spots("e", [(0.3, 0.2), (0.42, -0.1), (0.55, 0.3), (0.68, 0.0), (0.36, -0.4)], 0.05), wave=1.1),
+    # Pesce spada: la spada, la dorsale alta, la coda falcata
+    Species("spada", 62, 13.0, {"back": "#2c3f6e", "side": "#8f9fc0", "belly": "#e8ecf4", "fin": "#22325a", "outline": "#101a34"},
+            profile=[(0.0, 0.10, 0.10), (0.10, 0.40, 0.34), (0.32, 0.52, 0.48), (0.68, 0.32, 0.32), (0.92, 0.08, 0.08), (1.0, 0.05, 0.05)],
+            dorsal=(0.16, 0.34, 0.62), dorsal2=(0.80, 0.86, 0.14), anal=(0.62, 0.72, 0.24), pectoral=0.20, eye=0.08, eye_size=3,
+            tail="lunate", tail_len=0.17, tail_h=1.55, extras=sword, wave=0.9, canvas_pad=3),
+    # Verdesca: squalo snello e azzurro, pettorali lunghe
+    Species("verdesca", 70, 13.0, {"back": "#2a5fa8", "side": "#5a8fd0", "belly": "#f2f5fa", "fin": "#24508f", "fin_dark": "#1c4078", "outline": "#0e2244"},
+            profile=[(0.0, 0.04, 0.10), (0.10, 0.34, 0.34), (0.30, 0.50, 0.50), (0.66, 0.36, 0.34), (0.90, 0.12, 0.10), (1.0, 0.07, 0.06)],
+            back=0.42, belly=0.34, dorsal=(0.34, 0.48, 0.52), dorsal2=(0.76, 0.82, 0.16), anal=(0.72, 0.80, 0.14), pectoral=0.26, pelvic=0.58,
+            eye=0.07, eye_size=2, tail_len=0.20, tail_h=1.7, wave=1.0),
+    # Pesce luna: un disco con due pinne enormi
+    Species("luna", 36, 34.0, {"back": "#6a7a8c", "side": "#a8b4c0", "belly": "#e4e8ee", "fin": "#5a6878", "accent": "#8494a6", "outline": "#232c3a"},
+            profile=[(0.0, 0.10, 0.12), (0.12, 0.38, 0.38), (0.40, 0.50, 0.50), (0.76, 0.50, 0.50), (0.94, 0.42, 0.42), (1.0, 0.34, 0.34)],
+            dorsal=None, anal=None, pectoral=0.36, eye=0.13, eye_size=3, tail="tronca", tail_len=0.06, tail_h=1.0,
+            extras=tall_fins, pattern=mottled("e", 12, 0.18), wave=0.35),
+    # Murena: nastro giallo-bruno maculato, sempre a bocca aperta
+    Species("murena", 56, 8.0, {"back": "#5a3a1e", "side": "#b8862e", "belly": "#e8c870", "fin": "#6a4622", "accent": "#3a2412", "accent2": "#f0d890", "outline": "#241408"},
+            profile=EEL, dorsal=(0.12, 0.98, 0.16), anal=(0.40, 0.98, 0.10), pectoral=0.0, eye=0.07, eye_size=2,
+            tail="round", tail_len=0.05, tail_h=0.5, pattern=mottled("e", 21, 0.55), wave=2.4),
+    # Grongo: anguilla grigia della notte
+    Species("grongo", 62, 8.5, {"back": "#3c4450", "side": "#7c8894", "belly": "#d8dee4", "fin": "#2c333c", "outline": "#14181e"},
+            profile=EEL, dorsal=(0.18, 0.98, 0.14), anal=(0.42, 0.98, 0.10), pectoral=0.14, eye=0.07, eye_size=2,
+            tail="round", tail_len=0.05, tail_h=0.5, wave=2.2),
+    # San Pietro: disco dorato con la macchia scura sul fianco
+    Species("sanpietro", 28, 21.0, {"back": "#7a6a2e", "side": "#c8b05a", "belly": "#f0e0a0", "fin": "#6a5a26", "accent": "#2a2418", "accent2": "#f6ecc0", "outline": "#2a2410"},
+            profile=[(0.0, 0.14, 0.24), (0.12, 0.44, 0.40), (0.36, 0.52, 0.50), (0.68, 0.42, 0.42), (0.90, 0.14, 0.14), (1.0, 0.09, 0.09)],
+            dorsal=(0.22, 0.80, 0.42), anal=(0.52, 0.84, 0.22), pectoral=0.30, pelvic=0.34, eye=0.13, eye_size=3, spiny=True,
+            tail="round", tail_len=0.20, tail_h=0.9, pattern=combine(spots("e", [(0.46, 0.0)], 0.16), spots("f", [(0.46, 0.0)], 0.07)), wave=0.7),
+    # Torpedine: disco piatto con ocelli azzurri, dà la scossa
+    Species("torpedine", 34, 9.0, {"back": "#6a4a32", "side": "#9a7450", "belly": "#e8dcc8", "fin": "#5a3e2a", "accent": "#3fa8e8", "accent2": "#1c2440", "outline": "#2a1c12"},
+            profile=[(0.0, 0.20, 0.24), (0.14, 0.48, 0.46), (0.44, 0.52, 0.48), (0.70, 0.24, 0.22), (0.88, 0.12, 0.12), (1.0, 0.09, 0.09)],
+            back=0.5, dorsal=(0.74, 0.86, 0.34), anal=None, pectoral=0.0, eye=0.12, eye_size=2,
+            tail="round", tail_len=0.14, tail_h=1.0, pattern=combine(spots("f", [(0.22, -0.3), (0.36, -0.1), (0.5, -0.3)], 0.16), spots("e", [(0.22, -0.3), (0.36, -0.1), (0.5, -0.3)], 0.08)), wave=0.5),
+    # Rana pescatrice: tutta testa, con l'esca luminosa
+    Species("pescatrice", 36, 17.0, {"back": "#3a2e26", "side": "#6a5644", "belly": "#b8a488", "fin": "#2e241e", "fin_dark": "#221a16", "accent": "#241c16", "accent2": "#8a7458", "light": "#b8f4e8", "outline": "#140e0a"},
+            profile=[(0.0, 0.40, 0.44), (0.08, 0.52, 0.50), (0.34, 0.50, 0.46), (0.62, 0.28, 0.26), (0.88, 0.14, 0.14), (1.0, 0.11, 0.11)],
+            dorsal=(0.50, 0.84, 0.24), anal=(0.60, 0.84, 0.18), pectoral=0.34, eye=0.12, eye_size=3, tail="round", tail_len=0.18, tail_h=0.9,
+            pattern=mottled("e", 31, 0.36), extras=lure, wave=0.6),
+    # Pesce sciabola: nastro d'argento dello Stretto
+    Species("sciabola", 72, 6.5, {"back": "#8a98a8", "side": "#d4dce4", "belly": "#f6f8fa", "fin": "#6a7888", "outline": "#2a3440"},
+            profile=[(0.0, 0.08, 0.12), (0.08, 0.44, 0.44), (0.30, 0.50, 0.50), (0.70, 0.40, 0.40), (0.94, 0.16, 0.16), (1.0, 0.08, 0.08)],
+            dorsal=(0.10, 0.96, 0.24), anal=None, pectoral=0.12, eye=0.05, eye_size=2, tail_len=0.06, tail_h=1.2, wave=2.0),
+    # Pesce lanterna: piccolo, scuro, con i punti di luce
+    Species("lanterna", 14, 6.0, {"back": "#1a2440", "side": "#2e3c60", "belly": "#4a5a80", "fin": "#16203a", "accent": "#7af0e0", "outline": "#0a1020"},
+            dorsal=(0.36, 0.60, 0.26), anal=(0.60, 0.82, 0.18), pectoral=0.0, eye=0.16, eye_size=2, tail_len=0.26,
+            pattern=spots("e", [(0.30, 0.55), (0.44, 0.60), (0.58, 0.55), (0.72, 0.45), (0.20, 0.3)], 0.11), wave=1.3),
+    # Pesce vipera: denti lunghi e organi luminosi
+    Species("vipera", 30, 6.5, {"back": "#141826", "side": "#24304a", "belly": "#3a486a", "fin": "#101420", "accent": "#8af0c0", "light": "#e8f4f0", "outline": "#06080e"},
+            profile=[(0.0, 0.30, 0.34), (0.08, 0.50, 0.50), (0.30, 0.46, 0.46), (0.72, 0.30, 0.30), (0.92, 0.14, 0.14), (1.0, 0.09, 0.09)],
+            dorsal=(0.20, 0.30, 0.50), anal=(0.72, 0.86, 0.20), pectoral=0.0, eye=0.06, eye_size=2, tail_len=0.14,
+            pattern=spots("e", [(0.24, 0.6), (0.36, 0.6), (0.48, 0.6), (0.60, 0.6), (0.72, 0.6)], 0.10), extras=fangs, wave=1.6),
+    # Pesce scorpione: righe rosse e bianche, raggi a ventaglio
+    Species("scorpione", 24, 13.0, {"back": "#8a2a26", "side": "#e8d8c8", "belly": "#f6ece0", "fin": "#b84a3a", "accent": "#b03a30", "accent2": "#f0e0d0", "outline": "#3a1210"},
+            profile=[(0.0, 0.18, 0.22), (0.12, 0.46, 0.42), (0.34, 0.52, 0.48), (0.66, 0.36, 0.36), (0.88, 0.16, 0.16), (1.0, 0.12, 0.12)],
+            dorsal=(0.22, 0.80, 0.18), anal=(0.60, 0.82, 0.22), pectoral=0.0, eye=0.13, eye_size=2, tail="round", tail_len=0.22,
+            pattern=bands("e", [0.10, 0.22, 0.34, 0.46, 0.58, 0.70, 0.82, 0.94], 0.045, 1.0), extras=fan_spines, wave=0.6),
+]
+
+
+for _sp in SPECIES:
+    if _sp.sid == "spada":
+        _sp.nose_room = _sp.length * 0.38
 
 
 def build(out_dir: str) -> str:

@@ -47,7 +47,7 @@ final class TouchControls: SKNode {
             switch action {
             case .primary: node = RoundButton(radius: 36, iconName: "icon_harpoon", tint: Theme.ochre)
             case .interact: node = RoundButton(radius: 27, iconName: "icon_hand")
-            case .secondary: node = RoundButton(radius: 25, iconName: "icon_net")
+            case .secondary: node = RoundButton(radius: 25, iconName: "icon_net", tint: Theme.lime)
             case .inventory: node = RoundButton(radius: 21, iconName: "icon_bag")
             case .dash: node = RoundButton(radius: 28, iconName: "icon_dash", tint: Theme.turquoise)
             default: node = RoundButton(radius: 18, iconName: "icon_pause")
@@ -58,10 +58,11 @@ final class TouchControls: SKNode {
         applyLayout()
     }
 
-    func layout(safe: CGRect, pixelScale: CGFloat) {
+    /// - Parameter iconScale: punti per pixel delle icone (vedi `BaseScene.hudIconScale`).
+    func layout(safe: CGRect, iconScale scale: CGFloat) {
         safeRect = safe
         leftZoneMaxX = safe.minX + safe.width * 0.46
-        iconScale = pixelScale * 2
+        iconScale = scale
         applyLayout()
     }
 

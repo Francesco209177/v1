@@ -8,7 +8,8 @@ let pureSources: [String] = [
     "Core/Model",
     "Art/Model",
     "Diving/Model",
-    "Restaurant/Model"
+    "Restaurant/Model",
+    "Story/Model"
 ]
 
 let package = Package(

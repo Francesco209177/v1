@@ -8,6 +8,7 @@ enum OverlayScreen: Equatable {
     case hub
     case menu
     case summary
+    case logbook
 }
 
 /// Stato delle schermate di menu, osservato da SwiftUI.
@@ -50,25 +51,25 @@ enum Palette {
 /// Navigazione dei menu col controller: le voci sono in fila, la levetta sposta la selezione,
 /// il tasto di conferma attiva la voce, il tasto dello scatto torna indietro.
 final class PadFocus: ObservableObject {
+    /// Ordine della voce selezionata.
     @Published var index: Int = 0
     @Published var active: Bool = false
     private var actions: [Int: () -> Void] = [:]
-    private var count: Int = 0
     var onBack: (() -> Void)?
+    /// true mentre una schermata ascolta i tasti per conto suo (rimappatura).
+    var suspended: Bool = false
     private var timer: Timer?
     private var moveLatch: Bool = false
     private var lastHeld: GameButtons = []
 
-    func reset() {
-        actions = [:]
-        count = 0
-        index = 0
-        onBack = nil
-    }
-
     func register(_ order: Int, action: @escaping () -> Void) {
         actions[order] = action
-        if order + 1 > count { count = order + 1 }
+    }
+
+    /// Dimentica le voci con ordine da `order` in su: da chiamare quando cambia il contenuto.
+    func clear(from order: Int) {
+        for key in actions.keys where key >= order { actions[key] = nil }
+        if index >= order { index = 0 }
     }
 
     func start() {
@@ -83,6 +84,16 @@ final class PadFocus: ObservableObject {
         timer = nil
     }
 
+    private func move(_ step: Int) {
+        let orders: [Int] = actions.keys.sorted()
+        if orders.isEmpty { return }
+        guard let position: Int = orders.firstIndex(of: index) else {
+            index = orders[0]
+            return
+        }
+        index = orders[(position + step + orders.count) % orders.count]
+    }
+
     private func poll() {
         guard let pad: ControllerSupport.Reading = ControllerSupport.shared.poll(mapping: SettingsStore.shared.settings.mapping) else {
             if active { active = false }
@@ -90,13 +101,14 @@ final class PadFocus: ObservableObject {
         }
         let pressed: GameButtons = pad.held.subtracting(lastHeld)
         lastHeld = pad.held
+        if suspended { return }
         let axis: Double = abs(pad.move.y) > abs(pad.move.x) ? -pad.move.y : pad.move.x
         if abs(axis) < 0.45 {
             moveLatch = false
-        } else if !moveLatch && count > 0 {
+        } else if !moveLatch {
             moveLatch = true
             if !active { active = true }
-            index = (index + (axis > 0 ? 1 : count - 1)) % count
+            move(axis > 0 ? 1 : -1)
         }
         if pressed.contains(GameButtons.interact) || pressed.contains(GameButtons.primary) {
             if !active {
@@ -207,6 +219,8 @@ struct OverlayRootView: View {
                 MenuPlannerView()
             case .summary:
                 EveningSummaryView()
+            case .logbook:
+                LogbookView(revision: center.revision)
             case .none:
                 EmptyView()
             }

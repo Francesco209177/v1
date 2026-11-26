@@ -68,6 +68,9 @@ final class SmokeRunner {
             state.pantry.add("alga", stars: 0, count: 4)
             state.fishLog["orata"] = FishRecord(caught: 2, bestStars: 3)
             state.fishLog["triglia"] = FishRecord(caught: 4, bestStars: 2)
+            state.fishLog["sardina"] = FishRecord(caught: 9, bestStars: 2)
+            state.quests.progress["ines_ricci"] = QuestProgress(count: 6, done: true)
+            state.quests.progress["bianca_saraghi"] = QuestProgress(count: 1, done: false)
             return state
         }
         func hub(_ phase: DayPhase) -> (CGSize) -> BaseScene {
@@ -99,6 +102,19 @@ final class SmokeRunner {
             Stage(name: "hub_morning", overlay: OverlayScreen.hub, make: hub(DayPhase.morning)),
             Stage(name: "hub_evening", overlay: OverlayScreen.hub, make: hub(DayPhase.evening)),
             Stage(name: "menu", overlay: OverlayScreen.menu, make: hub(DayPhase.evening)),
+            Stage(name: "logbook", overlay: OverlayScreen.logbook, make: hub(DayPhase.morning)),
+            Stage(name: "dive_night", seconds: 6, make: { (size: CGSize) -> BaseScene in
+                var config: DiveScene.Config = DiveScene.Config()
+                config.seed = 7
+                config.night = true
+                config.sky = BackdropPainter.SkyStyle.night
+                config.startDepthMeters = 18
+                config.autopilot = Vec2(0.6, -0.2)
+                config.autoFire = true
+                config.weapon = GameData.shared.upgrades.weapon("rete")
+                config.phaseLabel = "Notte"
+                return DiveScene(size: size, config: config)
+            }),
             Stage(name: "service", seconds: 24, make: service)
         ]
     }

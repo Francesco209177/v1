@@ -160,29 +160,32 @@ final class DiveHUD: SKNode {
         super.init(coder: aDecoder)
     }
 
+    /// - Parameter pixelScale: punti per pixel delle icone e dei testi a pixel (un valore attorno a 1).
     func layout(safe: CGRect, pixelScale: CGFloat) {
         unit = pixelScale
-        let width: CGFloat = 196
-        let height: CGFloat = 70
+        let width: CGFloat = 228
+        let height: CGFloat = 78
         let origin: CGPoint = CGPoint(x: safe.minX, y: safe.maxY - height)
         panel.path = CGPath(roundedRect: CGRect(x: origin.x, y: origin.y, width: width, height: height),
                             cornerWidth: 14, cornerHeight: 14, transform: nil)
-        // Fiato: la barra grande in alto.
-        breathIcon.setScale(pixelScale * 2)
-        breathIcon.position = CGPoint(x: origin.x + 20, y: origin.y + height - 20)
-        breathBar.position = CGPoint(x: origin.x + 38, y: origin.y + height - 20)
-        breathBar.resize(CGSize(width: width - 50, height: 16))
-        // Profondità e zona, sotto.
+        // Riga 1 — Fiato: la barra grande.
+        let row1: CGFloat = origin.y + height - 19
+        breathIcon.setScale(pixelScale * 1.5)
+        breathIcon.position = CGPoint(x: origin.x + 19, y: row1)
+        breathBar.position = CGPoint(x: origin.x + 36, y: row1)
+        breathBar.resize(CGSize(width: width - 48, height: 16))
+        // Riga 2 — profondità a sinistra, carico della sacca a destra.
+        let row2: CGFloat = origin.y + 36
         depthIcon.setScale(pixelScale)
-        depthIcon.position = CGPoint(x: origin.x + 16, y: origin.y + 24)
+        depthIcon.position = CGPoint(x: origin.x + 17, y: row2)
         depthLabel.setScale(pixelScale * 2)
-        depthLabel.position = CGPoint(x: origin.x + 28, y: origin.y + 18)
-        zoneLabel.position = CGPoint(x: origin.x + 12, y: origin.y + 8)
-        // Carico della sacca, a destra della profondità.
+        depthLabel.position = CGPoint(x: origin.x + 30, y: row2 - 7 * pixelScale)
         weightIcon.setScale(pixelScale)
-        weightIcon.position = CGPoint(x: origin.x + 104, y: origin.y + 24)
-        weightLabel.setScale(pixelScale)
-        weightLabel.position = CGPoint(x: origin.x + 116, y: origin.y + 20)
+        weightIcon.position = CGPoint(x: origin.x + 122, y: row2)
+        weightLabel.setScale(pixelScale * 1.5)
+        weightLabel.position = CGPoint(x: origin.x + 134, y: row2 - 5 * pixelScale)
+        // Riga 3 — zona e fase del giorno.
+        zoneLabel.position = CGPoint(x: origin.x + 12, y: origin.y + 12)
 
         banner.position = CGPoint(x: 0, y: safe.maxY - safe.height * 0.26)
         toast.position = CGPoint(x: 0, y: safe.maxY - safe.height * 0.42)
