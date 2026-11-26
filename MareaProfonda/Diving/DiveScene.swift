@@ -29,6 +29,8 @@ final class DiveScene: BaseScene {
         var phaseLabel: String = ""
         /// Se valorizzato l'immersione è uno scontro: si comincia nella sala di questo boss.
         var boss: BossInfo? = nil
+        /// Zone in cui può esserci una maiolica da collezione.
+        var relicZones: [(index: Int, from: Double, to: Double)] = []
     }
 
     private struct Mote {
@@ -132,7 +134,7 @@ final class DiveScene: BaseScene {
             generated = CaveGenerator.generate(seed: config.seed, world: data)
             simulation = DiveSim(map: generated, catalog: GameData.shared.fish, seed: config.seed, night: config.night,
                                  startDepthMeters: config.startDepthMeters, breathMax: testing ? 100_000 : config.breathMax,
-                                 maxSafeDepth: testing ? 640 : config.maxSafeDepth, bagWeight: config.bagWeight)
+                                 maxSafeDepth: testing ? 640 : config.maxSafeDepth, bagWeight: config.bagWeight, relicZones: config.relicZones)
         }
         simulation.usesExternalBrains = true
         simulation.harpoonTuning.damage = config.harpoonDamage
@@ -420,7 +422,12 @@ final class DiveScene: BaseScene {
 
         // Camera: segue con un po' di anticipo nella direzione di nuoto, più eventuale scossa.
         let lead: Vec2 = Vec2(sim.diver.velocity.x * 0.32, -sim.diver.velocity.y * 0.26)
-        let target: Vec2 = clampCamera(diverWorld + lead)
+        var focus: Vec2 = diverWorld + lead
+        if let boss: BossBody = sim.boss, boss.isAlive {
+            // Negli scontri l'inquadratura tiene insieme Tecla e il boss.
+            focus = diverWorld * 0.62 + Vec2(boss.position.x, -boss.position.y) * 0.38 + lead * 0.4
+        }
+        let target: Vec2 = clampCamera(focus)
         cameraPos = Vec2(MathUtil.damp(cameraPos.x, target.x, rate: 5.5, dt: dt), MathUtil.damp(cameraPos.y, target.y, rate: 5.5, dt: dt))
         var shakeX: Double = 0
         var shakeY: Double = 0
@@ -856,6 +863,7 @@ final class DiveScene: BaseScene {
         case .conchiglia: return String(localized: "Conchiglia")
         case .alga: return String(localized: "Lattuga di mare")
         case .campana: return String(localized: "Campana d'aria")
+        case .maiolica: return String(localized: "Maiolica dei Nerei")
         }
     }
 
@@ -935,7 +943,7 @@ final class DiveScene: BaseScene {
         if config.night { dark = max(dark, sim.diver.atSurface ? 0.35 : 0.66) }
         if let boss: BossInfo = config.boss {
             // Negli scontri si deve vedere che cosa succede; solo la Lanterna combatte al buio.
-            dark = boss.kind == BossKind.lanterna ? max(dark, 0.88) : min(dark, 0.45)
+            dark = boss.kind == BossKind.lanterna ? max(dark, 0.88) : min(dark, 0.28)
         }
         ShaderLibrary.setFloat(ShaderLibrary.terrainCaustics, "u_strength", config.night ? 0 : 1)
         FishAgent.darkness = dark

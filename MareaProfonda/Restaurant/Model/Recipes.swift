@@ -34,10 +34,11 @@ struct RecipeBook: Codable, Equatable {
         return recipes.first(where: { $0.id == id })
     }
 
-    func problems(fish: FishCatalog) -> [String] {
+    /// - Parameter crops: ortaggi dell'orto, validi come ingredienti e come condizione di sblocco.
+    func problems(fish: FishCatalog, crops: Set<String> = []) -> [String] {
         var out: [String] = []
         var seen: Set<String> = []
-        let materials: Set<String> = Set(DiveBag.materialWeights.keys)
+        let materials: Set<String> = Set(DiveBag.materialWeights.keys).union(crops)
         for r in recipes {
             if seen.contains(r.id) { out.append("ricetta duplicata: \(r.id)") }
             seen.insert(r.id)
@@ -56,6 +57,9 @@ struct RecipeBook: Codable, Equatable {
                 if r.unlock.hasPrefix("catch:") {
                     let species: String = String(r.unlock.dropFirst("catch:".count))
                     if fish.find(species) == nil { out.append("\(r.id): sblocco con specie sconosciuta '\(species)'") }
+                } else if r.unlock.hasPrefix("crop:") {
+                    let crop: String = String(r.unlock.dropFirst("crop:".count))
+                    if !crops.contains(crop) { out.append("\(r.id): sblocco con ortaggio sconosciuto '\(crop)'") }
                 } else {
                     out.append("\(r.id): regola di sblocco non valida '\(r.unlock)'")
                 }
@@ -141,6 +145,25 @@ struct Balance: Codable, Equatable {
         if ranks.first?.fame != 0 { out.append("il primo gradino deve partire da fama 0") }
         if service.duration < 20 { out.append("servizio troppo corto") }
         return out
+    }
+}
+
+/// Livelli delle ricette: affinarne una costa oro e la fa pagare di più (vedi `recipeLevelBonus`).
+enum RecipeLevels {
+    static let maxLevel: Int = 5
+
+    /// Costo per passare al livello successivo, o nil se è già al massimo.
+    static func cost(_ recipe: Recipe, level: Int) -> Int? {
+        if level < 1 || level >= maxLevel { return nil }
+        return recipe.price * recipe.portions * (level + 1)
+    }
+
+    /// Porta la ricetta al livello successivo pagando il costo. Ritorna false se non si può.
+    static func upgrade(_ recipe: Recipe, state: inout GameState) -> Bool {
+        guard let level: Int = state.recipes[recipe.id], let price: Int = cost(recipe, level: level), state.gold >= price else { return false }
+        state.gold -= price
+        state.recipes[recipe.id] = level + 1
+        return true
     }
 }
 

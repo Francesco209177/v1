@@ -76,7 +76,8 @@ final class RestaurantTests: XCTestCase {
     func testDataFilesAreValid() throws {
         let b: Balance = try balance()
         XCTAssertTrue(b.problems().isEmpty, b.problems().joined(separator: "\n"))
-        let problems: [String] = try book().problems(fish: try fish())
+        let village: VillageBook = try DataFiles.load(VillageBook.self, file: "village.json", in: TestSupport.dataDirectory)
+        let problems: [String] = try book().problems(fish: try fish(), crops: village.cropIds)
         XCTAssertTrue(problems.isEmpty, problems.joined(separator: "\n"))
         XCTAssertEqual(b.rankIndex(fame: 0), 0)
         XCTAssertEqual(b.rankIndex(fame: 120), 2)

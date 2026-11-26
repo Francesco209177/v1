@@ -168,6 +168,36 @@ final class SmokeRunner {
         for info in GameData.shared.bosses.bosses {
             stages.append(Stage(name: "boss_\(info.id)", seconds: 9, make: boss(info.id)))
         }
+        // Il paese: la schermata con personale, orto e collezione, e i tre giochi del bar che si giocano da soli.
+        stages.append(Stage(name: "paese", overlay: OverlayScreen.village, make: { (size: CGSize) -> BaseScene in
+            var state: GameState = GameState()
+            state.seed = 7
+            state.day = 9
+            state.gold = 900
+            state.fame = 150
+            state.flags["beat_c1_baronessa"] = true
+            state.village.staff = ["nunzia"]
+            state.village.plots = [PlotState(crop: "pomodoro", plantedDay: 5), PlotState()]
+            state.village.traps = [TrapState(zone: 0)]
+            state.village.collection = ["tile_1", "tile_4", "card_1"]
+            GameSession.shared.startEphemeral(state)
+            return HubScene(size: size, phase: DayPhase.morning)
+        }))
+        stages.append(Stage(name: "bar_bocce", seconds: 9, make: { (size: CGSize) -> BaseScene in
+            let scene: BocceScene = BocceScene(size: size, seed: 7)
+            scene.autoplay = true
+            return scene
+        }))
+        stages.append(Stage(name: "bar_cabinato", seconds: 7, make: { (size: CGSize) -> BaseScene in
+            let scene: ArcadeScene = ArcadeScene(size: size, seed: 7)
+            scene.autoplay = true
+            return scene
+        }))
+        stages.append(Stage(name: "bar_sfida", seconds: 8, make: { (size: CGSize) -> BaseScene in
+            let scene: RhythmScene = RhythmScene(size: size, seed: 7)
+            scene.autoplay = true
+            return scene
+        }))
         return stages
     }
 

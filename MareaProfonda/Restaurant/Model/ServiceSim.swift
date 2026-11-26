@@ -14,6 +14,17 @@ struct ServiceSetup {
     var carryCapacity: Int = 1
     /// 1 = Nonna Ines da sola; più alto con gli aiuti in cucina.
     var cookSpeed: Double = 1
+    // Personale: dopo quanti secondi d'attesa interviene (nil = non c'è).
+    /// La cameriera prende le ordinazioni.
+    var autoOrderAfter: Double? = nil
+    /// Lo sguattero sparecchia.
+    var autoCleanAfter: Double? = nil
+    /// Il cantiniere porta il vino.
+    var autoWineAfter: Double? = nil
+    /// Figure del personale da mostrare in sala.
+    var staffSprites: [String] = []
+    /// Moltiplicatore degli arrivi (sotto 1 = più clienti), per le serate di festa.
+    var arrivalFactor: Double = 1
 }
 
 enum CustomerPhase: Equatable {
@@ -39,12 +50,16 @@ struct Customer: Equatable {
     var wantsWine: Bool
     var wineServed: Bool
     let isVIP: Bool
+    /// Da quanto aspetta il vino (per il cantiniere).
+    var wineWait: Double = 0
 }
 
 struct TableState: Equatable {
     let x: Double
     var customer: Int?
     var dirty: Bool
+    /// Da quanto è da sparecchiare (per lo sguattero).
+    var dirtyFor: Double = 0
 }
 
 enum Carried: Equatable {
@@ -75,6 +90,8 @@ enum ServiceEvent: Equatable {
     case comboLost
     case vipDelighted
     case closed
+    /// Il personale ha fatto qualcosa al posto di Tecla.
+    case staffHelped(table: Int)
 }
 
 struct ServiceInput {
@@ -276,6 +293,7 @@ struct ServiceSim {
 
         stepKitchen(dt: dt, events: &events)
         stepCustomers(dt: dt, events: &events)
+        stepStaff(dt: dt, events: &events)
         stepArrivals(dt: dt, events: &events)
 
         if combo > 0 {
@@ -331,20 +349,7 @@ struct ServiceSim {
             events.append(ServiceEvent.pourStarted)
         case (.takeOrder, .table(let index)):
             guard let id: Int = tables[index].customer, let ci: Int = customerIndex(id: id) else { return }
-            if let dish: String = chooseDish(for: customers[ci]) {
-                portions[dish, default: 0] -= 1
-                customers[ci].dishId = dish
-                customers[ci].phase = CustomerPhase.waitingFood
-                customers[ci].patience = max(customers[ci].patience, 0.75)
-                let cook: Double = setup.recipes.find(dish)?.cookTime ?? 4
-                tickets.append(KitchenTicket(dishId: dish, customer: id, remaining: cook))
-                events.append(ServiceEvent.orderTaken(table: index, dishId: dish))
-            } else {
-                // Non c'è più niente di ciò che voleva: se ne va senza rancore.
-                customers[ci].phase = CustomerPhase.leavingHappy
-                tables[index].customer = nil
-                events.append(ServiceEvent.leftEmptyHanded(table: index))
-            }
+            placeOrder(customer: ci, table: index, events: &events)
         case (.serveDish, .table(let index)):
             guard let id: Int = tables[index].customer, let ci: Int = customerIndex(id: id), let dish: String = customers[ci].dishId,
                   let held: Int = carrying.firstIndex(of: Carried.dish(dish)) else { return }
@@ -391,6 +396,78 @@ struct ServiceSim {
             cleaningTable = index
         default:
             break
+        }
+    }
+
+    /// Registra l'ordinazione di un cliente e la passa in cucina (lo fa Tecla, o la cameriera).
+    private mutating func placeOrder(customer ci: Int, table index: Int, events: inout [ServiceEvent]) {
+        let id: Int = customers[ci].id
+        if let dish: String = chooseDish(for: customers[ci]) {
+            portions[dish, default: 0] -= 1
+            customers[ci].dishId = dish
+            customers[ci].phase = CustomerPhase.waitingFood
+            customers[ci].patience = max(customers[ci].patience, 0.75)
+            customers[ci].timer = 0
+            let cook: Double = setup.recipes.find(dish)?.cookTime ?? 4
+            tickets.append(KitchenTicket(dishId: dish, customer: id, remaining: cook))
+            events.append(ServiceEvent.orderTaken(table: index, dishId: dish))
+        } else {
+            // Non c'è più niente di ciò che voleva: se ne va senza rancore.
+            customers[ci].phase = CustomerPhase.leavingHappy
+            tables[index].customer = nil
+            events.append(ServiceEvent.leftEmptyHanded(table: index))
+        }
+    }
+
+    /// Il personale assunto fa la sua parte: ordinazioni, vino, tavoli da sparecchiare.
+    private mutating func stepStaff(dt: Double, events: inout [ServiceEvent]) {
+        if let wait: Double = setup.autoOrderAfter {
+            var i: Int = 0
+            while i < customers.count {
+                if customers[i].phase == CustomerPhase.waitingToOrder {
+                    customers[i].timer += dt
+                    if customers[i].timer >= wait {
+                        let table: Int = customers[i].table
+                        placeOrder(customer: i, table: table, events: &events)
+                        events.append(ServiceEvent.staffHelped(table: table))
+                    }
+                }
+                i += 1
+            }
+        }
+        if let wait: Double = setup.autoWineAfter {
+            var i: Int = 0
+            while i < customers.count {
+                let c: Customer = customers[i]
+                if c.wantsWine && !c.wineServed && (c.phase == CustomerPhase.waitingFood || c.phase == CustomerPhase.eating) {
+                    customers[i].wineWait += dt
+                    if customers[i].wineWait >= wait {
+                        customers[i].wineServed = true
+                        customers[i].patience = min(1, customers[i].patience + 0.2)
+                        result.revenue += setup.tuning.winePrice
+                        events.append(ServiceEvent.wineServed(table: c.table, perfect: false, gold: setup.tuning.winePrice))
+                        events.append(ServiceEvent.staffHelped(table: c.table))
+                    }
+                }
+                i += 1
+            }
+        }
+        if let wait: Double = setup.autoCleanAfter {
+            var t: Int = 0
+            while t < tables.count {
+                if tables[t].dirty && !(cleaning > 0 && cleaningTable == t) {
+                    tables[t].dirtyFor += dt
+                    if tables[t].dirtyFor >= wait {
+                        tables[t].dirty = false
+                        tables[t].dirtyFor = 0
+                        events.append(ServiceEvent.tableCleaned(table: t))
+                        events.append(ServiceEvent.staffHelped(table: t))
+                    }
+                } else if !tables[t].dirty {
+                    tables[t].dirtyFor = 0
+                }
+                t += 1
+            }
         }
     }
 
@@ -496,7 +573,7 @@ struct ServiceSim {
         nextId += 1
         customers.append(customer)
         tables[table].customer = customer.id
-        nextArrival = setup.arrivalEvery * rng.range(0.7, 1.3)
+        nextArrival = setup.arrivalEvery * max(setup.arrivalFactor, 0.2) * rng.range(0.7, 1.3)
         events.append(ServiceEvent.customerArrived(table: table))
     }
 }

@@ -59,6 +59,18 @@
     { "id": "involtini_spatola", "name": { "it": "Involtini di spatola" }, "note": { "it": "Il pesce sciabola arrotolato con pane e pecorino." },
       "ingredients": [ { "item": "sciabola", "count": 1 } ], "portions": 3, "price": 46, "taste": 4, "cookTime": 4.5, "plate": "rolls", "unlock": "catch:sciabola" },
     { "id": "frittura_abissale", "name": { "it": "Frittura degli abissi" }, "note": { "it": "Pesci lanterna croccanti: brillano perfino nel piatto." },
-      "ingredients": [ { "item": "lanterna", "count": 4 } ], "portions": 3, "price": 30, "taste": 3, "cookTime": 3.5, "plate": "fried", "unlock": "catch:lanterna" }
+      "ingredients": [ { "item": "lanterna", "count": 4 } ], "portions": 3, "price": 30, "taste": 3, "cookTime": 3.5, "plate": "fried", "unlock": "catch:lanterna" },
+    { "id": "sarago_acquapazza", "name": { "it": "Sarago all'acqua pazza" }, "note": { "it": "Pomodorini, aglio e un mestolo di mare." },
+      "ingredients": [ { "item": "sarago", "count": 1 }, { "item": "pomodoro", "count": 2 }, { "item": "aglio", "count": 1 } ], "portions": 2, "price": 40, "taste": 4, "cookTime": 5.0, "plate": "red", "unlock": "crop:pomodoro" },
+    { "id": "sgombro_limone", "name": { "it": "Sgombro al limone" }, "note": { "it": "Alla griglia, con il limone delle saline." },
+      "ingredients": [ { "item": "sgombro", "count": 2 }, { "item": "limone", "count": 1 } ], "portions": 3, "price": 30, "taste": 3, "cookTime": 4.0, "plate": "grill", "unlock": "crop:limone" },
+    { "id": "tonno_pantesca", "name": { "it": "Tonno alla pantesca" }, "note": { "it": "Capperi, pomodoro, e nient'altro." },
+      "ingredients": [ { "item": "tonno", "count": 1 }, { "item": "capperi", "count": 2 }, { "item": "pomodoro", "count": 1 } ], "portions": 5, "price": 96, "taste": 5, "cookTime": 6.5, "plate": "red", "unlock": "crop:capperi" },
+    { "id": "dentice_basilico", "name": { "it": "Dentice al basilico" }, "note": { "it": "Il basilico va messo alla fine, a fuoco spento." },
+      "ingredients": [ { "item": "dentice", "count": 1 }, { "item": "basilico", "count": 2 } ], "portions": 3, "price": 74, "taste": 4, "cookTime": 5.5, "plate": "whole", "unlock": "crop:basilico" },
+    { "id": "seppie_umido", "name": { "it": "Seppie in umido" }, "note": { "it": "Pomodoro e aglio: si cuoce piano e non si guarda l'orologio." },
+      "ingredients": [ { "item": "seppia", "count": 2 }, { "item": "pomodoro", "count": 2 }, { "item": "aglio", "count": 1 } ], "portions": 4, "price": 46, "taste": 4, "cookTime": 6.0, "plate": "soup", "unlock": "crop:aglio" },
+    { "id": "aragosta_catalana", "name": { "it": "Aragosta alla catalana" }, "note": { "it": "Pomodoro e limone, fredda. Il piatto della domenica." },
+      "ingredients": [ { "item": "aragosta", "count": 1 }, { "item": "pomodoro", "count": 1 }, { "item": "limone", "count": 1 } ], "portions": 2, "price": 120, "taste": 5, "cookTime": 6.0, "plate": "salad", "unlock": "crop:limone" }
   ]
 }

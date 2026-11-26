@@ -74,12 +74,36 @@ final class SceneRouter {
             return
         }
         OverlayCenter.shared.show(nil)
-        let scene: RestaurantScene = RestaurantScene(size: view.bounds.size, config: RestaurantScene.Config(setup: setup))
+        var config: RestaurantScene.Config = RestaurantScene.Config(setup: setup)
+        // Alla sera del critico l'ospite speciale è l'ispettore della Guida.
+        if GameSession.shared.todayEvent?.kind == DayEventKind.critico { config.vipSprite = "critico" }
+        let scene: RestaurantScene = RestaurantScene(size: view.bounds.size, config: config)
         scene.onFinished = { (result: ServiceResult) -> Void in
             GameSession.shared.finishService(result)
             OverlayCenter.shared.show(OverlayScreen.summary)
         }
         present(scene, animated: true)
+    }
+
+    // MARK: Giochi del bar
+
+    /// Una mano di bocce: la scommessa si paga all'inizio.
+    func startBocce() {
+        guard let view: SKView = view, GameSession.shared.pay(BocceScene.bet) else { return }
+        OverlayCenter.shared.show(nil)
+        present(BocceScene(size: view.bounds.size, seed: UInt64(Date().timeIntervalSince1970)), animated: true)
+    }
+
+    func startArcade() {
+        guard let view: SKView = view, GameSession.shared.pay(ArcadeScene.coin) else { return }
+        OverlayCenter.shared.show(nil)
+        present(ArcadeScene(size: view.bounds.size, seed: UInt64(Date().timeIntervalSince1970)), animated: true)
+    }
+
+    func startDuel() {
+        guard let view: SKView = view, GameSession.shared.duelAvailable, let state: GameState = GameSession.shared.state else { return }
+        OverlayCenter.shared.show(nil)
+        present(RhythmScene(size: view.bounds.size, seed: SeededRNG.combine([state.seed, UInt64(max(state.day, 0))])), animated: true)
     }
 
     /// - Parameter then: chiamata quando la scena nuova è visibile (per mostrare un menu sopra).

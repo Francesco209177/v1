@@ -1,0 +1,43 @@
+{
+  "staff": [
+    {"id": "nunzia", "name": {"it": "Nunzia"}, "role": {"it": "Cameriera"}, "note": {"it": "Figlia del fornaio, memoria di ferro: se un cliente aspetta troppo, l'ordinazione la prende lei."}, "effect": "order", "value": 4.0, "hire": 180, "wage": 16, "minFame": 40, "sprite": "cust4"},
+    {"id": "tano", "name": {"it": "Tano"}, "role": {"it": "Sguattero"}, "note": {"it": "Parla poco e sparecchia in fretta: i tavoli sporchi non restano tali a lungo."}, "effect": "clean", "value": 3.0, "hire": 120, "wage": 12, "minFame": 40, "sprite": "cust5"},
+    {"id": "rosalia", "name": {"it": "Rosalia"}, "role": {"it": "Aiuto cuoca"}, "note": {"it": "L'unica a cui Nonna Ines lasci toccare un coltello. I piatti escono prima."}, "effect": "cook", "value": 1.4, "hire": 340, "wage": 26, "minFame": 110, "sprite": "cust1"},
+    {"id": "bastiano", "name": {"it": "Bastiano"}, "role": {"it": "Cantiniere"}, "note": {"it": "Conosce la botte come le sue tasche: porta lui il vino a chi lo chiede. Mai colmo come il tuo, però."}, "effect": "wine", "value": 5.0, "hire": 260, "wage": 20, "minFame": 110, "sprite": "cust7"}
+  ],
+  "crops": [
+    {"id": "pomodoro", "name": {"it": "Pomodori"}, "note": {"it": "Di Saverio, piccoli e dolci. Tre giorni di sole."}, "days": 3, "seedCost": 8, "yield": 4},
+    {"id": "basilico", "name": {"it": "Basilico"}, "note": {"it": "Cresce in fretta, profuma tutta la cucina."}, "days": 2, "seedCost": 5, "yield": 3},
+    {"id": "limone", "name": {"it": "Limoni"}, "note": {"it": "L'albero è lento, ma un limone sistema qualunque pesce."}, "days": 5, "seedCost": 14, "yield": 5},
+    {"id": "capperi", "name": {"it": "Capperi"}, "note": {"it": "Spuntano dai muretti delle saline. Vanno colti a uno a uno."}, "days": 4, "seedCost": 10, "yield": 4},
+    {"id": "aglio", "name": {"it": "Aglio"}, "note": {"it": "Nonna Ines lo appende ovunque: contro il malocchio, dice."}, "days": 3, "seedCost": 6, "yield": 4}
+  ],
+  "collectibles": [
+    {"id": "tile_1", "kind": "maiolica", "name": {"it": "L'onda nel cerchio"}, "note": {"it": "Il segno dei Nerei: un'onda chiusa in un cerchio. È lo stesso del ciondolo di Nonna Ines."}, "zone": 0},
+    {"id": "tile_2", "kind": "maiolica", "name": {"it": "Il pesce con due code"}, "note": {"it": "Un pesce che nuota in due direzioni. Per i Nerei, la marea."}, "zone": 0},
+    {"id": "tile_3", "kind": "maiolica", "name": {"it": "La gorgonia"}, "note": {"it": "Un ventaglio rosso su fondo bianco. Qualcuno, tremila anni fa, è sceso fin qui a guardarla."}, "zone": 1},
+    {"id": "tile_4", "kind": "maiolica", "name": {"it": "Il polpo che conta"}, "note": {"it": "Otto braccia, otto numeri. Forse un abaco, forse uno scherzo."}, "zone": 1},
+    {"id": "tile_5", "kind": "maiolica", "name": {"it": "La barca senza remi"}, "note": {"it": "Una barca vista da sotto. Chi l'ha dipinta la guardava dal fondo."}, "zone": 2},
+    {"id": "tile_6", "kind": "maiolica", "name": {"it": "La spada"}, "note": {"it": "Un pesce spada in posa da duello. La leggenda dello Spadaccino è più vecchia di quanto si creda."}, "zone": 2},
+    {"id": "tile_7", "kind": "maiolica", "name": {"it": "La piazza"}, "note": {"it": "Una pianta della città: sette strade che scendono verso un centro vuoto."}, "zone": 3},
+    {"id": "tile_8", "kind": "maiolica", "name": {"it": "La cuoca"}, "note": {"it": "Una donna davanti a un fuoco, con un mestolo in mano e un'onda al collo."}, "zone": 3},
+    {"id": "tile_9", "kind": "maiolica", "name": {"it": "Il monte che respira"}, "note": {"it": "Un vulcano con una bocca e due narici. Dalle narici esce vapore."}, "zone": 4},
+    {"id": "tile_10", "kind": "maiolica", "name": {"it": "La ruota"}, "note": {"it": "Una ruota di bronzo con sette raggi. Sotto, una mano che la gira."}, "zone": 4},
+    {"id": "tile_11", "kind": "maiolica", "name": {"it": "La luce nel buio"}, "note": {"it": "Un punto giallo su fondo nero, e intorno al punto tanti denti."}, "zone": 5},
+    {"id": "tile_12", "kind": "maiolica", "name": {"it": "Quanto basta"}, "note": {"it": "L'ultima maiolica: un cucchiaio vuoto. Nessun numero, nessuna misura."}, "zone": 5},
+    {"id": "card_1", "kind": "cartolina", "name": {"it": "Saluti da Pietrasale"}, "note": {"it": "Il porto, l'osteria, il gozzo. «Qui si mangia bene», dice il timbro."}, "rule": "fame:40"},
+    {"id": "card_2", "kind": "cartolina", "name": {"it": "La Leggenda del Tirreno"}, "note": {"it": "L'osteria di Nonna Ines sulla copertina della Guida."}, "rule": "fame:650"},
+    {"id": "card_3", "kind": "cartolina", "name": {"it": "La Parete Blu"}, "note": {"it": "Duecento metri di blu, e in mezzo una figurina con le pinne gialle."}, "rule": "depth:200"},
+    {"id": "card_4", "kind": "cartolina", "name": {"it": "In fondo al Calderone"}, "note": {"it": "Nessuno era mai sceso tanto. La cartolina l'ha disegnata Bianca."}, "rule": "depth:560"},
+    {"id": "card_5", "kind": "cartolina", "name": {"it": "Il Quaderno del Mare"}, "note": {"it": "Venti specie, una per pagina. La maestra non ha avuto nulla da ridire."}, "rule": "species:20"},
+    {"id": "card_6", "kind": "cartolina", "name": {"it": "Cento pesci"}, "note": {"it": "La foto di gruppo della dispensa, prima che Nonna Ines la svuotasse."}, "rule": "caught:100"},
+    {"id": "card_7", "kind": "cartolina", "name": {"it": "Il ricettario"}, "note": {"it": "Venti ricette, cioè venti modi di far tacere un cliente."}, "rule": "recipes:20"},
+    {"id": "card_8", "kind": "cartolina", "name": {"it": "Ritratti dal fondo"}, "note": {"it": "Tartaruga, cavalluccio e pesce luna: tre che si guardano e non si toccano."}, "rule": "photos:3"},
+    {"id": "card_9", "kind": "cartolina", "name": {"it": "Sei a zero"}, "note": {"it": "Baronessa, Corazzata, Spadaccino, Eccellenza, Lanterna, Talpa. E Tecla, in mezzo."}, "rule": "bosses:6"},
+    {"id": "card_10", "kind": "cartolina", "name": {"it": "Conti in ordine"}, "note": {"it": "Cinquemila monete d'incasso. Il fornaio saluta di nuovo."}, "rule": "earned:5000"}
+  ],
+  "plotCosts": [90, 180, 360, 700],
+  "penCosts": [250, 600],
+  "trapCosts": [120, 260, 500, 900],
+  "blueFish": ["sardina", "sgombro", "palamita", "lampuga", "tonno", "spada"]
+}

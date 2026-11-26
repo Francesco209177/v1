@@ -9,6 +9,7 @@ enum OverlayScreen: Equatable {
     case menu
     case summary
     case logbook
+    case village
 }
 
 /// Stato delle schermate di menu, osservato da SwiftUI.
@@ -221,6 +222,8 @@ struct OverlayRootView: View {
                 EveningSummaryView()
             case .logbook:
                 LogbookView(revision: center.revision)
+            case .village:
+                VillageView(revision: center.revision)
             case .none:
                 EmptyView()
             }

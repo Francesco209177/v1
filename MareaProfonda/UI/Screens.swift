@@ -68,6 +68,7 @@ func phaseName(_ phase: DayPhase) -> String {
 func itemName(_ id: String) -> String {
     if let species: FishSpecies = GameData.shared.fish.find(id) { return species.name.text() }
     if let kind: PickupPoint.Kind = PickupPoint.Kind(rawValue: id) { return DiveScene.pickupName(kind) }
+    if let crop: CropInfo = GameData.shared.village.crop(id) { return crop.name.text() }
     return id
 }
 
@@ -200,6 +201,7 @@ struct HubPanelView: View {
         return VStack(spacing: 10) {
             HubStatusBar(state: state)
             Spacer(minLength: 0)
+            NewsBanner(state: state)
             ObjectiveBanner(state: state, focus: focus)
             if !session.justCompleted.isEmpty {
                 QuestBanner(questIds: session.justCompleted)
@@ -283,11 +285,16 @@ struct HubActions: View {
                     SceneRouter.shared.showHub()
                 }
             }
-            MenuButton(title: String(localized: "Giornale di bordo"), subtitle: String(localized: "Missioni, cantiere, ricette"), fill: Palette.turquoise.opacity(0.85), order: 2, focus: focus) {
+            MenuButton(title: String(localized: "Giornale"), subtitle: String(localized: "Missioni, cantiere"), fill: Palette.turquoise.opacity(0.85), order: 2, focus: focus) {
                 GameSession.shared.clearAnnouncements()
                 OverlayCenter.shared.show(OverlayScreen.logbook)
             }
-            .frame(maxWidth: 190)
+            .frame(maxWidth: 150)
+            MenuButton(title: String(localized: "Paese"), subtitle: String(localized: "Orto, nasse, bar"), fill: Palette.ochre.opacity(0.9), order: 5, focus: focus) {
+                GameSession.shared.clearAnnouncements()
+                OverlayCenter.shared.show(OverlayScreen.village)
+            }
+            .frame(maxWidth: 140)
             MenuButton(title: String(localized: "Esci"), subtitle: String(localized: "La partita è salvata"), fill: Palette.ink.opacity(0.8), textColor: Palette.lime, order: 3, focus: focus) {
                 GameSession.shared.close()
                 SceneRouter.shared.showTitle(animated: true)
@@ -537,8 +544,11 @@ struct EveningSummaryView: View {
                 SummaryLine(label: String(localized: "Clienti serviti"), value: "\(result.served)")
                 SummaryLine(label: String(localized: "Clienti persi"), value: "\(result.lost)")
                 SummaryLine(label: String(localized: "Serie migliore"), value: "×\(result.bestCombo)")
+                if session.lastWages > 0 {
+                    SummaryLine(label: String(localized: "Paghe del personale"), value: "−\(session.lastWages) oro")
+                }
                 Divider()
-                SummaryLine(label: String(localized: "Incasso"), value: "+\(result.total) oro", strong: true)
+                SummaryLine(label: String(localized: "Incasso"), value: "+\(result.total - session.lastWages) oro", strong: true)
                 SummaryLine(label: String(localized: "Fama"), value: "+\(result.fame)", strong: true)
                 if after > before {
                     Text("L'osteria sale di rango: \(rankName)!")

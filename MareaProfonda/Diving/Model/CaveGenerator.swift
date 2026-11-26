@@ -112,7 +112,8 @@ enum CaveGenerator {
         let cols: Int = map.cols
         let ts: Double = Double(map.tileSize)
         let halfW: Int = min(22, cols / 2 - 4)
-        let halfH: Int = 9
+        // Alta quanto lo schermo: così il boss resta sempre in vista, e si scorre solo in orizzontale.
+        let halfH: Int = 7
         let centerRow: Int = MathUtil.clampInt(Int(boss.depth), halfH + 12, map.rows - halfH - 14)
         let c0: Int = cols / 2 - halfW
         let c1: Int = cols / 2 + halfW
@@ -159,17 +160,17 @@ enum CaveGenerator {
         switch boss.kind {
         case .murena:
             // Lo scafo del relitto delle anfore, adagiato sul fondo.
-            block(mid - 7, r1 - 3, width: 14, height: 3)
-            block(mid - 4, r1 - 5, width: 8, height: 2)
+            block(mid - 7, r1 - 2, width: 14, height: 2)
+            block(mid - 4, r1 - 4, width: 8, height: 2)
         case .spada:
             // Due scogli e una stalattite: è qui che la spada si pianta.
-            block(mid - 12, r1 - 7, width: 2, height: 7)
-            block(mid + 10, r1 - 7, width: 2, height: 7)
-            block(mid - 1, r0, width: 2, height: 5)
+            block(mid - 12, r1 - 5, width: 2, height: 5)
+            block(mid + 10, r1 - 5, width: 2, height: 5)
+            block(mid - 1, r0, width: 2, height: 4)
         case .lanterna:
-            block(mid - 14, r1 - 5, width: 2, height: 5)
-            block(mid + 1, r1 - 4, width: 2, height: 4)
-            block(mid + 13, r1 - 6, width: 2, height: 6)
+            block(mid - 14, r1 - 4, width: 2, height: 4)
+            block(mid + 1, r1 - 3, width: 2, height: 3)
+            block(mid + 13, r1 - 5, width: 2, height: 5)
         case .granseola, .polpo, .talpa:
             break
         }
@@ -190,16 +191,16 @@ enum CaveGenerator {
             arena.bossStart = map.nearestOpenPoint(to: Vec2(arena.maxX - 110, center.y), clearance: boss.radius)
         }
         // Campane d'aria in alto, ai due lati.
-        arena.bells = [Vec2(arena.minX + 46, arena.minY + 40), Vec2(arena.maxX - 46, arena.minY + 40)]
+        arena.bells = [Vec2(arena.minX + 46, arena.minY + 34), Vec2(arena.maxX - 46, arena.minY + 34)]
 
         if boss.kind == BossKind.murena {
             // Tane: sulle pareti, sul soffitto e sul relitto. Ognuna sta sul bordo della roccia.
             let seeds: [(Vec2, Vec2)] = [
-                (Vec2(arena.minX, center.y - 34), Vec2(1, 0)),
-                (Vec2(arena.maxX, center.y + 26), Vec2(-1, 0)),
+                (Vec2(arena.minX, center.y - 26), Vec2(1, 0)),
+                (Vec2(arena.maxX, center.y + 18), Vec2(-1, 0)),
                 (Vec2(center.x - 120, arena.minY), Vec2(0, 1)),
                 (Vec2(center.x + 130, arena.minY), Vec2(0, 1)),
-                (Vec2(center.x, Double(r1 - 5) * ts), Vec2(0, -1))
+                (Vec2(center.x, Double(r1 - 4) * ts), Vec2(0, -1))
             ]
             for (start, normal) in seeds {
                 var p: Vec2 = start + normal * 30

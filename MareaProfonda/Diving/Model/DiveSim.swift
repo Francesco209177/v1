@@ -17,6 +17,8 @@ struct DiveBag: Codable, Equatable {
     var materials: [String: Int] = [:]
     /// Specie protette fotografate in questa immersione.
     var photos: [String] = []
+    /// Maioliche dei Nerei raccolte: per ognuna, l'indice della zona in cui era.
+    var relics: [Int] = []
     var maxWeight: Double = 10
 
     static let materialWeights: [String: Double] = ["riccio": 0.3, "conchiglia": 0.2, "alga": 0.1]
@@ -37,7 +39,7 @@ struct DiveBag: Codable, Equatable {
         return max(0.4, 1 - (ratio - 1) * 1.5)
     }
 
-    var isEmpty: Bool { return fish.isEmpty && materials.isEmpty && photos.isEmpty }
+    var isEmpty: Bool { return fish.isEmpty && materials.isEmpty && photos.isEmpty && relics.isEmpty }
 }
 
 // MARK: - Punti di comparsa e oggetti da raccogliere
@@ -58,6 +60,8 @@ struct PickupPoint: Equatable {
         case alga
         /// Campana d'aria: riempie il Fiato una volta per immersione.
         case campana
+        /// Maiolica dei Nerei: un pezzo da collezione, non pesa e non si cucina.
+        case maiolica
     }
 
     let kind: Kind
@@ -67,7 +71,9 @@ struct PickupPoint: Equatable {
 
 /// Distribuisce pesci e oggetti nella mappa in modo deterministico dal seme.
 enum SpawnPlanner {
-    static func plan(map: CaveMap, catalog: FishCatalog, seed: UInt64, night: Bool, maxDepthMeters: Double) -> (spawns: [SpawnPoint], pickups: [PickupPoint]) {
+    /// - Parameter relicZones: zone (per indice e intervallo di profondità) in cui può esserci una maiolica.
+    static func plan(map: CaveMap, catalog: FishCatalog, seed: UInt64, night: Bool, maxDepthMeters: Double,
+                     relicZones: [(index: Int, from: Double, to: Double)] = []) -> (spawns: [SpawnPoint], pickups: [PickupPoint]) {
         var rng: SeededRNG = SeededRNG(seed: seed &+ 9001)
         var spawns: [SpawnPoint] = []
         var pickups: [PickupPoint] = []
@@ -126,6 +132,19 @@ enum SpawnPlanner {
                 column += 4
             }
             depth += 4
+        }
+
+        // Maioliche: al più una per zona, posata sul fondo in un punto che dipende dalla mappa del giorno.
+        for zone in relicZones where zone.from < limit && rng.chance(0.6) {
+            var attempt: Int = 0
+            while attempt < 30 {
+                attempt += 1
+                let candidate: Vec2 = Vec2(rng.range(6, Double(map.cols) - 6) * ts, rng.range(max(zone.from, 8), min(zone.to, limit)) * ts)
+                if map.isOpen(candidate, clearance: 6), let floor: Double = floorBelow(map, candidate, maxDrop: 120) {
+                    pickups.append(PickupPoint(kind: PickupPoint.Kind.maiolica, position: Vec2(candidate.x, floor - 3)))
+                    break
+                }
+            }
         }
 
         // Campane d'aria: una per ogni corda di risalita sotto la superficie.
@@ -324,6 +343,7 @@ struct DiveSim {
     private var nextHazardId: Int = 1
     private var bellClocks: [Double] = []
     static let bellRefill: Double = 20
+    private var relicZones: [(index: Int, from: Double, to: Double)] = []
 
     private var rng: SeededRNG
     private var nextId: Int = 1
@@ -336,11 +356,14 @@ struct DiveSim {
     static let diverHitRadius: Double = 6.5
 
     init(map: CaveMap, catalog: FishCatalog, seed: UInt64, night: Bool, startDepthMeters: Double,
-         breathMax: Double = 120, maxSafeDepth: Double = 110, bagWeight: Double = 10) {
+         breathMax: Double = 120, maxSafeDepth: Double = 110, bagWeight: Double = 10,
+         relicZones: [(index: Int, from: Double, to: Double)] = []) {
         self.map = map
         self.catalog = catalog
         self.night = night
-        let plan: (spawns: [SpawnPoint], pickups: [PickupPoint]) = SpawnPlanner.plan(map: map, catalog: catalog, seed: seed, night: night, maxDepthMeters: maxSafeDepth + 12)
+        self.relicZones = relicZones
+        let plan: (spawns: [SpawnPoint], pickups: [PickupPoint]) = SpawnPlanner.plan(map: map, catalog: catalog, seed: seed, night: night,
+                                                                                    maxDepthMeters: maxSafeDepth + 12, relicZones: relicZones)
         spawns = plan.spawns
         pickups = plan.pickups
         boat = map.channelPoint(depthMeters: 0)
@@ -536,7 +559,8 @@ struct DiveSim {
         // Fiato: in superficie si riprende, sott'acqua cala più in fretta scendendo.
         if arena != nil {
             // Nelle sale dei boss si resta in fondo: il Fiato cala piano e si riprende alle campane.
-            breath -= 0.8 * dt
+            // A boss abbattuto la vittoria è al sicuro: il Fiato non cala più.
+            if boss?.isAlive ?? true { breath -= 0.8 * dt }
         } else if diver.atSurface {
             breath = min(breathMax, breath + 45 * dt)
             lowBreathWarned = false
@@ -594,7 +618,14 @@ struct DiveSim {
             switch what {
             case .pickup(let index):
                 pickups[index].taken = true
-                bag.materials[pickups[index].kind.rawValue, default: 0] += 1
+                if pickups[index].kind == PickupPoint.Kind.maiolica {
+                    // Si annota la zona in cui era: decide quale maiolica della collezione è.
+                    let depth: Double = pickups[index].position.y / Double(map.tileSize)
+                    let zone: Int = relicZones.first(where: { depth >= $0.from && depth <= $0.to + 8 })?.index ?? 0
+                    bag.relics.append(zone)
+                } else {
+                    bag.materials[pickups[index].kind.rawValue, default: 0] += 1
+                }
                 events.append(DiveEvent.pickedUp(kind: pickups[index].kind, at: pickups[index].position))
             case .bell(let index):
                 pickups[index].taken = true
@@ -977,6 +1008,7 @@ struct DiveSim {
 
     private mutating func hurtDiver(damage: Double, from point: Vec2, events: inout [DiveEvent]) {
         if invulnerable > 0 { return }
+        if let b: BossBody = boss, !b.isAlive { return }
         breath -= damage
         invulnerable = 1.0
         let away: Vec2 = diver.position - point

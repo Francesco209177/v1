@@ -14,6 +14,7 @@ final class GameData {
     let story: StoryBook
     let cutscenes: CutsceneBook
     let bosses: BossBook
+    let village: VillageBook
     private(set) var problems: [String] = []
 
     private init() {
@@ -40,6 +41,7 @@ final class GameData {
         let loadedStory: StoryBook? = load(StoryBook.self, "story.json")
         let loadedScenes: CutsceneBook? = load(CutsceneBook.self, "cutscenes.json")
         let loadedBosses: BossBook? = load(BossBook.self, "bosses.json")
+        let loadedVillage: VillageBook? = load(VillageBook.self, "village.json")
 
         world = loadedWorld ?? GameData.fallbackWorld
         fish = loadedFish ?? FishCatalog(species: [])
@@ -50,13 +52,15 @@ final class GameData {
         story = loadedStory ?? StoryBook(chapters: [], cast: [], beats: [])
         cutscenes = loadedScenes ?? CutsceneBook(scenes: [])
         bosses = loadedBosses ?? BossBook(bosses: [])
+        village = loadedVillage ?? VillageBook.empty
+        notes.append(contentsOf: village.problems(fish: fish, world: world))
         notes.append(contentsOf: bosses.problems(world: world))
         notes.append(contentsOf: story.problems(scenes: cutscenes, bosses: bosses, fish: fish, recipes: recipes, upgrades: upgrades))
         notes.append(contentsOf: upgrades.problems())
         notes.append(contentsOf: quests.problems(fish: fish, recipes: recipes, upgrades: upgrades))
         notes.append(contentsOf: world.problems())
         notes.append(contentsOf: fish.problems())
-        notes.append(contentsOf: recipes.problems(fish: fish))
+        notes.append(contentsOf: recipes.problems(fish: fish, crops: village.cropIds))
         notes.append(contentsOf: balance.problems())
         problems = notes
     }
@@ -118,6 +122,10 @@ final class GameSession {
     private(set) var lastFameBefore: Int = 0
     /// Missioni completate da poco, da annunciare al porto.
     private(set) var justCompleted: [String] = []
+    /// Maioliche e cartoline appena entrate in collezione, da annunciare al porto.
+    private(set) var newCollectibles: [String] = []
+    /// Paghe del personale versate dopo l'ultimo servizio.
+    private(set) var lastWages: Int = 0
 
     private init() {
         let base: URL = FileManager.default.urls(for: FileManager.SearchPathDirectory.applicationSupportDirectory,
@@ -228,6 +236,15 @@ final class GameSession {
         save()
     }
 
+    /// Affina una ricetta conosciuta: sale di livello e si vende a un prezzo più alto.
+    func upgradeRecipe(_ id: String) -> Bool {
+        guard var s: GameState = state, let recipe: Recipe = GameData.shared.recipes.find(id) else { return false }
+        if !RecipeLevels.upgrade(recipe, state: &s) { return false }
+        state = s
+        save()
+        return true
+    }
+
     // MARK: Missioni
 
     /// Tutte le missioni che contano oggi: quelle dei personaggi più le due commissioni del giorno.
@@ -272,6 +289,7 @@ final class GameSession {
         StoryEngine.sceneShown(state: &s, book: GameData.shared.story)
         // Le ricompense della storia possono far scattare altre missioni (fama).
         record([QuestEvent.fame(s.fame)], into: &s)
+        awardPostcards(&s)
         state = s
         save()
     }
@@ -301,6 +319,85 @@ final class GameSession {
     func clearAnnouncements() {
         newlyLearned = []
         justCompleted = []
+        newCollectibles = []
+        state?.village.news = []
+    }
+
+    // MARK: Giorno nuovo, paese
+
+    /// Fa avanzare la fase; al mattino nasse e vivaio rendono e le commissioni vecchie si chiudono.
+    private func advance(_ s: inout GameState) {
+        s.advancePhase()
+        if s.phase == DayPhase.morning {
+            QuestEngine.pruneDaily(state: &s)
+            let data: GameData = GameData.shared
+            Village.newDay(state: &s, book: data.village, fish: data.fish, world: data.world)
+        }
+        awardPostcards(&s)
+    }
+
+    private func awardPostcards(_ s: inout GameState) {
+        newCollectibles.append(contentsOf: Village.awardPostcards(state: &s, book: GameData.shared.village))
+    }
+
+    /// L'evento di oggi, se ce n'è uno.
+    var todayEvent: DayEvent? {
+        guard let s: GameState = state else { return nil }
+        return Village.event(state: s, recipes: GameData.shared.recipes)
+    }
+
+    /// Applica una modifica al paese (assunzioni, orto, nasse) e salva se è andata a buon fine.
+    @discardableResult
+    func village(_ change: (inout GameState, GameData) -> Bool) -> Bool {
+        guard var s: GameState = state else { return false }
+        if !change(&s, GameData.shared) { return false }
+        let learned: [String] = s.learnRecipes(GameData.shared.recipes)
+        newlyLearned.append(contentsOf: learned)
+        state = s
+        save()
+        return true
+    }
+
+    /// Registra il punteggio di un gioco del bar. Ritorna true se è un nuovo primato.
+    @discardableResult
+    func record(game: String, score: Int) -> Bool {
+        guard var s: GameState = state else { return false }
+        let best: Int = s.village.records[game] ?? 0
+        if score <= best { return false }
+        s.village.records[game] = score
+        state = s
+        save()
+        return true
+    }
+
+    /// Dà o toglie monete (scommesse e gettoni del bar). Ritorna false se non bastano.
+    @discardableResult
+    func pay(_ amount: Int) -> Bool {
+        guard var s: GameState = state else { return false }
+        if s.gold - amount < 0 { return false }
+        s.gold -= amount
+        state = s
+        save()
+        return true
+    }
+
+    /// La sfida di oggi contro Lustri è ancora da giocare?
+    var duelAvailable: Bool {
+        guard let s: GameState = state, let event: DayEvent = todayEvent else { return false }
+        return event.kind == DayEventKind.duello && s.village.lastDuelDay != s.day
+    }
+
+    /// Esito della sfida a ritmo: una volta al giorno; chi vince prende oro e fama.
+    func finishDuel(won: Bool) {
+        guard var s: GameState = state else { return }
+        s.village.lastDuelDay = s.day
+        if won {
+            s.gold += 120
+            s.fame += 8
+            record([QuestEvent.fame(s.fame)], into: &s)
+        }
+        state = s
+        save()
     }
 
     /// Fine di un'immersione: il bottino va in dispensa e la giornata avanza.
@@ -316,16 +413,17 @@ final class GameSession {
         for species in bag.photos { events.append(QuestEvent.photo(species)) }
         if let boss: String = outcome.boss, outcome.bossDefeated { events.append(QuestEvent.boss(boss)) }
         record(events, into: &s)
-        s.advancePhase()
-        if s.phase == DayPhase.morning { QuestEngine.pruneDaily(state: &s) }
+        for zone in bag.relics {
+            if let tile: String = Village.grantTile(zone: zone, state: &s, book: GameData.shared.village) { newCollectibles.append(tile) }
+        }
+        advance(&s)
         state = s
         save()
     }
 
     func skipPhase() {
         guard var s: GameState = state else { return }
-        s.advancePhase()
-        if s.phase == DayPhase.morning { QuestEngine.pruneDaily(state: &s) }
+        advance(&s)
         state = s
         newlyLearned = []
         save()
@@ -341,7 +439,11 @@ final class GameSession {
         var dishes: [PreparedDish] = []
         for entry in plan where entry.batches > 0 {
             guard let recipe: Recipe = GameData.shared.recipes.find(entry.recipeId),
-                  let dish: PreparedDish = MenuPlanner.prepare(recipe, batches: entry.batches, state: &s, balance: GameData.shared.balance) else { return false }
+                  var dish: PreparedDish = MenuPlanner.prepare(recipe, batches: entry.batches, state: &s, balance: GameData.shared.balance) else { return false }
+            // Alla sagra il pesce azzurro si paga di più.
+            if todayEvent?.kind == DayEventKind.sagra && Village.isBlueDish(recipe, book: GameData.shared.village) {
+                dish = PreparedDish(recipeId: dish.recipeId, portions: dish.portions, price: Int((Double(dish.price) * Village.sagraPriceFactor).rounded()))
+            }
             dishes.append(dish)
         }
         if dishes.isEmpty { return false }
@@ -356,7 +458,8 @@ final class GameSession {
         guard var s: GameState = state else { return }
         lastFameBefore = s.fame
         lastService = result
-        s.gold += result.total
+        lastWages = Village.wages(state: s, book: GameData.shared.village)
+        s.gold = max(0, s.gold + result.total - lastWages)
         s.totalEarned += result.total
         s.fame += result.fame
         if result.vipDelighted { s.pearls += 1 }
@@ -364,7 +467,7 @@ final class GameSession {
         for (recipe, count) in result.sold { events.append(QuestEvent.served(recipe: recipe, count: count)) }
         record(events, into: &s)
         s.tonight = []
-        if s.phase == DayPhase.evening { s.advancePhase() }
+        if s.phase == DayPhase.evening { advance(&s) }
         state = s
         save()
     }
@@ -377,6 +480,14 @@ final class GameSession {
                                                tables: rank.tables, arrivalEvery: rank.arrivalEvery, seed: seed)
         setup.carryCapacity = Int(upgradeValue("tray", fallback: 1))
         setup.cookSpeed = upgradeValue("stove", fallback: 1)
+        Village.apply(staff: s.village.staff, to: &setup, book: GameData.shared.village)
+        if let event: DayEvent = todayEvent {
+            if event.kind == DayEventKind.sagra { setup.arrivalFactor = Village.sagraArrivalFactor }
+            // Il critico si presenta solo se il piatto che cerca è in menu.
+            if event.kind == DayEventKind.critico, let wanted: String = event.dishId, s.tonight.contains(where: { $0.recipeId == wanted }) {
+                setup.vipDishId = wanted
+            }
+        }
         return setup
     }
 
@@ -402,6 +513,11 @@ final class GameSession {
         config.torchRadius = upgradeValue("torch", fallback: 0.10)
         config.phaseLabel = phaseName(s.phase)
         if let id: String = s.equipped { config.weapon = GameData.shared.upgrades.weapon(id) }
+        // Le maioliche che mancano alla collezione possono trovarsi nelle loro zone.
+        let wanted: Set<Int> = Village.relicZones(state: s, book: GameData.shared.village)
+        for (index, zone) in GameData.shared.world.zones.enumerated() where wanted.contains(index) {
+            config.relicZones.append((index: index, from: Double(zone.depthFrom), to: Double(zone.depthTo)))
+        }
         return config
     }
 
@@ -409,6 +525,7 @@ final class GameSession {
     func bossConfig(_ boss: BossInfo) -> DiveScene.Config {
         var config: DiveScene.Config = diveConfig()
         config.boss = boss
+        config.relicZones = []
         config.night = false
         config.startDepthMeters = boss.depth
         config.phaseLabel = ""

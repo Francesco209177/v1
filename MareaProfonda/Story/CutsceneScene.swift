@@ -112,6 +112,7 @@ final class CutsceneScene: BaseScene {
     private var fullText: String = ""
     private var shownLetters: Int = -1
     private var narrating: Bool = false
+    private var portraitBase: CGSize = CGSize(width: 44, height: 46)
 
     // Cartello a tutto schermo
     private let card: SKNode = SKNode()
@@ -460,8 +461,11 @@ final class CutsceneScene: BaseScene {
 
     /// Dispone ritratto, nome e testo dentro il riquadro, a seconda che parli un personaggio o il narratore.
     private func layoutDialog() {
+        // La dimensione di uno sprite comprende già la sua scala: si imposta in punti, a scala 1.
         let scale: CGFloat = hudIconScale(2.6)
-        portrait.setScale(scale)
+        portrait.xScale = 1
+        portrait.yScale = 1
+        portrait.size = CGSize(width: portraitBase.width * scale, height: portraitBase.height * scale)
         let portraitWidth: CGFloat = narrating ? 0 : 44 * scale
         portrait.position = CGPoint(x: boxRect.minX + 14 + portraitWidth / 2, y: boxRect.minY + 4)
         let left: CGFloat = boxRect.minX + (narrating ? 26 : portraitWidth + 28)
@@ -494,12 +498,19 @@ final class CutsceneScene: BaseScene {
             }
         }
 
-        _ = cursor.advance(scene: cutscene, dt: dt)
+        // Ogni passo va avviato, anche quelli istantanei (entrate, pose): in un fotogramma se ne possono chiudere diversi.
+        if !cursor.isFinished && cursor.index != shownStep { begin(step: cursor.index) }
+        var elapsedNow: Double = dt
+        var chained: Int = 0
+        while cursor.advance(scene: cutscene, dt: elapsedNow) && !cursor.isFinished && chained < 24 {
+            begin(step: cursor.index)
+            elapsedNow = 0
+            chained += 1
+        }
         if cursor.isFinished {
             finish()
             return
         }
-        if cursor.index != shownStep { begin(step: cursor.index) }
         updateTypewriter()
 
         for (_, actor) in actors { actor.update(dt: dt, layout: layout) }
@@ -587,7 +598,7 @@ final class CutsceneScene: BaseScene {
         if let member: CastMember = member, let prefix: String = member.portrait {
             let name: String = "\(prefix)_\(step.mood ?? "calm")"
             portrait.texture = SpriteForge.shared.texture(name)
-            portrait.size = SpriteForge.shared.pixelSize(name)
+            portraitBase = SpriteForge.shared.pixelSize(name)
             let tagColor: SKColor = SKColor(RGBA(hexString: member.color) ?? RGBA(hex: 0x2BB7B3))
             nameLabel.attributedText = Theme.attributed(member.name.text(), size: 14, weight: UIFont.Weight.heavy, color: Theme.ink)
             layoutDialog()

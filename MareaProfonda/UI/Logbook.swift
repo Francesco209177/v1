@@ -65,7 +65,7 @@ struct LogbookView: View {
                         switch tab {
                         case .quests: QuestsTab(focus: focus)
                         case .fish: FishTab()
-                        case .recipes: RecipesTab()
+                        case .recipes: RecipesTab(focus: focus)
                         case .yard: YardTab(focus: focus)
                         case .ledger: LedgerTab()
                         case .chart: ChartTab()
@@ -316,11 +316,15 @@ struct FishCard: View {
 // MARK: - Ricettario
 
 struct RecipesTab: View {
+    @ObservedObject var focus: PadFocus
+
     var body: some View {
         let state: GameState = GameSession.shared.state ?? GameState()
         let data: GameData = GameData.shared
-        return ForEach(data.recipes.recipes, id: \.id) { (recipe: Recipe) in
+        return ForEach(Array(data.recipes.recipes.enumerated()), id: \.element.id) { (pair: (offset: Int, element: Recipe)) in
+            let recipe: Recipe = pair.element
             let level: Int? = state.recipes[recipe.id]
+            let cost: Int? = level.flatMap { RecipeLevels.cost(recipe, level: $0) }
             RowBox {
                 HStack(spacing: 10) {
                     PixelImage(name: "plate_\(recipe.plate)", scale: 3)
@@ -333,13 +337,20 @@ struct RecipesTab: View {
                             Text(recipe.note.text())
                                 .font(.system(.caption, design: .rounded))
                                 .foregroundColor(Palette.ink.opacity(0.75))
-                            Text(recipeLine(recipe))
+                            Text(recipeLine(recipe) + String(localized: " · livello \(level ?? 1)"))
                                 .font(.system(.caption, design: .rounded).weight(.semibold))
                                 .foregroundColor(Palette.terracotta)
                         } else {
                             Text(unlockHint(recipe))
                                 .font(.system(.caption, design: .rounded))
                                 .foregroundColor(Palette.ink.opacity(0.6))
+                        }
+                    }
+                    Spacer(minLength: 4)
+                    // Affinare una ricetta: Nonna Ines la prova e riprova, e il piatto si paga di più.
+                    if let cost: Int = cost {
+                        RowButton(title: String(localized: "Affina · \(cost)"), enabled: state.gold >= cost, fill: Palette.ochre, order: 20 + pair.offset, focus: focus) {
+                            if GameSession.shared.upgradeRecipe(recipe.id) { OverlayCenter.shared.refresh() }
                         }
                     }
                 }
@@ -356,6 +367,9 @@ struct RecipesTab: View {
     private func unlockHint(_ recipe: Recipe) -> String {
         if recipe.unlock.hasPrefix("catch:") {
             return String(localized: "Nonna Ines te la insegna quando le porti l'ingrediente giusto.")
+        }
+        if recipe.unlock.hasPrefix("crop:") {
+            return String(localized: "Serve qualcosa dell'orto di Saverio.")
         }
         return String(localized: "Da scoprire.")
     }

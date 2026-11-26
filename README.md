@@ -52,6 +52,15 @@ Ogni giornata ha quattro fasi: **mattina** e **pomeriggio** (un'immersione ciasc
 - **Storia.** Cinque capitoli. Al porto, in alto, c'è sempre l'obiettivo del momento; le scene si mandano avanti con un tocco e si saltano con «Salta».
 - **Boss.** Quando la storia ne propone uno, al porto compare «Affronta il boss» (di mattina o di pomeriggio, al posto dell'immersione). Si combatte in una sala chiusa: il Fiato cala piano e le due campane d'aria si ricaricano da sole. Ogni attacco è annunciato da una linea rossa o da un punto esclamativo; la barra in alto diventa gialla quando il punto debole è scoperto. Se svieni non perdi nulla, tranne la mezza giornata.
 
+- **Paese.** Dal porto si apre anche la schermata del paese:
+  - *Personale* (da 40 di fama): cameriera, sguattero, aiuto cuoca, cantiniere. Lavorano da soli ogni sera e si pagano a fine servizio.
+  - *Orto* e *Vivaio* (dal secondo capitolo): semini e raccogli dopo qualche giorno; in vasca metti due pesci vivi della stessa specie e ogni mattina ne trovi di nuovi. Gli ortaggi insegnano sei ricette in più.
+  - *Nasse* (dal secondo capitolo): le cali in una zona e ogni mattina rendono uno o due pesci piccoli di quella zona.
+  - *Collezione*: dodici maioliche dei Nerei da trovare sul fondo (due per zona, brillano) e dieci cartoline che arrivano con i traguardi.
+  - *Bar*: bocce contro Don Pinuccio (levetta per mirare, tieni premuto per la forza), il cabinato «Acchiappasarde», e nei giorni di sfida la gara a ritmo contro Chef Lustri (arpione = coltello, azione = padella).
+- **Eventi.** Ogni sette giorni la sagra del pesce azzurro (più clienti, sarde, sgombri e tonni pagati la metà in più); il quarto giorno della settimana la sera del critico, che chiede un piatto preciso; il sesto la sfida di Lustri. L'avviso compare al porto.
+- **Ricette a livelli.** Nel Giornale, alla voce Ricette, «Affina» porta una ricetta fino al livello 5: ogni livello la fa pagare l'8 % in più.
+
 ### I sei boss
 
 | Boss | Dove | Come si batte |
@@ -71,18 +80,19 @@ Package.swift                   compila e testa la sola logica pura, anche su Li
 MareaProfonda/
   App/         avvio, controller della vista, prova automatica
   Core/        scena di base, comandi, controller, partita e salvataggi
-    Model/     vettori, RNG con seme, stato di gioco, impostazioni
+    Model/     vettori, RNG con seme, stato di gioco, impostazioni, paese (personale, orto, nasse, eventi, collezione)
   Diving/      scena di immersione, terreno, parallasse, pesci, HUD
     Model/     mappa, generatore, nuoto, pesci, arpione, boss, simulazione dell'immersione
   Restaurant/  scena del servizio
     Model/     ricette, menu, simulazione del servizio, cameriere automatico
-  Hub/         porto di Pietrasale
+  Hub/         porto di Pietrasale, giochi del bar
+    Model/     bocce, cabinato, sfida a ritmo (logica)
   Story/       riproduttore delle scene
     Model/     missioni, capitoli e tappe della storia, formato delle scene
   UI/          comandi a schermo, menu in SwiftUI, riepiloghi
   Art/         fucina degli sprite, shader, testi a pixel
     Model/     immagini in memoria, lettura dei file .spr, pittori di terreno e fondali
-  Data/        JSON: zone, pesci, ricette, bilanciamento, potenziamenti, missioni, storia, scene, boss
+  Data/        JSON: zone, pesci, ricette, bilanciamento, potenziamenti, missioni, storia, scene, boss, paese
   Resources/   sprite (.spr), icona, catalogo delle stringhe
 Tools/forge/   strumento Python che disegna gli sprite e ne fa le anteprime
 Tools/preview/ anteprime su PNG di terreno e fondali
@@ -165,6 +175,9 @@ L'arpione di partenza fa 10 danni; Fiato 120, sacca 10 kg, muta fino a 110 m. Tu
 - **Nomi dei dati nei JSON.** Le stringhe dell'interfaccia usano il catalogo `Localizable.xcstrings`; i nomi di pesci e ricette stanno accanto ai numeri, nei JSON.
 - **Boss in codice puro.** Ogni boss è una piccola macchina a stati (attesa, avviso, attacco, recupero, stordito) con tre fasi a due terzi e a un terzo della vita. La logica sta in `BossSim.swift` e non importa SpriteKit: un giocatore automatico nei test batte tutti e sei i boss, così si sa che ogni scontro è vincibile prima ancora di provarlo sul telefono.
 - **Sale dei boss.** Lo scontro avviene nella mappa del giorno, in una camera scavata alla profondità del boss e sigillata: colori dell'acqua, roccia e buio sono quelli della zona.
+- **Nasse per zona.** Il prompt chiedeva trappole «posizionabili»: qui una nassa si cala in una zona scelta dalla schermata del paese, non in un punto della mappa, perché la mappa cambia a ogni immersione e un punto preciso il giorno dopo non esisterebbe più.
+- **Personale senza gestione.** Chi assumi non va comandato: ognuno fa una cosa sola (ordinazioni, tavoli, cucina, vino) dopo qualche secondo d'attesa, così chi è svelto in sala resta più bravo di loro.
+- **Sfida a ritmo senza musica, per ora.** Il tempo lo danno la linea che pulsa e un tocco leggero a ogni battito; la musica arriva con l'audio della milestone 7.
 - **Storia a tappe.** Una tappa è un obiettivo con una scena prima e una dopo. Gli obiettivi «a livello» (fama, profondità, potenziamenti) contano anche ciò che è già stato fatto, così chi è più avanti non deve rifare nulla.
 
 ## Milestone
@@ -176,7 +189,7 @@ L'arpione di partenza fa 10 danni; Fiato 120, sacca 10 kg, muta fino a 110 m. Tu
 | M3 | osteria, menu, servizio, vino, fama, giornata completa, tre slot di salvataggio | fatta |
 | M4 | potenziamenti, Giornale di bordo, Quaderno del Mare, missioni, zone profonde giocabili, notte | fatta |
 | M5 | trama in cinque capitoli, diciannove scene, sei boss, cast con ritratti | fatta |
-| M6 | personale, orto e vivaio, nasse, eventi, collezionabili, giochi del bar | da fare |
+| M6 | personale, orto e vivaio, nasse, eventi, collezione, tre giochi del bar, ricette a livelli | fatta |
 | M7 | audio sintetizzato, bilanciamento, rifinitura, inglese | da fare |
 
 **Che cosa non è stato verificato.** Il gioco è sviluppato senza un Mac e senza un iPhone: la compilazione e l'avvio di ogni scena sono controllati in CI nel simulatore, la logica dai test. La resa su un telefono vero, la sensazione dei comandi, le prestazioni su modelli vecchi e la difficoltà non sono state provate da nessuno finché non installi l'IPA. In particolare la difficoltà dei boss è tarata su un giocatore automatico che non sbaglia mai un colpo: per una persona saranno più lunghi e più duri, e i numeri (`bosses.json`) vanno aggiustati dopo le prime prove.

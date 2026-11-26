@@ -134,6 +134,8 @@ struct GameState: Codable, Equatable {
     var quests: QuestLog = QuestLog()
     /// Punto della storia.
     var story: StoryLog = StoryLog()
+    /// Personale, orto, vivaio, nasse, collezione.
+    var village: VillageState = VillageState()
     var playSeconds: Double = 0
     var totalEarned: Int = 0
     var deepestDive: Double = 0
@@ -163,6 +165,7 @@ struct GameState: Codable, Equatable {
         photos = try c.decodeIfPresent([String].self, forKey: .photos) ?? d.photos
         quests = try c.decodeIfPresent(QuestLog.self, forKey: .quests) ?? d.quests
         story = try c.decodeIfPresent(StoryLog.self, forKey: .story) ?? d.story
+        village = try c.decodeIfPresent(VillageState.self, forKey: .village) ?? d.village
         playSeconds = try c.decodeIfPresent(Double.self, forKey: .playSeconds) ?? d.playSeconds
         totalEarned = try c.decodeIfPresent(Int.self, forKey: .totalEarned) ?? d.totalEarned
         deepestDive = try c.decodeIfPresent(Double.self, forKey: .deepestDive) ?? d.deepestDive
@@ -186,6 +189,11 @@ struct GameState: Codable, Equatable {
             fishLog[fish.speciesId] = record
         }
         if deepest > deepestDive { deepestDive = deepest }
+        return learnRecipes(book)
+    }
+
+    /// Impara le ricette di cui si è appena verificata la condizione: una specie pescata, un ortaggio raccolto.
+    mutating func learnRecipes(_ book: RecipeBook) -> [String] {
         var learned: [String] = []
         for recipe in book.recipes where recipes[recipe.id] == nil {
             if recipe.unlock == "start" {
@@ -193,6 +201,12 @@ struct GameState: Codable, Equatable {
             } else if recipe.unlock.hasPrefix("catch:") {
                 let species: String = String(recipe.unlock.dropFirst("catch:".count))
                 if fishLog[species] != nil {
+                    recipes[recipe.id] = 1
+                    learned.append(recipe.id)
+                }
+            } else if recipe.unlock.hasPrefix("crop:") {
+                let crop: String = String(recipe.unlock.dropFirst("crop:".count))
+                if pantry.total(crop) > 0 {
                     recipes[recipe.id] = 1
                     learned.append(recipe.id)
                 }

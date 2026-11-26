@@ -15,7 +15,7 @@ OUT = os.path.join(HERE, "out")
 sys.path.insert(0, HERE)
 
 # Ogni modulo espone build(out_dir) -> percorso del file scritto.
-MODULES = ["font", "tecla", "sea_props", "ui_icons", "fish", "people", "osteria", "creatures", "portraits", "bosses"]
+MODULES = ["font", "tecla", "sea_props", "ui_icons", "fish", "people", "osteria", "creatures", "portraits", "bosses", "collection"]
 
 
 def main() -> None:

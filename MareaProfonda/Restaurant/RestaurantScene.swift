@@ -221,6 +221,20 @@ final class RestaurantScene: BaseScene {
             p += 1
         }
 
+        // Il personale assunto sta in sala, vicino alla botte: lavora da sé, ma si vede che c'è.
+        var staffIndex: Int = 0
+        for name in config.setup.staffSprites.prefix(4) where forge.has("\(name)_walk_0") {
+            let helper: SKSpriteNode = forge.node("\(name)_walk_0")
+            helper.position = CGPoint(x: 128 + Double(staffIndex) * 20, y: 8)
+            helper.zPosition = 2
+            helper.run(SKAction.repeatForever(SKAction.sequence([
+                SKAction.moveBy(x: 0, y: 1, duration: 0.5 + Double(staffIndex) * 0.07),
+                SKAction.moveBy(x: 0, y: -1, duration: 0.5 + Double(staffIndex) * 0.07)
+            ])))
+            room.addChild(helper)
+            staffIndex += 1
+        }
+
         // Tavoli con la loro sedia.
         for table in sim.tables {
             let chair: SKSpriteNode = forge.node("room_chair")
@@ -715,6 +729,8 @@ final class RestaurantScene: BaseScene {
                 showToast(String(localized: "L'ospite speciale è entusiasta!"), color: Theme.ochre)
             case .closed:
                 break
+            case .staffHelped:
+                Feedback.tap()
             }
         }
     }
