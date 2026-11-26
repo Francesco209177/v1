@@ -149,7 +149,8 @@ jobs:
 
   apk:
     name: APK Android
-    runs-on: ubuntu-latest
+    # Stessa versione di Ubuntu per cui è costruito Swift: con una più recente mancano le sue librerie.
+    runs-on: ubuntu-24.04
     timeout-minutes: 40
     env:
       SWIFT_RELEASE: "6.4.3"
@@ -163,6 +164,8 @@ jobs:
       - name: Swift, Swift SDK per Android, NDK
         run: |
           set -e
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq libxml2 libcurl4 libedit2 libsqlite3-0 libncurses6 zlib1g unzip zip > /dev/null
           mkdir -p "$HOME/attrezzi" && cd "$HOME/attrezzi"
           base="https://download.swift.org/swift-$SWIFT_RELEASE-release"
           curl -fsSL --retry 3 -o swift.tar.gz "$base/ubuntu2404/swift-$SWIFT_RELEASE-RELEASE/swift-$SWIFT_RELEASE-RELEASE-ubuntu24.04.tar.gz"
@@ -238,7 +241,7 @@ jobs:
   smoke-android:
     name: Prova di avvio nell'emulatore Android
     needs: apk
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
