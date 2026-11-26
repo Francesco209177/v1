@@ -13,3 +13,5 @@ Tools/forge/out/
 # Chiavi di firma di Android: non vanno mai nel repository.
 *.keystore
 *.jks
+# Copie di lavoro temporanee degli strumenti.
+.claude/
