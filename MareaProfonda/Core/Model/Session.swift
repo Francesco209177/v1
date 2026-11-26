@@ -1,6 +1,25 @@
-import Foundation
+/// Ciò che cambia da una piattaforma all'altra: dove stanno i dati, dove si salva, come si
+/// ricordano le preferenze. L'app iOS e quella Android lo impostano all'avvio, prima di tutto il resto.
+enum GameEnvironment {
+    /// Cartella con i JSON di dati (`Data`).
+    static var dataDirectory: URL? = nil
+    /// Cartella degli slot di salvataggio.
+    static var saveDirectory: URL? = nil
+    /// Lettura e scrittura delle preferenze (su iPhone le conserva il sistema, su Android un file).
+    static var readSettings: () -> Data? = { () -> Data? in return nil }
+    static var writeSettings: (Data) -> Void = { (_: Data) -> Void in }
+    /// Nome della fase del giorno come lo mostra l'interfaccia.
+    static var phaseName: (DayPhase) -> String = { (phase: DayPhase) -> String in
+        switch phase {
+        case .morning: return "Mattina"
+        case .afternoon: return "Pomeriggio"
+        case .evening: return "Sera"
+        case .night: return "Notte"
+        }
+    }
+}
 
-/// Dati di gioco letti dai JSON del bundle (cartella `Data`). Se un file manca o è rotto
+/// Dati di gioco letti dai JSON della cartella `Data`. Se un file manca o è rotto
 /// il gioco parte comunque con valori di riserva e annota il problema.
 final class GameData {
     static let shared: GameData = GameData()
@@ -19,8 +38,8 @@ final class GameData {
 
     private init() {
         var notes: [String] = []
-        let directory: URL? = Bundle.main.url(forResource: "Data", withExtension: nil)
-        if directory == nil { notes.append("cartella Data assente dal bundle") }
+        let directory: URL? = GameEnvironment.dataDirectory
+        if directory == nil { notes.append("cartella Data non impostata") }
 
         func load<T: Decodable>(_ type: T.Type, _ file: String) -> T? {
             guard let dir: URL = directory else { return nil }
@@ -81,17 +100,16 @@ final class GameData {
                                walkSpeed: 78, cleanTime: 0.8, comboWindow: 12, maxCombo: 10))
 }
 
-/// Preferenze salvate in `UserDefaults`.
+/// Preferenze del giocatore, conservate fuori dagli slot (vedi `GameEnvironment`).
 final class SettingsStore {
     static let shared: SettingsStore = SettingsStore()
-    private static let key: String = "marea.settings.v1"
 
     var settings: GameSettings {
         didSet { if settings != oldValue { save() } }
     }
 
     private init() {
-        if let data: Data = UserDefaults.standard.data(forKey: SettingsStore.key),
+        if let data: Data = GameEnvironment.readSettings(),
            let decoded: GameSettings = try? JSONDecoder().decode(GameSettings.self, from: data) {
             settings = decoded
         } else {
@@ -101,7 +119,7 @@ final class SettingsStore {
 
     private func save() {
         if let data: Data = try? JSONEncoder().encode(settings) {
-            UserDefaults.standard.set(data, forKey: SettingsStore.key)
+            GameEnvironment.writeSettings(data)
         }
     }
 }
@@ -128,10 +146,7 @@ final class GameSession {
     private(set) var lastWages: Int = 0
 
     private init() {
-        let base: URL = FileManager.default.urls(for: FileManager.SearchPathDirectory.applicationSupportDirectory,
-                                                 in: FileManager.SearchPathDomainMask.userDomainMask).first
-            ?? FileManager.default.temporaryDirectory
-        store = SaveStore(directory: base.appendingPathComponent("Salvataggi", isDirectory: true))
+        store = SaveStore(directory: GameEnvironment.saveDirectory ?? URL(fileURLWithPath: "Salvataggi", isDirectory: true))
     }
 
     // MARK: Slot
@@ -503,8 +518,8 @@ final class GameSession {
     }
 
     /// Parametri dell'immersione di adesso: mappa del giorno, ora, attrezzatura posseduta.
-    func diveConfig() -> DiveScene.Config {
-        var config: DiveScene.Config = DiveScene.Config()
+    func diveConfig() -> DiveConfig {
+        var config: DiveConfig = DiveConfig()
         guard let s: GameState = state else { return config }
         let balance: Balance = GameData.shared.balance
         config.seed = s.diveSeed()
@@ -522,7 +537,7 @@ final class GameSession {
         config.harpoonRange = upgradeValue("elastic", fallback: 150)
         config.swimSpeed = upgradeValue("fins", fallback: 66)
         config.torchRadius = upgradeValue("torch", fallback: 0.10)
-        config.phaseLabel = phaseName(s.phase)
+        config.phaseLabel = GameEnvironment.phaseName(s.phase)
         if let id: String = s.equipped { config.weapon = GameData.shared.upgrades.weapon(id) }
         // Le maioliche che mancano alla collezione possono trovarsi nelle loro zone.
         let wanted: Set<Int> = Village.relicZones(state: s, book: GameData.shared.village)
@@ -533,8 +548,8 @@ final class GameSession {
     }
 
     /// Parametri dello scontro con un boss: stessa attrezzatura, ma nella sua sala.
-    func bossConfig(_ boss: BossInfo) -> DiveScene.Config {
-        var config: DiveScene.Config = diveConfig()
+    func bossConfig(_ boss: BossInfo) -> DiveConfig {
+        var config: DiveConfig = diveConfig()
         config.boss = boss
         config.relicZones = []
         config.night = false

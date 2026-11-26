@@ -1,5 +1,3 @@
-import Foundation
-
 /// Un capitolo della storia.
 struct ChapterInfo: Codable, Equatable {
     let id: Int

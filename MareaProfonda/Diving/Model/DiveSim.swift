@@ -1,5 +1,3 @@
-import Foundation
-
 // MARK: - Bottino
 
 /// Un pesce catturato. Le stelle dicono com'è stato preso: 3 vivo (rete, soporifero),

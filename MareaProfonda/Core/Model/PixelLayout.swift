@@ -1,5 +1,3 @@
-import Foundation
-
 /// Calcola la scala intera dei pixel d'arte.
 ///
 /// La scena lavora in punti; il mondo è disegnato in "pixel d'arte". Ogni pixel d'arte

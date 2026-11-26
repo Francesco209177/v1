@@ -1,4 +1,4 @@
-name: Build IPA
+name: Build IPA e APK
 
 on:
   push:
@@ -29,6 +29,18 @@ jobs:
       - uses: actions/checkout@v4
       - name: Test
         run: swift test 2>&1 | tail -n 60
+
+      # La versione portabile (quella di Android) gira anche qui, senza schermo: percorre tutte
+      # le schermate e ne salva le istantanee. Se una schermata va in errore, la build si ferma.
+      - name: Prova della versione portabile
+        run: swift run -c release runner smoke smoke-portabile 1600 720 2>&1 | grep -E "SMOKE|SPRITE|DATI|error|fotogrammi" | tail -n 80
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: smoke-portabile
+          path: smoke-portabile/
+          if-no-files-found: warn
 
   ipa:
     name: IPA non firmata
@@ -133,4 +145,103 @@ jobs:
           name: smoke
           path: |
             smoke-out/
+          if-no-files-found: warn
+
+  apk:
+    name: APK Android
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      SWIFT_RELEASE: "6.4.3"
+      NDK_RELEASE: "r30"
+      SWIFT_ANDROID_SDK_CHECKSUM: a78839edf4ec161e03b9f1e22a0ef94e565ece3f3ce5c03e3c79246c6b71f0a9
+    steps:
+      - uses: actions/checkout@v4
+
+      # Swift per Linux, lo "Swift SDK for Android" ufficiale e l'NDK: il gioco è scritto in Swift
+      # e viene compilato per Android da questa macchina.
+      - name: Swift, Swift SDK per Android, NDK
+        run: |
+          set -e
+          mkdir -p "$HOME/attrezzi" && cd "$HOME/attrezzi"
+          base="https://download.swift.org/swift-$SWIFT_RELEASE-release"
+          curl -fsSL --retry 3 -o swift.tar.gz "$base/ubuntu2404/swift-$SWIFT_RELEASE-RELEASE/swift-$SWIFT_RELEASE-RELEASE-ubuntu24.04.tar.gz"
+          mkdir swift && tar -xzf swift.tar.gz -C swift --strip-components=1 && rm swift.tar.gz
+          curl -fsSL --retry 3 -o ndk.zip "https://dl.google.com/android/repository/android-ndk-$NDK_RELEASE-linux.zip"
+          unzip -q ndk.zip && rm ndk.zip
+          curl -fsSL --retry 3 -o android-sdk.tar.gz "$base/android-sdk/swift-$SWIFT_RELEASE-RELEASE/swift-$SWIFT_RELEASE-RELEASE_android.artifactbundle.tar.gz"
+          echo "$HOME/attrezzi/swift/usr/bin" >> "$GITHUB_PATH"
+          echo "ANDROID_NDK_HOME=$HOME/attrezzi/android-ndk-$NDK_RELEASE" >> "$GITHUB_ENV"
+          export PATH="$HOME/attrezzi/swift/usr/bin:$PATH"
+          swift --version
+          swift sdk install android-sdk.tar.gz --checksum "$SWIFT_ANDROID_SDK_CHECKSUM"
+          rm android-sdk.tar.gz
+
+      - name: Piattaforma e build-tools di Android
+        run: |
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-36" "build-tools;36.0.0" > /dev/null
+          ls "$ANDROID_HOME/build-tools" | tail -n 3
+
+      - name: APK per i telefoni (arm64 e arm a 32 bit)
+        run: VERSION_CODE="${{ github.run_number }}" Android/build.sh
+
+      - name: APK per l'emulatore (x86_64)
+        run: ABIS=x86_64 APK_NAME=MareaProfonda-x86_64.apk VERSION_CODE="${{ github.run_number }}" Android/build.sh
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: MareaProfonda-apk
+          path: build/android/MareaProfonda.apk
+          if-no-files-found: error
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: apk-emulatore
+          path: build/android/MareaProfonda-x86_64.apk
+          retention-days: 5
+          if-no-files-found: error
+
+      - name: Allega alla Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1 || gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --generate-notes
+          gh release upload "$GITHUB_REF_NAME" build/android/MareaProfonda.apk --clobber
+
+  smoke-android:
+    name: Prova di avvio nell'emulatore Android
+    needs: apk
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: apk-emulatore
+
+      # Senza accelerazione l'emulatore impiegherebbe decine di minuti ad avviarsi.
+      - name: Abilita KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Avvia e percorri le schermate
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          arch: x86_64
+          target: default
+          profile: pixel_6
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot -camera-back none
+          script: bash Tools/ci/smoke-android.sh MareaProfonda-x86_64.apk
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: smoke-android
+          path: smoke-android/
           if-no-files-found: warn

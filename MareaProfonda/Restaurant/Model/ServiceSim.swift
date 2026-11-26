@@ -1,5 +1,3 @@
-import Foundation
-
 /// Che cosa serve per aprire l'osteria stasera.
 struct ServiceSetup {
     var dishes: [PreparedDish]

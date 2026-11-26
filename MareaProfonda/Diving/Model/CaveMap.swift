@@ -1,5 +1,3 @@
-import Foundation
-
 /// Oggetto decorativo o punto d'interesse posato dal generatore (flora, appigli, corde di risalita...).
 struct MapProp: Equatable {
     enum Kind: String {

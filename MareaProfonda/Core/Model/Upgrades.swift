@@ -1,5 +1,3 @@
-import Foundation
-
 struct UpgradeLevel: Codable, Equatable {
     let cost: Int
     let value: Double

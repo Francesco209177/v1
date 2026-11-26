@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Genera l'icona dell'app (1024x1024, opaca) a partire dagli sprite: è l'unico PNG del repository.
+"""Genera l'icona dell'app a partire dagli sprite: 1024x1024 per iOS e 192x192 per Android.
+Sono gli unici PNG del repository.
 
 Uso: python3 Tools/forge/icon.py
 """
@@ -17,6 +18,8 @@ from forge import read_spr, render_rows  # noqa: E402
 
 SPRITES = os.path.join(ROOT, "MareaProfonda", "Resources", "Sprites")
 TARGET = os.path.join(ROOT, "MareaProfonda", "Resources", "Assets.xcassets", "AppIcon.appiconset", "AppIcon.png")
+# La stessa scena, ingrandita 3 volte, è l'icona dell'app Android.
+ANDROID = os.path.join(ROOT, "Android", "res", "mipmap-xxxhdpi", "ic_launcher.png")
 
 N = 64  # l'icona è una scena di 64x64 pixel d'arte ingrandita 16 volte
 
@@ -70,6 +73,8 @@ def main() -> None:
     big = img.convert("RGB").resize((1024, 1024), Image.NEAREST)
     os.makedirs(os.path.dirname(TARGET), exist_ok=True)
     big.save(TARGET, optimize=True)
+    os.makedirs(os.path.dirname(ANDROID), exist_ok=True)
+    img.resize((N * 3, N * 3), Image.NEAREST).save(ANDROID, optimize=True)
     print("icona:", TARGET, os.path.getsize(TARGET), "byte")
 
 

@@ -1,5 +1,3 @@
-import Foundation
-
 /// Colori della roccia di una zona, già convertiti.
 struct TerrainStyle {
     let outline: RGBA

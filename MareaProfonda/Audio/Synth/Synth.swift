@@ -1,5 +1,3 @@
-import Foundation
-
 /// Forma d'onda di un oscillatore.
 enum Wave: String, Codable {
     case sine

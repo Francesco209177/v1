@@ -1,5 +1,3 @@
-import Foundation
-
 /// Vettore 2D a doppia precisione usato da tutta la logica di gioco.
 /// Non dipende da CoreGraphics, così la logica si compila ovunque.
 struct Vec2: Equatable, Hashable, Codable {

@@ -1,5 +1,3 @@
-import Foundation
-
 /// Dipinge in memoria i fondali: pareti lontane del Calderone e cielo sopra la superficie.
 /// Le pareti sono in toni di grigio, ripetibili in ogni direzione: il gioco le colora in base
 /// alla profondità, così la stessa texture serve dalla prateria fino agli abissi.

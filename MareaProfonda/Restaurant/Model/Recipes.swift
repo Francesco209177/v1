@@ -1,5 +1,3 @@
-import Foundation
-
 struct RecipeIngredient: Codable, Equatable {
     let item: String
     let count: Int

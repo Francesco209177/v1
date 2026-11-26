@@ -1,5 +1,3 @@
-import Foundation
-
 /// Fasi della giornata: due immersioni, il servizio all'osteria, la notte.
 enum DayPhase: String, Codable, CaseIterable {
     case morning

@@ -1,5 +1,3 @@
-import Foundation
-
 /// Generatore deterministico (SplitMix64): stesso seme, stessa sequenza su ogni piattaforma.
 /// La mappa di ogni immersione nasce da qui.
 struct SeededRNG {

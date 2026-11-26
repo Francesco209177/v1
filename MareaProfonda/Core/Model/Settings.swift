@@ -1,5 +1,3 @@
-import Foundation
-
 /// Azioni di gioco, indipendenti da come vengono impartite (dita o controller).
 struct GameButtons: OptionSet, Hashable {
     let rawValue: Int

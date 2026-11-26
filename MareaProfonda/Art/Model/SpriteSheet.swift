@@ -1,5 +1,3 @@
-import Foundation
-
 /// Sprite come matrice di caratteri ASCII: ogni carattere è una voce della palette.
 struct IndexedSprite {
     let name: String

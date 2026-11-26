@@ -1,5 +1,3 @@
-import Foundation
-
 /// Posizione di uno sprite dentro una pagina di atlante, in pixel dall'angolo in alto a sinistra.
 struct AtlasPlacement: Codable, Equatable {
     let page: Int

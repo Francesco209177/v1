@@ -1,5 +1,3 @@
-import Foundation
-
 /// Testo localizzato dentro i file di dati: `{ "it": "Sardina", "en": "Sardine" }`.
 /// Tenere i nomi accanto ai numeri rende semplice aggiungere pesci e ricette modificando i JSON.
 typealias LocalizedText = [String: String]

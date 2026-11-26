@@ -1,5 +1,3 @@
-import Foundation
-
 /// Come si comporta una specie.
 enum FishBehavior: String, Codable {
     /// Gironzola; se viene colpita scappa.

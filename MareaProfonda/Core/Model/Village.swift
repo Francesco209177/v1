@@ -1,5 +1,3 @@
-import Foundation
-
 // MARK: - Dati del paese (Data/village.json)
 
 /// Una persona che si può assumere all'osteria. `effect` vale:

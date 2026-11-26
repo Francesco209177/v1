@@ -1,5 +1,3 @@
-import Foundation
-
 extension DiveSim {
     /// Minimappa attorno a Tecla: un pixel per metro. Roccia, acqua, pesci (bianco i tranquilli,
     /// rosso chi attacca, verde le specie protette), oggetti e campane d'aria.

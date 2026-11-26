@@ -1,5 +1,3 @@
-import Foundation
-
 /// Obiettivo di una missione. `kind` vale: catch (pesca, per ingrediente), serve (porzioni servite
 /// di una ricetta), collect (materiali raccolti), earn (oro incassato), depth (metri raggiunti),
 /// fame (fama totale), photo (specie fotografata), upgrade (livello di un potenziamento), boss.

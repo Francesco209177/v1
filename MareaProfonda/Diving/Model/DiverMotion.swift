@@ -1,5 +1,3 @@
-import Foundation
-
 /// Parametri del nuoto di Tecla. Le velocità sono in pixel d'arte al secondo (16 pixel = 1 metro).
 struct DiverTuning: Codable, Equatable {
     var maxSpeed: Double = 66

@@ -1,5 +1,3 @@
-import Foundation
-
 /// Stati di un pesce. Nel gioco le transizioni sono guidate da una `GKStateMachine`
 /// (vedi `FishAgent`); le regole e i movimenti di ogni stato stanno qui, in codice puro.
 enum FishState: String, CaseIterable {

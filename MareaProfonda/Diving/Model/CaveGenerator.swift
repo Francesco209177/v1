@@ -1,5 +1,3 @@
-import Foundation
-
 /// Scolpisce il Calderone a partire da un seme: stesso seme, stessa mappa.
 /// Ogni zona ha una forma propria (conca, cenge, mare aperto, rovine, camini, sala),
 /// ma un canale principale garantisce sempre una via libera dalla superficie al fondo.

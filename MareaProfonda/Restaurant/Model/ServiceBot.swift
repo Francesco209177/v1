@@ -1,5 +1,3 @@
-import Foundation
-
 /// Cameriere automatico: sceglie sempre la cosa utile più urgente. Serve alla prova automatica,
 /// ai test e, più avanti, ai camerieri assunti.
 struct ServiceBot {

@@ -1,5 +1,3 @@
-import Foundation
-
 /// Un attore presente all'inizio di una scena.
 struct CutsceneActor: Codable, Equatable {
     /// Identificativo nel cast.

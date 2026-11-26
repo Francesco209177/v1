@@ -1,5 +1,3 @@
-import Foundation
-
 /// Colore a 8 bit per canale, alfa non premoltiplicata.
 struct RGBA: Equatable, Hashable {
     var r: UInt8

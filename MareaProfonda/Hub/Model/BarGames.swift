@@ -1,5 +1,3 @@
-import Foundation
-
 // MARK: - Bocce
 
 /// Una boccia sul campo. `owner`: 0 Tecla, 1 Don Pinuccio, 2 il pallino.

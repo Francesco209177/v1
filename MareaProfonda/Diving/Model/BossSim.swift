@@ -1,5 +1,3 @@
-import Foundation
-
 // MARK: - Dati
 
 enum BossKind: String, Codable, CaseIterable {
