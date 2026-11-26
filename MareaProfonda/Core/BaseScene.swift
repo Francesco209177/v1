@@ -27,6 +27,9 @@ class BaseScene: SKScene {
         super.init(coder: aDecoder)
     }
 
+    /// Altezza visibile desiderata in pixel d'arte: le scene d'interni la riducono per avvicinare la camera.
+    var targetArtHeight: Double { return PixelLayout.targetArtHeight }
+
     /// Riga di stato scritta nei log dalla prova automatica; le scene la arricchiscono.
     var debugSummary: String { return "" }
 
@@ -63,7 +66,7 @@ class BaseScene: SKScene {
             safeInsets = v.safeAreaInsets
         }
         if scale < 1 { scale = 1 }
-        layout = PixelLayout(viewWidth: Double(size.width), viewHeight: Double(size.height), screenScale: Double(scale))
+        layout = PixelLayout(viewWidth: Double(size.width), viewHeight: Double(size.height), screenScale: Double(scale), targetArtHeight: targetArtHeight)
         cam.setScale(CGFloat(layout.cameraScale))
     }
 

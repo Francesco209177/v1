@@ -7,7 +7,8 @@ import PackageDescription
 let pureSources: [String] = [
     "Core/Model",
     "Art/Model",
-    "Diving/Model"
+    "Diving/Model",
+    "Restaurant/Model"
 ]
 
 let package = Package(

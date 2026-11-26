@@ -1,4 +1,6 @@
+import Combine
 import SpriteKit
+import SwiftUI
 import UIKit
 
 /// Contenitore dell'intero gioco: una `SKView` a tutto schermo, solo orizzontale.
@@ -6,6 +8,8 @@ final class GameViewController: UIViewController {
     private let skView: SKView = SKView()
     private var started: Bool = false
     private var smoke: SmokeRunner?
+    private var overlayHost: UIHostingController<OverlayRootView>?
+    private var overlayWatch: AnyCancellable?
 
     override func loadView() {
         view = skView
@@ -18,6 +22,21 @@ final class GameViewController: UIViewController {
         skView.isMultipleTouchEnabled = true
         skView.shouldCullNonVisibleNodes = true
         skView.preferredFramesPerSecond = 120
+
+        // Schermate di menu in SwiftUI sopra il gioco: visibili solo quando ce n'è una aperta,
+        // così negli altri momenti i tocchi arrivano direttamente alla scena.
+        let host: UIHostingController<OverlayRootView> = UIHostingController(rootView: OverlayRootView(center: OverlayCenter.shared))
+        host.view.backgroundColor = UIColor.clear
+        host.view.isHidden = true
+        addChild(host)
+        host.view.frame = skView.bounds
+        host.view.autoresizingMask = [UIView.AutoresizingMask.flexibleWidth, UIView.AutoresizingMask.flexibleHeight]
+        skView.addSubview(host.view)
+        host.didMove(toParent: self)
+        overlayHost = host
+        overlayWatch = OverlayCenter.shared.$screen.sink { [weak host] (screen: OverlayScreen?) -> Void in
+            host?.view.isHidden = screen == nil
+        }
     }
 
     override func viewDidLayoutSubviews() {
@@ -55,6 +74,8 @@ final class GameViewController: UIViewController {
 
     func applicationWillPause() {
         (skView.scene as? DiveScene)?.pauseForBackground()
+        (skView.scene as? RestaurantScene)?.pauseForBackground()
+        GameSession.shared.save()
         InputManager.shared.reset()
         skView.isPaused = true
     }

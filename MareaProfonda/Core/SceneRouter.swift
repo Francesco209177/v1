@@ -11,20 +11,54 @@ final class SceneRouter {
 
     func showTitle(animated: Bool) {
         guard let view: SKView = view else { return }
+        OverlayCenter.shared.show(nil)
         let scene: TitleScene = TitleScene(size: view.bounds.size)
-        scene.onStart = { [weak self] in
-            self?.startDive(config: DiveScene.Config())
+        scene.onStart = {
+            OverlayCenter.shared.show(OverlayScreen.slots)
         }
         present(scene, animated: animated)
     }
 
-    func startDive(config: DiveScene.Config) {
+    /// Il porto: da qui si sceglie che cosa fare in questa fase della giornata.
+    func showHub() {
+        guard let view: SKView = view, let state: GameState = GameSession.shared.state else {
+            showTitle(animated: true)
+            return
+        }
+        OverlayCenter.shared.show(nil)
+        let scene: HubScene = HubScene(size: view.bounds.size, phase: state.phase)
+        present(scene, animated: true) {
+            OverlayCenter.shared.show(OverlayScreen.hub)
+        }
+    }
+
+    func startDive() {
         guard let view: SKView = view else { return }
-        let scene: DiveScene = DiveScene(size: view.bounds.size, config: config)
+        OverlayCenter.shared.show(nil)
+        let scene: DiveScene = DiveScene(size: view.bounds.size, config: GameSession.shared.diveConfig())
+        scene.onFinished = { (bag: DiveBag, deepest: Double) -> Void in
+            GameSession.shared.finishDive(bag: bag, deepest: deepest)
+            SceneRouter.shared.showHub()
+        }
         present(scene, animated: true)
     }
 
-    func present(_ scene: BaseScene, animated: Bool) {
+    func startService() {
+        guard let view: SKView = view, let setup: ServiceSetup = GameSession.shared.serviceSetup() else {
+            showHub()
+            return
+        }
+        OverlayCenter.shared.show(nil)
+        let scene: RestaurantScene = RestaurantScene(size: view.bounds.size, config: RestaurantScene.Config(setup: setup))
+        scene.onFinished = { (result: ServiceResult) -> Void in
+            GameSession.shared.finishService(result)
+            OverlayCenter.shared.show(OverlayScreen.summary)
+        }
+        present(scene, animated: true)
+    }
+
+    /// - Parameter then: chiamata quando la scena nuova è visibile (per mostrare un menu sopra).
+    func present(_ scene: BaseScene, animated: Bool, then: (() -> Void)? = nil) {
         guard let view: SKView = view, !transitioning else { return }
         InputManager.shared.reset()
         if animated, let current: BaseScene = view.scene as? BaseScene {
@@ -34,10 +68,12 @@ final class SceneRouter {
                 self?.transitioning = false
                 DispatchQueue.main.async {
                     BubbleWipe.reveal(scene)
+                    then?()
                 }
             }
         } else {
             view.presentScene(scene)
+            then?()
         }
     }
 }

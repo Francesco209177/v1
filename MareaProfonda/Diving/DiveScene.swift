@@ -64,11 +64,13 @@ final class DiveScene: BaseScene {
     private let pauseVeil: SKSpriteNode = SKSpriteNode(color: Theme.ink, size: CGSize(width: 10, height: 10))
     private let pauseTitle: PixelLabel = PixelLabel(text: "PAUSA", color: SKColor.white, alignment: PixelLabel.Alignment.center)
     private let resumeButton: PillButton = PillButton(text: String(localized: "Riprendi"), size: CGSize(width: 200, height: 48), fill: Theme.turquoise)
-    private let quitButton: PillButton = PillButton(text: String(localized: "Torna al titolo"), size: CGSize(width: 200, height: 48), fill: Theme.lime)
+    private let quitButton: PillButton = PillButton(text: String(localized: "Abbandona l'immersione"), size: CGSize(width: 200, height: 48), fill: Theme.lime)
     /// Pausa chiesta dal giocatore (diversa da `isPaused` di SpriteKit, che ferma anche l'HUD).
     private var userPaused: Bool = false
     private var pressedPill: PillButton?
     private var results: DiveResultsPanel?
+    /// Chiamata alla fine dell'immersione con ciò che Tecla porta a casa e la profondità massima.
+    var onFinished: ((DiveBag, Double) -> Void)?
 
     // Stato
     private var cameraPos: Vec2 = Vec2.zero
@@ -91,8 +93,10 @@ final class DiveScene: BaseScene {
         let data: WorldData = GameData.shared.world
         worldData = data
         let generated: CaveMap = CaveGenerator.generate(seed: config.seed, world: data)
+        let balance: Balance = GameData.shared.balance
         var simulation: DiveSim = DiveSim(map: generated, catalog: GameData.shared.fish, seed: config.seed, night: config.night,
-                                          startDepthMeters: config.startDepthMeters)
+                                          startDepthMeters: config.startDepthMeters, breathMax: balance.startBreath,
+                                          maxSafeDepth: balance.startSafeDepth, bagWeight: balance.startBagWeight)
         simulation.usesExternalBrains = true
         if config.autopilot != nil {
             // La prova automatica visita anche le zone profonde: niente limiti di pressione né di fiato.
@@ -338,6 +342,7 @@ final class DiveScene: BaseScene {
         updateBubbles(dt)
         updateZone(force: false)
         updateHUD(dt)
+        GameSession.shared.addPlayTime(dt)
 
         if sim.fainted && !ended {
             endDive(fainted: true)
@@ -809,8 +814,14 @@ final class DiveScene: BaseScene {
         world.isPaused = true
         let panel: DiveResultsPanel = DiveResultsPanel(bag: sim.bag, fainted: fainted, deepest: sim.deepest, catalog: GameData.shared.fish)
         panel.zPosition = 700
-        panel.onDone = { [weak self] (_: DiveBag) -> Void in
-            self?.leaveToTitle()
+        panel.onDone = { [weak self] (kept: DiveBag) -> Void in
+            guard let self = self, !self.leaving else { return }
+            self.leaving = true
+            if let finished: ((DiveBag, Double) -> Void) = self.onFinished {
+                finished(kept, self.sim.deepest)
+            } else {
+                SceneRouter.shared.showTitle(animated: true)
+            }
         }
         hud.addChild(panel)
         results = panel
@@ -836,10 +847,15 @@ final class DiveScene: BaseScene {
         if !userPaused && !leaving && !ended { setPaused(true) }
     }
 
+    /// Abbandono dalla pausa: l'immersione finisce senza bottino.
     private func leaveToTitle() {
         if leaving { return }
         leaving = true
-        SceneRouter.shared.showTitle(animated: true)
+        if let finished: ((DiveBag, Double) -> Void) = onFinished {
+            finished(DiveBag(), sim.deepest)
+        } else {
+            SceneRouter.shared.showTitle(animated: true)
+        }
     }
 
     // MARK: - Tocchi

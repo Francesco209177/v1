@@ -1,0 +1,32 @@
+{
+  "recipes": [
+    { "id": "sarde_beccafico", "name": { "it": "Sarde a beccafico" }, "note": { "it": "Arrotolate con pangrattato, uvetta e pinoli." },
+      "ingredients": [ { "item": "sardina", "count": 3 } ], "portions": 3, "price": 14, "taste": 3, "cookTime": 4.0, "plate": "rolls", "unlock": "start" },
+    { "id": "frittura_paranza", "name": { "it": "Frittura di paranza" }, "note": { "it": "Pesciolini di scoglio, farina e olio bollente." },
+      "ingredients": [ { "item": "castagnola", "count": 3 } ], "portions": 3, "price": 12, "taste": 3, "cookTime": 3.5, "plate": "fried", "unlock": "start" },
+    { "id": "donzelle_fritte", "name": { "it": "Donzelle fritte" }, "note": { "it": "Croccanti fuori, dolci dentro." },
+      "ingredients": [ { "item": "donzella", "count": 2 } ], "portions": 2, "price": 18, "taste": 2, "cookTime": 3.5, "plate": "fried", "unlock": "catch:donzella" },
+    { "id": "triglie_livornese", "name": { "it": "Triglie alla livornese" }, "note": { "it": "Nel pomodoro, con aglio e prezzemolo." },
+      "ingredients": [ { "item": "triglia", "count": 2 } ], "portions": 2, "price": 24, "taste": 3, "cookTime": 4.5, "plate": "red", "unlock": "catch:triglia" },
+    { "id": "sgombro_griglia", "name": { "it": "Sgombro alla griglia" }, "note": { "it": "Limone, origano e brace viva." },
+      "ingredients": [ { "item": "sgombro", "count": 2 } ], "portions": 2, "price": 26, "taste": 3, "cookTime": 4.0, "plate": "grill", "unlock": "catch:sgombro" },
+    { "id": "sarago_forno", "name": { "it": "Sarago al forno" }, "note": { "it": "Con patate tagliate sottili e rosmarino." },
+      "ingredients": [ { "item": "sarago", "count": 1 } ], "portions": 2, "price": 30, "taste": 3, "cookTime": 5.0, "plate": "whole", "unlock": "catch:sarago" },
+    { "id": "orata_sale", "name": { "it": "Orata al sale" }, "note": { "it": "La crosta si rompe al tavolo: applauso garantito." },
+      "ingredients": [ { "item": "orata", "count": 1 } ], "portions": 2, "price": 44, "taste": 4, "cookTime": 5.5, "plate": "salt", "unlock": "catch:orata" },
+    { "id": "zuppa_scorfano", "name": { "it": "Zuppa di scorfano" }, "note": { "it": "Brutto da vivo, sublime nel brodo." },
+      "ingredients": [ { "item": "scorfano", "count": 1 }, { "item": "alga", "count": 1 } ], "portions": 3, "price": 34, "taste": 4, "cookTime": 6.0, "plate": "soup", "unlock": "catch:scorfano" },
+    { "id": "spaghetti_ricci", "name": { "it": "Spaghetti ai ricci" }, "note": { "it": "Il mare in una forchettata." },
+      "ingredients": [ { "item": "riccio", "count": 3 } ], "portions": 2, "price": 36, "taste": 5, "cookTime": 4.0, "plate": "pasta", "unlock": "start" },
+    { "id": "insalata_mare", "name": { "it": "Insalata di mare" }, "note": { "it": "Frutti di mare e lattuga di mare, olio buono." },
+      "ingredients": [ { "item": "conchiglia", "count": 2 }, { "item": "alga", "count": 2 } ], "portions": 3, "price": 16, "taste": 2, "cookTime": 3.0, "plate": "salad", "unlock": "start" },
+    { "id": "barracuda_scapece", "name": { "it": "Barracuda in scapece" }, "note": { "it": "Fritto e poi marinato con aceto e menta." },
+      "ingredients": [ { "item": "barracuda", "count": 1 } ], "portions": 4, "price": 32, "taste": 3, "cookTime": 5.0, "plate": "grill", "unlock": "catch:barracuda" },
+    { "id": "dentice_forno", "name": { "it": "Dentice al forno" }, "note": { "it": "Pomodorini, olive e capperi di Pietrasale." },
+      "ingredients": [ { "item": "dentice", "count": 1 } ], "portions": 4, "price": 42, "taste": 4, "cookTime": 6.0, "plate": "whole", "unlock": "catch:dentice" },
+    { "id": "ricciola_crudo", "name": { "it": "Crudo di ricciola" }, "note": { "it": "Tagliata a velo: serve pesce in ottimo stato." },
+      "ingredients": [ { "item": "ricciola", "count": 1 } ], "portions": 6, "price": 40, "taste": 5, "cookTime": 3.0, "plate": "crudo", "unlock": "catch:ricciola" },
+    { "id": "cernia_matalotta", "name": { "it": "Cernia alla matalotta" }, "note": { "it": "La ricetta della festa: un pesce, una tavolata." },
+      "ingredients": [ { "item": "cernia", "count": 1 } ], "portions": 6, "price": 46, "taste": 5, "cookTime": 6.5, "plate": "red", "unlock": "catch:cernia" }
+  ]
+}

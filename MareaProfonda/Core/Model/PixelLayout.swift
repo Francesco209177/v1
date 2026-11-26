@@ -14,13 +14,14 @@ struct PixelLayout: Equatable {
     /// Pixel fisici per pixel d'arte.
     let k: Int
 
-    init(viewWidth: Double, viewHeight: Double, screenScale: Double) {
+    /// - Parameter targetArtHeight: altezza visibile desiderata in pixel d'arte (240 in mare, meno negli interni).
+    init(viewWidth: Double, viewHeight: Double, screenScale: Double, targetArtHeight: Double = PixelLayout.targetArtHeight) {
         let scale: Double = screenScale > 0 ? screenScale : 1
         self.viewWidth = max(viewWidth, 1)
         self.viewHeight = max(viewHeight, 1)
         self.screenScale = scale
         let devicePixels: Double = self.viewHeight * scale
-        let ideal: Double = (devicePixels / PixelLayout.targetArtHeight).rounded()
+        let ideal: Double = (devicePixels / max(targetArtHeight, 40)).rounded()
         self.k = max(2, Int(ideal))
     }
 

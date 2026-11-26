@@ -18,6 +18,10 @@ enum SmokeTest {
 final class SmokeRunner {
     struct Stage {
         let name: String
+        /// Secondi di osservazione prima della schermata.
+        var seconds: Double = 3.0
+        /// Schermata di menu da mostrare sopra la scena, se serve.
+        var overlay: OverlayScreen? = nil
         let make: (CGSize) -> BaseScene
     }
 
@@ -48,13 +52,54 @@ final class SmokeRunner {
                 return DiveScene(size: size, config: config)
             }
         }
+        // Partita di prova, mai salvata: una dispensa fornita per mostrare menu e servizio.
+        func demo(_ phase: DayPhase) -> GameState {
+            var state: GameState = GameState()
+            state.seed = 7
+            state.day = 3
+            state.phase = phase
+            state.gold = 135
+            state.fame = 46
+            state.pantry.add("sardina", stars: 2, count: 9)
+            state.pantry.add("castagnola", stars: 2, count: 6)
+            state.pantry.add("triglia", stars: 2, count: 4)
+            state.pantry.add("orata", stars: 3, count: 2)
+            state.pantry.add("riccio", stars: 0, count: 6)
+            state.pantry.add("alga", stars: 0, count: 4)
+            state.fishLog["orata"] = FishRecord(caught: 2, bestStars: 3)
+            state.fishLog["triglia"] = FishRecord(caught: 4, bestStars: 2)
+            return state
+        }
+        func hub(_ phase: DayPhase) -> (CGSize) -> BaseScene {
+            return { (size: CGSize) -> BaseScene in
+                GameSession.shared.startEphemeral(demo(phase))
+                return HubScene(size: size, phase: phase)
+            }
+        }
+        let service: (CGSize) -> BaseScene = { (size: CGSize) -> BaseScene in
+            GameSession.shared.startEphemeral(demo(DayPhase.evening))
+            _ = GameSession.shared.prepareMenu([(recipeId: "sarde_beccafico", batches: 2), (recipeId: "orata_sale", batches: 1),
+                                                (recipeId: "spaghetti_ricci", batches: 1)])
+            guard let setup: ServiceSetup = GameSession.shared.serviceSetup() else {
+                SmokeTest.log("FAIL service menu non preparato")
+                return TitleScene(size: size)
+            }
+            var config: RestaurantScene.Config = RestaurantScene.Config(setup: setup)
+            config.autopilot = true
+            return RestaurantScene(size: size, config: config)
+        }
         return [
             Stage(name: "title", make: { (size: CGSize) -> BaseScene in TitleScene(size: size) }),
+            Stage(name: "slots", overlay: OverlayScreen.slots, make: { (size: CGSize) -> BaseScene in TitleScene(size: size) }),
             Stage(name: "dive_surface", make: dive(0, Vec2(0.55, -0.45))),
-            Stage(name: "dive_posidonia", make: dive(24, Vec2(-0.7, -0.15))),
-            Stage(name: "dive_gorgonie", make: dive(72, Vec2(0.7, 0.1))),
+            Stage(name: "dive_posidonia", seconds: 8, make: dive(24, Vec2(-0.7, -0.15))),
+            Stage(name: "dive_gorgonie", seconds: 8, make: dive(72, Vec2(0.7, 0.1))),
             Stage(name: "dive_citta", make: dive(290, Vec2(0.6, -0.2))),
-            Stage(name: "dive_fumarole", make: dive(440, Vec2(-0.6, -0.3)))
+            Stage(name: "dive_fumarole", make: dive(440, Vec2(-0.6, -0.3))),
+            Stage(name: "hub_morning", overlay: OverlayScreen.hub, make: hub(DayPhase.morning)),
+            Stage(name: "hub_evening", overlay: OverlayScreen.hub, make: hub(DayPhase.evening)),
+            Stage(name: "menu", overlay: OverlayScreen.menu, make: hub(DayPhase.evening)),
+            Stage(name: "service", seconds: 24, make: service)
         ]
     }
 
@@ -87,9 +132,11 @@ final class SmokeRunner {
         }
         let stage: Stage = stages[index]
         index += 1
+        OverlayCenter.shared.show(nil)
         let scene: BaseScene = stage.make(view.bounds.size)
         SmokeTest.log("BEGIN \(stage.name)")
         view.presentScene(scene)
+        OverlayCenter.shared.show(stage.overlay)
         waitForFirstFrames(scene: scene, stage: stage, attempts: 0)
     }
 
@@ -103,13 +150,13 @@ final class SmokeRunner {
             return
         }
         let startFrames: Int = scene.frameCount
-        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 3.0) { [weak self] in
+        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + stage.seconds) { [weak self] in
             guard let self = self else { return }
             let frames: Int = scene.frameCount - startFrames
             let nodes: Int = SmokeRunner.countNodes(scene)
-            if frames < 20 {
+            if Double(frames) < stage.seconds * 7 {
                 self.failures += 1
-                SmokeTest.log("FAIL \(stage.name) solo \(frames) fotogrammi in 3 secondi")
+                SmokeTest.log("FAIL \(stage.name) solo \(frames) fotogrammi in \(Int(stage.seconds)) secondi")
             } else {
                 SmokeTest.log("OK \(stage.name) frames=\(frames) nodes=\(nodes) \(scene.debugSummary)")
             }

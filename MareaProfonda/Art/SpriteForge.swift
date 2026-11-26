@@ -40,6 +40,7 @@ final class SpriteForge {
     private var placements: [String: AtlasPlacement] = [:]
     private var pages: [SKTexture] = []
     private var reportedMissing: Set<String> = []
+    private var images: [String: UIImage] = [:]
     private(set) var isLoaded: Bool = false
     private(set) var loadedFromCache: Bool = false
     private(set) var problems: [String] = []
@@ -246,6 +247,16 @@ final class SpriteForge {
     func pixelSize(_ name: String) -> CGSize {
         guard let place: AtlasPlacement = placements[name] else { return CGSize(width: 8, height: 8) }
         return CGSize(width: place.width, height: place.height)
+    }
+
+    /// Immagine dello sprite per l'interfaccia in SwiftUI.
+    func image(_ name: String) -> UIImage? {
+        loadIfNeeded()
+        if let cached: UIImage = images[name] { return cached }
+        guard let texture: SKTexture = textures[name] else { return nil }
+        let image: UIImage = UIImage(cgImage: texture.cgImage())
+        images[name] = image
+        return image
     }
 
     /// Nodo pronto all'uso con texture e ancoraggio.
