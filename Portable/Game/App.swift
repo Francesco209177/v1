@@ -15,6 +15,9 @@ class Screen {
 
     /// Tasto "indietro". Ritorna true se la schermata lo ha gestito.
     func back(_ app: App) -> Bool { return false }
+
+    /// L'app va in secondo piano (telefonata, tasto home): le schermate di gioco si mettono in pausa.
+    func suspend(_ app: App) {}
 }
 
 /// Riscontro sonoro e tattile: stessi nomi dell'app iOS.

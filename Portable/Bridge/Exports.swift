@@ -158,6 +158,7 @@ public func mareaAudio(_ out: UnsafeMutablePointer<Int16>, _ frames: Int32) {
 /// L'app va in secondo piano: salva e zittisce.
 @_cdecl("marea_pause")
 public func mareaPause() {
+    App.shared.screen.suspend(App.shared)
     GameSession.shared.save()
     Mixer.shared.silence()
     App.shared.input.reset()

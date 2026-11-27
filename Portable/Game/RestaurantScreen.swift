@@ -313,8 +313,8 @@ final class RestaurantScreen: Screen {
         pad.releaseAll(app.input)
     }
 
-    /// Chiamata quando l'app perde il primo piano.
-    func pauseForBackground(_ app: App) {
+    /// L'app perde il primo piano: il servizio si mette in pausa da solo.
+    override func suspend(_ app: App) {
         if !paused && !closing { setPaused(true, app) }
     }
 

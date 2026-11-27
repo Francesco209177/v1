@@ -20,18 +20,20 @@ enum WaterPaint {
             let sway: Double = sin(time * 0.35 + phase) * 14
             let width: Int = 10 + Int((sin(phase * 2.3) * 0.5 + 0.5) * 16)
             let pulse: Double = 0.55 + 0.45 * sin(time * 0.8 + phase * 1.3)
-            var y: Int = max(0, surfaceY)
+            // Quando la superficie è sopra lo schermo i fasci partono dal bordo alto: la luce arriva comunque.
+            let top: Int = max(0, surfaceY)
+            var y: Int = top
             while y < g.height {
-                let depth: Double = Double(y - surfaceY) / reach
+                let depth: Double = Double(y - top) / reach
                 if depth >= 1 { break }
                 let fade: Double = (1 - depth) * (1 - depth)
-                // Tre gradini di intensità invece di una sfumatura continua.
-                let level: Int = Int((fade * strength * pulse * 46).rounded(.down) / 6) * 6
+                // Pochi gradini di intensità invece di una sfumatura continua.
+                let level: Int = Int((fade * strength * pulse * 60).rounded(.down) / 6) * 6
                 if level > 0 {
                     var x: Int = Int(base + sway + Double(y - surfaceY) * 0.42)
                     let span: Int = g.width + 160
                     x = ((x + 80) % span + span) % span - 80
-                    g.addLight(x: x, y: y, w: width, h: 2, RGBA(r: UInt8(level), g: UInt8(level), b: UInt8(min(255, level * 9 / 10)), a: 0))
+                    g.addLight(x: x, y: y, w: width, h: 2, RGBA(r: UInt8(level), g: UInt8(level), b: UInt8(min(255, level * 9 / 10)), a: 255))
                 }
                 y += 2
             }

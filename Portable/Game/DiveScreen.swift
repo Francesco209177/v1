@@ -687,8 +687,8 @@ final class DiveScreen: Screen {
         aiming = false
     }
 
-    /// Chiamata quando l'app perde il primo piano.
-    func pauseForBackground(_ app: App) {
+    /// L'app perde il primo piano: l'immersione si mette in pausa da sola.
+    override func suspend(_ app: App) {
         if !paused && !leaving && !ended { setPaused(true, app) }
     }
 
