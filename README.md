@@ -1,14 +1,30 @@
 # Marea Profonda
 
-Gioco per iPhone, offline, in italiano: di giorno ci si immerge con l'arpione nel **Calderone**, il vulcano sommerso dell'isola di Pietrasale; la sera si serve il pescato all'**osteria di Nonna Ines**. Nativo in Swift e SpriteKit, tutta la grafica è generata dal codice.
+Gioco per iPhone e Android, offline, in italiano: di giorno ci si immerge con l'arpione nel **Calderone**, il vulcano sommerso dell'isola di Pietrasale; la sera si serve il pescato all'**osteria di Nonna Ines**. Su iPhone è nativo in Swift e SpriteKit; su Android gira lo stesso codice Swift del gioco, disegnato da un motore proprio. Tutta la grafica è generata dal codice.
 
 È un gioco originale del genere "immersioni di giorno, ristorante la sera": personaggi, ambientazione, storia e grafica sono propri.
 
 > **Stato del lavoro.** Tutte e sette le milestone sono nel repository e passano la CI (test, compilazione, avvio di ogni scena nel simulatore). Nessuno però ha ancora giocato su un iPhone vero: leggi [Che cosa non è stato verificato](#milestone) e la lista [Cosa provare](#cosa-provare) prima di giudicarlo.
 
-## Scaricare e installare l'IPA
+## Scaricare e installare l'APK (Android)
 
-1. Apri la scheda **Actions** del repository e scegli l'ultima esecuzione riuscita di **Build IPA**.
+1. Apri la scheda **Actions** del repository e scegli l'ultima esecuzione riuscita di **Build IPA e APK**.
+2. In fondo alla pagina, sotto *Artifacts*, scarica **MareaProfonda-apk**: è uno zip che contiene `MareaProfonda.apk` (circa 13 MB).
+3. Estrai lo zip sul telefono e apri `MareaProfonda.apk`. Android chiede di consentire l'installazione da quella app (File, Chrome…): è la voce *Installa app sconosciute*.
+
+Serve Android 7.0 o successivo, su processore ARM a 64 o a 32 bit (praticamente tutti i telefoni). L'app non chiede permessi oltre alla vibrazione e non usa la rete.
+
+**Aggiornamenti e salvataggi.** Android installa una versione nuova sopra la vecchia, tenendo i salvataggi, solo se le due hanno la stessa firma. La chiave non sta nel repository: la crea la prima build e GitHub la conserva nella sua cache. Se la cache scade (succede dopo una settimana senza build) la build successiva ne crea un'altra, e Android rifiuta l'aggiornamento: in quel caso bisogna disinstallare e reinstallare, perdendo i salvataggi. Per una chiave che non cambi mai, crea la tua e mettila tra i *secret* del repository:
+
+```
+keytool -genkeypair -keystore marea.keystore -alias marea -keyalg RSA -keysize 2048 -validity 12000
+base64 -w0 marea.keystore      # il risultato va nel secret ANDROID_KEYSTORE_BASE64
+                               # la password scelta va nel secret ANDROID_KEYSTORE_PASSWORD
+```
+
+## Scaricare e installare l'IPA (iPhone)
+
+1. Apri la scheda **Actions** del repository e scegli l'ultima esecuzione riuscita di **Build IPA e APK**.
 2. In fondo alla pagina, sotto *Artifacts*, scarica **MareaProfonda-ipa**: è uno zip che contiene `MareaProfonda.ipa`.
 3. Estrai lo zip sull'iPhone (app File) o sul computer.
 4. In **SideStore** (o AltStore) tocca **+** nella scheda *My Apps* e scegli `MareaProfonda.ipa`.
@@ -19,19 +35,28 @@ Per pubblicare una versione scaricabile dalla pagina *Releases*, crea un tag che
 
 ## Avviare la build
 
-La build parte da sola a ogni push. Per lanciarla a mano: **Actions → Build IPA → Run workflow**.
+La build parte da sola a ogni push. Per lanciarla a mano: **Actions → Build IPA e APK → Run workflow**.
 
-Il workflow (`.github/workflows/build-ipa.yml`) fa tre cose:
+Il workflow (`.github/workflows/build-ipa.yml`) fa cinque cose:
 
 | Job | Che cosa fa |
 |---|---|
-| Logica pura | `swift test` su Linux: mappa, pesci, arpione, osteria, salvataggi |
+| Logica pura | `swift test` su Linux: mappa, pesci, arpione, osteria, salvataggi. Poi fa girare senza schermo la versione portabile (quella di Android) su tutte le schermate: le istantanee finiscono nell'artifact **smoke-portabile** |
 | IPA non firmata | genera il progetto con XcodeGen, compila con `CODE_SIGNING_ALLOWED=NO`, crea `Payload/MareaProfonda.app` e lo zippa in `MareaProfonda.ipa` |
-| Prova di avvio | avvia l'app nel simulatore con `-smoke`: l'app percorre da sola le scene, e il job fallisce se va in crash o se uno shader non compila; le schermate finiscono nell'artifact **smoke** |
+| Prova di avvio nel simulatore | avvia l'app iOS con `-smoke`: l'app percorre da sola le scene, e il job fallisce se va in crash o se uno shader non compila; le schermate finiscono nell'artifact **smoke** |
+| APK Android | compila il gioco per Android con lo Swift SDK ufficiale (arm64, arm a 32 bit e x86_64 per l'emulatore), compila il guscio Java, impacchetta e firma `MareaProfonda.apk` |
+| Prova di avvio nell'emulatore Android | installa l'APK in un emulatore, lo avvia in modalità di prova e aspetta che abbia percorso tutte le schermate; fotografie dello schermo e istantanee finiscono nell'artifact **smoke-android** |
 
 Usa il runner `macos-26` con Xcode 26.6 (il runner `macos-14` è stato ritirato a novembre 2026).
 
 Per compilare sul tuo Mac: `brew install xcodegen && xcodegen generate`, poi apri `MareaProfonda.xcodeproj`. Il progetto Xcode non è nel repository: lo genera `project.yml`.
+
+Per costruire l'APK su un computer Linux servono Swift 6.4.3 con lo *Swift SDK for Android* (`swift sdk install …`), l'NDK r30, le build-tools e una piattaforma dell'SDK Android, un JDK. Poi, dalla radice del repository:
+
+```
+ANDROID_HOME=/percorso/sdk ANDROID_NDK_HOME=/percorso/ndk Android/build.sh     # produce build/android/MareaProfonda.apk
+swift run -c release runner smoke istantanee 1600 720                           # la versione portabile senza telefono: un PNG per schermata
+```
 
 ## Comandi
 
@@ -94,13 +119,32 @@ MareaProfonda/
     Model/     immagini in memoria, lettura dei file .spr, pittori di terreno e fondali
   Data/        JSON: zone, pesci, ricette, bilanciamento, potenziamenti, missioni, storia, scene, boss, paese
   Resources/   sprite (.spr), icona, catalogo delle stringhe
+Portable/      la presentazione portabile, usata da Android (Swift puro, niente framework Apple)
+  Engine/      tela in memoria, sprite, font a pixel, interfaccia a modo immediato, comandi, mixer audio, PNG
+  Game/        le schermate del gioco ridisegnate sulla tela, navigazione, prova automatica
+  Bridge/      le funzioni che il guscio può chiamare
+  CJNI/        ponte JNI in C tra Java e Swift
+  Runner/      strumento su Linux: fa girare la versione portabile senza schermo
+Android/       manifest, guscio Java (schermo, tocchi, controller, audio), icona, script di build
 Tools/forge/   strumento Python che disegna gli sprite e ne fa le anteprime
 Tools/preview/ anteprime su PNG di terreno e fondali
-Tools/ci/      script della prova di avvio
+Tools/ci/      script delle prove di avvio (simulatore iOS, emulatore Android)
 Tests/         test della logica
 ```
 
-Le cartelle `Model/` importano solo Foundation: per questo si compilano e si provano ovunque, senza simulatore. Le scene disegnano lo stato calcolato lì.
+Le cartelle `Model/` non usano framework Apple: per questo si compilano e si provano ovunque, senza simulatore, e sono le stesse su iPhone e su Android. Le scene disegnano lo stato calcolato lì.
+
+## La versione Android
+
+Il gioco non è stato riscritto: su Android gira **lo stesso codice Swift** della logica (mappa, pesci, arpione, boss, osteria, storia, paese, audio sintetizzato), compilato con lo Swift SDK ufficiale per Android. Cambia solo chi disegna.
+
+- **Niente SpriteKit né SwiftUI.** `Portable/` ridisegna ogni schermata su due tele in memoria: il *mondo*, a pixel grossi, e l'*interfaccia* sopra. Sono ingrandite sullo schermo a multipli interi, senza sfumature, come su iPhone.
+- **Tutti i testi sono in pixel art.** Su iPhone i menu usano il carattere di sistema; su Android menu, dialoghi e Giornale di bordo sono scritti con il font a pixel del gioco (con minuscole e accenti). I contenuti sono gli stessi.
+- **Un guscio Java sottile** (`Android/java`) apre lo schermo intero, passa tocchi e controller, copia le due tele sullo schermo e fa suonare l'audio che il gioco gli consegna. Tra Java e Swift c'è un ponte JNI di poche righe.
+- **Niente Gradle.** `Android/build.sh` chiama direttamente gli strumenti dell'SDK: si legge in una pagina e in CI dura un paio di minuti.
+- **Che cosa è più semplice che su iPhone:** niente riflessi di luce sulla roccia in acque basse (su iOS li fa uno shader), raggi di luce più essenziali, vibrazione a un solo motore. I pesci decidono con le stesse regole, ma senza GameplayKit.
+- **Controller:** sono riconosciuti i gamepad standard di Android (levette, croce, tasti, grilletti), con la stessa rimappatura.
+- **Salvataggi:** tre slot nella memoria privata dell'app, nello stesso formato dell'iPhone.
 
 ## Audio generato dal codice
 
