@@ -4,7 +4,7 @@ Gioco per iPhone e Android, offline, in italiano: di giorno ci si immerge con l'
 
 È un gioco originale del genere "immersioni di giorno, ristorante la sera": personaggi, ambientazione, storia e grafica sono propri.
 
-> **Stato del lavoro.** Tutte e sette le milestone sono nel repository e passano la CI (test, compilazione, avvio di ogni scena nel simulatore). Nessuno però ha ancora giocato su un iPhone vero: leggi [Che cosa non è stato verificato](#milestone) e la lista [Cosa provare](#cosa-provare) prima di giudicarlo.
+> **Stato del lavoro.** Il gioco è completo su tutte e due le piattaforme e passa la CI: test, compilazione, avvio di ogni scena nel simulatore iOS e di ogni schermata nell'emulatore Android. Nessuno però ha ancora giocato su un telefono vero, né iPhone né Android: leggi [Che cosa non è stato verificato](#milestone) e la lista [Cosa provare](#cosa-provare) prima di giudicarlo.
 
 ## Scaricare e installare l'APK (Android)
 
@@ -243,8 +243,11 @@ L'arpione di partenza fa 10 danni; Fiato 120, sacca 10 kg, muta fino a 110 m. Tu
 | M5 | trama in cinque capitoli, diciannove scene, sei boss, cast con ritratti | fatta |
 | M6 | personale, orto e vivaio, nasse, eventi, collezione, tre giochi del bar, ricette a livelli | fatta |
 | M7 | audio sintetizzato (venti effetti, sette brani, filtro sott'acqua), simulazione dell'economia, istruzioni al primo avvio, catalogo delle stringhe, contatori di prestazioni | fatta |
+| Android | motore portabile, tutte le schermate ridisegnate, guscio Java, APK costruito e provato in CI | fatta |
 
 **Che cosa non è stato verificato.** Il gioco è sviluppato senza un Mac e senza un iPhone: la compilazione e l'avvio di ogni scena sono controllati in CI nel simulatore, la logica dai test. La resa su un telefono vero, la sensazione dei comandi, le prestazioni su modelli vecchi e la difficoltà non sono state provate da nessuno finché non installi l'IPA. In particolare la difficoltà dei boss è tarata su un giocatore automatico che non sbaglia mai un colpo: per una persona saranno più lunghi e più duri, e i numeri (`bosses.json`) vanno aggiustati dopo le prime prove. La musica e gli effetti sono controllati solo nei numeri (durata, volume, assenza di scatti): nessuno li ha mai ascoltati, e il simulatore della CI non ha un'uscita audio.
+
+Lo stesso vale per Android: la CI installa l'APK in un emulatore e controlla che ogni schermata si apra e che l'audio scorra, ma nessuno ha toccato lo schermo. Comandi, leggibilità dei testi a pixel su schermi piccoli, prestazioni su telefoni lenti e comportamento con tacche e schermi pieghevoli sono da provare. Nella prova automatica alcuni momenti non capitano mai e quindi non sono stati visti a schermo: il minigioco del vino giocato a mano, una vasca del vivaio piena, alcuni attacchi dei boss (getti, siluri).
 
 ## Cosa provare
 
@@ -260,10 +263,19 @@ Sul telefono, in quest'ordine: sono le cose che da qui non si possono giudicare.
 8. **Controller.** Con un pad collegato si naviga in tutti i menu? La rimappatura nelle Opzioni funziona?
 9. **Salvataggi.** Chiudi l'app a metà giornata e riaprila: riparte dalla fase giusta?
 
+In più, su Android:
+
+10. **Avvio e schermo.** L'app si installa e parte? Il gioco riempie lo schermo senza bande, e i comandi stanno lontani dalla tacca e dagli angoli curvi?
+11. **Testi.** Tutto è scritto con il font a pixel: dialoghi, Giornale di bordo e Paese si leggono bene sul tuo schermo?
+12. **Audio e vibrazione.** Musica ed effetti partono senza scatti? La vibrazione si sente (e si spegne dalle Opzioni)?
+13. **Tasto indietro.** In gioco mette in pausa, nei menu chiude il pannello, dal titolo esce: è quello che ti aspetti?
+14. **Secondo piano.** Passa a un'altra app durante un'immersione e torna: il gioco è in pausa e riprende senza problemi?
+
 ## Test
 
 ```
 swift test                                   # logica pura: 92 test
+swift run -c release runner smoke out 1600 720   # versione portabile (Android): 43 schermate, un PNG ciascuna
 python3 Tools/forge/build.py                 # rigenera sprite e anteprime
 python3 Tools/l10n/sync.py                   # aggiorna il catalogo delle stringhe
 swift run -c release -Xswiftc -enable-testing preview terrain Tools/forge/out
