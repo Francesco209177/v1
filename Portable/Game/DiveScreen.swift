@@ -150,6 +150,8 @@ final class DiveScreen: Screen {
         updateZone(force: true)
         if let boss: BossInfo = config.boss {
             announce(zone: boss.name.text(), range: boss.epithet.text())
+            // Il consiglio su come affrontarlo resta qualche secondo in basso, fuori dalla mischia.
+            hint.show(boss.hint.text(), width: min(Int(Double(app.uiWidth) * 0.62), 330), seconds: 8)
         }
         // Le istruzioni della prima immersione.
         if config.autopilot == nil && config.boss == nil && GameSession.shared.firstTime("immersione") {
@@ -985,7 +987,7 @@ final class DiveScreen: Screen {
                    shadow: Theme.ink.withAlpha(UInt8(alpha * 200)))
         }
         toast.draw(g, centerX: safe.midX, y: safe.y + Int(Double(safe.h) * 0.42))
-        hint.draw(g, centerX: safe.midX, top: safe.y + Int(Double(safe.h) * 0.12))
+        hint.draw(g, centerX: safe.midX, top: config.boss != nil ? safe.maxY - hint.height - 6 : safe.y + Int(Double(safe.h) * 0.12))
 
         if !paused && !ended {
             drawPrompt(app, g)

@@ -201,6 +201,8 @@ struct HintBox {
     private var duration: Double = 0
 
     var isVisible: Bool { return clock < duration + 0.9 && !lines.isEmpty }
+    /// Altezza del riquadro, per chi lo vuole appoggiare al bordo inferiore.
+    var height: Int { return lines.count * PixelFont.lineHeight + 10 }
 
     mutating func show(_ text: String, width: Int, seconds: Double = 10) {
         self.width = width
