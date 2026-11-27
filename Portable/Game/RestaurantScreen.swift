@@ -546,7 +546,7 @@ final class RestaurantScreen: Screen {
     private func drawPour(_ g: Canvas, safe: Rect) {
         let gw: Int = RestaurantScreen.glassW
         let gh: Int = RestaurantScreen.glassH
-        let glass: Rect = Rect(safe.midX - gw / 2, safe.midY - gh / 2 - 8, gw, gh)
+        let glass: Rect = Rect(safe.midX - gw / 2, safe.midY - gh / 2, gw, gh)
         let frame: Rect = Rect(glass.x - 3, glass.y - 3, gw + 6, gh + 6)
         g.roundRect(frame, radius: 6, Theme.ink.withAlpha(178))
         g.roundOutline(frame, radius: 6, Theme.lime)
@@ -557,8 +557,10 @@ final class RestaurantScreen: Screen {
         g.fill(x: glass.x, y: zoneTop, w: gw, h: zoneBottom - zoneTop, RGBA(hex: 0x58C070).withAlpha(140))
         let level: Int = max(1, Int((Double(gh) * MathUtil.clamp(sim.pourLevel, 0, 1)).rounded()))
         g.fill(x: glass.x, y: glass.maxY - level, w: gw, h: level, RestaurantScreen.wine)
-        g.text("Tieni premuto e molla nella fascia verde", x: safe.midX, y: frame.maxY + 8, Theme.lime, align: TextAlign.center,
-               shadow: RestaurantScreen.shadow)
+        let label: String = "Tieni premuto e molla nella fascia verde"
+        let labelW: Int = PixelFont.shared.width(label) + 14
+        g.roundRect(Rect(safe.midX - labelW / 2, frame.maxY + 4, labelW, 15), radius: 5, Theme.ink.withAlpha(178))
+        g.text(label, x: safe.midX, y: frame.maxY + 8, Theme.lime, align: TextAlign.center, shadow: RestaurantScreen.shadow)
     }
 
     private func drawPause(_ app: App, _ ui: UI) {
