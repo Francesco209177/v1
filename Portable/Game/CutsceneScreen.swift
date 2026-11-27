@@ -286,6 +286,17 @@ final class CutsceneScreen: Screen {
     /// La sala dell'osteria, costruita con gli sprite di `osteria.spr` come su iOS.
     private func drawRoom(_ g: Canvas, view: View2D) {
         g.fill(x: 0, y: 0, w: g.width, h: g.height, RGBA(hex: 0x1A1216))
+        // Soffitto a travi: su iOS resta fuori dall'inquadratura, qui lo schermo può mostrarne un pezzo.
+        let ceiling: Int = view.sy(104)
+        if ceiling > 0 {
+            g.fill(x: 0, y: 0, w: g.width, h: ceiling, RGBA(hex: 0x2E1D16))
+            var beam: Int = ceiling - 14
+            while beam > -6 {
+                g.fill(x: 0, y: beam, w: g.width, h: 5, RGBA(hex: 0x4A2F1F))
+                g.fill(x: 0, y: beam + 5, w: g.width, h: 1, RGBA(hex: 0x1F130E))
+                beam -= 18
+            }
+        }
         let sprites: Sprites = Sprites.shared
         let ox: Double = -214
         let floor: Image = sprites.get("room_floor")
