@@ -953,8 +953,17 @@ final class DiveScreen: Screen {
         }
         drawStatus(g, safe: safe)
         if let boss: BossBody = sim.boss {
-            drawBossBar(g, info: boss.info, ratio: boss.hpRatio, vulnerable: boss.isVulnerable, top: safe.y + 4, centerX: safe.midX,
-                        maxWidth: Int(Double(safe.w) * 0.42))
+            // Tra il riquadro dello stato (a sinistra) e la pausa (a destra): centrata se c'è posto.
+            let freeLeft: Int = safe.x + 158
+            let freeRight: Int = safe.maxX - 36
+            var barWidth: Int = Int(Double(safe.w) * 0.42)
+            var barCenter: Int = safe.midX
+            if barCenter - barWidth / 2 < freeLeft {
+                barWidth = min(barWidth, freeRight - freeLeft)
+                barCenter = max(barCenter, freeLeft + barWidth / 2)
+            }
+            drawBossBar(g, info: boss.info, ratio: boss.hpRatio, vulnerable: boss.isVulnerable, top: safe.y + 4, centerX: barCenter,
+                        maxWidth: barWidth)
         } else if !minimap.isEmpty {
             let mx: Int = safe.maxX - 56 - 34
             g.roundRect(Rect(mx - 2, safe.y + 3, 60, 42), radius: 3, Theme.lime.withAlpha(140))
