@@ -64,7 +64,7 @@ extension LogbookPanel {
     private func valueLine(_ info: UpgradeInfo, level: Int) -> String {
         let now: String = LogbookPanel.number(info.value(level: level))
         if level >= info.levels.count { return "\(now) \(info.unit.text())" }
-        return "\(now) → \(LogbookPanel.number(info.value(level: level + 1))) \(info.unit.text())"
+        return "\(now) » \(LogbookPanel.number(info.value(level: level + 1))) \(info.unit.text())"
     }
 
     /// Numero intero se lo è, altrimenti con due decimali ("1,25").
