@@ -471,10 +471,10 @@ final class VillagePanel: Panel {
         var cy: Int = y
         g.text("Maioliche dei Nerei \(tilesOwned)/\(tiles.count)", x: x + 2, y: cy + 2, Theme.ink)
         cy = note(g, "Si trovano sul fondo, due per zona: brillano. La collezione completa vale cinque perle.", x: x, y: cy + 13, w: w)
-        cy = grid(ui, tiles, state: state, x: x, y: cy, w: w, cellW: 40)
+        cy = grid(ui, tiles, state: state, x: x, y: cy, w: w, cellW: 46)
         g.text("Cartoline \(cardsOwned)/\(cards.count)", x: x + 2, y: cy + 4, Theme.ink)
         cy = note(g, "Arrivano da sole, quando raggiungi un traguardo.", x: x, y: cy + 15, w: w)
-        cy = grid(ui, cards, state: state, x: x, y: cy, w: w, cellW: 46)
+        cy = grid(ui, cards, state: state, x: x, y: cy, w: w, cellW: 60)
         if let id: String = selected, let item: Collectible = book.collectible(id) {
             let lines: [BoardKit.Line] = [
                 BoardKit.Line(item.name.text(), Theme.ink, wrap: true),
@@ -491,7 +491,7 @@ final class VillagePanel: Panel {
     private func grid(_ ui: UI, _ items: [Collectible], state: GameState, x: Int, y: Int, w: Int, cellW: Int) -> Int {
         let g: Canvas = ui.g
         let gap: Int = 4
-        let cellH: Int = 30
+        let cellH: Int = 44
         let columns: Int = max(1, (w + gap) / (cellW + gap))
         var index: Int = 0
         while index < items.count {
@@ -501,7 +501,7 @@ final class VillagePanel: Panel {
             let press: UI.Press = ui.press("paese.pezzo.\(item.id)", r)
             g.roundRect(r, radius: 4, Theme.ink.withAlpha(selected == item.id || press.down ? 50 : 18))
             if owned {
-                drawFitted(g, item.id, in: r.inset(2))
+                drawFitted(g, item.id, in: r.inset(2), maxScale: 2)
             } else {
                 g.text("?", x: r.midX, y: r.midY - 3, Theme.ink.withAlpha(80), align: TextAlign.center)
             }
