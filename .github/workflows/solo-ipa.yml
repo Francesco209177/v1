@@ -1,5 +1,5 @@
 # Solo l'IPA per iPhone, senza APK né prove: circa 4 minuti invece di un quarto d'ora.
-# Si lancia a mano: Actions → "Solo IPA" → Run workflow (scegliendo il branch).
+# Si lancia a mano: Actions → "Solo IPA" → Run workflow, scegliendo il branch ccr-553def63-wjflww.
 # L'IPA non firmata si scarica in fondo alla pagina dell'esecuzione, sotto Artifacts.
 # Il workflow completo, che parte da solo a ogni push, resta build-ipa.yml.
 name: Solo IPA
@@ -21,6 +21,15 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
+
+      # Questo file sta anche sul branch predefinito, che contiene un altro progetto: lì serve solo
+      # a far comparire il pulsante "Run workflow". Il gioco va scelto nel menu del branch.
+      - name: Branch del gioco
+        run: |
+          if [ ! -f project.yml ] || [ ! -d MareaProfonda ]; then
+            echo "::error::Su questo branch non c'è Marea Profonda: in Run workflow scegli il branch ccr-553def63-wjflww."
+            exit 1
+          fi
 
       - name: Xcode
         run: |
