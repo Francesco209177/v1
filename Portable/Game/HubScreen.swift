@@ -200,21 +200,21 @@ final class HubPanel: Panel {
         let gap: Int = 4
         // Da destra: Esci, Paese, Giornale; lo spazio che resta va alle azioni della fase.
         let narrow: Bool = row.w < 430
-        let exitR: Rect = area.cutRight(narrow ? 42 : 66)
+        let exitR: Rect = area.cutRight(narrow ? 42 : 58)
         area.w -= gap
-        let villageR: Rect = area.cutRight(narrow ? 52 : 78)
+        let villageR: Rect = area.cutRight(narrow ? 52 : 66)
         area.w -= gap
-        let logR: Rect = area.cutRight(narrow ? 58 : 84)
+        let logR: Rect = area.cutRight(narrow ? 58 : 66)
         area.w -= gap
-        if ui.button("hub.esci", exitR, "Esci", sub: narrow ? nil : "È salvata", fill: Theme.ink.mixed(with: Theme.cobalt, 0.25), text: Theme.lime) {
+        if ui.button("hub.esci", exitR, "Esci", sub: narrow ? nil : "Salvata", fill: Theme.ink.mixed(with: Theme.cobalt, 0.25), text: Theme.lime) {
             session.close()
             Flow.showTitle(app)
         }
-        if ui.button("hub.paese", villageR, "Paese", sub: narrow ? nil : "Orto, nasse, bar", fill: Theme.ochre) {
+        if ui.button("hub.paese", villageR, "Paese", sub: narrow ? nil : "Orto, bar", fill: Theme.ochre) {
             session.clearAnnouncements()
             Flow.showPanel(app, VillagePanel())
         }
-        if ui.button("hub.giornale", logR, "Giornale", sub: narrow ? nil : "Missioni, cantiere") {
+        if ui.button("hub.giornale", logR, "Giornale", sub: narrow ? nil : "Missioni") {
             session.clearAnnouncements()
             Flow.showPanel(app, LogbookPanel())
         }
