@@ -37,6 +37,8 @@ Per pubblicare una versione scaricabile dalla pagina *Releases*, crea un tag che
 
 La build parte da sola a ogni push. Per lanciarla a mano: **Actions → Build IPA e APK → Run workflow**.
 
+Se serve solo l'IPA c'è un workflow più rapido, che si lancia a mano: **Actions → Solo IPA → Run workflow** (`.github/workflows/solo-ipa.yml`). Non fa APK né prove, dura circa 4 minuti e lascia l'IPA nell'artifact **MareaProfonda-ipa**.
+
 Il workflow (`.github/workflows/build-ipa.yml`) fa cinque cose:
 
 | Job | Che cosa fa |
